@@ -3,7 +3,7 @@ import { app, ipcMain } from 'electron';
 import { isDebug, installDevExtensions } from '../util';
 import SceneWebBrowser from './scenes/web-browser';
 import SceneHome from './scenes/home';
-import AbsMenuBuilder, { MenuItemConstructorOptions } from './menu-builder';
+import AbsMenuBuilder, { CustomMenuItemConstructor } from './menu-builder';
 import Bookmarks from './store/bookmarks';
 
 enum Scenes {
@@ -20,7 +20,9 @@ enum Scenes {
  */
 export default class Main extends AbsMenuBuilder {
     // Singleton instance
+    /* eslint-disable-next-line no-use-before-define */
     static instance: Main;
+
     static getInstance(): Main {
         if (!Main.instance) {
             Main.instance = new Main();
@@ -33,10 +35,12 @@ export default class Main extends AbsMenuBuilder {
 
     // Scene instances
     private sceneWebBrowser: SceneWebBrowser = SceneWebBrowser.getInstance();
+
     private sceneHome: SceneHome = SceneHome.getInstance();
+
     private currentScene: Scenes = Scenes.browser;
 
-    menu: MenuItemConstructorOptions[] = [
+    menu: CustomMenuItemConstructor[] = [
         {
             label: 'Focus',
             system: ['darwin'],
@@ -74,49 +78,49 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Undo',
                     accelerators: {
-                        'darwin': 'Command+Z',
-                        'default': 'Ctrl+Z',
+                        darwin: 'Command+Z',
+                        default: 'Ctrl+Z',
                     },
-                    selector: 'undo:'
+                    selector: 'undo:',
                 },
                 {
                     label: 'Redo',
                     accelerators: {
-                        'darwin': 'Shift+Command+Z',
-                        'default': 'Shift+Ctrl+Z',
+                        darwin: 'Shift+Command+Z',
+                        default: 'Shift+Ctrl+Z',
                     },
-                    selector: 'redo:'
+                    selector: 'redo:',
                 },
                 { type: 'separator' },
                 {
                     label: 'Cut',
                     accelerators: {
-                        'darwin': 'Command+X',
-                        'default': 'Ctrl+X',
+                        darwin: 'Command+X',
+                        default: 'Ctrl+X',
                     },
-                    selector: 'cut:'
+                    selector: 'cut:',
                 },
                 {
                     label: 'Copy',
                     accelerators: {
-                        'darwin': 'Command+C',
-                        'default': 'Ctrl+C',
+                        darwin: 'Command+C',
+                        default: 'Ctrl+C',
                     },
-                    selector: 'copy:'
+                    selector: 'copy:',
                 },
                 {
                     label: 'Paste',
                     accelerators: {
-                        'darwin': 'Command+V',
-                        'default': 'Ctrl+V',
+                        darwin: 'Command+V',
+                        default: 'Ctrl+V',
                     },
-                    selector: 'paste:'
+                    selector: 'paste:',
                 },
                 {
                     label: 'Select All',
                     accelerators: {
-                        'darwin': 'Command+A',
-                        'default': 'Ctrl+A',
+                        darwin: 'Command+A',
+                        default: 'Ctrl+A',
                     },
                     selector: 'selectAll:',
                 },
@@ -129,8 +133,8 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Address Bar',
                     accelerators: {
-                        'darwin': 'Command+L',
-                        'default': 'Ctrl+L',
+                        darwin: 'Command+L',
+                        default: 'Ctrl+L',
                     },
                     click: () => {
                         this.switch(Scenes.address);
@@ -139,8 +143,8 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Show Centre',
                     accelerators: {
-                        'darwin': 'Command+`',
-                        'default': 'Ctrl+`',
+                        darwin: 'Command+`',
+                        default: 'Ctrl+`',
                     },
                     click: () => {
                         this.switch(Scenes.home);
@@ -150,8 +154,8 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Reload',
                     accelerators: {
-                        'darwin': 'Command+R',
-                        'default': 'Ctrl+R',
+                        darwin: 'Command+R',
+                        default: 'Ctrl+R',
                     },
                     click: () => {
                         if (this.currentScene === Scenes.browser) {
@@ -165,8 +169,8 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Toggle Full Screen',
                     accelerators: {
-                        'darwin': 'Ctrl+Command+F',
-                        'default': 'F11',
+                        darwin: 'Ctrl+Command+F',
+                        default: 'F11',
                     },
                     click: () => {
                         if (this.currentScene === Scenes.browser) {
@@ -186,8 +190,8 @@ export default class Main extends AbsMenuBuilder {
                 {
                     label: 'Toggle Developer Tools',
                     accelerators: {
-                        'darwin': 'Alt+Command+I',
-                        'default': 'Alt+Ctrl+I',
+                        darwin: 'Alt+Command+I',
+                        default: 'Alt+Ctrl+I',
                     },
                     click: () => {
                         if (this.currentScene === Scenes.browser) {
@@ -209,7 +213,11 @@ export default class Main extends AbsMenuBuilder {
                     accelerator: 'Command+M',
                     selector: 'performMiniaturize:',
                 },
-                { label: 'Close', accelerator: 'Command+W', selector: 'performClose:' },
+                {
+                    label: 'Close',
+                    accelerator: 'Command+W',
+                    selector: 'performClose:',
+                },
                 { type: 'separator' },
                 { label: 'Bring All to Front', selector: 'arrangeInFront:' },
             ],
@@ -236,7 +244,7 @@ export default class Main extends AbsMenuBuilder {
         }
         this.extensionsInstalled = true;
 
-        this.initIPC()
+        this.initIPC();
         this.buildMenu();
     }
 
@@ -246,13 +254,18 @@ export default class Main extends AbsMenuBuilder {
     private initIPC() {
         // Switch to web browser scene
         ipcMain.on('show-browser', async () => {
-            this.switch(Scenes.browser)
+            this.switch(Scenes.browser);
         });
 
         // Switch to web browser scene with url
         ipcMain.on('load-url', async (_, arg) => {
-            if (Array.isArray(arg) && arg.length > 0 && typeof arg[0] === 'string' && arg[0].trim() !== '') {
-                this.switch(Scenes.browser, arg[0])
+            if (
+                Array.isArray(arg) &&
+                arg.length > 0 &&
+                typeof arg[0] === 'string' &&
+                arg[0].trim() !== ''
+            ) {
+                this.switch(Scenes.browser, arg[0]);
             }
         });
 
@@ -276,8 +289,8 @@ export default class Main extends AbsMenuBuilder {
     private switch(scene: Scenes, url?: string) {
         // Browser scene
         if (scene === Scenes.browser) {
-            this.sceneHome.hide()
-            this.sceneWebBrowser.show()
+            this.sceneHome.hide();
+            this.sceneWebBrowser.show();
 
             // Move to URL if provided
             if (url) {
@@ -291,11 +304,13 @@ export default class Main extends AbsMenuBuilder {
                 this.sceneWebBrowser.loadURL(parsed.toString()).catch(() => {
                     // If loading the URL fails (e.g., invalid URL), perform a search instead
                     // TODO search engine option
-                    this.sceneWebBrowser.loadURL(`https://www.google.com/search?q=${url}`)
+                    this.sceneWebBrowser.loadURL(
+                        `https://www.google.com/search?q=${url}`,
+                    );
                 });
             }
-            this.currentScene = Scenes.browser
-            return
+            this.currentScene = Scenes.browser;
+            return;
         }
 
         // Home scene
@@ -307,17 +322,17 @@ export default class Main extends AbsMenuBuilder {
             '', // TODO: Fetch page description
         );
 
-        this.sceneWebBrowser.hide()
-        this.sceneHome.show()
+        this.sceneWebBrowser.hide();
+        this.sceneHome.show();
 
         // Focus address bar if requested
         if (scene === Scenes.address) {
-            this.sceneHome.showAddressBar()
+            this.sceneHome.showAddressBar();
         } else {
-            this.sceneHome.showHome()
+            this.sceneHome.showHome();
         }
 
-        this.currentScene = Scenes.home
+        this.currentScene = Scenes.home;
     }
 
     /**
@@ -328,7 +343,7 @@ export default class Main extends AbsMenuBuilder {
     refresh() {
         if (this.currentScene === Scenes.browser) {
             this.sceneWebBrowser.show();
-            return
+            return;
         }
         this.sceneHome.show();
     }

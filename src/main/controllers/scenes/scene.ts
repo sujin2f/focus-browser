@@ -8,18 +8,23 @@ export default abstract class Scene {
     // Browser window
     window: BrowserWindow | null = null;
 
-    constructor(protected homepage: string, private session?: Session | undefined) {
+    constructor(
+        protected homepage: string,
+        private session?: Session | undefined,
+    ) {
         this.init();
     }
 
     private init() {
-        const webPreferences = this.session ? {
-            preload,
-            session: this.session,
-            partition: 'persist:my-partition',
-        } : {
-            preload,
-        };
+        const webPreferences = this.session
+            ? {
+                  preload,
+                  session: this.session,
+                  partition: 'persist:my-partition',
+              }
+            : {
+                  preload,
+              };
 
         this.window = new BrowserWindow({
             show: false,
@@ -33,7 +38,9 @@ export default abstract class Scene {
 
         this.window.on('ready-to-show', () => {
             if (!this.window) {
-                throw new Error(`"window" is not defined for page: ${this.homepage}`);
+                throw new Error(
+                    `"window" is not defined for page: ${this.homepage}`,
+                );
             }
             this.show();
         });
@@ -55,9 +62,9 @@ export default abstract class Scene {
      */
     public async loadURL(url: string) {
         if (this.window) {
-            return this.window.loadURL(url)
+            return this.window.loadURL(url);
         }
-        return Promise.reject("Main window not initialized")
+        return Promise.reject(new Error('Main window not initialized'));
     }
 
     public show() {

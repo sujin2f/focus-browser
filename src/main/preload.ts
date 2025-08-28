@@ -3,13 +3,13 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels =
-    'show-browser' |
-    'show-home' |
-    'show-address-bar' |
-    'load-url' |
-    'set-current-page' |
-    'bookmarks' |
-    'bookmark-add';
+    | 'show-browser'
+    | 'show-home'
+    | 'show-address-bar'
+    | 'load-url'
+    | 'set-current-page'
+    | 'bookmarks'
+    | 'bookmark-add';
 
 const electronHandler = {
     ipcRenderer: {
@@ -17,8 +17,10 @@ const electronHandler = {
             ipcRenderer.send(channel, ...args);
         },
         on(channel: Channels, func: (...args: unknown[]) => void) {
-            const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
-                func(...args);
+            const subscription = (
+                _event: IpcRendererEvent,
+                ...args: unknown[]
+            ) => func(...args);
             ipcRenderer.on(channel, subscription);
 
             return () => {

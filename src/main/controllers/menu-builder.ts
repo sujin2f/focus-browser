@@ -1,13 +1,10 @@
-import {
-    Menu,
-    MenuItemConstructorOptions as ElectronMenuItemConstructorOptions,
-} from 'electron';
+import { Menu, MenuItemConstructorOptions } from 'electron';
 
 type SystemType = 'darwin' | 'default';
 
-export interface MenuItemConstructorOptions extends ElectronMenuItemConstructorOptions {
+export interface CustomMenuItemConstructor extends MenuItemConstructorOptions {
     selector?: string;
-    submenu?: MenuItemConstructorOptions[] | Menu;
+    submenu?: CustomMenuItemConstructor[] | Menu;
     system?: Array<SystemType>;
     accelerators?: { [K in SystemType]?: string };
 }
@@ -16,7 +13,7 @@ export interface MenuItemConstructorOptions extends ElectronMenuItemConstructorO
  * An abstract class for building application menus
  */
 export default abstract class AbsMenuBuilder {
-    abstract menu: MenuItemConstructorOptions[];
+    abstract menu: CustomMenuItemConstructor[];
 
     buildMenu(): Menu {
         const template =
@@ -30,7 +27,10 @@ export default abstract class AbsMenuBuilder {
         return menu;
     }
 
-    buildTemplate(system: SystemType, menu: MenuItemConstructorOptions[]): ElectronMenuItemConstructorOptions[] {
+    buildTemplate(
+        system: SystemType,
+        menu: CustomMenuItemConstructor[],
+    ): MenuItemConstructorOptions[] {
         return menu.map((item) => {
             if (item.system && !item.system.includes(system)) {
                 delete item.system;
@@ -43,7 +43,7 @@ export default abstract class AbsMenuBuilder {
             }
 
             if (item.submenu && Array.isArray(item.submenu)) {
-                item.submenu = this.buildTemplate(system, item.submenu)
+                item.submenu = this.buildTemplate(system, item.submenu);
             }
 
             delete item.system;

@@ -26,17 +26,21 @@ export const getAssetPath = (...paths: string[]): string => {
 
 export const preload = app.isPackaged
     ? path.join(__dirname, './preload.js')
-    : path.join(__dirname, '../../.erb/dll/preload.js')
+    : path.join(__dirname, '../../.erb/dll/preload.js');
 
 export const installDevExtensions = async (): Promise<unknown> => {
+    /* eslint-disable-next-line global-require */
     const installer = require('electron-devtools-installer');
     const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
     const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-    return installer
-        .default(
-            extensions.map((name) => installer[name]),
-            forceDownload,
-        )
-        .catch(console.log);
-}
+    return (
+        installer
+            .default(
+                extensions.map((name) => installer[name]),
+                forceDownload,
+            )
+            /* eslint-disable-next-line no-console */
+            .catch(console.log)
+    );
+};

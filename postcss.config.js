@@ -1,4 +1,5 @@
-/* eslint global-require: off, import/no-extraneous-dependencies: off */
+/* eslint-disable import/no-self-import */
+/* eslint-disable global-require */
 
 module.exports = {
     plugins: [require('@tailwindcss/postcss'), require('autoprefixer')],

@@ -1,9 +1,11 @@
-import { Bookmark } from "../../../types";
-import Store from "./store";
+import { Bookmark } from '../../../types';
+import Store from './store';
 
 export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     // Singleton instance
+    /* eslint-disable-next-line no-use-before-define */
     static instance: Bookmarks;
+
     static getInstance(): Bookmarks {
         if (!Bookmarks.instance) {
             Bookmarks.instance = new Bookmarks('bookmarks', { bookmarks: [] });

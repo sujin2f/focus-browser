@@ -9,7 +9,7 @@ declare global {
             title: string;
             icon: string;
             description: string;
-        }
+        };
     }
 }
 

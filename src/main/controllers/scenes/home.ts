@@ -8,10 +8,15 @@ import Scene from './scene';
  */
 export default class SceneHome extends Scene {
     // Singleton instance
+    /* eslint-disable-next-line no-use-before-define */
     static instance: SceneHome;
+
     static getInstance(): SceneHome {
         if (!SceneHome.instance) {
-            SceneHome.instance = new SceneHome(resolveHtmlPath('index.html'), undefined);
+            SceneHome.instance = new SceneHome(
+                resolveHtmlPath('index.html'),
+                undefined,
+            );
         }
         return SceneHome.instance;
     }

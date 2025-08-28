@@ -17,7 +17,6 @@ if (process.env.NODE_ENV === 'production') {
     sourceMapSupport.install();
 }
 
-
 if (isDebug) {
     require('electron-debug').default();
 }
@@ -33,14 +32,13 @@ app.on('window-all-closed', () => {
     }
 });
 
-app
-    .whenReady()
+app.whenReady()
     .then(() => {
         Main.getInstance();
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
-            Main.getInstance().refresh()
+            Main.getInstance().refresh();
         });
     })
     .catch(console.log);

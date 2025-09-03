@@ -38,7 +38,11 @@ export default class SceneWebBrowser {
 
     private createWindow() {
         if (this.window) {
-            this.window.destroy()
+            try {
+                this.window.destroy()
+            } finally {
+                this.window = null
+            }
         }
 
         this.window = new BrowserWindow({
@@ -111,27 +115,34 @@ export default class SceneWebBrowser {
      */
     public loadURL(url?: string) {
         this.createWindow()
-        if (url) {
-            this.homepage = url
+
+        let _url = url
+        if (!_url) {
+            _url = this.homepage
         }
 
         // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
-        const hasSchema = /^[a-z]+:\/\//i.test(url)
+        const hasSchema = /^[a-z]+:\/\//i.test(_url)
 
         // If the schema is missing, prepend 'http://' to allow the URL constructor
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
         try {
-            const parsed = new URL(!hasSchema ? `http://${url}` : url)
+            if (!hasSchema) {
+                _url = new URL(_url).toString()
+            }
 
-            this.window.loadURL(parsed.toString()).catch(() => {
+            this.window.loadURL(_url).catch(() => {
                 // If loading the URL fails (e.g., invalid URL), perform a search instead
                 // TODO search engine option
-                this.window.loadURL(`https://www.google.com/search?q=${url}`)
+                _url = `https://www.google.com/search?q=${url}`
+                this.window.loadURL(_url)
             })
         } catch {
-            this.window.loadURL(`https://www.google.com/search?q=${url}`)
+            _url = `https://www.google.com/search?q=${url}`
+            this.window.loadURL(_url)
         }
 
+        this.homepage = _url
         this.show()
     }
 

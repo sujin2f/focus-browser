@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Bookmarks</title>
+        <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        />
+    </head>
+    <body class="p-10">
+        <h1 class="text-gray-500">Add Bookmark (D)</h1>
+        <form id="form-add" class="hidden">
+            <div class="grid grid-cols-2 gap-2">
+                <label
+                    for="bookmark-title"
+                    class="block text-sm font-medium text-gray-700"
+                >
+                    Title
+                    <input
+                        id="bookmark-title"
+                        type="text"
+                        name="title"
+                        class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+                    />
+                </label>
+                <label
+                    for="bookmark-url"
+                    class="block text-sm font-medium text-gray-700"
+                >
+                    URL
+                    <input
+                        id="bookmark-url"
+                        type="text"
+                        name="url"
+                        class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+                    />
+                </label>
+            </div>
+            <button
+                type="submit"
+                class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                Add Bookmark
+            </button>
+        </form>
+
+        <div id="list"></div>
+
+        <div
+            class="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
+        >
+            <table class="w-full text-left table-auto min-w-max">
+                <thead>
+                    <tr>
+                        <th
+                            class="p-4 border-b border-blue-gray-100 bg-blue-gray-50"
+                        >
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                            >
+                                Name
+                            </p>
+                        </th>
+                        <th
+                            class="p-4 border-b border-blue-gray-100 bg-blue-gray-50"
+                        >
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                            >
+                                Job
+                            </p>
+                        </th>
+                        <th
+                            class="p-4 border-b border-blue-gray-100 bg-blue-gray-50"
+                        >
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                            >
+                                Employed
+                            </p>
+                        </th>
+                        <th
+                            class="p-4 border-b border-blue-gray-100 bg-blue-gray-50"
+                        >
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                            ></p>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                John Michael
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Manager
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                23/04/18
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <a
+                                href="#"
+                                class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Alexa Liras
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Developer
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                23/04/18
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <a
+                                href="#"
+                                class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Laurent Perrier
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Executive
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                19/09/17
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <a
+                                href="#"
+                                class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Michael Levi
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Developer
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                24/12/08
+                            </p>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <a
+                                href="#"
+                                class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-4">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Richard Gran
+                            </p>
+                        </td>
+                        <td class="p-4">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                Manager
+                            </p>
+                        </td>
+                        <td class="p-4">
+                            <p
+                                class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                            >
+                                04/10/21
+                            </p>
+                        </td>
+                        <td class="p-4">
+                            <a
+                                href="#"
+                                class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
+                            >
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <template id="row">
+            <div class="mb-4">
+                <div class="text-lg font-medium text-gray-200">
+                    <button type="button" data-id="title">Title</button>
+                </div>
+            </div>
+        </template>
+    </body>
+</html>

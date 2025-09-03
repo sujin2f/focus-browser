@@ -1,33 +1,28 @@
-import { Bookmark } from '../../../types';
-import Store from './store';
+import { Bookmark } from '../../../types'
+import Store from './store'
 
 export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     // Singleton instance
     /* eslint-disable-next-line no-use-before-define */
-    static instance: Bookmarks;
-
+    static instance: Bookmarks
     static getInstance(): Bookmarks {
         if (!Bookmarks.instance) {
-            Bookmarks.instance = new Bookmarks('bookmarks', { bookmarks: [] });
+            Bookmarks.instance = new Bookmarks('bookmarks', { bookmarks: [] })
         }
-        return Bookmarks.instance;
+        return Bookmarks.instance
     }
 
     get() {
-        return this.data.bookmarks;
+        return this.data.bookmarks
     }
 
-    add(title: string, url: string, shortcut?: string) {
-        const newBookmark: Bookmark = { url, title };
-        if (shortcut) {
-            newBookmark.shortcut = shortcut;
-        }
-        this.data.bookmarks.push(newBookmark);
-        this.set();
+    add(bookmark: Bookmark) {
+        this.data.bookmarks.push(bookmark)
+        this.set()
     }
 
     remove(index: number) {
-        this.data.bookmarks.splice(index, 1);
-        this.set();
+        this.data.bookmarks.splice(index, 1)
+        this.set()
     }
 }

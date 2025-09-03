@@ -1,18 +1,19 @@
 {
-  "compilerOptions": {
-    "incremental": true,
-    "target": "es2022",
-    "module": "node16",
-    "lib": ["dom", "es2022"],
-    "jsx": "react-jsx",
-    "strict": true,
-    "sourceMap": true,
-    "moduleResolution": "node16",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "outDir": ".erb/dll"
-  },
-  "exclude": ["test", "release/build", "release/app/dist", ".erb/dll"]
+    "compilerOptions": {
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "lib": ["dom", "es2022"],
+        "skipLibCheck": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "outDir": "./release/app/dist",
+        "baseUrl": "./src",
+        "paths": {
+            "@src/*": ["./*"],
+            "@main/*": ["./main/*"],
+            "@controllers/*": ["./main/controllers/*"],
+            "@home/*": ["./renderer/*"]
+        }
+    },
+    "include": ["src/**/*"]
 }

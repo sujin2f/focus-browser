@@ -1,36 +1,86 @@
-import { resolveHtmlPath } from '../../util';
-import Bookmarks from '../store/bookmarks';
-import Scene from './scene';
+import { BrowserWindow } from 'electron'
+import { message, resolveHtmlPath } from '@main/util'
+import Bookmarks from '@main/controllers/store/bookmarks'
+import { preload } from '@main/util'
+import { Bookmark, IPC_RequestHandler, IPC_Channels, Scenes } from '@src/types'
 
 /**
  * Home scene
  * Searching, bookmarks, history, etc.
  */
-export default class SceneHome extends Scene {
+export default class SceneHome {
     // Singleton instance
-    /* eslint-disable-next-line no-use-before-define */
-    static instance: SceneHome;
+    static instance: SceneHome
 
     static getInstance(): SceneHome {
         if (!SceneHome.instance) {
-            SceneHome.instance = new SceneHome(
-                resolveHtmlPath('index.html'),
-                undefined,
-            );
+            SceneHome.instance = new SceneHome()
         }
-        return SceneHome.instance;
+        return SceneHome.instance
     }
 
-    showAddressBar() {
-        this.window?.webContents.send('show-address-bar');
+    // Browser window
+    private window: BrowserWindow | null
+
+    public show(scene: Scenes = Scenes.Home) {
+        if (this.window) {
+            this.window.destroy()
+        }
+
+        this.window = new BrowserWindow({
+            show: false,
+            width: 1024,
+            height: 728,
+            webPreferences: {
+                preload,
+            },
+        })
+
+        this.window.on('closed', () => {
+            this.window = null
+        })
+
+        const url = new URL(resolveHtmlPath('index.html'))
+
+        if (scene === Scenes.Address) {
+            url.searchParams.append('location', 'true')
+        }
+
+        this.window.loadURL(url.toString())
+        this.window.show()
     }
 
-    showHome() {
-        this.window?.webContents.send('show-home');
+    public sendBookmarks(location: Bookmark) {
+        if (!this.window) {
+            return
+        }
+        const bookmarks = Bookmarks.getInstance().get()
+        message.send(
+            this.window,
+            IPC_Channels.Bookmarks,
+            IPC_RequestHandler.Response,
+            location,
+            bookmarks,
+        )
     }
 
-    sendBookmarks() {
-        const bookmarks = Bookmarks.getInstance().get();
-        this.window?.webContents.send('bookmarks', bookmarks);
+    public hide() {
+        if (this.window) {
+            this.window.destroy()
+        }
+
+        this.window = null
+    }
+
+    public reload() {
+        this.window.reload()
+    }
+
+    public setFullScreen(fullscreen: boolean) {
+        this.window.setFullScreen(fullscreen)
+    }
+
+    public toggleDevTools() {
+        this.window.webContents.toggleDevTools()
     }
 }

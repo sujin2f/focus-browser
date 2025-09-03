@@ -1,46 +1,34 @@
-/* eslint import/prefer-default-export: off */
-import { URL } from 'url';
-import path from 'path';
-import { app } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron'
+import { URL } from 'url'
+import * as path from 'path'
+import { IPC_Channels } from '@src/types'
 
 export function resolveHtmlPath(htmlFileName: string) {
     if (process.env.NODE_ENV === 'development') {
-        const port = process.env.PORT || 1212;
-        const url = new URL(`http://localhost:${port}`);
-        url.pathname = htmlFileName;
-        return url.href;
+        const port = process.env.PORT || 1212
+        const url = new URL(`http://localhost:${port}`)
+        url.pathname = htmlFileName
+        return url.href
     }
-    return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`;
+    return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`
 }
 
 export const isDebug =
-    process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+    process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
-const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
+export const preload = path.join(__dirname, './preload.js')
 
-export const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-};
-
-export const preload = app.isPackaged
-    ? path.join(__dirname, './preload.js')
-    : path.join(__dirname, '../../.erb/dll/preload.js');
-
-export const installDevExtensions = async (): Promise<unknown> => {
-    /* eslint-disable-next-line global-require */
-    const installer = require('electron-devtools-installer');
-    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-    const extensions = ['REACT_DEVELOPER_TOOLS'];
-
-    return (
-        installer
-            .default(
-                extensions.map((name) => installer[name]),
-                forceDownload,
-            )
-            /* eslint-disable-next-line no-console */
-            .catch(console.log)
-    );
-};
+export const message = {
+    on: (channel: IPC_Channels, callback: (...args: unknown[]) => void) => {
+        ipcMain.on(channel, async (_, ...args: unknown[]) => {
+            callback(...args)
+        })
+    },
+    send: (
+        window: BrowserWindow,
+        channel: IPC_Channels,
+        ...args: unknown[]
+    ) => {
+        window.webContents.send(channel, ...args)
+    },
+}

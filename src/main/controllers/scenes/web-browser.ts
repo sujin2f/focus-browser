@@ -37,14 +37,6 @@ export default class SceneWebBrowser {
     }
 
     private createWindow() {
-        if (this.window) {
-            try {
-                this.window.destroy()
-            } finally {
-                this.window = null
-            }
-        }
-
         this.window = new BrowserWindow({
             show: false,
             width: 1024,

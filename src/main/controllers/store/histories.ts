@@ -55,7 +55,7 @@ export default class Histories extends Store<I_History> {
         return Histories.instance
     }
 
-    private current: History | null
+    public current: History | null
 
     back() {
         if (!this.current || !this.current.prev) {
@@ -76,7 +76,7 @@ export default class Histories extends Store<I_History> {
     }
 
     get() {
-        return this.current
+        return this.data
     }
 
     push(bookmark: Bookmark) {

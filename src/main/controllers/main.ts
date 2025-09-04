@@ -104,6 +104,7 @@ export default class Main extends AbsMenuBuilder {
             },
         )
 
+        // Bookmarks
         message.on(
             IPC_Channels.Bookmarks,
             async (handler: IPC_RequestHandler, bookmark: Bookmark) => {
@@ -122,10 +123,17 @@ export default class Main extends AbsMenuBuilder {
             },
         )
 
-        // Add bookmark
-        // ipcMain.on('bookmark-add', async (_, arg) => {
-        //     Bookmarks.getInstance().add(arg[0], arg[1], arg[2] || undefined)
-        // })
+        // History
+        message.on(
+            IPC_Channels.History,
+            async (handler: IPC_RequestHandler) => {
+                switch (handler) {
+                    case IPC_RequestHandler.Request:
+                        this.sceneHome.sendHistory()
+                        return
+                }
+            },
+        )
     }
 
     /**

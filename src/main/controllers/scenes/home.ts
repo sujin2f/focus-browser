@@ -3,6 +3,7 @@ import { message, resolveHtmlPath } from '@main/util'
 import Bookmarks from '@main/controllers/store/bookmarks'
 import { preload } from '@main/util'
 import { Bookmark, IPC_RequestHandler, IPC_Channels, Scenes } from '@src/types'
+import Histories from '../store/histories'
 
 /**
  * Home scene
@@ -61,6 +62,19 @@ export default class SceneHome {
             IPC_RequestHandler.Response,
             location,
             bookmarks,
+        )
+    }
+
+    public sendHistory() {
+        if (!this.window) {
+            return
+        }
+        const history = Histories.getInstance().get()
+        message.send(
+            this.window,
+            IPC_Channels.History,
+            IPC_RequestHandler.Response,
+            history,
         )
     }
 

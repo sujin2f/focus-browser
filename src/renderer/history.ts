@@ -3,13 +3,10 @@ import { checkElectron, message } from '@home/util'
 import './styles/common.css'
 
 class Controller {
-    private histories: I_History = {}
+    private history: I_History = {}
 
-    private get field() {
-        return document.getElementById('form-search') as HTMLFormElement
-    }
-    private get list() {
-        return document.getElementById('list') as HTMLDivElement
+    private get tbody() {
+        return document.getElementById('tbody') as HTMLTableSectionElement
     }
     private get template() {
         const template = document.getElementById('row') as HTMLTemplateElement
@@ -31,15 +28,6 @@ class Controller {
             case 'Escape':
                 message.send(IPC_Channels.Switch, Scenes.Browser)
                 break
-            case 'D':
-            case 'd':
-                const target = e.target as HTMLElement
-                if (target.tagName.toLowerCase() === 'input') {
-                    return
-                }
-                e.preventDefault()
-                this.toggleField()
-                break
         }
     }
 
@@ -47,40 +35,35 @@ class Controller {
         message.send(IPC_Channels.History, IPC_RequestHandler.Request)
         message.on(
             IPC_Channels.History,
-            (handler: IPC_RequestHandler.Response, histories: I_History) => {
+            (handler: IPC_RequestHandler.Response, history: I_History) => {
                 if (handler !== IPC_RequestHandler.Response) {
                     return
                 }
-                this.histories = histories
+                this.history = history
                 this.renderList()
             },
         )
     }
 
-    private toggleField() {
-        this.field.classList.toggle('hidden')
-
-        // if (this.mode === 'add') {
-        //     this.title.value = this.browser.title
-        //     this.url.value = this.browser.url
-        //     this.title.focus()
-        // }
-    }
-
     private renderList() {
-        this.list.innerHTML = ''
+        this.tbody.innerHTML = ''
 
-        // this.bookmarks.forEach((bookmark) => {
-        //     const row = this.template
+        Object.keys(this.history)
+            .sort()
+            .forEach((timestamp) => {
+                const item = this.history[timestamp]
+                const row = this.template
+                const title = row.querySelector('[data-id="title"]')
+                title.innerHTML = item.title
+                title.addEventListener('click', () => {
+                    message.send(IPC_Channels.Switch, Scenes.Browser, item.url)
+                })
 
-        //     const button = row.querySelector('[data-id="title"]')
-        //     button.innerHTML = bookmark.title
-        //     button.addEventListener('click', () => {
-        //         message.send(IPC_Channels.Switch, Scenes.Browser, bookmark.url)
-        //     })
+                const time = row.querySelector('[data-id="time"]')
+                time.innerHTML = new Date(parseInt(timestamp)).toLocaleString()
 
-        //     this.list.appendChild(row)
-        // })
+                this.tbody.appendChild(row)
+            })
     }
 }
 new Controller()

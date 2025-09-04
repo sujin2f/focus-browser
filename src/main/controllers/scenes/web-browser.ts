@@ -1,6 +1,6 @@
 import { BrowserWindow, session, type Session } from 'electron'
 import { preload } from '@main/util'
-import Histories from '../store/histories'
+import Histories from '@controllers/store/histories'
 
 export default class SceneWebBrowser {
     // Singleton instance
@@ -17,11 +17,10 @@ export default class SceneWebBrowser {
     private window: BrowserWindow
     private session: Session = session.fromPartition('persist:my-partition')
     private homepage: string = 'https://www.google.com'
-    private navigate: string = ''
 
     constructor() {
         this.window = this.createWindow()
-        const history = Histories.getInstance().get()
+        const history = Histories.getInstance().current
         if (history) {
             this.homepage = history.url
         }
@@ -29,14 +28,27 @@ export default class SceneWebBrowser {
     }
 
     public get title() {
-        return this.window.getTitle()
+        if (this.window) {
+            return this.window.getTitle()
+        }
+        return ''
     }
 
     public get url() {
-        return this.window.webContents.getURL()
+        if (this.window) {
+            return this.window.webContents.getURL()
+        }
+        return ''
     }
 
     private createWindow() {
+        if (this.window) {
+            this.window.webContents.removeAllListeners()
+            this.window.webContents.close()
+            this.window.removeAllListeners()
+            this.window.close()
+        }
+
         this.window = new BrowserWindow({
             show: false,
             width: 1024,
@@ -66,23 +78,25 @@ export default class SceneWebBrowser {
             this.window = null
         })
 
-        this.window.webContents.on('will-navigate', (e, url) => {
-            // TODO remove
-            console.log('history, will-navigate', e, url)
-        })
+        // this.window.webContents.on('will-navigate', (e, url) => {
+        //     // TODO remove
+        //     console.log('history, will-navigate', e, url)
+        // })
 
-        this.window.webContents.on('did-navigate', (e, url) => {
-            // TODO remove
-            console.log('history, did-navigate', e, url, this.title)
-        })
+        // this.window.webContents.on('did-navigate', (e, url) => {
+        //     // TODO remove
+        //     console.log('history, did-navigate', e, url, this.title)
+        // })
 
         this.window.webContents.on('page-title-updated', () => {
             // TODO remove
             console.log('history, page-title-updated', this.title, this.url)
-            Histories.getInstance().push({
-                url: this.url,
-                title: this.title,
-            })
+            if (this.title && this.url) {
+                Histories.getInstance().push({
+                    url: this.url,
+                    title: this.title,
+                })
+            }
         })
 
         // Open urls in the user's browser

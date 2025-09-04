@@ -9,24 +9,24 @@ class Controller {
     }
     private bookmarks: Bookmark[] = []
 
-    private get field() {
-        return document.getElementById('form-add') as HTMLFormElement
+    private get toggle() {
+        return document.getElementById('form__toggle') as HTMLButtonElement
+    }
+    private get form() {
+        return document.getElementById('form') as HTMLFormElement
     }
     private get title() {
-        return document.getElementById('bookmark-title') as HTMLInputElement
+        return document.getElementById('form__title') as HTMLInputElement
     }
     private get url() {
-        return document.getElementById('bookmark-url') as HTMLInputElement
+        return document.getElementById('form__url') as HTMLInputElement
     }
-    private get list() {
-        return document.getElementById('list') as HTMLDivElement
+    private get tbody() {
+        return document.getElementById('tbody') as HTMLTableSectionElement
     }
     private get template() {
         const template = document.getElementById('row') as HTMLTemplateElement
         return template.content.cloneNode(true) as HTMLElement
-    }
-    private get mode() {
-        return !this.field.classList.contains('hidden') ? 'add' : 'list'
     }
 
     constructor() {
@@ -36,7 +36,8 @@ class Controller {
     init() {
         checkElectron()
         document.addEventListener('keydown', (e) => this.onShortcut(e))
-        this.field.addEventListener('submit', (e) => this.onSubmit(e))
+        this.form.addEventListener('submit', (e) => this.onSubmit(e))
+        this.toggle.addEventListener('click', () => this.toggleForm())
 
         this.initICP()
     }
@@ -53,7 +54,7 @@ class Controller {
                     return
                 }
                 e.preventDefault()
-                this.toggleField()
+                this.toggleForm()
                 break
         }
     }
@@ -78,10 +79,11 @@ class Controller {
         )
     }
 
-    private toggleField() {
-        this.field.classList.toggle('hidden')
+    private toggleForm() {
+        this.form.classList.toggle('hidden')
+        this.toggle.classList.toggle('hidden')
 
-        if (this.mode === 'add') {
+        if (!this.form.classList.contains('hidden')) {
             this.title.value = this.browser.title
             this.url.value = this.browser.url
             this.title.focus()
@@ -89,18 +91,24 @@ class Controller {
     }
 
     private renderList() {
-        this.list.innerHTML = ''
+        this.tbody.innerHTML = ''
 
-        this.bookmarks.forEach((bookmark) => {
+        this.bookmarks.forEach((bookmark, index) => {
             const row = this.template
 
-            const button = row.querySelector('[data-id="title"]')
-            button.innerHTML = bookmark.title
-            button.addEventListener('click', () => {
+            const title = row.querySelector('[data-id="title"]')
+            title.innerHTML = bookmark.title
+            title.addEventListener('click', () => {
                 message.send(IPC_Channels.Switch, Scenes.Browser, bookmark.url)
             })
 
-            this.list.appendChild(row)
+            const shortcut = row.querySelector('[data-id="shortcut"]')
+            shortcut.innerHTML = bookmark.shortcut || ''
+
+            const tr = row.querySelector('tr')
+            tr.dataset.index = index.toString()
+
+            this.tbody.appendChild(row)
         })
     }
 

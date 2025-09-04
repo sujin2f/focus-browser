@@ -1,7 +1,6 @@
-import { BrowserWindow, session, type Session } from 'electron'
+import { BrowserView, BrowserWindow, NavigationEntry, session } from 'electron'
 import { preload } from '@main/util'
-import Histories from '@controllers/store/histories'
-
+import HistoryContainer from '@controllers/store/history'
 export default class SceneWebBrowser {
     // Singleton instance
     static instance: SceneWebBrowser
@@ -15,16 +14,15 @@ export default class SceneWebBrowser {
 
     // Browser window
     private window: BrowserWindow
-    private session: Session = session.fromPartition('persist:my-partition')
     private homepage: string = 'https://www.google.com'
 
     constructor() {
         this.window = this.createWindow()
-        const history = Histories.getInstance().current
+        const history = HistoryContainer.getInstance().current
         if (history) {
             this.homepage = history.url
         }
-        this.loadURL()
+        this.loadURL(this.homepage)
     }
 
     public get title() {
@@ -55,10 +53,19 @@ export default class SceneWebBrowser {
             height: 728,
             webPreferences: {
                 preload,
-                session: this.session,
+                session: session.fromPartition('persist:my-partition'),
                 partition: 'persist:my-partition',
+                nodeIntegration: false,
+                contextIsolation: true,
             },
         })
+
+        // Restore History
+        const entries = HistoryContainer.getInstance().get(
+            'history',
+        ) as NavigationEntry[]
+        const index = HistoryContainer.getInstance().get('index') as number
+        this.window.webContents.navigationHistory.restore({ index, entries })
 
         this.setCallbacks()
         return this.window
@@ -74,35 +81,16 @@ export default class SceneWebBrowser {
             this.show()
         })
 
+        this.window.on('close', () => {
+            this.getHistory()
+        })
+
         this.window.on('closed', () => {
             this.window = null
         })
 
-        // this.window.webContents.on('will-navigate', (e, url) => {
-        //     // TODO remove
-        //     console.log('history, will-navigate', e, url)
-        // })
-
-        // this.window.webContents.on('did-navigate', (e, url) => {
-        //     // TODO remove
-        //     console.log('history, did-navigate', e, url, this.title)
-        // })
-
-        this.window.webContents.on('page-title-updated', () => {
-            // TODO remove
-            console.log('history, page-title-updated', this.title, this.url)
-            if (this.title && this.url) {
-                Histories.getInstance().push({
-                    url: this.url,
-                    title: this.title,
-                })
-            }
-        })
-
         // Open urls in the user's browser
         this.window.webContents.setWindowOpenHandler((data) => {
-            // TODO remove
-            console.log('history, new window', data)
             // Ad Block
             if (data.features) {
                 return
@@ -119,13 +107,9 @@ export default class SceneWebBrowser {
      * Load a URL in the current window
      * @param url URL to load
      */
-    public loadURL(url?: string) {
-        this.createWindow()
-
+    public loadURL(url: string) {
+        this.window.webContents.stop()
         let _url = url
-        if (!_url) {
-            _url = this.homepage
-        }
 
         // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
         const hasSchema = /^[a-z]+:\/\//i.test(_url)
@@ -170,5 +154,35 @@ export default class SceneWebBrowser {
 
     public toggleDevTools() {
         this.window.webContents.toggleDevTools()
+    }
+
+    public getHistory() {
+        console.log(this.window.isEnabled())
+        if (!this.window.isEnabled()) {
+            return []
+        }
+        const history =
+            this.window.webContents.navigationHistory.getAllEntries()
+        const index = this.window.webContents.navigationHistory.getActiveIndex()
+        HistoryContainer.getInstance().push(index, history)
+        return history
+    }
+
+    public historyBack() {
+        if (this.window.webContents.navigationHistory.canGoBack()) {
+            this.window.webContents.navigationHistory.goBack()
+        }
+    }
+
+    public historyForward() {
+        if (this.window.webContents.navigationHistory.canGoForward()) {
+            this.window.webContents.navigationHistory.goForward()
+        }
+    }
+
+    public goToIndex(index: number) {
+        if (this.window.webContents.navigationHistory.length() > index) {
+            this.window.webContents.navigationHistory.goToIndex(index)
+        }
     }
 }

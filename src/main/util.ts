@@ -1,5 +1,4 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { URL } from 'url'
 import * as path from 'path'
 import { IPC_Channels } from '@src/types'
 

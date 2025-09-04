@@ -20,8 +20,5 @@ export enum IPC_RequestHandler {
     Request = 'Request',
     Response = 'Response',
     Add = 'Add',
-}
-
-export interface I_History {
-    [timestamp: string]: Bookmark
+    Execute = 'Execute',
 }

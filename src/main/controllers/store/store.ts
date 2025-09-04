@@ -20,11 +20,15 @@ export default class Store<T extends JsonObject> {
         this.init()
     }
 
-    private init() {
+    protected init() {
         // app.getPath('userData') will return a string of the user's app data directory path.
         const userDataPath = app.getPath('userData')
+        const dir = path.join(userDataPath, 'focus-browser')
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir)
+        }
         // We'll use the `configName` property to set the file name and path.join to bring it all together as a string
-        this.path = path.join(userDataPath, `${this.configName}.json`)
+        this.path = path.join(dir, `${this.configName}.json`)
         this.data = this.parse()
     }
 
@@ -34,7 +38,7 @@ export default class Store<T extends JsonObject> {
     }
 
     // ...and this will set it
-    set() {
+    save() {
         // Wait, I thought using the node.js' synchronous APIs was bad form?
         // We're not writing a server so there's not nearly the same IO demand on the process
         // Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,

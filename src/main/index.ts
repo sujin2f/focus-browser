@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import { app, Menu } from 'electron'
 import { isDebug } from '@main/util'
 import Main from '@main/controllers/main'
 
@@ -25,6 +25,7 @@ app.on('window-all-closed', () => {
 
 app.whenReady()
     .then(() => {
+        Menu.setApplicationMenu(null)
         Main.getInstance()
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the

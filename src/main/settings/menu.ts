@@ -76,6 +76,22 @@ export const menu = (callbacks: {
         system: ['darwin', 'default'],
         submenu: [
             {
+                label: 'Reset Zoom',
+                accelerator: 'CommandOrControl+0',
+                role: 'resetZoom',
+            },
+            {
+                label: 'Zoom In',
+                accelerator: 'CommandOrControl+=',
+                role: 'zoomIn',
+            },
+            {
+                label: 'Zoom Out',
+                accelerator: 'CommandOrControl+-',
+                role: 'zoomOut',
+            },
+            { type: 'separator' },
+            {
                 label: 'Address Bar',
                 accelerator: 'CommandOrControl+L',
                 click: callbacks.address,

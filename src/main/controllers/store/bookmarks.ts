@@ -1,4 +1,4 @@
-import { Bookmark } from '../../../types'
+import { Bookmark } from '@src/types'
 import Store from './store'
 
 export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
@@ -16,13 +16,13 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
         return this.data.bookmarks
     }
 
-    add(bookmark: Bookmark) {
+    push(bookmark: Bookmark) {
         this.data.bookmarks.push(bookmark)
-        this.set()
+        this.save()
     }
 
     remove(index: number) {
         this.data.bookmarks.splice(index, 1)
-        this.set()
+        this.save()
     }
 }

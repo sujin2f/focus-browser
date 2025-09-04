@@ -1,5 +1,3 @@
-import { ipcMain } from 'electron'
-
 import SceneWebBrowser from '@controllers/scenes/web-browser'
 import SceneHome from '@controllers/scenes/home'
 import AbsMenuBuilder, {
@@ -9,7 +7,6 @@ import Bookmarks from '@controllers/store/bookmarks'
 import { Bookmark, IPC_RequestHandler, IPC_Channels, Scenes } from '@src/types'
 import { menu } from '@main/settings/menu'
 import { message } from '@main/util'
-import Histories from './store/histories'
 
 /**
  * Main application controller
@@ -62,16 +59,10 @@ export default class Main extends AbsMenuBuilder {
             this.sceneHome.toggleDevTools()
         },
         historyBack: () => {
-            const back = Histories.getInstance().back()
-            if (back) {
-                this.sceneWebBrowser.loadURL(back.url)
-            }
+            this.sceneWebBrowser.historyBack()
         },
         historyForward: () => {
-            const forward = Histories.getInstance().forward()
-            if (forward) {
-                this.sceneWebBrowser.loadURL(forward.url)
-            }
+            this.sceneWebBrowser.historyForward()
         },
     })
 
@@ -117,7 +108,7 @@ export default class Main extends AbsMenuBuilder {
                         this.sceneHome.sendBookmarks(location)
                         return
                     case IPC_RequestHandler.Add:
-                        Bookmarks.getInstance().add(bookmark)
+                        Bookmarks.getInstance().push(bookmark)
                         return
                 }
             },
@@ -126,10 +117,17 @@ export default class Main extends AbsMenuBuilder {
         // History
         message.on(
             IPC_Channels.History,
-            async (handler: IPC_RequestHandler) => {
+            async (handler: IPC_RequestHandler, index: number) => {
                 switch (handler) {
                     case IPC_RequestHandler.Request:
-                        this.sceneHome.sendHistory()
+                        this.sceneHome.sendHistory(
+                            this.sceneWebBrowser.getHistory(),
+                        )
+                        return
+
+                    case IPC_RequestHandler.Execute:
+                        this.switch(Scenes.Browser)
+                        this.sceneWebBrowser.goToIndex(index)
                         return
                 }
             },

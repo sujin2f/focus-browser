@@ -1,10 +1,8 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, NavigationEntry } from 'electron'
 import { message, resolveHtmlPath } from '@main/util'
 import Bookmarks from '@main/controllers/store/bookmarks'
 import { preload } from '@main/util'
 import { Bookmark, IPC_RequestHandler, IPC_Channels, Scenes } from '@src/types'
-import Histories from '../store/histories'
-
 /**
  * Home scene
  * Searching, bookmarks, history, etc.
@@ -34,6 +32,8 @@ export default class SceneHome {
             height: 728,
             webPreferences: {
                 preload,
+                nodeIntegration: false,
+                contextIsolation: true,
             },
         })
 
@@ -65,11 +65,10 @@ export default class SceneHome {
         )
     }
 
-    public sendHistory() {
+    public sendHistory(history: NavigationEntry[]) {
         if (!this.window) {
             return
         }
-        const history = Histories.getInstance().get()
         message.send(
             this.window,
             IPC_Channels.History,

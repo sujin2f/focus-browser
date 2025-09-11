@@ -13,4 +13,7 @@ export const message = {
     send: (channel: IPC_Channels, ...args: unknown[]) => {
         window.electron.ipcRenderer.sendMessage(channel, ...args)
     },
+    once(channel: IPC_Channels, func: (...args: unknown[]) => void) {
+        window.electron.ipcRenderer.once(channel, func)
+    },
 }

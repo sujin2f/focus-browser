@@ -1,6 +1,6 @@
 import { app, Menu } from 'electron'
 import { isDebug } from '@main/util'
-import Main from '@main/controllers/main'
+import Main from '@src/main/modules/main'
 
 if (isDebug) {
     import('electron-debug')

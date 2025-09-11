@@ -92,30 +92,15 @@ const rendererConfig = {
     ...commonConfig,
     target: ['web', 'electron-renderer'],
     name: 'renderer',
-    entry: {
-        home: './src/renderer/home.ts',
-        bookmarks: './src/renderer/bookmarks.ts',
-        history: './src/renderer/history.ts',
-    },
+    entry: './src/renderer/controller.ts',
     output: {
         path: path.resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/renderer/templates/home.html', // Your HTML template for the renderer
-            chunks: ['home'],
+            template: './src/renderer/index.html', // Your HTML template for the renderer
             filename: 'index.html',
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/bookmarks.html', // Your HTML template for the renderer
-            chunks: ['bookmarks'],
-            filename: 'bookmarks.html',
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/history.html', // Your HTML template for the renderer
-            chunks: ['history'],
-            filename: 'history.html',
         }),
     ],
 }

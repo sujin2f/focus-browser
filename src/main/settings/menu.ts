@@ -1,8 +1,8 @@
 import { app } from 'electron'
-import { CustomMenuItemConstructor } from '@main/controllers/menu-builder'
+import { CustomMenuItemConstructor } from '@src/main/modules/menu-builder'
 
 export const menu = (callbacks: {
-    [key: string]: () => void
+    [key: string]: (...args: unknown[]) => void
 }): CustomMenuItemConstructor[] => [
     {
         label: 'Focus',
@@ -36,7 +36,6 @@ export const menu = (callbacks: {
     },
     {
         label: 'Edit',
-        system: ['darwin', 'default'],
         submenu: [
             {
                 label: 'Undo',
@@ -73,8 +72,23 @@ export const menu = (callbacks: {
     },
     {
         label: 'View',
-        system: ['darwin', 'default'],
         submenu: [
+            {
+                label: 'Address Bar',
+                accelerator: 'CommandOrControl+L',
+                click: callbacks.address,
+            },
+            {
+                label: 'Show Control Centre',
+                accelerator: 'CommandOrControl+`',
+                click: callbacks.home,
+            },
+            { type: 'separator' },
+            {
+                label: 'Toggle Full Screen',
+                accelerator: 'Ctrl+CommandOrControl+F',
+                click: callbacks.fullscreen,
+            },
             {
                 label: 'Reset Zoom',
                 accelerator: 'CommandOrControl+0',
@@ -92,37 +106,24 @@ export const menu = (callbacks: {
             },
             { type: 'separator' },
             {
-                label: 'Address Bar',
-                accelerator: 'CommandOrControl+L',
-                click: callbacks.address,
+                label: 'Stop',
+                accelerator: 'Escape',
+                click: callbacks.stop,
             },
-            {
-                label: 'Show Home',
-                accelerator: 'CommandOrControl+`',
-                click: callbacks.home,
-            },
-            { type: 'separator' },
             {
                 label: 'Reload',
                 accelerator: 'CommandOrControl+R',
-                click: callbacks.reload,
-            },
-            {
-                label: 'Toggle Full Screen',
-                accelerator: 'Ctrl+CommandOrControl+F',
-                click: callbacks.fullscreen,
             },
             { type: 'separator' },
             {
                 label: 'Toggle Developer Tools',
-                accelerator: 'Alt+CommandOrControl+I',
+                accelerator: 'Shift+CommandOrControl+I',
                 click: callbacks.devtool,
             },
         ],
     },
     {
         label: 'Navigate',
-        system: ['darwin', 'default'],
         submenu: [
             {
                 label: 'Back',

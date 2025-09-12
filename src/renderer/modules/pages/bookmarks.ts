@@ -4,7 +4,10 @@ import IPC from '@home/modules/ipc'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
 import Page from '.'
+import Label from '../fragments/label'
 import Input from '../fragments/input'
+import Tr from '../fragments/tr'
+import Td from '../fragments/td'
 
 export default class Bookmarks extends Page {
     public readonly page = CC_Pages.Bookmark
@@ -149,11 +152,11 @@ export default class Bookmarks extends Page {
     }
 
     private renderButtons() {
-        this.buttonAdd.title = 'Add Bookmark (⌘D)'
+        this.buttonAdd.text = 'Add Bookmark (⌘D)'
         this.buttonAdd.addEventListener('click', () => {
             this.mode = 1
         })
-        this.buttonFind.title = 'Find in Bookmarks (⌘F)'
+        this.buttonFind.text = 'Find in Bookmarks (⌘F)'
         this.buttonFind.addEventListener('click', () => {
             this.mode = 3
         })
@@ -174,7 +177,7 @@ export default class Bookmarks extends Page {
         this._numRows = this.bookmarks.length
 
         this.bookmarks.forEach((bookmark, index) => {
-            const tr = this.table.createRow()
+            const tr = new Tr()
             tr.element.setAttribute(
                 'class',
                 'border-l border-l-transparent border-l-4',
@@ -183,7 +186,7 @@ export default class Bookmarks extends Page {
             // title
             const title = new Button()
             title.className = ''
-            title.title = bookmark.title
+            title.text = bookmark.title
             title.type = 'button'
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
@@ -192,13 +195,11 @@ export default class Bookmarks extends Page {
                 IPC.getInstance().switch(bookmark.url)
             })
 
-            this.table.createCell().appendChild(title.element)
-
             // Shortcode
             const shortcut = new Button()
             shortcut.className = ''
             if (bookmark.shortcut) {
-                shortcut.title = bookmark.shortcut.toUpperCase()
+                shortcut.text = bookmark.shortcut.toUpperCase()
                 shortcut.type = 'button'
                 shortcut.className =
                     'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
@@ -207,36 +208,56 @@ export default class Bookmarks extends Page {
                 })
             }
 
-            this.table.createCell().appendChild(shortcut.element)
-
             // Edit
             const edit = new Button()
             edit.className = ''
-            edit.title = 'Edit'
+            edit.text = 'Edit'
             edit.addEventListener('click', () => {
                 this._current = bookmark
                 this._modifyIndex = index
                 this.mode = 2
             })
 
-            this.table.createCell().appendChild(edit.element)
+            const tdTitle = new Td()
+            const tdShortcut = new Td()
+            const tdEdit = new Td()
+
+            tdTitle.child = title
+            tdShortcut.child = shortcut
+            tdEdit.child = edit
+
+            tr.child = tdTitle
+            tr.child = tdShortcut
+            tr.child = tdEdit
+
+            this.table.child = tr
         })
         this.tableWrapper.appendChild(this.table.element)
     }
 
     private renderModifyForm() {
         this.formInput = document.createElement('form')
-        this.formInputTitle.label = 'Title'
-        this.formInputUrl.label = 'URL'
-        this.formInputShortcut.label = 'Shortcut'
-        const buttonOk = new Button()
-        buttonOk.title = 'OK (Enter)'
-        const buttonCancel = new Button()
-        buttonCancel.title = 'Cancel (Esc)'
 
-        this.formInput.appendChild(this.formInputTitle.element)
-        this.formInput.appendChild(this.formInputUrl.element)
-        this.formInput.appendChild(this.formInputShortcut.element)
+        const labelTitle = new Label()
+        labelTitle.innerHTML = 'Title'
+        labelTitle.child = this.formInputTitle
+
+        const labelUrl = new Label()
+        labelUrl.innerHTML = 'URL'
+        labelUrl.child = this.formInputUrl
+
+        const labelShortcut = new Label()
+        labelShortcut.innerHTML = 'Shortcut'
+        labelShortcut.child = this.formInputShortcut
+
+        const buttonOk = new Button()
+        buttonOk.text = 'OK (Enter)'
+        const buttonCancel = new Button()
+        buttonCancel.text = 'Cancel (Esc)'
+
+        this.formInput.appendChild(labelTitle.element)
+        this.formInput.appendChild(labelUrl.element)
+        this.formInput.appendChild(labelShortcut.element)
         this.formInput.appendChild(buttonOk.element)
         this.formInput.appendChild(buttonCancel.element)
         this.formInput.addEventListener('submit', (e) => {
@@ -247,9 +268,11 @@ export default class Bookmarks extends Page {
 
     private renderFindForm() {
         this.formFind = document.createElement('form')
-        this.formFindTitle.label = 'Keyword'
+        const labelFindTitle = new Label()
+        labelFindTitle.innerHTML = 'Keyword'
+        labelFindTitle.child = this.formFindTitle
 
-        this.formFind.appendChild(this.formFindTitle.element)
+        this.formFind.appendChild(labelFindTitle.element)
 
         this.formFindTitle.addEventListener('keyup', (e) => {
             const keyword = this.formFindTitle.value
@@ -258,7 +281,7 @@ export default class Bookmarks extends Page {
     }
 
     private filterTable(keyword = '') {
-        const rows = this.table.rows
+        const rows = this.table.children
         this._numRows = 0
         this.bookmarks.forEach((bookmark, index) => {
             if (!keyword) {
@@ -283,7 +306,7 @@ export default class Bookmarks extends Page {
     private focusTable() {
         this._current = null
         let hidden = 0
-        this.table.rows.forEach((row, index) => {
+        this.table.children.forEach((row, index) => {
             if (row.hidden) {
                 hidden++
                 return

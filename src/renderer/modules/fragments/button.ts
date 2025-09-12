@@ -1,8 +1,8 @@
-import HTMLFragment from '.'
+import { A_HTMLFragmentWithEvent } from '.'
 
-export default class Button extends HTMLFragment<HTMLButtonElement> {
-    public set title(title: string) {
-        this.element.innerHTML = title
+export default class Button extends A_HTMLFragmentWithEvent<HTMLButtonElement> {
+    public set text(text: string) {
+        this.element.innerHTML = text
     }
 
     public set className(className: string) {
@@ -11,30 +11,6 @@ export default class Button extends HTMLFragment<HTMLButtonElement> {
 
     public set type(type: 'submit' | 'reset' | 'button') {
         this.element.type = type
-    }
-
-    public addEventListener<K extends keyof HTMLElementEventMap>(
-        type: K,
-        listener: (this: HTMLButtonElement, ev: HTMLElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions,
-    ): void {
-        this.element.addEventListener(
-            type,
-            listener as EventListenerOrEventListenerObject,
-            options,
-        )
-    }
-
-    public removeEventListener<K extends keyof HTMLElementEventMap>(
-        type: K,
-        listener: (this: HTMLButtonElement, ev: HTMLElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions,
-    ): void {
-        this.element.removeEventListener(
-            type,
-            listener as EventListenerOrEventListenerObject,
-            options,
-        )
     }
 
     constructor() {

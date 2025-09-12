@@ -5,8 +5,11 @@ import Controller from '@src/renderer/controller'
 import IPC from '@home/modules/ipc'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
+import Label from '../fragments/label'
 import Input from '../fragments/input'
 import Page from '.'
+import Tr from '../fragments/tr'
+import Td from '../fragments/td'
 
 // TODO Find & Arrow Key navigation
 export default class History extends Page {
@@ -97,7 +100,7 @@ export default class History extends Page {
         this._numRows = this.history.length
 
         this.history.reverse().forEach((history, index) => {
-            const tr = this.table.createRow()
+            const tr = new Tr()
             tr.element.setAttribute(
                 'class',
                 'border-l border-l-transparent border-l-4',
@@ -106,7 +109,7 @@ export default class History extends Page {
             // title
             const title = new Button()
             title.className = ''
-            title.title = history.title
+            title.text = history.title
             title.type = 'button'
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
@@ -118,7 +121,7 @@ export default class History extends Page {
             // URL
             const url = new Button()
             url.className = ''
-            url.title = history.url
+            url.text = history.url
             url.type = 'button'
             url.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
@@ -127,17 +130,23 @@ export default class History extends Page {
                 IPC.getInstance().navigateHistory(this._numRows - index - 1)
             })
 
-            this.table.createCell().appendChild(title.element)
-            this.table.createCell().appendChild(url.element)
+            const tdTitle = new Td()
+            const tdUrl = new Td()
+            tr.child = tdTitle
+            tr.child = tdUrl
+
+            this.table.child = tr
         })
         this.tableWrapper.appendChild(this.table.element)
     }
 
     private renderFindForm() {
+        const labelText = new Label()
+        labelText.innerHTML = 'Keyword'
         this.formFind = document.createElement('form')
-        this.formFindTitle.label = 'Keyword'
+        labelText.child = this.formFindTitle
 
-        this.formFind.appendChild(this.formFindTitle.element)
+        this.formFind.appendChild(labelText.element)
 
         this.formFindTitle.addEventListener('keyup', (e) => {
             const keyword = this.formFindTitle.value

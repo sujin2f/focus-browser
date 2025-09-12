@@ -1,11 +1,7 @@
-import HTMLFragment from '.'
+import { A_HTMLFragment } from '.'
 
-export default class Th extends HTMLFragment<HTMLTableCellElement> {
-    public set title(title: string) {
-        this.element.querySelector('p').innerHTML = title
-    }
-
+export default class Th extends A_HTMLFragment<HTMLTableCellElement> {
     constructor() {
-        super('template--table__th')
+        super('template--table__th', 'p')
     }
 }

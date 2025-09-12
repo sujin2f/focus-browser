@@ -1,69 +1,36 @@
-import HTMLFragment from '.'
+import { A_HTMLFragmentWithEvent } from '.'
 
-export default class Input extends HTMLFragment<HTMLLabelElement> {
-    public set label(label: string) {
-        this.element.querySelector('span').innerHTML = label
-    }
-
+export default class Input extends A_HTMLFragmentWithEvent<HTMLInputElement> {
     public set type(type: string) {
-        this.element.querySelector('input').setAttribute('type', type)
+        this.element.setAttribute('type', type)
     }
 
     public set placeholder(placeholder: string) {
-        this.element
-            .querySelector('input')
-            .setAttribute('placeholder', placeholder)
+        this.element.setAttribute('placeholder', placeholder)
     }
 
     public set className(className: string) {
-        this.input.setAttribute('class', className)
-    }
-
-    public get input() {
-        return this.element.querySelector('input')
+        this.element.setAttribute('class', className)
     }
 
     public set value(value: string) {
-        this.input.value = value
+        this.element.value = value
     }
 
     public get value() {
-        return this.input.value
+        return this.element.value
     }
 
     public focus() {
-        this.input.focus()
+        this.element.focus()
     }
 
     public blur() {
-        this.input.blur()
-    }
-
-    public addEventListener<K extends keyof HTMLElementEventMap>(
-        type: K,
-        listener: (this: HTMLInputElement, ev: HTMLElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions,
-    ): void {
-        this.input.addEventListener(
-            type,
-            listener as EventListenerOrEventListenerObject,
-            options,
-        )
-    }
-
-    public removeEventListener<K extends keyof HTMLElementEventMap>(
-        type: K,
-        listener: (this: HTMLInputElement, ev: HTMLElementEventMap[K]) => any,
-        options?: boolean | AddEventListenerOptions,
-    ): void {
-        this.input.removeEventListener(
-            type,
-            listener as EventListenerOrEventListenerObject,
-            options,
-        )
+        this.element.blur()
     }
 
     public constructor() {
+        console.log(document)
         super('template--input')
     }
 }

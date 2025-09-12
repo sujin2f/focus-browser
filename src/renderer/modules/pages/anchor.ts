@@ -4,6 +4,7 @@ import IPC from '@home/modules/ipc'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
 import Page from '.'
+import Label from '../fragments/label'
 import Input from '../fragments/input'
 
 export default class Anchor extends Page {
@@ -149,11 +150,11 @@ export default class Anchor extends Page {
     }
 
     private renderButtons() {
-        this.buttonAdd.title = 'Add Bookmark (⌘D)'
+        this.buttonAdd.text = 'Add Bookmark (⌘D)'
         this.buttonAdd.addEventListener('click', () => {
             this.mode = 1
         })
-        this.buttonFind.title = 'Find in Bookmarks (⌘F)'
+        this.buttonFind.text = 'Find in Bookmarks (⌘F)'
         this.buttonFind.addEventListener('click', () => {
             this.mode = 3
         })
@@ -217,36 +218,33 @@ export default class Anchor extends Page {
     }
 
     private renderModifyForm() {
-        this.formInput = document.createElement('form')
-        this.formInputTitle.label = 'Title'
-        this.formInputUrl.label = 'URL'
-        this.formInputShortcut.label = 'Shortcut'
-        const buttonOk = new Button()
-        buttonOk.title = 'OK (Enter)'
-        const buttonCancel = new Button()
-        buttonCancel.title = 'Cancel (Esc)'
-
-        this.formInput.appendChild(this.formInputTitle.element)
-        this.formInput.appendChild(this.formInputUrl.element)
-        this.formInput.appendChild(this.formInputShortcut.element)
-        this.formInput.appendChild(buttonOk.element)
-        this.formInput.appendChild(buttonCancel.element)
-        this.formInput.addEventListener('submit', (e) => {
-            e.preventDefault()
-            this.onEditSubmit()
-        })
+        // this.formInput = document.createElement('form')
+        // this.formInputTitle.label = 'Title'
+        // this.formInputUrl.label = 'URL'
+        // this.formInputShortcut.label = 'Shortcut'
+        // const buttonOk = new Button()
+        // buttonOk.text = 'OK (Enter)'
+        // const buttonCancel = new Button()
+        // buttonCancel.text = 'Cancel (Esc)'
+        // this.formInput.appendChild(this.formInputTitle.element)
+        // this.formInput.appendChild(this.formInputUrl.element)
+        // this.formInput.appendChild(this.formInputShortcut.element)
+        // this.formInput.appendChild(buttonOk.element)
+        // this.formInput.appendChild(buttonCancel.element)
+        // this.formInput.addEventListener('submit', (e) => {
+        //     e.preventDefault()
+        //     this.onEditSubmit()
+        // })
     }
 
     private renderFindForm() {
-        this.formFind = document.createElement('form')
-        this.formFindTitle.label = 'Keyword'
-
-        this.formFind.appendChild(this.formFindTitle.element)
-
-        this.formFindTitle.addEventListener('keyup', (e) => {
-            const keyword = this.formFindTitle.value
-            this.filterTable(keyword)
-        })
+        // this.formFind = document.createElement('form')
+        // this.formFindTitle.label = 'Keyword'
+        // this.formFind.appendChild(this.formFindTitle.element)
+        // this.formFindTitle.addEventListener('keyup', (e) => {
+        //     const keyword = this.formFindTitle.value
+        //     this.filterTable(keyword)
+        // })
     }
 
     private filterTable(keyword = '') {

@@ -4,6 +4,8 @@ import Bookmarks from '@src/main/modules/store/bookmarks'
 import { preload } from '@main/util'
 import { Bookmark, IPC_RequestHandler, IPC_Channels, Scenes } from '@src/types'
 import Base from './base'
+import Logger from '../logger'
+
 /**
  * ControlCentre scene
  * Searching, bookmarks, history, etc.
@@ -14,14 +16,20 @@ export default class SceneControlCentre extends Base {
         this._parent = parent
     }
 
-    public show(scene: Scenes = Scenes.Home, url?: Bookmark) {
-        if (!this._window) {
-            this.createBrowser()
-        }
+    constructor() {
+        super()
+        this._window = this.createWindow()
+        this.setCallbacks()
+        this._window.loadURL(resolveHtmlPath('index.html'))
+    }
 
+    public show(scene: Scenes = Scenes.Home, url?: Bookmark) {
         this._window.show()
 
         this._window.webContents.on('did-finish-load', () => {
+            Logger.getInstance().info(
+                'SceneControlCentre::show()::did-finish-load',
+            )
             message.send(this._window, IPC_Channels.Switch, scene)
             if (url) {
                 message.send(this._window, IPC_Channels.URL, url)
@@ -29,6 +37,7 @@ export default class SceneControlCentre extends Base {
         })
 
         if (!this._window.webContents.isLoading()) {
+            Logger.getInstance().info('SceneControlCentre::show()::isLoading')
             message.send(this._window, IPC_Channels.Switch, scene)
             if (url) {
                 message.send(this._window, IPC_Channels.URL, url)
@@ -36,21 +45,28 @@ export default class SceneControlCentre extends Base {
         }
     }
 
-    private createBrowser() {
-        this._window = new BrowserWindow({
+    private createWindow() {
+        return new BrowserWindow({
             show: false,
             width: 1024,
             height: 728,
             parent: this._parent,
             webPreferences: {
                 preload,
-                nodeIntegration: false,
                 contextIsolation: true,
             },
         })
+    }
 
-        this.setCallbacks()
-        this._window.loadURL(resolveHtmlPath('index.html'))
+    protected setCallbacks() {
+        super.setCallbacks()
+
+        this._window.on('ready-to-show', () => {
+            if (!this._window) {
+                throw new Error(`"_window" is not defined`)
+            }
+            this.show()
+        })
     }
 
     public sendBookmarks() {
@@ -58,6 +74,7 @@ export default class SceneControlCentre extends Base {
             return
         }
         const bookmarks = Bookmarks.getInstance().get()
+        Logger.getInstance().info('SceneControlCentre::sendBookmarks()')
         message.send(
             this._window,
             IPC_Channels.Bookmarks,
@@ -70,6 +87,7 @@ export default class SceneControlCentre extends Base {
         if (!this._window) {
             return
         }
+        Logger.getInstance().info('SceneControlCentre::sendHistory()')
         message.send(
             this._window,
             IPC_Channels.History,

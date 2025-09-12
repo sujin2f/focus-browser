@@ -1,16 +1,5 @@
 import { app, Menu } from 'electron'
-import { isDebug } from '@main/util'
 import Main from '@src/main/modules/main'
-
-if (isDebug) {
-    import('electron-debug')
-        .then((debug) => {
-            debug.default()
-        })
-        .catch((err) =>
-            console.log('An error occurred to load electron-debug: ', err),
-        )
-}
 
 /**
  * Add event listeners...

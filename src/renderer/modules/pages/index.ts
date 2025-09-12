@@ -18,13 +18,15 @@ export default class Page {
         return document.getElementById('root')
     }
 
-    focus() {}
-    back() {
-        this.mode = 0
-    }
+    /**
+     * For update and refresh
+     */
     update(...arg: unknown[]) {}
 
     // Navigation
+    back() {
+        this.mode = 0
+    }
     arrowUp() {}
     arrowDown() {}
 
@@ -34,5 +36,9 @@ export default class Page {
     }
     remove() {}
     edit() {}
+
+    /**
+     * For additional actions
+     */
     action(...arg: unknown[]) {}
 }

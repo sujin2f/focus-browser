@@ -25,14 +25,6 @@ export default class Controller {
         return this._currentPage
     }
 
-    private _bookmarks: Bookmark[] = []
-    public get bookmarks() {
-        return this._bookmarks
-    }
-    public set bookmarks(bookmarks: Bookmark[]) {
-        this._bookmarks = bookmarks
-        this._currentPage.update()
-    }
     public currentUrl: Bookmark = {
         url: '',
         title: '',
@@ -50,7 +42,7 @@ export default class Controller {
     switch(page: CC_Pages) {
         if (this._currentPage && this._currentPage.page === page) {
             if (page === CC_Pages.Address) {
-                this._currentPage.focus()
+                this._currentPage.action('focus')
             }
             return
         }
@@ -75,7 +67,7 @@ export default class Controller {
         }
 
         if (page === CC_Pages.Address) {
-            this._currentPage.focus()
+            this._currentPage.action('focus')
         }
     }
 }

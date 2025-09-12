@@ -1,3 +1,4 @@
+import { Notification } from 'electron'
 import { Bookmark } from '@src/types'
 import Store from './store'
 
@@ -19,6 +20,11 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     push(bookmark: Bookmark) {
+        new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        }).show()
         this.data.bookmarks.unshift(bookmark)
     }
 

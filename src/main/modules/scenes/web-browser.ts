@@ -1,4 +1,4 @@
-import { BrowserWindow, session } from 'electron'
+import { BrowserWindow, session, Notification } from 'electron'
 import { readFileSync, writeFileSync } from 'fs'
 import { ElectronBlocker, fullLists } from '@ghostery/adblocker-electron'
 
@@ -8,6 +8,7 @@ import Status from '@src/main/modules/store/status'
 import PopupBlocker from '@src/main/modules/store/popup'
 import Base from './base'
 import Bookmarks from '../store/bookmarks'
+import Logger from '../logger'
 
 export default class SceneWebBrowser extends Base {
     private DEFAULT_URL = 'https://www.google.com'
@@ -53,7 +54,6 @@ export default class SceneWebBrowser extends Base {
                 preload,
                 session: session.fromPartition('persist:my-partition'),
                 partition: 'persist:my-partition',
-                nodeIntegrationInSubFrames: true,
             },
         })
 
@@ -78,6 +78,7 @@ export default class SceneWebBrowser extends Base {
     }
 
     private async setAdBlocker() {
+        Logger.getInstance().info('setAdBlocker() 1')
         const blocker = await ElectronBlocker.fromLists(
             fetch,
             fullLists,
@@ -91,19 +92,28 @@ export default class SceneWebBrowser extends Base {
                     writeFileSync(path, buffer),
             },
         )
-
+        Logger.getInstance().info('setAdBlocker() 2')
         blocker.enableBlockingInSession(this._window.webContents.session)
+        Logger.getInstance().info('setAdBlocker() 3')
 
         // Popup Blocker
+        Logger.getInstance().info('setAdBlocker() 4')
         this._window.webContents.setWindowOpenHandler((data) => {
-            if (PopupBlocker.getInstance().isAllowed(data.url)) {
+            const url = new URL(data.url)
+            if (PopupBlocker.getInstance().isAllowed(url.host)) {
                 this.loadURL(data.url)
                 return { action: 'deny' }
             }
 
-            PopupBlocker.getInstance().block(data.url)
+            PopupBlocker.getInstance().block(url.host)
+            new Notification({
+                title: 'Focus',
+                body: `Popup blocked from ${url.host}`,
+                silent: true,
+            }).show()
             return { action: 'deny' }
         })
+        Logger.getInstance().info('setAdBlocker() 5')
     }
 
     protected setCallbacks() {

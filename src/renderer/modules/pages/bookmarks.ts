@@ -9,6 +9,8 @@ import Input from '../fragments/input'
 export default class Bookmarks extends Page {
     public readonly page = CC_Pages.Bookmark
 
+    private bookmarks: Bookmark[] = []
+
     // Buttons
     private buttons: HTMLElement
     private buttonAdd: Button = new Button()
@@ -117,10 +119,7 @@ export default class Bookmarks extends Page {
 
     constructor() {
         super()
-
-        if (!Controller.getInstance().bookmarks.length) {
-            IPC.getInstance().requestBookmarks()
-        }
+        IPC.getInstance().requestBookmarks()
         this.render()
     }
 
@@ -144,7 +143,8 @@ export default class Bookmarks extends Page {
         this.root.appendChild(this.table.element)
     }
 
-    public update() {
+    public update(bookmarks: Bookmark[]) {
+        this.bookmarks = bookmarks
         this.renderTable()
     }
 
@@ -171,9 +171,9 @@ export default class Bookmarks extends Page {
         this.table.th = 'Shortcut'
         this.table.th = 'Edit'
 
-        this._numRows = Controller.getInstance().bookmarks.length
+        this._numRows = this.bookmarks.length
 
-        Controller.getInstance().bookmarks.forEach((bookmark, index) => {
+        this.bookmarks.forEach((bookmark, index) => {
             const tr = this.table.createRow()
             tr.element.setAttribute(
                 'class',
@@ -260,7 +260,7 @@ export default class Bookmarks extends Page {
     private filterTable(keyword = '') {
         const rows = this.table.rows
         this._numRows = 0
-        Controller.getInstance().bookmarks.forEach((bookmark, index) => {
+        this.bookmarks.forEach((bookmark, index) => {
             if (!keyword) {
                 rows[index].show()
                 this._numRows++
@@ -294,7 +294,7 @@ export default class Bookmarks extends Page {
                     'class',
                     'border-l border-l-fuchsia-600 border-l-4',
                 )
-                this._current = Controller.getInstance().bookmarks.at(index)
+                this._current = this.bookmarks.at(index)
                 return
             }
 
@@ -326,7 +326,7 @@ export default class Bookmarks extends Page {
             this.removeItem(this._current)
             return
         }
-        const bookmark = Controller.getInstance().bookmarks.at(index)
+        const bookmark = this.bookmarks.at(index)
         if (!bookmark) {
             return
         }
@@ -335,7 +335,7 @@ export default class Bookmarks extends Page {
 
     removeItem(bookmark: Bookmark) {
         let index = -1
-        Controller.getInstance().bookmarks.map((item, _index) => {
+        this.bookmarks.map((item, _index) => {
             if (JSON.stringify(item) === JSON.stringify(bookmark)) {
                 index = _index
             }
@@ -345,15 +345,20 @@ export default class Bookmarks extends Page {
         }
 
         IPC.getInstance().removeBookmark(index)
-        const bookmarks = [...Controller.getInstance().bookmarks]
-        bookmarks.splice(index, 1)
-        Controller.getInstance().bookmarks = bookmarks
-
+        this.bookmarks.splice(index, 1)
         this.cursor = 0
+        this.renderTable()
     }
 
+    /**
+     * Move to URL from shortcode
+     * @param {string} key
+     */
     action(key: string) {
-        Controller.getInstance().bookmarks.forEach((bookmark) => {
+        this.bookmarks.forEach((bookmark) => {
+            if (!bookmark.shortcut) {
+                return
+            }
             if (key.toLowerCase() === bookmark.shortcut.toLowerCase()) {
                 IPC.getInstance().switch(bookmark.url)
             }
@@ -377,17 +382,12 @@ export default class Bookmarks extends Page {
 
         if (this._modifyIndex === -1) {
             IPC.getInstance().addBookmark(bookmark)
-            Controller.getInstance().bookmarks = [
-                bookmark,
-                ...Controller.getInstance().bookmarks,
-            ]
+            this.bookmarks.unshift(bookmark)
         } else {
             IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
-            const bookmarks = [...Controller.getInstance().bookmarks]
-            bookmarks[this._modifyIndex] = bookmark
-            Controller.getInstance().bookmarks = bookmarks
+            this.bookmarks[this._modifyIndex] = bookmark
         }
-
+        this.renderTable()
         this._modifyIndex = 0
         this.mode = 0
     }

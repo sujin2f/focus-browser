@@ -24,7 +24,6 @@ export default class IPC {
 
     private init() {
         message.on(IPC_Channels.Switch, (scene: Scenes) => {
-            console.log('IPC received', 'IPC_Channels.Switch', scene)
             if (scene === Scenes.Home) {
                 Controller.getInstance().switch(CC_Pages.Home)
             }
@@ -34,7 +33,6 @@ export default class IPC {
         })
 
         message.on(IPC_Channels.URL, (bookmark: Bookmark) => {
-            console.log('IPC received', 'IPC_Channels.URL', bookmark)
             Controller.getInstance().currentUrl = bookmark
         })
     }
@@ -57,7 +55,12 @@ export default class IPC {
                     return
                 }
 
-                Controller.getInstance().bookmarks = bookmarks
+                if (
+                    Controller.getInstance().currentPage.page ===
+                    CC_Pages.Bookmark
+                ) {
+                    Controller.getInstance().currentPage.update(bookmarks)
+                }
             },
         )
     }
@@ -74,7 +77,12 @@ export default class IPC {
                     return
                 }
 
-                Controller.getInstance().currentPage.action(history)
+                if (
+                    Controller.getInstance().currentPage.page ===
+                    CC_Pages.History
+                ) {
+                    Controller.getInstance().currentPage.update(history)
+                }
             },
         )
     }

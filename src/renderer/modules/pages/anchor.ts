@@ -118,9 +118,9 @@ export default class Anchor extends Page {
     constructor() {
         super()
 
-        if (!Controller.getInstance().bookmarks.length) {
-            IPC.getInstance().requestBookmarks()
-        }
+        // if (!Controller.getInstance().bookmarks.length) {
+        //     IPC.getInstance().requestBookmarks()
+        // }
         this.render()
     }
 
@@ -165,63 +165,55 @@ export default class Anchor extends Page {
     }
 
     private renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Shortcut'
-        this.table.th = 'Edit'
-
-        this._numRows = Controller.getInstance().bookmarks.length
-
-        Controller.getInstance().bookmarks.forEach((bookmark, index) => {
-            const tr = this.table.createRow()
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-
-            // title
-            const title = new Button()
-            title.className = ''
-            title.title = bookmark.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().switch(bookmark.url)
-            })
-
-            this.table.createCell().appendChild(title.element)
-
-            // Shortcode
-            const shortcut = new Button()
-            shortcut.className = ''
-            if (bookmark.shortcut) {
-                shortcut.title = bookmark.shortcut.toUpperCase()
-                shortcut.type = 'button'
-                shortcut.className =
-                    'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-                shortcut.addEventListener('click', () => {
-                    IPC.getInstance().switch(bookmark.url)
-                })
-            }
-
-            this.table.createCell().appendChild(shortcut.element)
-
-            // Edit
-            const edit = new Button()
-            edit.className = ''
-            edit.title = 'Edit'
-            edit.addEventListener('click', () => {
-                this._current = bookmark
-                this._modifyIndex = index
-                this.mode = 2
-            })
-
-            this.table.createCell().appendChild(edit.element)
-        })
-        this.tableWrapper.appendChild(this.table.element)
+        // this.tableWrapper.innerHTML = ''
+        // this.table.reset()
+        // this.table.th = 'Title'
+        // this.table.th = 'Shortcut'
+        // this.table.th = 'Edit'
+        // this._numRows = Controller.getInstance().bookmarks.length
+        // Controller.getInstance().bookmarks.forEach((bookmark, index) => {
+        //     const tr = this.table.createRow()
+        //     tr.element.setAttribute(
+        //         'class',
+        //         'border-l border-l-transparent border-l-4',
+        //     )
+        //     // title
+        //     const title = new Button()
+        //     title.className = ''
+        //     title.title = bookmark.title
+        //     title.type = 'button'
+        //     title.className =
+        //         'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
+        //     title.className = ''
+        //     title.addEventListener('click', () => {
+        //         IPC.getInstance().switch(bookmark.url)
+        //     })
+        //     this.table.createCell().appendChild(title.element)
+        //     // Shortcode
+        //     const shortcut = new Button()
+        //     shortcut.className = ''
+        //     if (bookmark.shortcut) {
+        //         shortcut.title = bookmark.shortcut.toUpperCase()
+        //         shortcut.type = 'button'
+        //         shortcut.className =
+        //             'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
+        //         shortcut.addEventListener('click', () => {
+        //             IPC.getInstance().switch(bookmark.url)
+        //         })
+        //     }
+        //     this.table.createCell().appendChild(shortcut.element)
+        //     // Edit
+        //     const edit = new Button()
+        //     edit.className = ''
+        //     edit.title = 'Edit'
+        //     edit.addEventListener('click', () => {
+        //         this._current = bookmark
+        //         this._modifyIndex = index
+        //         this.mode = 2
+        //     })
+        //     this.table.createCell().appendChild(edit.element)
+        // })
+        // this.tableWrapper.appendChild(this.table.element)
     }
 
     private renderModifyForm() {
@@ -258,51 +250,47 @@ export default class Anchor extends Page {
     }
 
     private filterTable(keyword = '') {
-        const rows = this.table.rows
-        this._numRows = 0
-        Controller.getInstance().bookmarks.forEach((bookmark, index) => {
-            if (!keyword) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            if (
-                bookmark.title.includes(keyword) ||
-                bookmark.url.includes(keyword)
-            ) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            rows[index].hide()
-        })
+        // const rows = this.table.rows
+        // this._numRows = 0
+        // Controller.getInstance().bookmarks.forEach((bookmark, index) => {
+        //     if (!keyword) {
+        //         rows[index].show()
+        //         this._numRows++
+        //         return
+        //     }
+        //     if (
+        //         bookmark.title.includes(keyword) ||
+        //         bookmark.url.includes(keyword)
+        //     ) {
+        //         rows[index].show()
+        //         this._numRows++
+        //         return
+        //     }
+        //     rows[index].hide()
+        // })
     }
 
     private focusTable() {
-        this._current = null
-        let hidden = 0
-        this.table.rows.forEach((row, index) => {
-            if (row.hidden) {
-                hidden++
-                return
-            }
-
-            if (index - hidden === this._cursor) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
-                this._current = Controller.getInstance().bookmarks.at(index)
-                return
-            }
-
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-        })
+        // this._current = null
+        // let hidden = 0
+        // this.table.rows.forEach((row, index) => {
+        //     if (row.hidden) {
+        //         hidden++
+        //         return
+        //     }
+        //     if (index - hidden === this._cursor) {
+        //         row.element.setAttribute(
+        //             'class',
+        //             'border-l border-l-fuchsia-600 border-l-4',
+        //         )
+        //         this._current = Controller.getInstance().bookmarks.at(index)
+        //         return
+        //     }
+        //     row.element.setAttribute(
+        //         'class',
+        //         'border-l border-l-transparent border-l-4',
+        //     )
+        // })
     }
 
     arrowUp() {
@@ -318,77 +306,70 @@ export default class Anchor extends Page {
     }
 
     remove(index: number = -1) {
-        if (index === -1) {
-            if (!this._current) {
-                return
-            }
-
-            this.removeItem(this._current)
-            return
-        }
-        const bookmark = Controller.getInstance().bookmarks.at(index)
-        if (!bookmark) {
-            return
-        }
-        this.removeItem(bookmark)
+        // if (index === -1) {
+        //     if (!this._current) {
+        //         return
+        //     }
+        //     this.removeItem(this._current)
+        //     return
+        // }
+        // const bookmark = Controller.getInstance().bookmarks.at(index)
+        // if (!bookmark) {
+        //     return
+        // }
+        // this.removeItem(bookmark)
     }
 
     removeItem(bookmark: Bookmark) {
-        let index = -1
-        Controller.getInstance().bookmarks.map((item, _index) => {
-            if (JSON.stringify(item) === JSON.stringify(bookmark)) {
-                index = _index
-            }
-        })
-        if (index === -1) {
-            return
-        }
-
-        IPC.getInstance().removeBookmark(index)
-        const bookmarks = [...Controller.getInstance().bookmarks]
-        bookmarks.splice(index, 1)
-        Controller.getInstance().bookmarks = bookmarks
-
-        this.cursor = 0
+        // let index = -1
+        // Controller.getInstance().bookmarks.map((item, _index) => {
+        //     if (JSON.stringify(item) === JSON.stringify(bookmark)) {
+        //         index = _index
+        //     }
+        // })
+        // if (index === -1) {
+        //     return
+        // }
+        // IPC.getInstance().removeBookmark(index)
+        // const bookmarks = [...Controller.getInstance().bookmarks]
+        // bookmarks.splice(index, 1)
+        // Controller.getInstance().bookmarks = bookmarks
+        // this.cursor = 0
     }
 
     action(key: string) {
-        Controller.getInstance().bookmarks.forEach((bookmark) => {
-            if (key.toLowerCase() === bookmark.shortcut.toLowerCase()) {
-                IPC.getInstance().switch(bookmark.url)
-            }
-        })
+        // Controller.getInstance().bookmarks.forEach((bookmark) => {
+        //     if (key.toLowerCase() === bookmark.shortcut.toLowerCase()) {
+        //         IPC.getInstance().switch(bookmark.url)
+        //     }
+        // })
     }
 
     private onEditSubmit() {
-        if (!this.formInputTitle.value) {
-            return
-        }
-
-        if (!this.formInputUrl.value) {
-            return
-        }
-
-        const bookmark = {
-            title: this.formInputTitle.value,
-            url: this.formInputUrl.value,
-            shortcut: this.formInputShortcut.value,
-        }
-
-        if (this._modifyIndex === -1) {
-            IPC.getInstance().addBookmark(bookmark)
-            Controller.getInstance().bookmarks = [
-                bookmark,
-                ...Controller.getInstance().bookmarks,
-            ]
-        } else {
-            IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
-            const bookmarks = [...Controller.getInstance().bookmarks]
-            bookmarks[this._modifyIndex] = bookmark
-            Controller.getInstance().bookmarks = bookmarks
-        }
-
-        this._modifyIndex = 0
-        this.mode = 0
+        // if (!this.formInputTitle.value) {
+        //     return
+        // }
+        // if (!this.formInputUrl.value) {
+        //     return
+        // }
+        // const bookmark = {
+        //     title: this.formInputTitle.value,
+        //     url: this.formInputUrl.value,
+        //     shortcut: this.formInputShortcut.value,
+        // }
+        // if (this._modifyIndex === -1) {
+        //     IPC.getInstance().addBookmark(bookmark)
+        //     Controller.getInstance().bookmarks = [
+        //         bookmark,
+        //         ...Controller.getInstance().bookmarks,
+        //     ]
+        // } else {
+        //     IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
+        //     const bookmarks = [...Controller.getInstance().bookmarks]
+        //     bookmarks[this._modifyIndex] = bookmark
+        //     Controller.getInstance().bookmarks = bookmarks
+        // }
+        // this._modifyIndex = 0
+        // this.mode = 0
     }
 }

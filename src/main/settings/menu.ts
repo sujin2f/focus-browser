@@ -135,6 +135,12 @@ export const menu = (callbacks: {
                 accelerator: 'CommandOrControl+Right',
                 click: callbacks.historyForward,
             },
+            { type: 'separator' },
+            {
+                label: 'Add Bookmark',
+                accelerator: 'CommandOrControl+D',
+                click: callbacks.addBookmark,
+            },
         ],
     },
     {

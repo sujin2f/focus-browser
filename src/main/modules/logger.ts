@@ -1,11 +1,15 @@
-import { isDebug } from '@main/util'
-
 interface I_Logger {
     error(...params: any[]): void
     warn(...params: any[]): void
     info(...params: any[]): void
+    initialize(): void
 }
 
+/**
+ * on Linux: ~/.config/{app name}/logs/main.log
+ * on macOS: ~/Library/Logs/{app name}/main.log
+ * on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\main.log
+ */
 export default class Logger {
     // Singleton instance
     static instance: Logger
@@ -15,42 +19,34 @@ export default class Logger {
         }
         return Logger.instance
     }
-    private logger: I_Logger | null
+
+    private mode = 'dev'
+    private log: I_Logger
 
     constructor() {
-        if (isDebug) {
-            import('electron-log')
-                .then((logger) => {
-                    logger.initialize()
-                    this.logger = logger
-                })
-                .catch((err) =>
-                    console.log(
-                        'An error occurred to load electron-log: ',
-                        err,
-                    ),
-                )
+        if (this.mode === 'dev') {
+            this.log = require('electron-log')
+            this.log.initialize()
+            return
+        }
+
+        this.log = {
+            error: (...params: any[]) => {},
+            warn: (...params: any[]) => {},
+            info: (...params: any[]) => {},
+            initialize: () => {},
         }
     }
 
     error(...params: any[]) {
-        if (!this.logger) {
-            return
-        }
-        this.logger.error(...params)
+        this.log.error(...params)
     }
 
     warn(...params: any[]) {
-        if (!this.logger) {
-            return
-        }
-        this.logger.warn(...params)
+        this.log.warn(...params)
     }
 
     info(...params: any[]) {
-        if (!this.logger) {
-            return
-        }
-        this.logger.info(...params)
+        this.log.info(...params)
     }
 }

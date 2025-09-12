@@ -86,8 +86,10 @@ export default class Home extends Page {
         IPC.getInstance().switch(this.search.value)
     }
 
-    public focus() {
-        this.search.focus()
+    public action(key: string) {
+        if (key === 'focus') {
+            this.search.focus()
+        }
     }
 
     public back() {

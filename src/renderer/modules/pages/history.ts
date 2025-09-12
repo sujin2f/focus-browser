@@ -88,10 +88,6 @@ export default class History extends Page {
         this.root.appendChild(this.table.element)
     }
 
-    public update() {
-        this.renderTable()
-    }
-
     private renderTable() {
         this.tableWrapper.innerHTML = ''
         this.table.reset()
@@ -100,13 +96,12 @@ export default class History extends Page {
 
         this._numRows = this.history.length
 
-        this.history.forEach((history, index) => {
+        this.history.reverse().forEach((history, index) => {
             const tr = this.table.createRow()
             tr.element.setAttribute(
                 'class',
                 'border-l border-l-transparent border-l-4',
             )
-            console.log(history)
 
             // title
             const title = new Button()
@@ -117,7 +112,7 @@ export default class History extends Page {
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             title.className = ''
             title.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(index)
+                IPC.getInstance().navigateHistory(this._numRows - index - 1)
             })
 
             // URL
@@ -129,7 +124,7 @@ export default class History extends Page {
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             url.className = ''
             url.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(index)
+                IPC.getInstance().navigateHistory(this._numRows - index - 1)
             })
 
             this.table.createCell().appendChild(title.element)
@@ -150,52 +145,50 @@ export default class History extends Page {
         })
     }
 
+    // TODO
     private filterTable(keyword = '') {
-        const rows = this.table.rows
-        this._numRows = 0
-        Controller.getInstance().bookmarks.forEach((bookmark, index) => {
-            if (!keyword) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            if (
-                bookmark.title.includes(keyword) ||
-                bookmark.url.includes(keyword)
-            ) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            rows[index].hide()
-        })
+        // const rows = this.table.rows
+        // this._numRows = 0
+        // Controller.getInstance().bookmarks.forEach((bookmark, index) => {
+        //     if (!keyword) {
+        //         rows[index].show()
+        //         this._numRows++
+        //         return
+        //     }
+        //     if (
+        //         bookmark.title.includes(keyword) ||
+        //         bookmark.url.includes(keyword)
+        //     ) {
+        //         rows[index].show()
+        //         this._numRows++
+        //         return
+        //     }
+        //     rows[index].hide()
+        // })
     }
 
+    // TODO
     private focusTable() {
-        this._current = null
-        let hidden = 0
-        this.table.rows.forEach((row, index) => {
-            if (row.hidden) {
-                hidden++
-                return
-            }
-
-            if (index - hidden === this._cursor) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
-                this._current = Controller.getInstance().bookmarks.at(index)
-                return
-            }
-
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-        })
+        // this._current = null
+        // let hidden = 0
+        // this.table.rows.forEach((row, index) => {
+        //     if (row.hidden) {
+        //         hidden++
+        //         return
+        //     }
+        //     if (index - hidden === this._cursor) {
+        //         row.element.setAttribute(
+        //             'class',
+        //             'border-l border-l-fuchsia-600 border-l-4',
+        //         )
+        //         this._current = Controller.getInstance().bookmarks.at(index)
+        //         return
+        //     }
+        //     row.element.setAttribute(
+        //         'class',
+        //         'border-l border-l-transparent border-l-4',
+        //     )
+        // })
     }
 
     arrowUp() {
@@ -210,7 +203,7 @@ export default class History extends Page {
         }
     }
 
-    action(history: NavigationEntry[]) {
+    update(history: NavigationEntry[]) {
         this.history = history
         this.renderTable()
     }

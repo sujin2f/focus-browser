@@ -69,6 +69,14 @@ export default class Main extends AbsMenuBuilder {
                 this.sceneWebBrowser.historyForward()
             }
         },
+        addBookmark: () => {
+            if (this.currentScene === Scenes.Browser) {
+                Bookmarks.getInstance().push({
+                    url: this.sceneWebBrowser.url,
+                    title: this.sceneWebBrowser.title,
+                })
+            }
+        },
     })
 
     /**

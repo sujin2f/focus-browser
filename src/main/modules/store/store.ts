@@ -7,6 +7,10 @@ type JsonObject = { [key: string]: unknown }
 /**
  * Simple JSON-based storage
  * @see https://medium.com/cameron-nokes/how-to-store-user-data-in-electron-3ba6bf66bc1e
+ *
+ * Windows: %APPDATA%\[YourAppName]
+ * macOS: ~/Library/Application Support/[YourAppName]
+ * Linux: $XDG_CONFIG_HOME/[YourAppName] or ~/.config/[YourAppName]
  */
 export default class Store<T extends JsonObject> {
     protected data: T = {} as T
@@ -29,12 +33,9 @@ export default class Store<T extends JsonObject> {
     protected init() {
         // app.getPath('userData') will return a string of the user's app data directory path.
         const userDataPath = app.getPath('userData')
-        const dir = path.join(userDataPath, 'focus-browser')
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir)
-        }
+
         // We'll use the `configName` property to set the file name and path.join to bring it all together as a string
-        this.path = path.join(dir, `${this.configName}.json`)
+        this.path = path.join(userDataPath, `${this.configName}.json`)
     }
 
     // This will just return the property on the `data` object

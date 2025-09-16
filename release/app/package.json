@@ -1,18 +1,13 @@
 {
-  "name": "focus-browser",
-  "version": "0.0.1",
-  "description": "A lightweight browser without tabs, built with Electron and React.",
-  "license": "MIT",
-  "author": {
-    "name": "Sujin Choi",
-    "email": "sujin.2f@gmail.com",
-    "url": "https://sujinc.com"
-  },
-  "main": "./dist/main/main.js",
-  "scripts": {
-    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
-    "postinstall": "npm run rebuild && npm run link-modules",
-    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
-  },
-  "dependencies": {}
+    "name": "focus-browser",
+    "version": "0.0.1",
+    "description": "A lightweight browser without tabs, built with Electron and React.",
+    "license": "MIT",
+    "author": {
+        "name": "Sujin Choi",
+        "email": "sujin.2f@gmail.com",
+        "url": "https://sujinc.com"
+    },
+    "main": "./dist/main/index.js",
+    "dependencies": {}
 }

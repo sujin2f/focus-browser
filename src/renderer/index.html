@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Control Centre</title>
+        <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        />
+    </head>
+    <body class="p-10">
+        <section id="root"></section>
+    </body>
+</html>
+
+<!--
+// Card
+-->
+<template id="template--card">
+    <a
+        class="p-4 border border-gray-300 m-2 rounded-lg bg-white shadow"
+        role="button"
+    >
+        <h2 class="text-lg font-semibold mb-2 text-gray-600"></h2>
+        <p class="text-gray-600"></p>
+    </a>
+</template>
+
+<!--
+// Table
+-->
+<template id="template--table">
+    <div
+        class="relative flex flex-col w-full h-full overflow-scroll bg-clip-border"
+    >
+        <table class="w-full text-left table-auto min-w-max">
+            <thead>
+                <tr></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</template>
+
+<template id="template--table__tr">
+    <tr></tr>
+</template>
+
+<template id="template--table__th">
+    <th class="p-4 border-b border-blue-gray-100">
+        <p
+            class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+        ></p>
+    </th>
+</template>
+
+<template id="template--table__td">
+    <td class="p-4 border-b border-blue-gray-50"></td>
+</template>
+
+<!--
+// Forms
+-->
+<template id="template--label">
+    <label class="block text-sm font-medium text-gray-700"></label>
+</template>
+
+<template id="template--input">
+    <input
+        class="w-full text-lg bg-gray-800 p-3 rounded-lg text-white"
+        type="text"
+    />
+</template>
+
+<template id="template--button">
+    <button
+        class="mb-4 px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+    ></button>
+</template>
+
+<!--
+// Modal
+-->
+<template id="template--overlay">
+    <div class="fixed inset-0 bg-black/50 w-full h-full"></div>
+</template>

@@ -42,8 +42,7 @@ class WithIPC extends ElectronBrowserWindow {
     }
 
     protected sendPageInfo(scene: Scenes) {
-        message.send(
-            this.centre.webContents,
+        this.centre.webContents.send(
             IPC_Channels.Switch,
             scene,
             this.browser.url,
@@ -66,8 +65,7 @@ class WithIPC extends ElectronBrowserWindow {
     private onHistory(handler: IPC_RequestHandler, index: number) {
         switch (handler) {
             case IPC_RequestHandler.Request:
-                message.send(
-                    this.centre.webContents,
+                this.centre.webContents.send(
                     IPC_Channels.History,
                     IPC_RequestHandler.Response,
                     this.browser.webContents.navigationHistory.getAllEntries(),
@@ -90,8 +88,7 @@ class WithIPC extends ElectronBrowserWindow {
         switch (handler) {
             case IPC_RequestHandler.Request:
                 const bookmarks = Bookmarks.getInstance().get()
-                message.send(
-                    this.centre.webContents,
+                this.centre.webContents.send(
                     IPC_Channels.Bookmarks,
                     IPC_RequestHandler.Response,
                     bookmarks,
@@ -113,8 +110,7 @@ class WithIPC extends ElectronBrowserWindow {
         switch (handler) {
             case IPC_RequestHandler.Request:
                 const bookmarks = Anchors.getInstance().get()
-                message.send(
-                    this.centre.webContents,
+                this.centre.webContents.send(
                     IPC_Channels.Anchors,
                     IPC_RequestHandler.Response,
                     bookmarks,
@@ -128,8 +124,7 @@ class WithIPC extends ElectronBrowserWindow {
             case IPC_RequestHandler.Request:
                 const blocked = Popup.getInstance().get('blocked')
                 const allowed = Popup.getInstance().get('allowed')
-                message.send(
-                    this.centre.webContents,
+                this.centre.webContents.send(
                     IPC_Channels.PopupBlocker,
                     IPC_RequestHandler.Response,
                     Array.from(blocked as string[]),
@@ -144,31 +139,6 @@ class WithIPC extends ElectronBrowserWindow {
  * All starts with here
  */
 export default class BrowserWindow extends WithIPC {
-    /**
-     * View controls
-     */
-    protected setCurrent(scene: Scenes) {
-        if (scene !== Scenes.Browser && !this.centre.webContents.getURL()) {
-            this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
-        }
-        this.current = scene
-
-        if (scene === Scenes.Browser) {
-            this.contentView = this.browser
-        } else {
-            this.contentView = this.centre
-
-            if (this.centre.webContents.isLoading()) {
-                this.centre.webContents.once('did-finish-load', () => {
-                    this.sendPageInfo(scene)
-                })
-            } else {
-                this.sendPageInfo(scene)
-            }
-            this.centre.webContents.focus()
-        }
-    }
-
     /**
      * Constants
      */
@@ -241,11 +211,12 @@ export default class BrowserWindow extends WithIPC {
          */
         this.browser = new BrowserView({
             webPreferences: {
-                preload,
                 session: session.fromPartition('persist:my-partition'),
                 partition: 'persist:my-partition',
             },
         })
+        // Enable pinch zoom
+        this.browser.webContents.setVisualZoomLevelLimits(1, 3)
         this.centre = new WebContentsView({
             webPreferences: {
                 preload,
@@ -266,6 +237,31 @@ export default class BrowserWindow extends WithIPC {
 
         this.setEventListeners()
         new MenuBuilder(this.menu)
+    }
+
+    /**
+     * View controls
+     */
+    protected setCurrent(scene: Scenes) {
+        if (scene !== Scenes.Browser && !this.centre.webContents.getURL()) {
+            this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
+        }
+        this.current = scene
+
+        if (scene === Scenes.Browser) {
+            this.contentView = this.browser
+        } else {
+            this.contentView = this.centre
+
+            if (this.centre.webContents.isLoading()) {
+                this.centre.webContents.once('did-finish-load', () => {
+                    this.sendPageInfo(scene)
+                })
+            } else {
+                this.sendPageInfo(scene)
+            }
+            this.centre.webContents.focus()
+        }
     }
 
     private setEventListeners() {

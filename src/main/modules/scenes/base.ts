@@ -34,7 +34,11 @@ class WithIPC extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
-        this.setIpcHandlers()
+        message.on(IPC_Channels.Switch, this.onSwitch.bind(this))
+        message.on(IPC_Channels.History, this.onHistory.bind(this))
+        message.on(IPC_Channels.Bookmarks, this.onBookmarks.bind(this))
+        message.on(IPC_Channels.Anchors, this.onAnchors.bind(this))
+        message.on(IPC_Channels.PopupBlocker, this.onPopupBlocker.bind(this))
     }
 
     protected sendPageInfo(scene: Scenes) {
@@ -46,119 +50,93 @@ class WithIPC extends ElectronBrowserWindow {
         )
     }
 
-    private setIpcHandlers() {
-        // Switch to web browser scene
-        message.on(
-            IPC_Channels.Switch,
-            async (scene: Scenes, address?: string, anchorIndex?: number) => {
-                this.setCurrent(scene)
+    private onSwitch(scene: Scenes, address?: string, anchorIndex?: number) {
+        this.setCurrent(scene)
 
-                if (scene === Scenes.Browser && address) {
-                    this.browser.loadURL(address)
-                }
+        if (scene === Scenes.Browser && address) {
+            this.browser.loadURL(address)
+        }
 
-                if (typeof anchorIndex === 'number') {
-                    Logger.getInstance().info('Anchor removed: ', anchorIndex)
-                    Anchors.getInstance().remove(anchorIndex)
-                }
-            },
-        )
+        if (typeof anchorIndex === 'number') {
+            Logger.getInstance().info('Anchor removed: ', anchorIndex)
+            Anchors.getInstance().remove(anchorIndex)
+        }
+    }
 
-        // History
-        message.on(
-            IPC_Channels.History,
-            async (handler: IPC_RequestHandler, index: number) => {
-                switch (handler) {
-                    case IPC_RequestHandler.Request:
-                        message.send(
-                            this.centre.webContents,
-                            IPC_Channels.History,
-                            IPC_RequestHandler.Response,
-                            this.browser.webContents.navigationHistory.getAllEntries(),
-                        )
+    private onHistory(handler: IPC_RequestHandler, index: number) {
+        switch (handler) {
+            case IPC_RequestHandler.Request:
+                message.send(
+                    this.centre.webContents,
+                    IPC_Channels.History,
+                    IPC_RequestHandler.Response,
+                    this.browser.webContents.navigationHistory.getAllEntries(),
+                )
 
-                        return
+                return
 
-                    case IPC_RequestHandler.Execute:
-                        this.setCurrent(Scenes.Browser)
-                        this.browser.webContents.navigationHistory.goToIndex(
-                            index,
-                        )
-                        return
-                }
-            },
-        )
+            case IPC_RequestHandler.Execute:
+                this.setCurrent(Scenes.Browser)
+                this.browser.webContents.navigationHistory.goToIndex(index)
+                return
+        }
+    }
 
-        // IPC Bookmarks
-        message.on(
-            IPC_Channels.Bookmarks,
-            async (
-                handler: IPC_RequestHandler,
-                bookmark: Bookmark,
-                index: number,
-            ) => {
-                switch (handler) {
-                    case IPC_RequestHandler.Request:
-                        const bookmarks = Bookmarks.getInstance().get()
-                        message.send(
-                            this.centre.webContents,
-                            IPC_Channels.Bookmarks,
-                            IPC_RequestHandler.Response,
-                            bookmarks,
-                        )
-                        return
-                    case IPC_RequestHandler.Add:
-                        Bookmarks.getInstance().push(bookmark)
-                        return
-                    case IPC_RequestHandler.Modify:
-                        Bookmarks.getInstance().edit(index, bookmark)
-                        return
-                    case IPC_RequestHandler.Remove:
-                        Bookmarks.getInstance().remove(
-                            bookmark as unknown as number,
-                        )
-                        return
-                }
-            },
-        )
+    private onBookmarks(
+        handler: IPC_RequestHandler,
+        bookmark: Bookmark,
+        index: number,
+    ) {
+        switch (handler) {
+            case IPC_RequestHandler.Request:
+                const bookmarks = Bookmarks.getInstance().get()
+                message.send(
+                    this.centre.webContents,
+                    IPC_Channels.Bookmarks,
+                    IPC_RequestHandler.Response,
+                    bookmarks,
+                )
+                return
+            case IPC_RequestHandler.Add:
+                Bookmarks.getInstance().push(bookmark)
+                return
+            case IPC_RequestHandler.Modify:
+                Bookmarks.getInstance().edit(index, bookmark)
+                return
+            case IPC_RequestHandler.Remove:
+                Bookmarks.getInstance().remove(bookmark as unknown as number)
+                return
+        }
+    }
 
-        // IPC Anchors
-        message.on(
-            IPC_Channels.Anchors,
-            async (handler: IPC_RequestHandler) => {
-                switch (handler) {
-                    case IPC_RequestHandler.Request:
-                        const bookmarks = Anchors.getInstance().get()
-                        message.send(
-                            this.centre.webContents,
-                            IPC_Channels.Anchors,
-                            IPC_RequestHandler.Response,
-                            bookmarks,
-                        )
-                        return
-                }
-            },
-        )
+    private onAnchors(handler: IPC_RequestHandler) {
+        switch (handler) {
+            case IPC_RequestHandler.Request:
+                const bookmarks = Anchors.getInstance().get()
+                message.send(
+                    this.centre.webContents,
+                    IPC_Channels.Anchors,
+                    IPC_RequestHandler.Response,
+                    bookmarks,
+                )
+                return
+        }
+    }
 
-        // IPC PopupBlockers
-        message.on(
-            IPC_Channels.PopupBlocker,
-            async (handler: IPC_RequestHandler) => {
-                switch (handler) {
-                    case IPC_RequestHandler.Request:
-                        const blocked = Popup.getInstance().get('blocked')
-                        const allowed = Popup.getInstance().get('allowed')
-                        message.send(
-                            this.centre.webContents,
-                            IPC_Channels.PopupBlocker,
-                            IPC_RequestHandler.Response,
-                            Array.from(blocked as string[]),
-                            Array.from(allowed as string[]),
-                        )
-                        return
-                }
-            },
-        )
+    private onPopupBlocker(handler: IPC_RequestHandler) {
+        switch (handler) {
+            case IPC_RequestHandler.Request:
+                const blocked = Popup.getInstance().get('blocked')
+                const allowed = Popup.getInstance().get('allowed')
+                message.send(
+                    this.centre.webContents,
+                    IPC_Channels.PopupBlocker,
+                    IPC_RequestHandler.Response,
+                    Array.from(blocked as string[]),
+                    Array.from(allowed as string[]),
+                )
+                return
+        }
     }
 }
 
@@ -195,8 +173,8 @@ export default class BrowserWindow extends WithIPC {
      * Constants
      */
     private readonly menu: CustomMenuItemConstructor[] = menu({
-        address: () => (this.current = Scenes.Address),
-        home: () => (this.current = Scenes.Home),
+        address: () => this.setCurrent(Scenes.Address),
+        home: () => this.setCurrent(Scenes.Home),
         reload: () => {
             if (this.current === Scenes.Browser) {
                 this.browser.webContents.reload()

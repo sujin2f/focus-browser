@@ -1,6 +1,7 @@
 {
     "name": "focus-browser",
-    "version": "0.0.2",
+    "version": "0.0.1",
+    "description": "A lightweight browser without tabs, built with Electron.",
     "license": "MIT",
     "scripts": {
         "start": "cross-env NODE_ENV=development PORT=1212 concurrently \"npm run start:webpack\" \"npm run start:main\" \"npm run start:electron\"",

@@ -16,7 +16,7 @@ export default class MenuBuilder {
         this.buildMenu(menu)
     }
 
-    public buildMenu(menu: CustomMenuItemConstructor[]): Menu {
+    private buildMenu(menu: CustomMenuItemConstructor[]): Menu {
         const template =
             process.platform === 'darwin'
                 ? this.buildTemplate('darwin', menu)
@@ -28,7 +28,7 @@ export default class MenuBuilder {
         return built
     }
 
-    protected buildTemplate(
+    private buildTemplate(
         system: SystemType,
         menu: CustomMenuItemConstructor[],
     ): MenuItemConstructorOptions[] {

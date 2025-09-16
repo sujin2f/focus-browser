@@ -7,6 +7,7 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     static getInstance(): Bookmarks {
         if (!Bookmarks.instance) {
             Bookmarks.instance = new Bookmarks('bookmarks', { bookmarks: [] })
+            Bookmarks.instance.parse()
         }
         return Bookmarks.instance
     }
@@ -20,6 +21,12 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     push(bookmark: Bookmark) {
+        for (const item of this.data.bookmarks) {
+            if (item.url === bookmark.url) {
+                return
+            }
+        }
+
         new Notification({
             title: 'Focus',
             body: 'New Bookmark Added',

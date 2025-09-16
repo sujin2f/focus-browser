@@ -6,14 +6,10 @@ export default class History extends Store<{
     history: NavigationEntry[]
 }> {
     constructor() {
-        super(
-            'history',
-            {
-                index: 0,
-                history: [],
-            },
-            false,
-        )
+        super('history', {
+            index: NaN,
+            history: [],
+        })
     }
 
     public get index() {

@@ -68,6 +68,17 @@ export const menu = (callbacks: {
                 accelerator: 'CommandOrControl+A',
                 selector: 'selectAll:',
             },
+            { type: 'separator' },
+            {
+                label: 'Add Bookmark',
+                accelerator: 'CommandOrControl+D',
+                click: callbacks.addBookmark,
+            },
+            {
+                label: 'Add Anchor',
+                accelerator: 'CommandOrControl+/',
+                click: callbacks.addAnchor,
+            },
         ],
     },
     {
@@ -127,20 +138,15 @@ export const menu = (callbacks: {
         submenu: [
             {
                 label: 'Back',
-                accelerator: 'CommandOrControl+Left',
+                accelerator: 'CommandOrControl+[',
                 click: callbacks.historyBack,
             },
             {
                 label: 'Forward',
-                accelerator: 'CommandOrControl+Right',
+                accelerator: 'CommandOrControl+]',
                 click: callbacks.historyForward,
             },
             { type: 'separator' },
-            {
-                label: 'Add Bookmark',
-                accelerator: 'CommandOrControl+D',
-                click: callbacks.addBookmark,
-            },
         ],
     },
     {

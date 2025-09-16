@@ -3,7 +3,7 @@ import Controller from '@home/controller'
 import IPC from '@home/modules/ipc'
 import Input from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
-import Page from '.'
+import A_Page from '.'
 
 type Button = {
     title: string
@@ -11,10 +11,22 @@ type Button = {
     destination: CC_Pages
 }
 
-export default class Home extends Page {
+export default class Home extends A_Page<null> {
     public readonly page = CC_Pages.Home
 
     private search: Input = new Input()
+
+    public get mode() {
+        return this._mode
+    }
+    public set mode(mode: number) {
+        // Un-focus search
+        if (mode === 0) {
+            this.search.blur()
+        }
+
+        this._mode = mode
+    }
 
     private buttons: Record<string, Button> = {
         bookmarks: {
@@ -32,6 +44,11 @@ export default class Home extends Page {
             title: 'History (H)',
             description: 'Manage history',
             destination: CC_Pages.History,
+        },
+        popup: {
+            title: 'Popup Blocker (P)',
+            description: 'Manage Popup Blocker',
+            destination: CC_Pages.PopupBlocker,
         },
     }
 
@@ -83,7 +100,7 @@ export default class Home extends Page {
             return
         }
 
-        IPC.getInstance().switch(this.search.value)
+        IPC.getInstance().navigate(this.search.value)
     }
 
     public action(key: string) {
@@ -92,8 +109,28 @@ export default class Home extends Page {
         }
     }
 
-    public back() {
-        this.mode = 0
-        this.search.blur()
+    refresh(...arg: unknown[]): void {
+        throw new Error('Method not implemented.')
+    }
+    arrowUp(): void {
+        throw new Error('Method not implemented.')
+    }
+    arrowDown(): void {
+        throw new Error('Method not implemented.')
+    }
+    navigate(): string {
+        throw new Error('Method not implemented.')
+    }
+    create(...arg: unknown[]): void {
+        throw new Error('Method not implemented.')
+    }
+    read(...arg: unknown[]): void {
+        throw new Error('Method not implemented.')
+    }
+    update(...arg: unknown[]): void {
+        throw new Error('Method not implemented.')
+    }
+    delete(...arg: unknown[]): void {
+        throw new Error('Method not implemented.')
     }
 }

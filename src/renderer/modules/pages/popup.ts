@@ -1,5 +1,5 @@
 import { type NavigationEntry } from 'electron'
-import { CC_Modes, CC_Pages } from '@src/types'
+import { CC_Modes, CC_Pages, PopupBlocker as T_PopupBlocker } from '@src/types'
 import IPC from '@home/modules/ipc'
 
 import A_Page from '.'
@@ -11,8 +11,8 @@ import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 
 // TODO Empty Option
-export default class History extends A_Page<NavigationEntry> {
-    public readonly page = CC_Pages.History
+export default class PopupBlocker extends A_Page<T_PopupBlocker> {
+    public readonly page = CC_Pages.PopupBlocker
 
     protected set cursor(cursor: number) {
         this._cursor = cursor
@@ -62,7 +62,7 @@ export default class History extends A_Page<NavigationEntry> {
 
     constructor() {
         super()
-        IPC.getInstance().requestHistory()
+        IPC.getInstance().requestPopupBlocker()
         this.render()
     }
 
@@ -83,7 +83,7 @@ export default class History extends A_Page<NavigationEntry> {
     }
 
     private renderButtons() {
-        this.buttonFind.text = 'Find in History (⌘F)'
+        this.buttonFind.text = 'Find in Blocked URL (⌘F)'
         this.buttonFind.addEventListener('click', () => {
             this.mode = CC_Modes.Find
         })
@@ -111,7 +111,7 @@ export default class History extends A_Page<NavigationEntry> {
             // title
             const title = new Button()
             title.className = ''
-            title.text = item.title
+            title.text = item.host
             title.type = 'button'
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
@@ -154,10 +154,7 @@ export default class History extends A_Page<NavigationEntry> {
                 return
             }
 
-            if (
-                item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-                item.url.toLowerCase().includes(keyword.toLowerCase())
-            ) {
+            if (item.host.toLowerCase().includes(keyword.toLowerCase())) {
                 rows[index].show()
                 this._numRows++
                 return
@@ -209,11 +206,13 @@ export default class History extends A_Page<NavigationEntry> {
         if (isNaN(this._current)) {
             return
         }
-        IPC.getInstance().navigate(this.items[this._current].url)
+        IPC.getInstance().togglePopupBlocker(this.items[this._current].host)
+        this.items[this._current].allowed = !this.items[this._current].allowed
+        this.renderTable()
     }
 
-    public read(history: NavigationEntry[]): void {
-        this.items = history
+    public read(items: T_PopupBlocker[]): void {
+        this.items = items
         this.refresh()
     }
 

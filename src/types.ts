@@ -11,10 +11,11 @@ export enum Scenes {
 }
 
 export enum IPC_Channels {
-    URL = 'URL',
     Switch = 'Switch',
     Bookmarks = 'Bookmarks',
     History = 'History',
+    Anchors = 'Anchors',
+    PopupBlocker = 'PopupBlocker',
 }
 
 export enum IPC_RequestHandler {
@@ -33,4 +34,17 @@ export enum CC_Pages {
     Bookmark,
     History,
     Anchor,
+    PopupBlocker,
+}
+
+export enum CC_Modes {
+    List,
+    New,
+    Edit,
+    Find,
+}
+
+export type PopupBlocker = {
+    host: string
+    allowed?: boolean
 }

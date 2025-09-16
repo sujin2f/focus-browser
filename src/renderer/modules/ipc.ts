@@ -4,6 +4,7 @@ import {
     CC_Pages,
     IPC_Channels,
     IPC_RequestHandler,
+    PopupBlocker,
     Scenes,
 } from '@src/types'
 import { message } from '@home/util'
@@ -23,7 +24,9 @@ export default class IPC {
     }
 
     private init() {
-        message.on(IPC_Channels.Switch, (scene: Scenes) => {
+        message.on(IPC_Channels.Switch, (scene: Scenes, url: Bookmark) => {
+            Controller.getInstance().currentUrl = url
+
             if (scene === Scenes.Home) {
                 Controller.getInstance().switch(CC_Pages.Home)
             }
@@ -31,15 +34,11 @@ export default class IPC {
                 Controller.getInstance().switch(CC_Pages.Address)
             }
         })
-
-        message.on(IPC_Channels.URL, (bookmark: Bookmark) => {
-            Controller.getInstance().currentUrl = bookmark
-        })
     }
 
-    public switch(url?: string) {
+    public navigate(url?: string, anchorIndex?: number) {
         if (url) {
-            message.send(IPC_Channels.Switch, Scenes.Browser, url)
+            message.send(IPC_Channels.Switch, Scenes.Browser, url, anchorIndex)
             return
         }
 
@@ -59,7 +58,26 @@ export default class IPC {
                     Controller.getInstance().currentPage.page ===
                     CC_Pages.Bookmark
                 ) {
-                    Controller.getInstance().currentPage.update(bookmarks)
+                    Controller.getInstance().currentPage.read(bookmarks)
+                }
+            },
+        )
+    }
+
+    public requestAnchors() {
+        message.send(IPC_Channels.Anchors, IPC_RequestHandler.Request)
+        message.once(
+            IPC_Channels.Anchors,
+            (handler: IPC_RequestHandler.Response, anchors: Bookmark[]) => {
+                if (handler !== IPC_RequestHandler.Response) {
+                    return
+                }
+
+                if (
+                    Controller.getInstance().currentPage.page ===
+                    CC_Pages.Anchor
+                ) {
+                    Controller.getInstance().currentPage.read(anchors)
                 }
             },
         )
@@ -81,7 +99,34 @@ export default class IPC {
                     Controller.getInstance().currentPage.page ===
                     CC_Pages.History
                 ) {
-                    Controller.getInstance().currentPage.update(history)
+                    Controller.getInstance().currentPage.read(history)
+                }
+            },
+        )
+    }
+
+    public requestPopupBlocker() {
+        message.send(IPC_Channels.PopupBlocker, IPC_RequestHandler.Request)
+        message.once(
+            IPC_Channels.PopupBlocker,
+            (
+                handler: IPC_RequestHandler.Response,
+                blocked: string[],
+                allowed: string[],
+            ) => {
+                if (handler !== IPC_RequestHandler.Response) {
+                    return
+                }
+
+                if (
+                    Controller.getInstance().currentPage.page ===
+                    CC_Pages.PopupBlocker
+                ) {
+                    const data = [
+                        ...blocked.map((host) => ({ host, allowed: false })),
+                        ...allowed.map((host) => ({ host, allowed: true })),
+                    ]
+                    Controller.getInstance().currentPage.read(data)
                 }
             },
         )
@@ -106,5 +151,9 @@ export default class IPC {
 
     public removeBookmark(index: number) {
         message.send(IPC_Channels.Bookmarks, IPC_RequestHandler.Remove, index)
+    }
+
+    public togglePopupBlocker(host: string) {
+        message.send(IPC_Channels.PopupBlocker, IPC_RequestHandler.Modify, host)
     }
 }

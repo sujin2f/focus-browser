@@ -1,18 +1,25 @@
-import { Bookmark, CC_Pages } from '@src/types'
+import { type Bookmark, CC_Modes, CC_Pages } from '@src/types'
 import Controller from '@src/renderer/controller'
 import IPC from '@home/modules/ipc'
+
+import A_Page from '.'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
-import Page from '.'
-import Label from '../fragments/label'
-import Input from '../fragments/input'
-import Tr from '../fragments/tr'
-import Td from '../fragments/td'
+import Label from '@home/modules/fragments/label'
+import Input from '@home/modules/fragments/input'
+import Tr from '@home/modules/fragments/tr'
+import Td from '@home/modules/fragments/td'
 
-export default class Bookmarks extends Page {
+export default class Bookmarks extends A_Page<Bookmark> {
     public readonly page = CC_Pages.Bookmark
 
-    private bookmarks: Bookmark[] = []
+    protected set cursor(cursor: number) {
+        this._cursor = cursor
+        if (this._cursor === -1) {
+            this._current = NaN
+        }
+        this.focusTable()
+    }
 
     // Buttons
     private buttons: HTMLElement
@@ -34,90 +41,63 @@ export default class Bookmarks extends Page {
     private formFind: HTMLFormElement
     private formFindTitle: Input = new Input()
 
-    // Navigation
-    private _cursor = -1
-    private _current: Bookmark | null
-    private _numRows = 0
-
-    private set cursor(cursor: number) {
-        this._cursor = cursor
-        if (this._cursor === -1) {
-            this._current = null
-        }
-        this.focusTable()
-    }
-    public getValue() {
-        if (!this._current) {
-            return null
-        }
-        return this._current.url
-    }
-
     public get mode() {
         return this._mode
     }
-    public set mode(mode: number) {
-        // List
-        if (mode === 0) {
-            this._mode = 0
-            this._modifyIndex = -1
-            this.cursor = -1
-
-            this.formInput.classList.add('hidden')
-            this.formFind.classList.add('hidden')
-
-            this.filterTable()
+    public set mode(mode: CC_Modes) {
+        if (this._mode === mode) {
             return
         }
 
-        // Add
-        if (mode === 1) {
-            this._modifyIndex = -1
-            this.cursor = -1
+        this._mode = mode
 
-            this.formInputTitle.value =
-                Controller.getInstance().currentUrl.title
-            this.formInputUrl.value = Controller.getInstance().currentUrl.url
-            this.formInputShortcut.value = ''
-
-            this.formInput.classList.remove('hidden')
-            this.formFind.classList.add('hidden')
-            this.formInputTitle.focus()
-
-            this.filterTable()
-        }
-
-        // Edit
-        if (mode === 2) {
-            if (!this._current) {
-                this.mode = 0
+        switch (mode) {
+            case CC_Modes.List:
+                this.formInput.classList.add('hidden')
+                this.formFind.classList.add('hidden')
+                this.refresh()
                 return
-            }
 
-            this.formInputTitle.value = this._current.title
-            this.formInputUrl.value = this._current.url
-            this.formInputShortcut.value = this._current.shortcut
+            case CC_Modes.New:
+                this.formInputTitle.value =
+                    Controller.getInstance().currentUrl.title
+                this.formInputUrl.value =
+                    Controller.getInstance().currentUrl.url
+                this.formInputShortcut.value = ''
 
-            this.formInput.classList.remove('hidden')
-            this.formFind.classList.add('hidden')
-            this.formInputTitle.focus()
+                this.formInput.classList.remove('hidden')
+                this.formFind.classList.add('hidden')
+                this.formInputTitle.focus()
 
-            this.filterTable()
+                this.refresh()
+                return
+
+            case CC_Modes.Edit:
+                if (isNaN(this._current)) {
+                    this.mode = CC_Modes.List
+                    return
+                }
+
+                const current = this.items[this._current]
+
+                this.formInputTitle.value = current.title
+                this.formInputUrl.value = current.url
+                this.formInputShortcut.value = current.shortcut
+
+                this.formInput.classList.remove('hidden')
+                this.formFind.classList.add('hidden')
+                this.formInputTitle.focus()
+                return
+
+            case CC_Modes.Find:
+                this.formFindTitle.value = ''
+
+                this.formInput.classList.add('hidden')
+                this.formFind.classList.remove('hidden')
+                this.formFindTitle.focus()
+                this.refresh()
+                return
         }
-
-        // Find
-        if (mode === 3) {
-            this._modifyIndex = -1
-            this.cursor = -1
-
-            this.formFindTitle.value = ''
-
-            this.formInput.classList.add('hidden')
-            this.formFind.classList.remove('hidden')
-            this.formFindTitle.focus()
-        }
-
-        this._mode = 1
     }
 
     constructor() {
@@ -141,24 +121,20 @@ export default class Bookmarks extends Page {
         this.root.appendChild(this.formFind)
 
         this.tableWrapper = document.createElement('section')
+        this.tableWrapper.appendChild(this.table.element)
         this.root.appendChild(this.tableWrapper)
-        this.renderTable()
-        this.root.appendChild(this.table.element)
-    }
-
-    public update(bookmarks: Bookmark[]) {
-        this.bookmarks = bookmarks
         this.renderTable()
     }
 
     private renderButtons() {
+        // TODO Shortcuts
         this.buttonAdd.text = 'Add Bookmark (⌘D)'
         this.buttonAdd.addEventListener('click', () => {
-            this.mode = 1
+            this.mode = CC_Modes.New
         })
         this.buttonFind.text = 'Find in Bookmarks (⌘F)'
         this.buttonFind.addEventListener('click', () => {
-            this.mode = 3
+            this.mode = CC_Modes.Find
         })
 
         this.buttons = document.createElement('section')
@@ -174,10 +150,11 @@ export default class Bookmarks extends Page {
         this.table.th = 'Shortcut'
         this.table.th = 'Edit'
 
-        this._numRows = this.bookmarks.length
+        this._numRows = this.items.length
 
-        this.bookmarks.forEach((bookmark, index) => {
+        this.items.forEach((bookmark, index) => {
             const tr = new Tr()
+            tr.dataIndex = index
             tr.element.setAttribute(
                 'class',
                 'border-l border-l-transparent border-l-4',
@@ -192,7 +169,7 @@ export default class Bookmarks extends Page {
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             title.className = ''
             title.addEventListener('click', () => {
-                IPC.getInstance().switch(bookmark.url)
+                IPC.getInstance().navigate(bookmark.url)
             })
 
             // Shortcode
@@ -204,7 +181,7 @@ export default class Bookmarks extends Page {
                 shortcut.className =
                     'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
                 shortcut.addEventListener('click', () => {
-                    IPC.getInstance().switch(bookmark.url)
+                    IPC.getInstance().navigate(bookmark.url)
                 })
             }
 
@@ -213,9 +190,9 @@ export default class Bookmarks extends Page {
             edit.className = ''
             edit.text = 'Edit'
             edit.addEventListener('click', () => {
-                this._current = bookmark
+                this._current = index
                 this._modifyIndex = index
-                this.mode = 2
+                this.mode = CC_Modes.Edit
             })
 
             const tdTitle = new Td()
@@ -249,11 +226,16 @@ export default class Bookmarks extends Page {
         const labelShortcut = new Label()
         labelShortcut.innerHTML = 'Shortcut'
         labelShortcut.child = this.formInputShortcut
+        this.formInputShortcut.maxLength = 1
 
         const buttonOk = new Button()
         buttonOk.text = 'OK (Enter)'
         const buttonCancel = new Button()
         buttonCancel.text = 'Cancel (Esc)'
+        buttonCancel.type = 'reset'
+        buttonCancel.addEventListener('click', () => {
+            this.mode = CC_Modes.List
+        })
 
         this.formInput.appendChild(labelTitle.element)
         this.formInput.appendChild(labelUrl.element)
@@ -282,17 +264,16 @@ export default class Bookmarks extends Page {
 
     private filterTable(keyword = '') {
         const rows = this.table.children
-        this._numRows = 0
-        this.bookmarks.forEach((bookmark, index) => {
+        this._numRows = keyword ? 0 : this.items.length
+        this.items.forEach((bookmark, index) => {
             if (!keyword) {
                 rows[index].show()
-                this._numRows++
                 return
             }
 
             if (
-                bookmark.title.includes(keyword) ||
-                bookmark.url.includes(keyword)
+                bookmark.title.toLowerCase().includes(keyword.toLowerCase()) ||
+                bookmark.url.toLowerCase().includes(keyword.toLowerCase())
             ) {
                 rows[index].show()
                 this._numRows++
@@ -304,7 +285,7 @@ export default class Bookmarks extends Page {
     }
 
     private focusTable() {
-        this._current = null
+        this._current = NaN
         let hidden = 0
         this.table.children.forEach((row, index) => {
             if (row.hidden) {
@@ -317,7 +298,7 @@ export default class Bookmarks extends Page {
                     'class',
                     'border-l border-l-fuchsia-600 border-l-4',
                 )
-                this._current = this.bookmarks.at(index)
+                this._current = (row as Tr).dataIndex
                 return
             }
 
@@ -337,28 +318,29 @@ export default class Bookmarks extends Page {
     arrowDown() {
         if (this._cursor < this._numRows - 1) {
             this.cursor = this._cursor + 1
+            this.formFindTitle.blur()
         }
     }
 
-    remove(index: number = -1) {
+    delete(index: number = -1) {
         if (index === -1) {
-            if (!this._current) {
+            if (isNaN(this._current)) {
                 return
             }
 
-            this.removeItem(this._current)
+            this.deleteItem(this.items.at(this._current))
             return
         }
-        const bookmark = this.bookmarks.at(index)
+        const bookmark = this.items.at(index)
         if (!bookmark) {
             return
         }
-        this.removeItem(bookmark)
+        this.deleteItem(bookmark)
     }
 
-    removeItem(bookmark: Bookmark) {
+    private deleteItem(bookmark: Bookmark) {
         let index = -1
-        this.bookmarks.map((item, _index) => {
+        this.items.map((item, _index) => {
             if (JSON.stringify(item) === JSON.stringify(bookmark)) {
                 index = _index
             }
@@ -368,9 +350,8 @@ export default class Bookmarks extends Page {
         }
 
         IPC.getInstance().removeBookmark(index)
-        this.bookmarks.splice(index, 1)
-        this.cursor = 0
-        this.renderTable()
+        this.items.splice(index, 1)
+        this.refresh()
     }
 
     /**
@@ -378,17 +359,18 @@ export default class Bookmarks extends Page {
      * @param {string} key
      */
     action(key: string) {
-        this.bookmarks.forEach((bookmark) => {
+        this.items.forEach((bookmark) => {
             if (!bookmark.shortcut) {
                 return
             }
             if (key.toLowerCase() === bookmark.shortcut.toLowerCase()) {
-                IPC.getInstance().switch(bookmark.url)
+                IPC.getInstance().navigate(bookmark.url)
             }
         })
     }
 
     private onEditSubmit() {
+        // TODO Validation
         if (!this.formInputTitle.value) {
             return
         }
@@ -404,14 +386,40 @@ export default class Bookmarks extends Page {
         }
 
         if (this._modifyIndex === -1) {
-            IPC.getInstance().addBookmark(bookmark)
-            this.bookmarks.unshift(bookmark)
+            this.create(bookmark)
         } else {
-            IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
-            this.bookmarks[this._modifyIndex] = bookmark
+            this.update(bookmark)
         }
+
+        this.refresh()
+        this.mode = CC_Modes.List
+    }
+
+    public navigate() {
+        if (isNaN(this._current)) {
+            return
+        }
+        IPC.getInstance().navigate(this.items[this._current].url)
+    }
+
+    public refresh() {
+        this._current = NaN
+        this._cursor = -1
+        this._modifyIndex = -1
+        this._numRows = this.items.length
         this.renderTable()
-        this._modifyIndex = 0
-        this.mode = 0
+    }
+
+    public create(bookmark: Bookmark): void {
+        IPC.getInstance().addBookmark(bookmark)
+        this.items.unshift(bookmark)
+    }
+    public read(bookmarks: Bookmark[]): void {
+        this.items = bookmarks
+        this.refresh()
+    }
+    public update(bookmark: Bookmark): void {
+        IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
+        this.items[this._modifyIndex] = bookmark
     }
 }

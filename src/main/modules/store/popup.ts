@@ -14,19 +14,12 @@ export default class Popup extends Store<T_Popup> {
                 blocked: new Set<string>(),
                 allowed: new Set<string>(),
             })
+            Popup.instance.parse()
         }
         return Popup.instance
     }
 
     public modified = false
-
-    constructor(
-        protected configName: string,
-        protected defaults: T_Popup,
-        runParse = true,
-    ) {
-        super(configName, defaults, runParse)
-    }
 
     public block(host: string) {
         this.data.blocked.add(host)

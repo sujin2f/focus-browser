@@ -1,5 +1,5 @@
-import { type NavigationEntry } from 'electron'
-import { CC_Modes, CC_Pages } from '@src/types'
+import { type Bookmark, CC_Modes, CC_Pages } from '@src/types'
+import Controller from '@src/renderer/controller'
 import IPC from '@home/modules/ipc'
 
 import A_Page from '.'
@@ -10,9 +10,9 @@ import Input from '@home/modules/fragments/input'
 import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 
-// TODO Empty Option
-export default class History extends A_Page<NavigationEntry> {
-    public readonly page = CC_Pages.History
+// TODO Delete Action
+export default class Anchors extends A_Page<Bookmark> {
+    public readonly page = CC_Pages.Anchor
 
     protected set cursor(cursor: number) {
         this._cursor = cursor
@@ -62,7 +62,7 @@ export default class History extends A_Page<NavigationEntry> {
 
     constructor() {
         super()
-        IPC.getInstance().requestHistory()
+        IPC.getInstance().requestAnchors()
         this.render()
     }
 
@@ -83,7 +83,7 @@ export default class History extends A_Page<NavigationEntry> {
     }
 
     private renderButtons() {
-        this.buttonFind.text = 'Find in History (⌘F)'
+        this.buttonFind.text = 'Find in Anchors (⌘F)'
         this.buttonFind.addEventListener('click', () => {
             this.mode = CC_Modes.Find
         })
@@ -100,9 +100,9 @@ export default class History extends A_Page<NavigationEntry> {
 
         this._numRows = this.items.length
 
-        this.items.reverse().forEach((item, index) => {
+        this.items.forEach((bookmark, index) => {
             const tr = new Tr()
-            tr.dataIndex = this.items.length - index - 1
+            tr.dataIndex = index
             tr.element.setAttribute(
                 'class',
                 'border-l border-l-transparent border-l-4',
@@ -111,13 +111,13 @@ export default class History extends A_Page<NavigationEntry> {
             // title
             const title = new Button()
             title.className = ''
-            title.text = item.title
+            title.text = bookmark.title
             title.type = 'button'
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             title.className = ''
             title.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(tr.dataIndex)
+                IPC.getInstance().navigate(bookmark.url, index)
             })
 
             const tdTitle = new Td()
@@ -148,15 +148,15 @@ export default class History extends A_Page<NavigationEntry> {
     private filterTable(keyword = '') {
         const rows = this.table.children
         this._numRows = keyword ? 0 : this.items.length
-        this.items.forEach((item, index) => {
+        this.items.forEach((bookmark, index) => {
             if (!keyword) {
                 rows[index].show()
                 return
             }
 
             if (
-                item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-                item.url.toLowerCase().includes(keyword.toLowerCase())
+                bookmark.title.toLowerCase().includes(keyword.toLowerCase()) ||
+                bookmark.url.toLowerCase().includes(keyword.toLowerCase())
             ) {
                 rows[index].show()
                 this._numRows++
@@ -209,20 +209,21 @@ export default class History extends A_Page<NavigationEntry> {
         if (isNaN(this._current)) {
             return
         }
-        IPC.getInstance().navigate(this.items[this._current].url)
+        IPC.getInstance().navigate(this.items[this._current].url, this._current)
     }
 
-    public read(history: NavigationEntry[]): void {
-        this.items = history
-        this.refresh()
-    }
-
-    refresh(): void {
+    public refresh() {
         this._current = NaN
         this._cursor = -1
         this._numRows = this.items.length
         this.renderTable()
     }
+
+    public read(anchors: Bookmark[]): void {
+        this.items = anchors
+        this.refresh()
+    }
+
     create(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }

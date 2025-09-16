@@ -2,6 +2,7 @@ interface I_Logger {
     error(...params: any[]): void
     warn(...params: any[]): void
     info(...params: any[]): void
+    log(...params: any[]): void
     initialize(): void
 }
 
@@ -21,32 +22,37 @@ export default class Logger {
     }
 
     private mode = 'dev'
-    private log: I_Logger
+    private logger: I_Logger
 
     constructor() {
         if (this.mode === 'dev') {
-            this.log = require('electron-log')
-            this.log.initialize()
+            this.logger = require('electron-log')
+            this.logger.initialize()
             return
         }
 
-        this.log = {
+        this.logger = {
             error: (...params: any[]) => {},
             warn: (...params: any[]) => {},
             info: (...params: any[]) => {},
+            log: (...params: any[]) => {},
             initialize: () => {},
         }
     }
 
     error(...params: any[]) {
-        this.log.error(...params)
+        this.logger.error(...params)
     }
 
     warn(...params: any[]) {
-        this.log.warn(...params)
+        this.logger.warn(...params)
+    }
+
+    log(...params: any[]) {
+        this.logger.log(...params)
     }
 
     info(...params: any[]) {
-        this.log.info(...params)
+        this.logger.info(...params)
     }
 }

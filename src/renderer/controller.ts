@@ -6,10 +6,11 @@ import Shortcut from '@home/modules/shortcut'
 
 import './styles/common.css'
 import IPC from './modules/ipc'
-import Page from './modules/pages'
+import A_Page from './modules/pages'
 import Bookmarks from './modules/pages/bookmarks'
 import History from './modules/pages/history'
-import Anchor from './modules/pages/anchor'
+import Anchors from './modules/pages/anchors'
+import PopupBlocker from './modules/pages/popup'
 
 export default class Controller {
     static instance: Controller
@@ -20,7 +21,7 @@ export default class Controller {
         return Controller.instance
     }
 
-    private _currentPage: Page
+    private _currentPage: A_Page<any>
     public get currentPage() {
         return this._currentPage
     }
@@ -40,13 +41,6 @@ export default class Controller {
     }
 
     switch(page: CC_Pages) {
-        if (this._currentPage && this._currentPage.page === page) {
-            if (page === CC_Pages.Address) {
-                this._currentPage.action('focus')
-            }
-            return
-        }
-
         switch (page) {
             case CC_Pages.Home:
             case CC_Pages.Address:
@@ -62,7 +56,11 @@ export default class Controller {
                 break
 
             case CC_Pages.Anchor:
-                this._currentPage = new Anchor()
+                this._currentPage = new Anchors()
+                break
+
+            case CC_Pages.PopupBlocker:
+                this._currentPage = new PopupBlocker()
                 break
         }
 

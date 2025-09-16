@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { WebContents, ipcMain } from 'electron'
 import * as path from 'path'
 import { IPC_Channels } from '@src/types'
 
@@ -24,10 +24,10 @@ export const message = {
         })
     },
     send: (
-        window: BrowserWindow,
+        webContents: WebContents,
         channel: IPC_Channels,
         ...args: unknown[]
     ) => {
-        window.webContents.send(channel, ...args)
+        webContents.send(channel, ...args)
     },
 }

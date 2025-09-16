@@ -13,6 +13,10 @@ export default class Input extends A_HTMLFragmentWithEvent<HTMLInputElement> {
         this.element.setAttribute('class', className)
     }
 
+    public set maxLength(maxLength: number) {
+        this.element.maxLength = maxLength
+    }
+
     public set value(value: string) {
         this.element.value = value
     }
@@ -30,7 +34,6 @@ export default class Input extends A_HTMLFragmentWithEvent<HTMLInputElement> {
     }
 
     public constructor() {
-        console.log(document)
         super('template--input')
     }
 }

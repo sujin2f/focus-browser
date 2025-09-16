@@ -11,22 +11,24 @@ export interface CustomMenuItemConstructor extends MenuItemConstructorOptions {
 /**
  * An abstract class for building application menus
  */
-export default abstract class AbsMenuBuilder {
-    abstract menu: CustomMenuItemConstructor[]
-
-    buildMenu(): Menu {
-        const template =
-            process.platform === 'darwin'
-                ? this.buildTemplate('darwin', this.menu)
-                : this.buildTemplate('default', this.menu)
-
-        const menu = Menu.buildFromTemplate(template)
-        Menu.setApplicationMenu(menu)
-
-        return menu
+export default class MenuBuilder {
+    constructor(menu: CustomMenuItemConstructor[]) {
+        this.buildMenu(menu)
     }
 
-    buildTemplate(
+    public buildMenu(menu: CustomMenuItemConstructor[]): Menu {
+        const template =
+            process.platform === 'darwin'
+                ? this.buildTemplate('darwin', menu)
+                : this.buildTemplate('default', menu)
+
+        const built = Menu.buildFromTemplate(template)
+        Menu.setApplicationMenu(built)
+
+        return built
+    }
+
+    protected buildTemplate(
         system: SystemType,
         menu: CustomMenuItemConstructor[],
     ): MenuItemConstructorOptions[] {

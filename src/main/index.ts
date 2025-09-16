@@ -1,5 +1,5 @@
 import { app, Menu } from 'electron'
-import Main from '@src/main/modules/main'
+import BrowserWindow from '@src/main/modules/scenes/base'
 
 /**
  * Add event listeners...
@@ -15,11 +15,12 @@ app.on('window-all-closed', () => {
 app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
-        Main.getInstance()
+        const window = new BrowserWindow()
+        // Main.getInstance()
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
-            Main.getInstance().refresh()
+            window.show()
         })
     })
     .catch(console.log)

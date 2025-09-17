@@ -21,6 +21,14 @@ export default class Popup extends Store<T_Popup> {
 
     public modified = false
 
+    public toggle(host: string) {
+        if (this.data.blocked.has(host)) {
+            this.allow(host)
+        } else {
+            this.block(host)
+        }
+    }
+
     public block(host: string) {
         this.data.blocked.add(host)
         this.data.allowed.delete(host)
@@ -51,12 +59,12 @@ export default class Popup extends Store<T_Popup> {
     parse() {
         try {
             const parsed = JSON.parse(fs.readFileSync(this.path, 'utf-8'))
-            return {
+            this.data = {
                 blocked: new Set(parsed.blocked),
                 allowed: new Set(parsed.allowed),
             }
         } catch (error) {
-            return this.defaults
+            this.data = this.defaults
         }
     }
 }

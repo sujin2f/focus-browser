@@ -1,16 +1,16 @@
-import { Bookmark, CC_Pages } from '@src/types'
+import { Bookmark, CC_Pages, CC_TableAction } from '@src/types'
 import { checkElectron } from '@home/util'
 
 import Home from '@src/renderer/modules/pages/home'
-import Shortcut from '@home/modules/shortcut'
 
-import './styles/common.css'
 import IPC from './modules/ipc'
 import A_Page from './modules/pages'
 import Bookmarks from './modules/pages/bookmarks'
 import History from './modules/pages/history'
 import Anchors from './modules/pages/anchors'
 import PopupBlocker from './modules/pages/popup'
+
+import './styles/common.css'
 
 export default class Controller {
     static instance: Controller
@@ -34,9 +34,11 @@ export default class Controller {
     constructor() {
         document.addEventListener('DOMContentLoaded', () => {
             checkElectron()
-            new Shortcut()
             IPC.getInstance()
             this.switch(CC_Pages.Home)
+            document.addEventListener('keydown', (e) =>
+                this.currentPage.doShortcut(e),
+            )
         })
     }
 
@@ -65,7 +67,7 @@ export default class Controller {
         }
 
         if (page === CC_Pages.Address) {
-            this._currentPage.action('focus')
+            this._currentPage.action(CC_TableAction.FOCUS)
         }
     }
 }

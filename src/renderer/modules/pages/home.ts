@@ -1,4 +1,4 @@
-import { CC_Pages } from '@src/types'
+import { CC_Pages, CC_TableAction } from '@src/types'
 import Controller from '@home/controller'
 import IPC from '@home/modules/ipc'
 import Input from '@home/modules/fragments/input'
@@ -15,18 +15,6 @@ export default class Home extends A_Page<null> {
     public readonly page = CC_Pages.Home
 
     private search: Input = new Input()
-
-    public get mode() {
-        return this._mode
-    }
-    public set mode(mode: number) {
-        // Un-focus search
-        if (mode === 0) {
-            this.search.blur()
-        }
-
-        this._mode = mode
-    }
 
     private buttons: Record<string, Button> = {
         bookmarks: {
@@ -59,13 +47,6 @@ export default class Home extends A_Page<null> {
 
     private render(): void {
         this.search.placeholder = 'Search or enter address (⌘L)'
-        this.search.addEventListener('keydown', (e) => this.onAddressEnter(e))
-        this.search.addEventListener('blur', () => {
-            this.mode = 0
-        })
-        this.search.addEventListener('focus', () => {
-            this.mode = 1
-        })
         this.root.appendChild(this.search.element)
 
         const cards = document.createElement('div')
@@ -78,7 +59,7 @@ export default class Home extends A_Page<null> {
             card.title = info.title
             card.description = info.description
             card.addEventListener('click', () =>
-                this.onCardClick(info.destination),
+                Controller.getInstance().switch(info.destination),
             )
 
             cards.appendChild(card.element)
@@ -87,50 +68,45 @@ export default class Home extends A_Page<null> {
         this.root.appendChild(cards)
     }
 
-    private onCardClick(page: CC_Pages) {
-        Controller.getInstance().switch(page)
-    }
-
-    private onAddressEnter(e: KeyboardEvent) {
-        if (e.key !== 'Enter') {
-            return
-        }
-
-        if (!this.search.value) {
-            return
-        }
-
-        IPC.getInstance().navigate(this.search.value)
-    }
-
-    public action(key: string) {
-        if (key === 'focus') {
+    action(action: CC_TableAction) {
+        if (action === CC_TableAction.FOCUS) {
             this.search.focus()
+            return
         }
     }
 
-    refresh(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    arrowUp(): void {
-        throw new Error('Method not implemented.')
-    }
-    arrowDown(): void {
-        throw new Error('Method not implemented.')
-    }
-    navigate(): string {
-        throw new Error('Method not implemented.')
-    }
-    create(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    read(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    update(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    delete(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
+    doShortcut(e: KeyboardEvent): boolean {
+        if (document.activeElement.tagName.toLowerCase() !== 'input') {
+            switch (e.key) {
+                case 'B':
+                case 'b':
+                    Controller.getInstance().switch(CC_Pages.Bookmark)
+                    return
+                case 'h':
+                case 'H':
+                    Controller.getInstance().switch(CC_Pages.History)
+                    return
+                case 'a':
+                case 'A':
+                    Controller.getInstance().switch(CC_Pages.Anchor)
+                    return
+                case 'p':
+                case 'P':
+                    Controller.getInstance().switch(CC_Pages.PopupBlocker)
+                    return
+            }
+        } else {
+            if (e.key === 'Enter') {
+                if (!this.search.value) {
+                    return
+                }
+
+                this.search.value = ''
+                IPC.getInstance().navigate(this.search.value)
+                return
+            }
+        }
+
+        super.doShortcut(e)
     }
 }

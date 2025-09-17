@@ -2,9 +2,9 @@ import type { NavigationEntry } from 'electron'
 import {
     Bookmark,
     CC_Pages,
+    CC_TableAction,
     IPC_Channels,
     IPC_RequestHandler,
-    PopupBlocker,
     Scenes,
 } from '@src/types'
 import { message } from '@home/util'
@@ -58,7 +58,10 @@ export default class IPC {
                     Controller.getInstance().currentPage.page ===
                     CC_Pages.Bookmark
                 ) {
-                    Controller.getInstance().currentPage.read(bookmarks)
+                    Controller.getInstance().currentPage.action(
+                        CC_TableAction.UPDATE,
+                        bookmarks,
+                    )
                 }
             },
         )
@@ -77,10 +80,17 @@ export default class IPC {
                     Controller.getInstance().currentPage.page ===
                     CC_Pages.Anchor
                 ) {
-                    Controller.getInstance().currentPage.read(anchors)
+                    Controller.getInstance().currentPage.action(
+                        CC_TableAction.UPDATE,
+                        anchors,
+                    )
                 }
             },
         )
+    }
+
+    public removeAnchor(index: number) {
+        message.send(IPC_Channels.Anchors, IPC_RequestHandler.Remove, index)
     }
 
     public requestHistory() {
@@ -99,7 +109,10 @@ export default class IPC {
                     Controller.getInstance().currentPage.page ===
                     CC_Pages.History
                 ) {
-                    Controller.getInstance().currentPage.read(history)
+                    Controller.getInstance().currentPage.action(
+                        CC_TableAction.UPDATE,
+                        history,
+                    )
                 }
             },
         )
@@ -123,10 +136,13 @@ export default class IPC {
                     CC_Pages.PopupBlocker
                 ) {
                     const data = [
-                        ...blocked.map((host) => ({ host, allowed: false })),
                         ...allowed.map((host) => ({ host, allowed: true })),
+                        ...blocked.map((host) => ({ host, allowed: false })),
                     ]
-                    Controller.getInstance().currentPage.read(data)
+                    Controller.getInstance().currentPage.action(
+                        CC_TableAction.UPDATE,
+                        data,
+                    )
                 }
             },
         )

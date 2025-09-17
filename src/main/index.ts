@@ -1,5 +1,5 @@
 import { app, Menu } from 'electron'
-import BrowserWindow from '@src/main/modules/scenes/base'
+import BrowserWindow from '@src/main/modules/scenes/window'
 
 /**
  * Add event listeners...

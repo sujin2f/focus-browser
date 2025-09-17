@@ -4,6 +4,11 @@ export type Bookmark = {
     shortcut?: string
 }
 
+export type PopupBlocker = {
+    host: string
+    allowed?: boolean
+}
+
 export enum Scenes {
     Browser,
     Home,
@@ -38,13 +43,17 @@ export enum CC_Pages {
 }
 
 export enum CC_Modes {
-    List,
-    New,
-    Edit,
-    Find,
+    LIST,
+    NEW,
+    EDIT,
+    FIND,
 }
 
-export type PopupBlocker = {
-    host: string
-    allowed?: boolean
+export enum CC_TableAction {
+    EDIT,
+    UPDATE,
+    FOCUS,
+    BLUR,
+    DELETE,
+    EXECUTE,
 }

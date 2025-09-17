@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A lightweight browser without tabs, built with Electron.",
     "license": "MIT",
     "scripts": {
@@ -8,12 +8,12 @@
         "start:main": "webpack --watch --config webpack.config.js --config-name=main",
         "start:webpack": "webpack serve --config webpack.config.js --config-name=renderer",
         "start:electron": "electronmon ./release/app/dist/main/index.js",
-        "build": "concurrently \"npm run build:main\" \"npm run build:webpack\"",
+        "build": "npm run clean && concurrently \"npm run build:main\" \"npm run build:webpack\"",
         "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=main",
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=renderer",
         "lint": "eslint -c .eslintrc --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package": "npm run clean && npm run build && electron-builder build --publish never",
+        "package": "npm run build && electron-builder build --publish never",
         "package:builder": "electron-builder build --publish never",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

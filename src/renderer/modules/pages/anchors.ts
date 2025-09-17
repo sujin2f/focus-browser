@@ -1,71 +1,24 @@
-import { type Bookmark, CC_Modes, CC_Pages } from '@src/types'
+import { type Bookmark, CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
 import IPC from '@home/modules/ipc'
 
-import A_Page from '.'
-import Table from '@home/modules/fragments/table'
+import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
-import Label from '@home/modules/fragments/label'
-import Input from '@home/modules/fragments/input'
 import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 
-// TODO Delete Action
-export default class Anchors extends A_Page<Bookmark> {
-    public readonly page = CC_Pages.Anchor
-
-    protected set cursor(cursor: number) {
-        this._cursor = cursor
-        if (this._cursor === -1) {
-            this._current = NaN
-        }
-        this.focusTable()
-    }
-
-    // Buttons
-    private buttons: HTMLElement
-    private buttonFind: Button = new Button()
-
-    // Table
-    private tableWrapper: HTMLElement
-    private table: Table = new Table()
-
-    // Find Form
-    private formFind: HTMLFormElement
-    private formFindTitle: Input = new Input()
-
-    public get mode() {
-        return this._mode
-    }
-    public set mode(mode: CC_Modes) {
-        if (this._mode === mode) {
-            return
-        }
-
-        this._mode = mode
-
-        switch (mode) {
-            case CC_Modes.List:
-                this.formFind.classList.add('hidden')
-                this.refresh()
-                return
-
-            case CC_Modes.Find:
-                this.formFindTitle.value = ''
-
-                this.formFind.classList.remove('hidden')
-                this.formFindTitle.focus()
-                this.refresh()
-                return
-        }
-    }
+export default class Anchors extends A_PageWithTable<Bookmark> {
+    readonly page = CC_Pages.Anchor
 
     constructor() {
         super()
-        IPC.getInstance().requestAnchors()
-        this.render()
+        this.init()
     }
 
-    private render() {
+    request(): void {
+        IPC.getInstance().requestAnchors()
+    }
+
+    render() {
         this.root.innerHTML = ''
 
         this.renderButtons()
@@ -82,23 +35,14 @@ export default class Anchors extends A_Page<Bookmark> {
     }
 
     private renderButtons() {
-        this.buttonFind.text = 'Find in Anchors (⌘F)'
-        this.buttonFind.addEventListener('click', () => {
-            this.mode = CC_Modes.Find
-        })
-
-        this.buttons = document.createElement('section')
-        this.buttons.className = 'w-full flex justify-between'
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    private renderTable() {
+    renderTable() {
         this.tableWrapper.innerHTML = ''
         this.table.reset()
         this.table.th = 'Title'
         this.table.th = 'Delete'
-
-        this._numRows = this.items.length
 
         this.items.forEach((bookmark, index) => {
             const tr = new Tr()
@@ -125,9 +69,9 @@ export default class Anchors extends A_Page<Bookmark> {
             del.className = ''
             del.text = 'Delete'
             del.addEventListener('click', () => {
-                this._current = index
-                this.delete()
-                this._current = NaN
+                this._cursor = index
+                this.action(CC_TableAction.DELETE)
+                this._cursor = NaN
             })
 
             const tdTitle = new Td()
@@ -144,122 +88,47 @@ export default class Anchors extends A_Page<Bookmark> {
         this.tableWrapper.appendChild(this.table.element)
     }
 
-    private renderFindForm() {
-        this.formFind = document.createElement('form')
-        const labelFindTitle = new Label()
-        labelFindTitle.innerHTML = 'Keyword'
-        labelFindTitle.child = this.formFindTitle
-
-        this.formFind.appendChild(labelFindTitle.element)
-
-        this.formFindTitle.addEventListener('keyup', (e) => {
-            const keyword = this.formFindTitle.value
-            this.filterTable(keyword)
-        })
+    filterCondition(item: Bookmark, keyword: string): boolean {
+        return (
+            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(keyword.toLowerCase())
+        )
     }
 
-    private filterTable(keyword = '') {
-        const rows = this.table.children
-        this._numRows = keyword ? 0 : this.items.length
-        this.items.forEach((bookmark, index) => {
-            if (!keyword) {
-                rows[index].show()
-                return
-            }
+    action(action: CC_TableAction, items: Bookmark[] = []) {
+        super.action(action, items)
 
-            if (
-                bookmark.title.toLowerCase().includes(keyword.toLowerCase()) ||
-                bookmark.url.toLowerCase().includes(keyword.toLowerCase())
-            ) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            rows[index].hide()
-        })
-    }
-
-    private focusTable() {
-        this._current = NaN
-        let hidden = 0
-        this.table.children.forEach((row, index) => {
-            if (row.hidden) {
-                hidden++
-                return
-            }
-
-            if (index - hidden === this._cursor) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
-                this._current = (row as Tr).dataIndex
-                return
-            }
-
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
+        if (
+            action === CC_TableAction.EXECUTE ||
+            action === CC_TableAction.EDIT
+        ) {
+            IPC.getInstance().navigate(
+                this.items[this._cursor].url,
+                this._cursor,
             )
-        })
-    }
-
-    arrowUp() {
-        if (this._cursor > 0) {
-            this.cursor = this._cursor - 1
-        }
-    }
-
-    arrowDown() {
-        if (this._cursor < this._numRows - 1) {
-            this.cursor = this._cursor + 1
-            this.formFindTitle.blur()
-        }
-    }
-
-    public onEnter() {
-        if (isNaN(this._current)) {
-            return
-        }
-        IPC.getInstance().navigate(this.items[this._current].url, this._current)
-    }
-
-    public refresh() {
-        this._current = NaN
-        this._cursor = -1
-        this._numRows = this.items.length
-        this.renderTable()
-    }
-
-    public read(anchors: Bookmark[]): void {
-        this.items = anchors
-        this.refresh()
-    }
-
-    public delete() {
-        if (isNaN(this._current)) {
-            return
-        }
-        IPC.getInstance().removeAnchor(this._current)
-        this.items.splice(this._current, 1)
-        this.renderTable()
-    }
-
-    public action(action: string, key: string) {
-        if (action !== 'keypress') {
             return
         }
 
-        if (key.length === 1) {
-            this.mode = CC_Modes.Find
+        if (action === CC_TableAction.DELETE) {
+            if (isNaN(this._cursor)) {
+                return
+            }
+
+            IPC.getInstance().removeAnchor(this._cursor)
+            this.items.splice(this._cursor, 1)
+            this.refresh()
+
+            return
         }
     }
 
-    create(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    update(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
+    doShortcut(e: KeyboardEvent): boolean {
+        if (super.doShortcut(e)) {
+            return
+        }
+
+        if (e.key.length === 1) {
+            this.changeMode(CC_Modes.FIND)
+        }
     }
 }

@@ -36,7 +36,7 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
     /**
      * For children fragments
      */
-    private _children: A_HTMLFragment[] = []
+    protected _children: A_HTMLFragment[] = []
 
     protected get childWrapper() {
         if (!this.childWrapperQuerySelector) {

@@ -1,71 +1,29 @@
-import { CC_Modes, CC_Pages, PopupBlocker as T_PopupBlocker } from '@src/types'
+import {
+    CC_Modes,
+    CC_Pages,
+    CC_TableAction,
+    PopupBlocker as T_PopupBlocker,
+} from '@src/types'
 import IPC from '@home/modules/ipc'
 
-import A_Page from '.'
-import Table from '@home/modules/fragments/table'
+import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
-import Label from '@home/modules/fragments/label'
-import Input from '@home/modules/fragments/input'
 import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 
-// TODO Empty Option
-export default class PopupBlocker extends A_Page<T_PopupBlocker> {
-    public readonly page = CC_Pages.PopupBlocker
-
-    protected set cursor(cursor: number) {
-        this._cursor = cursor
-        if (this._cursor === -1) {
-            this._current = NaN
-        }
-        this.focusTable()
-    }
-
-    // Buttons
-    private buttons: HTMLElement
-    private buttonFind: Button = new Button()
-
-    // Table
-    private tableWrapper: HTMLElement
-    private table: Table = new Table()
-
-    // Find Form
-    private formFind: HTMLFormElement
-    private formFindTitle: Input = new Input()
-
-    public get mode() {
-        return this._mode
-    }
-    public set mode(mode: CC_Modes) {
-        if (this._mode === mode) {
-            return
-        }
-
-        this._mode = mode
-
-        switch (mode) {
-            case CC_Modes.List:
-                this.formFind.classList.add('hidden')
-                this.refresh()
-                return
-
-            case CC_Modes.Find:
-                this.formFindTitle.value = ''
-
-                this.formFind.classList.remove('hidden')
-                this.formFindTitle.focus()
-                this.refresh()
-                return
-        }
-    }
+export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
+    readonly page = CC_Pages.PopupBlocker
 
     constructor() {
         super()
-        IPC.getInstance().requestPopupBlocker()
-        this.render()
+        this.init()
     }
 
-    private render() {
+    request(): void {
+        IPC.getInstance().requestPopupBlocker()
+    }
+
+    render() {
         this.root.innerHTML = ''
 
         this.renderButtons()
@@ -82,24 +40,15 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
     }
 
     private renderButtons() {
-        this.buttonFind.text = 'Find in Blocked URL (⌘F)'
-        this.buttonFind.addEventListener('click', () => {
-            this.mode = CC_Modes.Find
-        })
-
-        this.buttons = document.createElement('section')
-        this.buttons.className = 'w-full flex justify-between'
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    private renderTable() {
+    renderTable() {
         this.tableWrapper.innerHTML = ''
         this.table.reset()
         this.table.th = 'Title'
         this.table.th = 'Allowed'
         this.table.th = 'Toggle'
-
-        this._numRows = this.items.length
 
         this.items.reverse().forEach((item, index) => {
             const tr = new Tr()
@@ -116,9 +65,9 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             title.addEventListener('click', () => {
-                this._current = index
-                this.onEnter()
-                this._current = NaN
+                this._cursor = index
+                this.action(CC_TableAction.EXECUTE)
+                this._cursor = NaN
             })
 
             // allowed
@@ -128,9 +77,9 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
             allowed.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
             allowed.addEventListener('click', () => {
-                this._current = index
-                this.onEnter()
-                this._current = NaN
+                this._cursor = index
+                this.action(CC_TableAction.EXECUTE)
+                this._cursor = NaN
             })
 
             // Button
@@ -138,9 +87,9 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
             button.className = ''
             button.text = 'Toggle'
             button.addEventListener('click', () => {
-                this._current = index
-                this.onEnter()
-                this._current = NaN
+                this._cursor = index
+                this.action(CC_TableAction.EXECUTE)
+                this._cursor = NaN
             })
 
             const tdTitle = new Td()
@@ -160,118 +109,32 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
         this.tableWrapper.appendChild(this.table.element)
     }
 
-    private renderFindForm() {
-        this.formFind = document.createElement('form')
-        const labelFindTitle = new Label()
-        labelFindTitle.innerHTML = 'Keyword'
-        labelFindTitle.child = this.formFindTitle
-
-        this.formFind.appendChild(labelFindTitle.element)
-
-        this.formFindTitle.addEventListener('keyup', (e) => {
-            const keyword = this.formFindTitle.value
-            this.filterTable(keyword)
-        })
+    filterCondition(item: T_PopupBlocker, keyword: string): boolean {
+        return item.host.toLowerCase().includes(keyword.toLowerCase())
     }
 
-    private filterTable(keyword = '') {
-        const rows = this.table.children
-        this._numRows = keyword ? 0 : this.items.length
-        this.items.forEach((item, index) => {
-            if (!keyword) {
-                rows[index].show()
-                return
-            }
+    action(action: CC_TableAction, items: T_PopupBlocker[] = []) {
+        super.action(action, items)
 
-            if (item.host.toLowerCase().includes(keyword.toLowerCase())) {
-                rows[index].show()
-                this._numRows++
-                return
-            }
-
-            rows[index].hide()
-        })
-    }
-
-    private focusTable() {
-        this._current = NaN
-        let hidden = 0
-        this.table.children.forEach((row, index) => {
-            if (row.hidden) {
-                hidden++
-                return
-            }
-
-            if (index - hidden === this._cursor) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
-                this._current = (row as Tr).dataIndex
-                return
-            }
-
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-        })
-    }
-
-    arrowUp() {
-        if (this._cursor > 0) {
-            this.cursor = this._cursor - 1
-        }
-    }
-
-    arrowDown() {
-        if (this._cursor < this._numRows - 1) {
-            this.cursor = this._cursor + 1
-            this.formFindTitle.blur()
-        }
-    }
-
-    /**
-     * Toggle allowed
-     */
-    public onEnter() {
-        if (isNaN(this._current)) {
+        if (
+            action === CC_TableAction.DELETE ||
+            action === CC_TableAction.EXECUTE ||
+            action === CC_TableAction.EDIT
+        ) {
+            IPC.getInstance().togglePopupBlocker(this.items[this._cursor].host)
+            this.items[this._cursor].allowed = !this.items[this._cursor].allowed
+            this.renderTable()
             return
         }
-        IPC.getInstance().togglePopupBlocker(this.items[this._current].host)
-        this.items[this._current].allowed = !this.items[this._current].allowed
-        this.renderTable()
     }
 
-    public read(items: T_PopupBlocker[]): void {
-        this.items = items
-        this.refresh()
-    }
-
-    refresh(): void {
-        this._current = NaN
-        this._cursor = -1
-        this._numRows = this.items.length
-        this.renderTable()
-    }
-
-    public action(action: string, key: string) {
-        if (action !== 'keypress') {
+    doShortcut(e: KeyboardEvent): boolean {
+        if (super.doShortcut(e)) {
             return
         }
 
-        if (key.length === 1) {
-            this.mode = CC_Modes.Find
+        if (e.key.length === 1) {
+            this.changeMode(CC_Modes.FIND)
         }
-    }
-
-    create(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    update(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    delete(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
     }
 }

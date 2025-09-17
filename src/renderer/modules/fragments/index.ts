@@ -1,7 +1,7 @@
 /**
  * Base class for HTML Template
  */
-export abstract class A_HTMLFragment<T extends HTMLElement> {
+export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
     /**
      * The templateId will capture <template /> and put the clone in this.element
      * @param {string} templateId
@@ -36,7 +36,7 @@ export abstract class A_HTMLFragment<T extends HTMLElement> {
     /**
      * For children fragments
      */
-    private _children: A_HTMLFragment<HTMLElement>[] = []
+    private _children: A_HTMLFragment[] = []
 
     protected get childWrapper() {
         if (!this.childWrapperQuerySelector) {
@@ -54,7 +54,7 @@ export abstract class A_HTMLFragment<T extends HTMLElement> {
         return wrapper
     }
 
-    public set child(child: A_HTMLFragment<HTMLElement>) {
+    public set child(child: A_HTMLFragment) {
         this._children.push(child)
         this.childWrapper.appendChild(child.element)
     }

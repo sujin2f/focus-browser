@@ -103,8 +103,8 @@ export default class Home extends A_Page<null> {
         IPC.getInstance().navigate(this.search.value)
     }
 
-    public action(key: string) {
-        if (key === 'focus') {
+    public action(action: string) {
+        if (action === 'focus') {
             this.search.focus()
         }
     }
@@ -118,7 +118,7 @@ export default class Home extends A_Page<null> {
     arrowDown(): void {
         throw new Error('Method not implemented.')
     }
-    navigate(): string {
+    onEnter(): string {
         throw new Error('Method not implemented.')
     }
     create(...arg: unknown[]): void {

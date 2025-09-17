@@ -46,9 +46,9 @@ export default abstract class A_Page<T> {
     abstract arrowDown(): void
 
     /**
-     * When the page returns URL, it always navigate to there.
+     * When user pushes Enter
      */
-    abstract navigate(): void
+    abstract onEnter(): void
 
     /**
      * CRUD

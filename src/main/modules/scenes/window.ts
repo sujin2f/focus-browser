@@ -7,7 +7,6 @@ import {
 
 import { preload, resolveHtmlPath, message } from '@main/util'
 import { Bookmark, IPC_Channels, IPC_RequestHandler, Scenes } from '@src/types'
-import Logger from '@src/main/modules/logger'
 
 import History from '@src/main/modules/store/history'
 import Status from '@src/main/modules/store/status'
@@ -57,7 +56,6 @@ class WithIPC extends ElectronBrowserWindow {
         }
 
         if (typeof anchorIndex === 'number') {
-            Logger.getInstance().info('Anchor removed: ', anchorIndex)
             Anchors.getInstance().remove(anchorIndex)
         }
     }
@@ -106,7 +104,7 @@ class WithIPC extends ElectronBrowserWindow {
         }
     }
 
-    private onAnchors(handler: IPC_RequestHandler) {
+    private onAnchors(handler: IPC_RequestHandler, index: number) {
         switch (handler) {
             case IPC_RequestHandler.Request:
                 const bookmarks = Anchors.getInstance().get()
@@ -116,10 +114,13 @@ class WithIPC extends ElectronBrowserWindow {
                     bookmarks,
                 )
                 return
+            case IPC_RequestHandler.Remove:
+                Anchors.getInstance().remove(index)
+                return
         }
     }
 
-    private onPopupBlocker(handler: IPC_RequestHandler) {
+    private onPopupBlocker(handler: IPC_RequestHandler, host: string) {
         switch (handler) {
             case IPC_RequestHandler.Request:
                 const blocked = Popup.getInstance().get('blocked')
@@ -130,6 +131,10 @@ class WithIPC extends ElectronBrowserWindow {
                     Array.from(blocked as string[]),
                     Array.from(allowed as string[]),
                 )
+                return
+
+            case IPC_RequestHandler.Modify:
+                Popup.getInstance().toggle(host)
                 return
         }
     }
@@ -202,7 +207,6 @@ export default class BrowserWindow extends WithIPC {
     })
 
     constructor(options?: BaseWindowConstructorOptions) {
-        Logger.getInstance().log('BaseWin::constructor()')
         super(options)
         this.autoHideMenuBar = true
 
@@ -232,7 +236,6 @@ export default class BrowserWindow extends WithIPC {
 
         // Restore window size
         const bounds = status.getBounds(this.getBounds())
-        Logger.getInstance().log('Status', status.getBounds(), bounds)
         this.setBounds(bounds)
 
         this.setEventListeners()
@@ -274,10 +277,8 @@ export default class BrowserWindow extends WithIPC {
      * Save current status when the app is closed
      */
     private saveStatus() {
-        Logger.getInstance().log('saveStatus')
         const status = new Status()
         const bounds = this.getBounds()
-        Logger.getInstance().log('saveStatus::bounds', bounds)
         status.setNumber('width', bounds.width)
         status.setNumber('height', bounds.height)
         status.setNumber('x', bounds.x)
@@ -285,13 +286,8 @@ export default class BrowserWindow extends WithIPC {
         status.save()
 
         // Save history
-        Logger.getInstance().log('saveStatus::history')
         if (this.browser.webContents) {
             const history = new History()
-            Logger.getInstance().log(
-                'saveStatus::history',
-                this.browser.webContents.navigationHistory.getActiveIndex(),
-            )
             history.write(
                 this.browser.webContents.navigationHistory.getActiveIndex(),
                 this.browser.webContents.navigationHistory.getAllEntries(),
@@ -301,20 +297,8 @@ export default class BrowserWindow extends WithIPC {
 
         // Save Popup Blocker
         PopupBlocker.getInstance().save()
-        Logger.getInstance().log(
-            'saveStatus::popup',
-            PopupBlocker.getInstance().get('blocked'),
-        )
 
         // Save Bookmark
-        Logger.getInstance().log(
-            'saveStatus::bookmarks',
-            Bookmarks.getInstance().get(),
-        )
-        Logger.getInstance().log(
-            'saveStatus::anchors',
-            Anchors.getInstance().get(),
-        )
         Bookmarks.getInstance().save()
         Anchors.getInstance().save()
     }

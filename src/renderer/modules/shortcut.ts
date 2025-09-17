@@ -4,13 +4,12 @@ import IPC from './ipc'
 
 export default class Shortcut {
     constructor() {
-        document.addEventListener('keydown', (e) => this.onShortcut(e))
+        document.addEventListener('keydown', this.onShortcut.bind(this))
     }
 
     private onShortcut(e: KeyboardEvent) {
+        // Escape to Page navigation
         if (e.key === 'Escape') {
-            console.log(Controller.getInstance().currentPage)
-            console.log(Controller.getInstance().currentPage.mode)
             if (Controller.getInstance().currentPage.mode === CC_Modes.List) {
                 IPC.getInstance().navigate()
                 return
@@ -22,7 +21,6 @@ export default class Shortcut {
         if (this.onGlobalShortcut(e)) {
             return
         }
-
         if ((e.target as HTMLElement).tagName.toLowerCase() === 'input') {
             return
         }
@@ -38,14 +36,23 @@ export default class Shortcut {
                 return
 
             case 'Enter':
-            case 'Space':
-                Controller.getInstance().currentPage.navigate()
+                if (e.metaKey) {
+                    Controller.getInstance().currentPage.action('edit')
+                    return
+                }
+                Controller.getInstance().currentPage.onEnter()
+                return
+
+            case ' ':
+                Controller.getInstance().currentPage.onEnter()
                 return
 
             case 'Delete':
                 Controller.getInstance().currentPage.delete()
                 return
         }
+
+        console.log(e.key)
 
         // Page specific
         switch (Controller.getInstance().currentPage.page) {
@@ -65,46 +72,46 @@ export default class Shortcut {
                         return
                     case 'p':
                     case 'P':
-                        Controller.getInstance().switch(CC_Pages.Anchor)
+                        Controller.getInstance().switch(CC_Pages.PopupBlocker)
                         return
                 }
                 return
         }
-        Controller.getInstance().currentPage.action(e.key)
+        Controller.getInstance().currentPage.action('keypress', e.key)
     }
 
     /**
-     * With combination with meta, control, alt..., so it allowed when the input has focus
+     * With combination with meta, control, alt...,
+     * so it allowed when the input has focus
      * @param e
      */
     private onGlobalShortcut(e: KeyboardEvent): boolean {
-        // TODO System
-        if (e.metaKey) {
-            switch (Controller.getInstance().currentPage.page) {
-                case CC_Pages.Bookmark:
-                    switch (e.key) {
-                        case 'D':
-                        case 'd':
-                            Controller.getInstance().currentPage.mode =
-                                CC_Modes.New
-                            return true
-                        case 'F':
-                        case 'f':
-                            Controller.getInstance().currentPage.mode =
-                                CC_Modes.Find
-                            return true
-                    }
-            }
+        switch (e.key) {
+            case 'D':
+            case 'd':
+                // Bookmark only
+                if (
+                    Controller.getInstance().currentPage.page ===
+                        CC_Pages.Bookmark &&
+                    e.metaKey
+                ) {
+                    Controller.getInstance().currentPage.mode = CC_Modes.New
+                    return true
+                }
+                return false
+            case 'F':
+            case 'f':
+                if (e.metaKey) {
+                    Controller.getInstance().currentPage.mode = CC_Modes.Find
+                    return true
+                }
+                return false
+            // ArrowDown focus list from form
+            case 'ArrowDown':
+                Controller.getInstance().currentPage.arrowDown()
+                return true
         }
 
-        switch (Controller.getInstance().currentPage.page) {
-            case CC_Pages.Bookmark:
-                switch (e.key) {
-                    case 'ArrowDown':
-                        Controller.getInstance().currentPage.arrowDown()
-                        return true
-                }
-        }
         return false
     }
 }

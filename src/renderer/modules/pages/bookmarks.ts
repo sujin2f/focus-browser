@@ -35,7 +35,6 @@ export default class Bookmarks extends A_Page<Bookmark> {
     private formInputTitle: Input = new Input()
     private formInputUrl: Input = new Input()
     private formInputShortcut: Input = new Input()
-    private _modifyIndex = -1
 
     // Find Form
     private formFind: HTMLFormElement
@@ -191,7 +190,6 @@ export default class Bookmarks extends A_Page<Bookmark> {
             edit.text = 'Edit'
             edit.addEventListener('click', () => {
                 this._current = index
-                this._modifyIndex = index
                 this.mode = CC_Modes.Edit
             })
 
@@ -385,7 +383,7 @@ export default class Bookmarks extends A_Page<Bookmark> {
             shortcut: this.formInputShortcut.value,
         }
 
-        if (this._modifyIndex === -1) {
+        if (this._current === -1) {
             this.create(bookmark)
         } else {
             this.update(bookmark)
@@ -395,7 +393,7 @@ export default class Bookmarks extends A_Page<Bookmark> {
         this.mode = CC_Modes.List
     }
 
-    public navigate() {
+    public onEnter() {
         if (isNaN(this._current)) {
             return
         }
@@ -405,7 +403,6 @@ export default class Bookmarks extends A_Page<Bookmark> {
     public refresh() {
         this._current = NaN
         this._cursor = -1
-        this._modifyIndex = -1
         this._numRows = this.items.length
         this.renderTable()
     }
@@ -419,7 +416,7 @@ export default class Bookmarks extends A_Page<Bookmark> {
         this.refresh()
     }
     public update(bookmark: Bookmark): void {
-        IPC.getInstance().editBookmark(this._modifyIndex, bookmark)
-        this.items[this._modifyIndex] = bookmark
+        IPC.getInstance().editBookmark(this._current, bookmark)
+        this.items[this._current] = bookmark
     }
 }

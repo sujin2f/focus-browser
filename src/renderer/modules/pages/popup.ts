@@ -1,4 +1,3 @@
-import { type NavigationEntry } from 'electron'
 import { CC_Modes, CC_Pages, PopupBlocker as T_PopupBlocker } from '@src/types'
 import IPC from '@home/modules/ipc'
 
@@ -97,6 +96,8 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
         this.tableWrapper.innerHTML = ''
         this.table.reset()
         this.table.th = 'Title'
+        this.table.th = 'Allowed'
+        this.table.th = 'Toggle'
 
         this._numRows = this.items.length
 
@@ -110,21 +111,49 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
 
             // title
             const title = new Button()
-            title.className = ''
             title.text = item.host
             title.type = 'button'
             title.className =
                 'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
             title.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(tr.dataIndex)
+                this._current = index
+                this.onEnter()
+                this._current = NaN
+            })
+
+            // allowed
+            const allowed = new Button()
+            allowed.text = item.allowed ? 'V' : ''
+            allowed.type = 'button'
+            allowed.className =
+                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
+            allowed.addEventListener('click', () => {
+                this._current = index
+                this.onEnter()
+                this._current = NaN
+            })
+
+            // Button
+            const button = new Button()
+            button.className = ''
+            button.text = 'Toggle'
+            button.addEventListener('click', () => {
+                this._current = index
+                this.onEnter()
+                this._current = NaN
             })
 
             const tdTitle = new Td()
+            const tdAllowed = new Td()
+            const tdButton = new Td()
 
             tdTitle.child = title
+            tdAllowed.child = allowed
+            tdButton.child = button
 
             tr.child = tdTitle
+            tr.child = tdAllowed
+            tr.child = tdButton
 
             this.table.child = tr
         })
@@ -202,7 +231,10 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
         }
     }
 
-    public navigate() {
+    /**
+     * Toggle allowed
+     */
+    public onEnter() {
         if (isNaN(this._current)) {
             return
         }
@@ -222,6 +254,17 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
         this._numRows = this.items.length
         this.renderTable()
     }
+
+    public action(action: string, key: string) {
+        if (action !== 'keypress') {
+            return
+        }
+
+        if (key.length === 1) {
+            this.mode = CC_Modes.Find
+        }
+    }
+
     create(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
@@ -231,5 +274,4 @@ export default class PopupBlocker extends A_Page<T_PopupBlocker> {
     delete(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
-    action(...arg: unknown[]): void {}
 }

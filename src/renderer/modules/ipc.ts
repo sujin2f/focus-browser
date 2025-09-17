@@ -83,6 +83,10 @@ export default class IPC {
         )
     }
 
+    public removeAnchor(index: number) {
+        message.send(IPC_Channels.Anchors, IPC_RequestHandler.Remove, index)
+    }
+
     public requestHistory() {
         message.send(IPC_Channels.History, IPC_RequestHandler.Request)
         message.once(
@@ -123,8 +127,8 @@ export default class IPC {
                     CC_Pages.PopupBlocker
                 ) {
                     const data = [
-                        ...blocked.map((host) => ({ host, allowed: false })),
                         ...allowed.map((host) => ({ host, allowed: true })),
+                        ...blocked.map((host) => ({ host, allowed: false })),
                     ]
                     Controller.getInstance().currentPage.read(data)
                 }

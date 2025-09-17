@@ -205,7 +205,7 @@ export default class History extends A_Page<NavigationEntry> {
         }
     }
 
-    public navigate() {
+    public onEnter() {
         if (isNaN(this._current)) {
             return
         }
@@ -217,12 +217,23 @@ export default class History extends A_Page<NavigationEntry> {
         this.refresh()
     }
 
-    refresh(): void {
+    public refresh(): void {
         this._current = NaN
         this._cursor = -1
         this._numRows = this.items.length
         this.renderTable()
     }
+
+    public action(action: string, key: string) {
+        if (action !== 'keypress') {
+            return
+        }
+
+        if (key.length === 1) {
+            this.mode = CC_Modes.Find
+        }
+    }
+
     create(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
@@ -232,5 +243,4 @@ export default class History extends A_Page<NavigationEntry> {
     delete(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
-    action(...arg: unknown[]): void {}
 }

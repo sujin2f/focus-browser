@@ -1,5 +1,4 @@
 import { type Bookmark, CC_Modes, CC_Pages } from '@src/types'
-import Controller from '@src/renderer/controller'
 import IPC from '@home/modules/ipc'
 
 import A_Page from '.'
@@ -97,6 +96,7 @@ export default class Anchors extends A_Page<Bookmark> {
         this.tableWrapper.innerHTML = ''
         this.table.reset()
         this.table.th = 'Title'
+        this.table.th = 'Delete'
 
         this._numRows = this.items.length
 
@@ -120,11 +120,24 @@ export default class Anchors extends A_Page<Bookmark> {
                 IPC.getInstance().navigate(bookmark.url, index)
             })
 
+            // Delete
+            const del = new Button()
+            del.className = ''
+            del.text = 'Delete'
+            del.addEventListener('click', () => {
+                this._current = index
+                this.delete()
+                this._current = NaN
+            })
+
             const tdTitle = new Td()
+            const tdEdit = new Td()
 
             tdTitle.child = title
+            tdEdit.child = del
 
             tr.child = tdTitle
+            tr.child = tdEdit
 
             this.table.child = tr
         })
@@ -205,7 +218,7 @@ export default class Anchors extends A_Page<Bookmark> {
         }
     }
 
-    public navigate() {
+    public onEnter() {
         if (isNaN(this._current)) {
             return
         }
@@ -224,14 +237,29 @@ export default class Anchors extends A_Page<Bookmark> {
         this.refresh()
     }
 
+    public delete() {
+        if (isNaN(this._current)) {
+            return
+        }
+        IPC.getInstance().removeAnchor(this._current)
+        this.items.splice(this._current, 1)
+        this.renderTable()
+    }
+
+    public action(action: string, key: string) {
+        if (action !== 'keypress') {
+            return
+        }
+
+        if (key.length === 1) {
+            this.mode = CC_Modes.Find
+        }
+    }
+
     create(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
     update(...arg: unknown[]): void {
         throw new Error('Method not implemented.')
     }
-    delete(...arg: unknown[]): void {
-        throw new Error('Method not implemented.')
-    }
-    action(...arg: unknown[]): void {}
 }

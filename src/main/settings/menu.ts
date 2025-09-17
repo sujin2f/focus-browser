@@ -124,6 +124,7 @@ export const menu = (callbacks: {
             {
                 label: 'Reload',
                 accelerator: 'CommandOrControl+R',
+                click: callbacks.reload,
             },
             { type: 'separator' },
             {

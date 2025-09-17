@@ -226,6 +226,10 @@ export default class BrowserWindow extends WithIPC {
                 preload,
             },
         })
+        // #20 Web Title to App Title
+        this.browser.webContents.on('page-title-updated', (e, title) => {
+            this.title = title
+        })
 
         this.contentView = this.browser
 

@@ -179,8 +179,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     private arrowDown() {
         if (isNaN(this._cursor)) {
             this.cursor = 0
-        }
-        if (this._cursor < this.items.length - 1) {
+        } else if (this._cursor < this.items.length - 1) {
             this.cursor = this._cursor + 1
         }
         this.blur()

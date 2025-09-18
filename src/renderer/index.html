@@ -9,8 +9,10 @@
             content="script-src 'self' 'unsafe-inline' 'unsafe-eval'"
         />
     </head>
-    <body class="p-10">
-        <section id="root"></section>
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <section id="root" class="container mx-auto"></section>
     </body>
 </html>
 
@@ -19,11 +21,13 @@
 -->
 <template id="template--card">
     <a
-        class="p-4 border border-gray-300 m-2 rounded-lg bg-white shadow"
+        class="p-3 m-3 border border-gray-300 rounded-sm bg-white cursor-pointer dark:bg-gray-900 dark:border-transparent"
         role="button"
     >
-        <h2 class="text-lg font-semibold mb-2 text-gray-600"></h2>
-        <p class="text-gray-600"></p>
+        <h2
+            class="pb-1 mb-1 text-lg font-bold text-gray-600 border-b-2 border-gray-300 dark:border-gray-800 dark:text-gray-200"
+        ></h2>
+        <p class="text-gray-500 dark:text-gray-400"></p>
     </a>
 </template>
 
@@ -32,7 +36,7 @@
 -->
 <template id="template--table">
     <div
-        class="relative flex flex-col w-full h-full overflow-scroll bg-clip-border"
+        class="relative flex flex-col w-full h-full overflow-x-auto overflow-y-hidden bg-clip-border"
     >
         <table class="w-full text-left table-auto min-w-max">
             <thead>
@@ -62,13 +66,21 @@
 <!--
 // Forms
 -->
+<template id="template--form">
+    <form class="max-w-2xl m-auto p-3"></form>
+</template>
+
 <template id="template--label">
-    <label class="block text-sm font-medium text-gray-700"></label>
+    <label>
+        <span
+            class="inline-block text-md font-light text-gray-700 mb-0.5 pl-3 dark:text-gray-300"
+        ></span>
+    </label>
 </template>
 
 <template id="template--input">
     <input
-        class="w-full text-lg bg-gray-800 p-3 rounded-lg text-white"
+        class="w-full text-lg p-3 rounded-sm border border-gray-300 dark:text-white dark:bg-gray-800 dark:border-transparent mb-4"
         type="text"
     />
 </template>

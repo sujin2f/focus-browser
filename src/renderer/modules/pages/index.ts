@@ -5,12 +5,16 @@ import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
+import Form from '@home/modules/fragments/form'
 
 export default abstract class A_Page<T> {
     /**
      * Identifier
      */
     abstract readonly page: CC_Pages
+
+    protected readonly CLASSNAME_KEYBOARD =
+        'inline-block text-sm p-0.5 bg-white border-6 border-t-gray-300 border-r-gray-100 border-l-gray-400 border-b-gray-500'
 
     /**
      * All starts with here
@@ -57,7 +61,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
      */
     protected _mode: CC_Modes = CC_Modes.LIST
     protected hideForms() {
-        this.formFind.classList.add('hidden')
+        this.formFind.hide()
     }
     protected changeMode(mode: CC_Modes): boolean {
         if (this._mode === mode) {
@@ -73,7 +77,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
 
             case CC_Modes.FIND:
                 this.hideForms()
-                this.formFind.classList.remove('hidden')
+                this.formFind.show()
                 this.inputFindKeyword.value = ''
                 this.inputFindKeyword.focus()
                 return false
@@ -96,7 +100,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     protected buttonFind: Button = new Button()
 
     // Find Form
-    protected formFind: HTMLFormElement
+    protected formFind: Form = new Form()
     protected inputFindKeyword: Input = new Input()
 
     // Table
@@ -121,12 +125,11 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
 
     abstract renderTable(): void
     protected renderFindForm() {
-        this.formFind = document.createElement('form')
         const labelFindTitle = new Label()
         labelFindTitle.innerHTML = 'Keyword'
         labelFindTitle.child = this.inputFindKeyword
 
-        this.formFind.appendChild(labelFindTitle.element)
+        this.formFind.child = labelFindTitle
 
         this.inputFindKeyword.addEventListener('keyup', (e) => {
             const keyword = this.inputFindKeyword.value
@@ -177,6 +180,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
 
     private arrowDown() {
+        this.changeMode(CC_Modes.LIST)
         if (isNaN(this._cursor)) {
             this.cursor = 0
         } else if (this._cursor < this.items.length - 1) {
@@ -210,14 +214,22 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         if (document.activeElement.tagName.toLowerCase() === 'input') {
             switch (e.key) {
                 case 'ArrowDown':
-                    this.arrowDown()
-                    return true
+                    if (!e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+                        this.arrowDown()
+                        return true
+                    }
                 case 'Escape':
                     this.changeMode(CC_Modes.LIST)
-                    return true
             }
         } else {
             switch (e.key) {
+                case 'Escape':
+                    if (this._mode !== CC_Modes.LIST) {
+                        this.changeMode(CC_Modes.LIST)
+                        return true
+                    }
+                    IPC.getInstance().navigate()
+                    return true
                 case 'ArrowUp':
                     this.arrowUp()
                     return true

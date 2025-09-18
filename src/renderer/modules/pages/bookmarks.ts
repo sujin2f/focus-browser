@@ -8,6 +8,7 @@ import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
+import Form from '@home/modules/fragments/form'
 
 export default class Bookmarks extends A_PageWithTable<Bookmark> {
     readonly page = CC_Pages.Bookmark
@@ -16,7 +17,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     private buttonAdd: Button = new Button()
 
     // Input Form
-    private formInput: HTMLFormElement
+    private formInput: Form = new Form()
     private formInputTitle: Input = new Input()
     private formInputUrl: Input = new Input()
     private formInputShortcut: Input = new Input()
@@ -30,7 +31,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
     protected hideForms() {
         super.hideForms()
-        this.formInput.classList.add('hidden')
+        this.formInput.hide()
     }
 
     protected changeMode(mode: CC_Modes): boolean {
@@ -47,7 +48,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 this.formInputShortcut.value = ''
 
                 this.hideForms()
-                this.formInput.classList.remove('hidden')
+                this.formInput.show()
                 this.formInputTitle.focus()
 
                 this.refresh()
@@ -66,7 +67,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 this.formInputShortcut.value = current.shortcut || ''
 
                 this.hideForms()
-                this.formInput.classList.remove('hidden')
+                this.formInput.show()
                 this.formInputTitle.focus()
                 return
         }
@@ -83,12 +84,12 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         this.root.appendChild(this.buttons)
 
         this.renderModifyForm()
-        this.formInput.classList.add('hidden')
-        this.root.appendChild(this.formInput)
+        this.root.appendChild(this.formInput.element)
 
         this.renderFindForm()
-        this.formFind.classList.add('hidden')
-        this.root.appendChild(this.formFind)
+        this.root.appendChild(this.formFind.element)
+
+        this.hideForms()
 
         this.tableWrapper = document.createElement('section')
         this.tableWrapper.appendChild(this.table.element)
@@ -174,7 +175,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     private renderModifyForm() {
-        this.formInput = document.createElement('form')
+        this.formInput.reset()
 
         const labelTitle = new Label()
         labelTitle.innerHTML = 'Title'
@@ -198,11 +199,11 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             this.changeMode(CC_Modes.LIST)
         })
 
-        this.formInput.appendChild(labelTitle.element)
-        this.formInput.appendChild(labelUrl.element)
-        this.formInput.appendChild(labelShortcut.element)
-        this.formInput.appendChild(buttonOk.element)
-        this.formInput.appendChild(buttonCancel.element)
+        this.formInput.child = labelTitle
+        this.formInput.child = labelUrl
+        this.formInput.child = labelShortcut
+        this.formInput.child = buttonOk
+        this.formInput.child = buttonCancel
         this.formInput.addEventListener('submit', (e) => {
             e.preventDefault()
             this.onEditSubmit()

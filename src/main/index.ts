@@ -1,5 +1,6 @@
 import { app, Menu } from 'electron'
 import BrowserWindow from '@src/main/modules/scenes/window'
+import Logger from './modules/logger'
 
 /**
  * Add event listeners...
@@ -14,6 +15,7 @@ app.on('window-all-closed', () => {
 
 app.whenReady()
     .then(() => {
+        Logger.getInstance().info(`Platform: ${process.platform}`)
         Menu.setApplicationMenu(null)
         const window = new BrowserWindow()
         // Main.getInstance()

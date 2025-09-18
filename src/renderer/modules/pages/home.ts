@@ -3,6 +3,7 @@ import Controller from '@home/controller'
 import IPC from '@home/modules/ipc'
 import Input from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
+import Label from '@home/modules/fragments/label'
 import A_Page from '.'
 
 type Button = {
@@ -14,7 +15,9 @@ type Button = {
 export default class Home extends A_Page<null> {
     public readonly page = CC_Pages.Home
 
+    private label: Label = new Label()
     private search: Input = new Input()
+    private cardsContainer: HTMLElement
 
     private buttons: Record<string, Button> = {
         bookmarks: {
@@ -46,11 +49,13 @@ export default class Home extends A_Page<null> {
     }
 
     private render(): void {
-        this.search.placeholder = 'Search or enter address (⌘L)'
-        this.root.appendChild(this.search.element)
+        this.label.title = `Search or enter address (⌘L)`
+        this.label.child = this.search
+        this.root.appendChild(this.label.element)
 
-        const cards = document.createElement('div')
-        cards.className = 'grid grid-cols-2 sm:grid-cols-3'
+        this.cardsContainer = document.createElement('section')
+        this.cardsContainer.className =
+            'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2'
 
         Object.keys(this.buttons).forEach((key) => {
             const info = this.buttons[key]
@@ -62,10 +67,10 @@ export default class Home extends A_Page<null> {
                 Controller.getInstance().switch(info.destination),
             )
 
-            cards.appendChild(card.element)
+            this.cardsContainer.appendChild(card.element)
         })
 
-        this.root.appendChild(cards)
+        this.root.appendChild(this.cardsContainer)
     }
 
     action(action: CC_TableAction) {

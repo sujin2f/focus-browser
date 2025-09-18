@@ -26,8 +26,8 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         this.root.appendChild(this.buttons)
 
         this.renderFindForm()
-        this.formFind.classList.add('hidden')
-        this.root.appendChild(this.formFind)
+        this.root.appendChild(this.formFind.element)
+        this.hideForms()
 
         this.tableWrapper = document.createElement('section')
         this.tableWrapper.appendChild(this.table.element)

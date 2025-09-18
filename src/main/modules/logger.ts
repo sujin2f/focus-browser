@@ -21,7 +21,7 @@ export default class Logger {
         return Logger.instance
     }
 
-    private mode = 'production'
+    private mode = 'development' // development or production
     private logger: I_Logger
 
     constructor() {

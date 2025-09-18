@@ -101,8 +101,8 @@ export default class Home extends A_Page<null> {
                     return
                 }
 
-                this.search.value = ''
                 IPC.getInstance().navigate(this.search.value)
+                this.search.value = ''
                 return
             }
         }

@@ -6,6 +6,7 @@ import { A_PageWithTable } from '.'
 import Td from '@home/modules/fragments/td'
 import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
+import Tr from '@home/modules/fragments/tr'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
     readonly page = PageType.HISTORY
@@ -34,6 +35,35 @@ export default class History extends A_PageWithTable<NavigationEntry> {
 
     private renderButtons() {
         this.buttons.appendChild(this.buttonFind.element)
+    }
+
+    /**
+     * History need reverse order
+     */
+    protected renderTable() {
+        const rows: Tr[] = []
+        this.table.reset()
+        this.items.forEach((item, index) => {
+            const tr = new Tr()
+            tr.setData('index', index)
+            tr.classList.add(
+                'hover',
+                'cursor-pointer',
+                'text-sm',
+                'antialiased',
+                'font-normal',
+                'leading-normal',
+                'text-blue-gray-900',
+                ...this.STYLE_HOVER,
+            )
+
+            this.getRowCells(item, index).forEach((td) => (tr.child = td))
+            rows.unshift(tr)
+        })
+
+        rows.forEach((tr) => {
+            this.table.child = tr
+        })
     }
 
     getTHeads(): Th[] {

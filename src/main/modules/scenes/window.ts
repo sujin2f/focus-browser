@@ -6,7 +6,7 @@ import {
 } from 'electron'
 
 import { preload, resolveHtmlPath, message } from '@main/util'
-import { Bookmark, IPC_Channels, IPC_RequestHandler, Scenes } from '@src/types'
+import { Bookmark, Channel, RequestHandler, Scenes } from '@src/types'
 
 import History from '@src/main/modules/store/history'
 import Status from '@src/main/modules/store/status'
@@ -25,7 +25,7 @@ import Popup from '@src/main/modules/store/popup'
 class WithIPC extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
-    protected current: Scenes = Scenes.Browser
+    protected current: Scenes = Scenes.BROWSER
     protected setCurrent(_: Scenes) {
         throw new Error('Method not implemented.')
     }
@@ -33,25 +33,21 @@ class WithIPC extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
-        message.on(IPC_Channels.Switch, this.onSwitch.bind(this))
-        message.on(IPC_Channels.History, this.onHistory.bind(this))
-        message.on(IPC_Channels.Bookmarks, this.onBookmarks.bind(this))
-        message.on(IPC_Channels.Anchors, this.onAnchors.bind(this))
-        message.on(IPC_Channels.PopupBlocker, this.onPopupBlocker.bind(this))
+        message.on(Channel.SWITCH, this.onSwitch.bind(this))
+        message.on(Channel.HISTORY, this.onHistory.bind(this))
+        message.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
+        message.on(Channel.ANCHOR, this.onAnchors.bind(this))
+        message.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
     }
 
     protected sendPageInfo(scene: Scenes) {
-        this.centre.webContents.send(
-            IPC_Channels.Switch,
-            scene,
-            this.browser.url,
-        )
+        this.centre.webContents.send(Channel.SWITCH, scene, this.browser.url)
     }
 
     private onSwitch(scene: Scenes, address?: string, anchorIndex?: number) {
         this.setCurrent(scene)
 
-        if (scene === Scenes.Browser && address) {
+        if (scene === Scenes.BROWSER && address) {
             this.browser.loadURL(address)
         }
 
@@ -60,80 +56,80 @@ class WithIPC extends ElectronBrowserWindow {
         }
     }
 
-    private onHistory(handler: IPC_RequestHandler, index: number) {
+    private onHistory(handler: RequestHandler, index: number) {
         switch (handler) {
-            case IPC_RequestHandler.Request:
+            case RequestHandler.REQUEST:
                 this.centre.webContents.send(
-                    IPC_Channels.History,
-                    IPC_RequestHandler.Response,
+                    Channel.HISTORY,
+                    RequestHandler.RESPONSE,
                     this.browser.webContents.navigationHistory.getAllEntries(),
                 )
 
                 return
 
-            case IPC_RequestHandler.Execute:
-                this.setCurrent(Scenes.Browser)
+            case RequestHandler.EXECUTE:
+                this.setCurrent(Scenes.BROWSER)
                 this.browser.webContents.navigationHistory.goToIndex(index)
                 return
         }
     }
 
     private onBookmarks(
-        handler: IPC_RequestHandler,
+        handler: RequestHandler,
         bookmark: Bookmark,
         index: number,
     ) {
         switch (handler) {
-            case IPC_RequestHandler.Request:
+            case RequestHandler.REQUEST:
                 const bookmarks = Bookmarks.getInstance().get()
                 this.centre.webContents.send(
-                    IPC_Channels.Bookmarks,
-                    IPC_RequestHandler.Response,
+                    Channel.BOOKMARK,
+                    RequestHandler.RESPONSE,
                     bookmarks,
                 )
                 return
-            case IPC_RequestHandler.Add:
+            case RequestHandler.ADD:
                 Bookmarks.getInstance().push(bookmark)
                 return
-            case IPC_RequestHandler.Modify:
+            case RequestHandler.MODIFY:
                 Bookmarks.getInstance().edit(index, bookmark)
                 return
-            case IPC_RequestHandler.Remove:
+            case RequestHandler.REMOVE:
                 Bookmarks.getInstance().remove(bookmark as unknown as number)
                 return
         }
     }
 
-    private onAnchors(handler: IPC_RequestHandler, index: number) {
+    private onAnchors(handler: RequestHandler, index: number) {
         switch (handler) {
-            case IPC_RequestHandler.Request:
+            case RequestHandler.REQUEST:
                 const bookmarks = Anchors.getInstance().get()
                 this.centre.webContents.send(
-                    IPC_Channels.Anchors,
-                    IPC_RequestHandler.Response,
+                    Channel.ANCHOR,
+                    RequestHandler.RESPONSE,
                     bookmarks,
                 )
                 return
-            case IPC_RequestHandler.Remove:
+            case RequestHandler.REMOVE:
                 Anchors.getInstance().remove(index)
                 return
         }
     }
 
-    private onPopupBlocker(handler: IPC_RequestHandler, host: string) {
+    private onPopupBlocker(handler: RequestHandler, host: string) {
         switch (handler) {
-            case IPC_RequestHandler.Request:
+            case RequestHandler.REQUEST:
                 const blocked = Popup.getInstance().get('blocked')
                 const allowed = Popup.getInstance().get('allowed')
                 this.centre.webContents.send(
-                    IPC_Channels.PopupBlocker,
-                    IPC_RequestHandler.Response,
+                    Channel.POPUP_BLOCKER,
+                    RequestHandler.RESPONSE,
                     Array.from(blocked as string[]),
                     Array.from(allowed as string[]),
                 )
                 return
 
-            case IPC_RequestHandler.Modify:
+            case RequestHandler.MODIFY:
                 Popup.getInstance().toggle(host)
                 return
         }
@@ -148,15 +144,15 @@ export default class BrowserWindow extends WithIPC {
      * Constants
      */
     private readonly menu: CustomMenuItemConstructor[] = menu({
-        address: () => this.setCurrent(Scenes.Address),
-        home: () => this.setCurrent(Scenes.Home),
+        address: () => this.setCurrent(Scenes.ADDRESS),
+        home: () => this.setCurrent(Scenes.HOME),
         reload: () => {
-            if (this.current === Scenes.Browser) {
+            if (this.current === Scenes.BROWSER) {
                 this.browser.webContents.reload()
             }
         },
         stop: () => {
-            if (this.current === Scenes.Browser) {
+            if (this.current === Scenes.BROWSER) {
                 this.browser.webContents.stop()
             }
         },
@@ -164,7 +160,7 @@ export default class BrowserWindow extends WithIPC {
             this.setFullScreen(true)
         },
         devtool: () => {
-            if (this.current === Scenes.Browser) {
+            if (this.current === Scenes.BROWSER) {
                 this.browser.webContents.openDevTools()
                 this.centre.webContents.closeDevTools()
                 return
@@ -174,7 +170,7 @@ export default class BrowserWindow extends WithIPC {
         },
         historyBack: () => {
             if (
-                this.current === Scenes.Browser &&
+                this.current === Scenes.BROWSER &&
                 this.browser.webContents.navigationHistory.canGoBack()
             ) {
                 this.browser.webContents.navigationHistory.goBack()
@@ -182,14 +178,14 @@ export default class BrowserWindow extends WithIPC {
         },
         historyForward: () => {
             if (
-                this.current === Scenes.Browser &&
+                this.current === Scenes.BROWSER &&
                 this.browser.webContents.navigationHistory.canGoForward()
             ) {
                 this.browser.webContents.navigationHistory.goForward()
             }
         },
         addBookmark: () => {
-            if (this.current === Scenes.Browser) {
+            if (this.current === Scenes.BROWSER) {
                 Bookmarks.getInstance().push({
                     url: this.browser.webContents.getURL(),
                     title: this.browser.webContents.getTitle(),
@@ -197,7 +193,7 @@ export default class BrowserWindow extends WithIPC {
             }
         },
         addAnchor: () => {
-            if (this.current === Scenes.Browser) {
+            if (this.current === Scenes.BROWSER) {
                 Anchors.getInstance().push({
                     url: this.browser.webContents.getURL(),
                     title: this.browser.webContents.getTitle(),
@@ -250,12 +246,12 @@ export default class BrowserWindow extends WithIPC {
      * View controls
      */
     protected setCurrent(scene: Scenes) {
-        if (scene !== Scenes.Browser && !this.centre.webContents.getURL()) {
+        if (scene !== Scenes.BROWSER && !this.centre.webContents.getURL()) {
             this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
         }
         this.current = scene
 
-        if (scene === Scenes.Browser) {
+        if (scene === Scenes.BROWSER) {
             this.contentView = this.browser
         } else {
             this.contentView = this.centre

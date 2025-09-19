@@ -10,46 +10,45 @@ export type PopupBlocker = {
 }
 
 export enum Scenes {
-    Browser,
-    Home,
-    Address, // home with address bar focused
+    BROWSER,
+    HOME,
+    ADDRESS, // home with address bar focused
 }
 
-export enum IPC_Channels {
-    Switch = 'Switch',
-    Bookmarks = 'Bookmarks',
-    History = 'History',
-    Anchors = 'Anchors',
-    PopupBlocker = 'PopupBlocker',
+export enum Channel {
+    SWITCH = 'SWITCH',
+    BOOKMARK = 'BOOKMARK',
+    HISTORY = 'HISTORY',
+    ANCHOR = 'ANCHOR',
+    POPUP_BLOCKER = 'POPUP_BLOCKER',
 }
 
-export enum IPC_RequestHandler {
-    Request = 'Request',
-    Response = 'Response',
-    Add = 'Add',
-    Modify = 'Modify',
-    Remove = 'Remove',
-    Execute = 'Execute',
+export enum RequestHandler {
+    REQUEST = 'REQUEST',
+    RESPONSE = 'RESPONSE',
+    ADD = 'ADD',
+    MODIFY = 'MODIFY',
+    REMOVE = 'REMOVE',
+    EXECUTE = 'EXECUTE',
 }
 
-// CC: Control Centre
-export enum CC_Pages {
-    Home,
-    Address,
-    Bookmark,
-    History,
-    Anchor,
-    PopupBlocker,
+export enum PageType {
+    HOME,
+    ADDRESS,
+    BOOKMARK,
+    HISTORY,
+    ANCHOR,
+    POPUP_BLOCKER,
 }
 
-export enum CC_Modes {
+export enum PageMode {
     LIST,
     NEW,
     EDIT,
     FIND,
 }
 
-export enum CC_TableAction {
+export enum TableAction {
     EDIT,
     UPDATE,
     FOCUS,

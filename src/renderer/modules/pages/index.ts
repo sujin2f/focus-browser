@@ -1,4 +1,4 @@
-import { CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
+import { PageMode, PageType, TableAction } from '@src/types'
 import IPC from '@home/modules/ipc'
 
 import Table from '@home/modules/fragments/table'
@@ -14,7 +14,7 @@ export default abstract class A_Page<T> {
     /**
      * Identifier
      */
-    abstract readonly page: CC_Pages
+    abstract readonly page: PageType
 
     /**
      * All starts with here
@@ -30,7 +30,7 @@ export default abstract class A_Page<T> {
     /**
      * For additional actions
      */
-    abstract action(action: CC_TableAction, ...arg: unknown[]): void
+    abstract action(action: TableAction, ...arg: unknown[]): void
     /**
      * Shortcut
      */
@@ -59,11 +59,11 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     /**
      * Modes like list, edit, find...
      */
-    protected _mode: CC_Modes = CC_Modes.LIST
+    protected _mode: PageMode = PageMode.LIST
     protected hideForms() {
         this.formFind.hide()
     }
-    protected changeMode(mode: CC_Modes): boolean {
+    protected changeMode(mode: PageMode): boolean {
         if (this._mode === mode) {
             return false
         }
@@ -72,10 +72,10 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         this.hideForms()
 
         switch (mode) {
-            case CC_Modes.LIST:
+            case PageMode.LIST:
                 return false
 
-            case CC_Modes.FIND:
+            case PageMode.FIND:
                 this.formFind.show()
                 this.inputFindKeyword.value = ''
                 this.inputFindKeyword.focus()
@@ -108,7 +108,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     protected init() {
         this.buttonFind.text = 'Find (⌘F)'
         this.buttonFind.addEventListener('click', () => {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         })
 
         this.buttons = document.createElement('section')
@@ -216,7 +216,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
 
     private arrowDown() {
-        this.changeMode(CC_Modes.LIST)
+        this.changeMode(PageMode.LIST)
         if (isNaN(this._cursor)) {
             this.cursor = 0
         } else if (this._cursor < this.items.length - 1) {
@@ -246,8 +246,8 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         this.renderTable()
     }
 
-    action(action: CC_TableAction, items: T[] = []) {
-        if (action === CC_TableAction.UPDATE) {
+    action(action: TableAction, items: T[] = []) {
+        if (action === TableAction.UPDATE) {
             this.items = items
             this._cursor = NaN
             this.renderTable()
@@ -257,7 +257,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     public doShortcut(e: KeyboardEvent): boolean {
         // Find Key ⌘F
         if (e.key.toLowerCase() === 'f' && e.metaKey) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
             return true
         }
 
@@ -269,13 +269,13 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                         return true
                     }
                 case 'Escape':
-                    this.changeMode(CC_Modes.LIST)
+                    this.changeMode(PageMode.LIST)
             }
         } else {
             switch (e.key) {
                 case 'Escape':
-                    if (this._mode !== CC_Modes.LIST) {
-                        this.changeMode(CC_Modes.LIST)
+                    if (this._mode !== PageMode.LIST) {
+                        this.changeMode(PageMode.LIST)
                         return true
                     }
                     IPC.getInstance().navigate()
@@ -290,18 +290,18 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
 
                 case 'Enter':
                     if (e.metaKey) {
-                        this.action(CC_TableAction.EDIT)
+                        this.action(TableAction.EDIT)
                         return true
                     }
-                    this.action(CC_TableAction.EXECUTE)
+                    this.action(TableAction.EXECUTE)
                     return true
 
                 case ' ':
-                    this.action(CC_TableAction.EXECUTE)
+                    this.action(TableAction.EXECUTE)
                     return true
 
                 case 'Delete':
-                    this.action(CC_TableAction.DELETE)
+                    this.action(TableAction.DELETE)
                     return true
             }
         }

@@ -1,5 +1,5 @@
 import { type NavigationEntry } from 'electron'
-import { CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
+import { PageMode, PageType, TableAction } from '@src/types'
 import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
@@ -8,7 +8,7 @@ import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
-    readonly page = CC_Pages.History
+    readonly page = PageType.HISTORY
 
     constructor() {
         super()
@@ -64,13 +64,10 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         )
     }
 
-    action(action: CC_TableAction, items: NavigationEntry[] = []) {
+    action(action: TableAction, items: NavigationEntry[] = []) {
         super.action(action, items)
 
-        if (
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
-        ) {
+        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
             IPC.getInstance().navigate(this.items[this._cursor].url)
             return
         }
@@ -81,7 +78,7 @@ export default class History extends A_PageWithTable<NavigationEntry> {
             return
         }
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

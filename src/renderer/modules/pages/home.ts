@@ -1,4 +1,4 @@
-import { CC_Pages, CC_TableAction } from '@src/types'
+import { PageType, TableAction } from '@src/types'
 import Controller from '@home/controller'
 import IPC from '@home/modules/ipc'
 import Input from '@home/modules/fragments/input'
@@ -9,11 +9,11 @@ import A_Page from '.'
 type Button = {
     title: string
     description: string
-    destination: CC_Pages
+    destination: PageType
 }
 
 export default class Home extends A_Page<null> {
-    public readonly page = CC_Pages.Home
+    public readonly page = PageType.HOME
 
     private label: Label = new Label()
     private search: Input = new Input()
@@ -23,23 +23,23 @@ export default class Home extends A_Page<null> {
         bookmarks: {
             title: 'Bookmarks (B)',
             description: 'Manage bookmarks',
-            destination: CC_Pages.Bookmark,
+            destination: PageType.BOOKMARK,
         },
         anchor: {
             title: 'Anchor (A)',
             description:
                 'Temporary bookmark that will be deleted once you clicked it.',
-            destination: CC_Pages.Anchor,
+            destination: PageType.ANCHOR,
         },
         history: {
             title: 'History (H)',
             description: 'Manage history',
-            destination: CC_Pages.History,
+            destination: PageType.HISTORY,
         },
         popup: {
             title: 'Popup Blocker (P)',
             description: 'Manage Popup Blocker',
-            destination: CC_Pages.PopupBlocker,
+            destination: PageType.POPUP_BLOCKER,
         },
     }
 
@@ -73,8 +73,8 @@ export default class Home extends A_Page<null> {
         this.root.appendChild(this.cardsContainer)
     }
 
-    action(action: CC_TableAction) {
-        if (action === CC_TableAction.FOCUS) {
+    action(action: TableAction) {
+        if (action === TableAction.FOCUS) {
             this.search.focus()
             return
         }
@@ -85,19 +85,19 @@ export default class Home extends A_Page<null> {
             switch (e.key) {
                 case 'B':
                 case 'b':
-                    Controller.getInstance().switch(CC_Pages.Bookmark)
+                    Controller.getInstance().switch(PageType.BOOKMARK)
                     return
                 case 'h':
                 case 'H':
-                    Controller.getInstance().switch(CC_Pages.History)
+                    Controller.getInstance().switch(PageType.HISTORY)
                     return
                 case 'a':
                 case 'A':
-                    Controller.getInstance().switch(CC_Pages.Anchor)
+                    Controller.getInstance().switch(PageType.ANCHOR)
                     return
                 case 'p':
                 case 'P':
-                    Controller.getInstance().switch(CC_Pages.PopupBlocker)
+                    Controller.getInstance().switch(PageType.POPUP_BLOCKER)
                     return
             }
         } else {

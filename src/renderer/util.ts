@@ -1,4 +1,4 @@
-import { IPC_Channels } from '@src/types'
+import type { Channel } from '@src/types'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -7,13 +7,13 @@ export const checkElectron = () => {
 }
 
 export const message = {
-    on: (channel: IPC_Channels, callback: (...args: unknown[]) => void) => {
+    on: (channel: Channel, callback: (...args: unknown[]) => void) => {
         window.electron.ipcRenderer.on(channel, callback)
     },
-    send: (channel: IPC_Channels, ...args: unknown[]) => {
+    send: (channel: Channel, ...args: unknown[]) => {
         window.electron.ipcRenderer.sendMessage(channel, ...args)
     },
-    once(channel: IPC_Channels, func: (...args: unknown[]) => void) {
+    once(channel: Channel, func: (...args: unknown[]) => void) {
         window.electron.ipcRenderer.once(channel, func)
     },
 }

@@ -1,7 +1,7 @@
 import {
-    CC_Modes,
-    CC_Pages,
-    CC_TableAction,
+    PageMode,
+    PageType,
+    TableAction,
     PopupBlocker as T_PopupBlocker,
 } from '@src/types'
 import IPC from '@home/modules/ipc'
@@ -12,7 +12,7 @@ import Th from '../fragments/th'
 import Span from '../fragments/span'
 
 export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
-    readonly page = CC_Pages.PopupBlocker
+    readonly page = PageType.POPUP_BLOCKER
 
     constructor() {
         super()
@@ -57,13 +57,13 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
         allowed.element.addEventListener('click', () => {
             this.cursor = index
-            this.action(CC_TableAction.EXECUTE)
+            this.action(TableAction.EXECUTE)
             this.cursor = NaN
         })
 
         title.element.addEventListener('click', () => {
             this.cursor = index
-            this.action(CC_TableAction.EXECUTE)
+            this.action(TableAction.EXECUTE)
             this.cursor = NaN
         })
 
@@ -82,13 +82,13 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         return item.host.toLowerCase().includes(keyword.toLowerCase())
     }
 
-    action(action: CC_TableAction, items: T_PopupBlocker[] = []) {
+    action(action: TableAction, items: T_PopupBlocker[] = []) {
         super.action(action, items)
 
         if (
-            action === CC_TableAction.DELETE ||
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
+            action === TableAction.DELETE ||
+            action === TableAction.EXECUTE ||
+            action === TableAction.EDIT
         ) {
             IPC.getInstance().togglePopupBlocker(this.items[this._cursor].host)
             this.items[this._cursor].allowed = !this.items[this._cursor].allowed
@@ -103,7 +103,7 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         }
 
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

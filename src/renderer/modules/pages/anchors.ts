@@ -1,4 +1,4 @@
-import { type Bookmark, CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
+import { type Bookmark, PageMode, PageType, TableAction } from '@src/types'
 import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
@@ -8,7 +8,7 @@ import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
 
 export default class Anchors extends A_PageWithTable<Bookmark> {
-    readonly page = CC_Pages.Anchor
+    readonly page = PageType.ANCHOR
 
     constructor() {
         super()
@@ -51,7 +51,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
             const dataset = (e.target as HTMLElement).dataset
             if (dataset['type'] === 'delete') {
                 this.cursor = parseInt(dataset['index'])
-                this.action(CC_TableAction.DELETE)
+                this.action(TableAction.DELETE)
                 this.cursor = NaN
                 return
             }
@@ -70,7 +70,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         del.setData('index', index)
         del.addEventListener('click', () => {
             this.cursor = index
-            this.action(CC_TableAction.DELETE)
+            this.action(TableAction.DELETE)
             this.cursor = NaN
         })
 
@@ -87,13 +87,10 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         )
     }
 
-    action(action: CC_TableAction, items: Bookmark[] = []) {
+    action(action: TableAction, items: Bookmark[] = []) {
         super.action(action, items)
 
-        if (
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
-        ) {
+        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
             IPC.getInstance().navigate(
                 this.items[this._cursor].url,
                 this._cursor,
@@ -101,7 +98,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
             return
         }
 
-        if (action === CC_TableAction.DELETE) {
+        if (action === TableAction.DELETE) {
             if (isNaN(this._cursor)) {
                 return
             }
@@ -120,7 +117,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         }
 
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

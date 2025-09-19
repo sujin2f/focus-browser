@@ -1,4 +1,4 @@
-import { type Bookmark, CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
+import { type Bookmark, PageMode, PageType, TableAction } from '@src/types'
 import Controller from '@src/renderer/controller'
 import IPC from '@home/modules/ipc'
 
@@ -12,7 +12,7 @@ import Th from '@home/modules//fragments/th'
 import Span from '@home/modules/fragments/span'
 
 export default class Bookmarks extends A_PageWithTable<Bookmark> {
-    readonly page = CC_Pages.Bookmark
+    readonly page = PageType.BOOKMARK
 
     // Buttons
     private buttonAdd: Button = new Button()
@@ -35,13 +35,13 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         this.form.hide()
     }
 
-    protected changeMode(mode: CC_Modes): boolean {
+    protected changeMode(mode: PageMode): boolean {
         if (!super.changeMode(mode)) {
             return
         }
 
         switch (mode) {
-            case CC_Modes.NEW:
+            case PageMode.NEW:
                 this.cursor = NaN
                 this.inputTitle.value =
                     Controller.getInstance().currentUrl.title
@@ -52,9 +52,9 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 this.inputTitle.focus()
                 return
 
-            case CC_Modes.EDIT:
+            case PageMode.EDIT:
                 if (isNaN(this._cursor)) {
-                    this.changeMode(CC_Modes.LIST)
+                    this.changeMode(PageMode.LIST)
                     return
                 }
 
@@ -116,8 +116,8 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             const dataset = (e.target as HTMLElement).dataset
             if (dataset['type'] === 'edit') {
                 this.cursor = parseInt(dataset['index'])
-                this.changeMode(CC_Modes.LIST)
-                this.changeMode(CC_Modes.EDIT)
+                this.changeMode(PageMode.LIST)
+                this.changeMode(PageMode.EDIT)
                 return
             }
 
@@ -148,7 +148,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         edit.setData('index', index)
         edit.addEventListener('click', () => {
             this._cursor = index
-            this.changeMode(CC_Modes.EDIT)
+            this.changeMode(PageMode.EDIT)
         })
 
         title.child = edit
@@ -179,7 +179,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         buttonCancel.text = 'Cancel (Esc)'
         buttonCancel.type = 'reset'
         buttonCancel.addEventListener('click', () => {
-            this.changeMode(CC_Modes.LIST)
+            this.changeMode(PageMode.LIST)
         })
 
         this.form.child = labelTitle
@@ -225,23 +225,23 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         }
 
         this.refresh()
-        this.changeMode(CC_Modes.LIST)
+        this.changeMode(PageMode.LIST)
     }
 
-    action(action: CC_TableAction, items: Bookmark[] = []) {
+    action(action: TableAction, items: Bookmark[] = []) {
         super.action(action, items)
 
-        if (action === CC_TableAction.EXECUTE) {
+        if (action === TableAction.EXECUTE) {
             IPC.getInstance().navigate(this.items[this._cursor].url)
             return
         }
 
-        if (action === CC_TableAction.EDIT) {
-            this.changeMode(CC_Modes.EDIT)
+        if (action === TableAction.EDIT) {
+            this.changeMode(PageMode.EDIT)
             return
         }
 
-        if (action === CC_TableAction.DELETE) {
+        if (action === TableAction.DELETE) {
             if (isNaN(this._cursor)) {
                 return
             }
@@ -274,7 +274,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     private onSwitchAdd() {
-        this.changeMode(CC_Modes.LIST)
-        this.changeMode(CC_Modes.NEW)
+        this.changeMode(PageMode.LIST)
+        this.changeMode(PageMode.NEW)
     }
 }

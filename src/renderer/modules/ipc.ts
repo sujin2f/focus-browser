@@ -1,10 +1,10 @@
 import type { NavigationEntry } from 'electron'
 import {
     Bookmark,
-    CC_Pages,
-    CC_TableAction,
-    IPC_Channels,
-    IPC_RequestHandler,
+    PageType,
+    TableAction,
+    Channel,
+    RequestHandler,
     Scenes,
 } from '@src/types'
 import { message } from '@home/util'
@@ -24,42 +24,42 @@ export default class IPC {
     }
 
     private init() {
-        message.on(IPC_Channels.Switch, (scene: Scenes, url: Bookmark) => {
+        message.on(Channel.SWITCH, (scene: Scenes, url: Bookmark) => {
             Controller.getInstance().currentUrl = url
 
-            if (scene === Scenes.Home) {
-                Controller.getInstance().switch(CC_Pages.Home)
+            if (scene === Scenes.HOME) {
+                Controller.getInstance().switch(PageType.HOME)
             }
-            if (scene === Scenes.Address) {
-                Controller.getInstance().switch(CC_Pages.Address)
+            if (scene === Scenes.ADDRESS) {
+                Controller.getInstance().switch(PageType.ADDRESS)
             }
         })
     }
 
     public navigate(url?: string, anchorIndex?: number) {
         if (url) {
-            message.send(IPC_Channels.Switch, Scenes.Browser, url, anchorIndex)
+            message.send(Channel.SWITCH, Scenes.BROWSER, url, anchorIndex)
             return
         }
 
-        message.send(IPC_Channels.Switch, Scenes.Browser)
+        message.send(Channel.SWITCH, Scenes.BROWSER)
     }
 
     public requestBookmarks() {
-        message.send(IPC_Channels.Bookmarks, IPC_RequestHandler.Request)
+        message.send(Channel.BOOKMARK, RequestHandler.REQUEST)
         message.once(
-            IPC_Channels.Bookmarks,
-            (handler: IPC_RequestHandler.Response, bookmarks: Bookmark[]) => {
-                if (handler !== IPC_RequestHandler.Response) {
+            Channel.BOOKMARK,
+            (handler: RequestHandler.RESPONSE, bookmarks: Bookmark[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
 
                 if (
                     Controller.getInstance().currentPage.page ===
-                    CC_Pages.Bookmark
+                    PageType.BOOKMARK
                 ) {
                     Controller.getInstance().currentPage.action(
-                        CC_TableAction.UPDATE,
+                        TableAction.UPDATE,
                         bookmarks,
                     )
                 }
@@ -68,20 +68,20 @@ export default class IPC {
     }
 
     public requestAnchors() {
-        message.send(IPC_Channels.Anchors, IPC_RequestHandler.Request)
+        message.send(Channel.ANCHOR, RequestHandler.REQUEST)
         message.once(
-            IPC_Channels.Anchors,
-            (handler: IPC_RequestHandler.Response, anchors: Bookmark[]) => {
-                if (handler !== IPC_RequestHandler.Response) {
+            Channel.ANCHOR,
+            (handler: RequestHandler.RESPONSE, anchors: Bookmark[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
 
                 if (
                     Controller.getInstance().currentPage.page ===
-                    CC_Pages.Anchor
+                    PageType.ANCHOR
                 ) {
                     Controller.getInstance().currentPage.action(
-                        CC_TableAction.UPDATE,
+                        TableAction.UPDATE,
                         anchors,
                     )
                 }
@@ -90,27 +90,24 @@ export default class IPC {
     }
 
     public removeAnchor(index: number) {
-        message.send(IPC_Channels.Anchors, IPC_RequestHandler.Remove, index)
+        message.send(Channel.ANCHOR, RequestHandler.REMOVE, index)
     }
 
     public requestHistory() {
-        message.send(IPC_Channels.History, IPC_RequestHandler.Request)
+        message.send(Channel.HISTORY, RequestHandler.REQUEST)
         message.once(
-            IPC_Channels.History,
-            (
-                handler: IPC_RequestHandler.Response,
-                history: NavigationEntry[],
-            ) => {
-                if (handler !== IPC_RequestHandler.Response) {
+            Channel.HISTORY,
+            (handler: RequestHandler.RESPONSE, history: NavigationEntry[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
 
                 if (
                     Controller.getInstance().currentPage.page ===
-                    CC_Pages.History
+                    PageType.HISTORY
                 ) {
                     Controller.getInstance().currentPage.action(
-                        CC_TableAction.UPDATE,
+                        TableAction.UPDATE,
                         history,
                     )
                 }
@@ -119,28 +116,28 @@ export default class IPC {
     }
 
     public requestPopupBlocker() {
-        message.send(IPC_Channels.PopupBlocker, IPC_RequestHandler.Request)
+        message.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
         message.once(
-            IPC_Channels.PopupBlocker,
+            Channel.POPUP_BLOCKER,
             (
-                handler: IPC_RequestHandler.Response,
+                handler: RequestHandler.RESPONSE,
                 blocked: string[],
                 allowed: string[],
             ) => {
-                if (handler !== IPC_RequestHandler.Response) {
+                if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
 
                 if (
                     Controller.getInstance().currentPage.page ===
-                    CC_Pages.PopupBlocker
+                    PageType.POPUP_BLOCKER
                 ) {
                     const data = [
                         ...allowed.map((host) => ({ host, allowed: true })),
                         ...blocked.map((host) => ({ host, allowed: false })),
                     ]
                     Controller.getInstance().currentPage.action(
-                        CC_TableAction.UPDATE,
+                        TableAction.UPDATE,
                         data,
                     )
                 }
@@ -149,27 +146,22 @@ export default class IPC {
     }
 
     public navigateHistory(index: number) {
-        message.send(IPC_Channels.History, IPC_RequestHandler.Execute, index)
+        message.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
     }
 
     public addBookmark(bookmark: Bookmark) {
-        message.send(IPC_Channels.Bookmarks, IPC_RequestHandler.Add, bookmark)
+        message.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
     }
 
     public editBookmark(index: number, bookmark: Bookmark) {
-        message.send(
-            IPC_Channels.Bookmarks,
-            IPC_RequestHandler.Modify,
-            bookmark,
-            index,
-        )
+        message.send(Channel.BOOKMARK, RequestHandler.MODIFY, bookmark, index)
     }
 
     public removeBookmark(index: number) {
-        message.send(IPC_Channels.Bookmarks, IPC_RequestHandler.Remove, index)
+        message.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
     }
 
     public togglePopupBlocker(host: string) {
-        message.send(IPC_Channels.PopupBlocker, IPC_RequestHandler.Modify, host)
+        message.send(Channel.POPUP_BLOCKER, RequestHandler.MODIFY, host)
     }
 }

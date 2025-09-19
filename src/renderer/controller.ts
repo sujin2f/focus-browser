@@ -1,14 +1,14 @@
-import { Bookmark, CC_Pages, CC_TableAction } from '@src/types'
+import { Bookmark, PageType, TableAction } from '@src/types'
 import { checkElectron } from '@home/util'
 
 import Home from '@src/renderer/modules/pages/home'
 
-import IPC from './modules/ipc'
-import A_Page from './modules/pages'
-import Bookmarks from './modules/pages/bookmarks'
-import History from './modules/pages/history'
-import Anchors from './modules/pages/anchors'
-import PopupBlocker from './modules/pages/popup'
+import IPC from '@src/renderer/modules/ipc'
+import A_Page from '@src/renderer/modules/pages'
+import Bookmarks from '@src/renderer/modules/pages/bookmarks'
+import History from '@src/renderer/modules/pages/history'
+import Anchors from '@src/renderer/modules/pages/anchors'
+import PopupBlocker from '@src/renderer/modules/pages/popup'
 
 import './styles/common.css'
 
@@ -35,39 +35,39 @@ export default class Controller {
         document.addEventListener('DOMContentLoaded', () => {
             checkElectron()
             IPC.getInstance()
-            this.switch(CC_Pages.Home)
+            this.switch(PageType.HOME)
             document.addEventListener('keydown', (e) =>
                 this.currentPage.doShortcut(e),
             )
         })
     }
 
-    switch(page: CC_Pages) {
+    switch(page: PageType) {
         switch (page) {
-            case CC_Pages.Home:
-            case CC_Pages.Address:
+            case PageType.HOME:
+            case PageType.ADDRESS:
                 this._currentPage = new Home()
                 break
 
-            case CC_Pages.Bookmark:
+            case PageType.BOOKMARK:
                 this._currentPage = new Bookmarks()
                 break
 
-            case CC_Pages.History:
+            case PageType.HISTORY:
                 this._currentPage = new History()
                 break
 
-            case CC_Pages.Anchor:
+            case PageType.ANCHOR:
                 this._currentPage = new Anchors()
                 break
 
-            case CC_Pages.PopupBlocker:
+            case PageType.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
                 break
         }
 
-        if (page === CC_Pages.Address) {
-            this._currentPage.action(CC_TableAction.FOCUS)
+        if (page === PageType.ADDRESS) {
+            this._currentPage.action(TableAction.FOCUS)
         }
     }
 }

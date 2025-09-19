@@ -7,9 +7,9 @@ import {
 import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
-import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
+import Th from '../fragments/th'
+import Span from '../fragments/span'
 
 export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     readonly page = CC_Pages.PopupBlocker
@@ -27,86 +27,55 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.root.appendChild(this.formFind.element)
+        this.renderTable()
         this.hideForms()
 
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
-        this.renderTable()
+        this.root.appendChild(this.buttons)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
     private renderButtons() {
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Allowed'
-        this.table.th = 'Toggle'
+    getTHeads(): Th[] {
+        const allowed = this.createFixedCell('th')
+        allowed.innerHTML = 'Allowed'
 
-        this.items.reverse().forEach((item, index) => {
-            const tr = new Tr()
-            tr.dataIndex = this.items.length - index - 1
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+        const title = new Th()
+        title.innerHTML = 'Title'
+        title.classList.add('text-left')
 
-            // title
-            const title = new Button()
-            title.text = item.host
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
+        return [allowed, title]
+    }
 
-            // allowed
-            const allowed = new Button()
-            allowed.text = item.allowed ? 'V' : ''
-            allowed.type = 'button'
-            allowed.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            allowed.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
+    getRowCells(popup: T_PopupBlocker, index: number): Td[] {
+        const allowed = this.createFixedCell()
+        const title = new Td()
 
-            // Button
-            const button = new Button()
-            button.className = ''
-            button.text = 'Toggle'
-            button.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
-
-            const tdTitle = new Td()
-            const tdAllowed = new Td()
-            const tdButton = new Td()
-
-            tdTitle.child = title
-            tdAllowed.child = allowed
-            tdButton.child = button
-
-            tr.child = tdTitle
-            tr.child = tdAllowed
-            tr.child = tdButton
-
-            this.table.child = tr
+        allowed.element.addEventListener('click', () => {
+            this.cursor = index
+            this.action(CC_TableAction.EXECUTE)
+            this.cursor = NaN
         })
-        this.tableWrapper.appendChild(this.table.element)
+
+        title.element.addEventListener('click', () => {
+            this.cursor = index
+            this.action(CC_TableAction.EXECUTE)
+            this.cursor = NaN
+        })
+
+        const spanAllowed = new Span()
+        spanAllowed.innerHTML = popup.allowed ? '✅' : ''
+        allowed.child = spanAllowed
+
+        const spanTitle = new Span()
+        spanTitle.innerHTML = popup.host
+        title.child = spanTitle
+
+        return [allowed, title]
     }
 
     filterCondition(item: T_PopupBlocker, keyword: string): boolean {

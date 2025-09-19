@@ -3,8 +3,9 @@ import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
+import Th from '@home/modules/fragments/th'
+import Span from '@home/modules/fragments/span'
 
 export default class Anchors extends A_PageWithTable<Bookmark> {
     readonly page = CC_Pages.Anchor
@@ -22,70 +23,61 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.root.appendChild(this.formFind.element)
+        this.renderTable()
         this.hideForms()
 
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
-        this.renderTable()
+        this.root.appendChild(this.buttons)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
     private renderButtons() {
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Delete'
+    getTHeads(): Th[] {
+        const title = new Th()
+        title.innerHTML = 'Title'
+        title.classList.add('text-left')
 
-        this.items.forEach((bookmark, index) => {
-            const tr = new Tr()
-            tr.dataIndex = index
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+        return [title]
+    }
 
-            // title
-            const title = new Button()
-            title.className = ''
-            title.text = bookmark.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().navigate(bookmark.url, index)
-            })
+    getRowCells(bookmark: Bookmark, index: number): Td[] {
+        const title = new Td()
 
-            // Delete
-            const del = new Button()
-            del.className = ''
-            del.text = 'Delete'
-            del.addEventListener('click', () => {
-                this._cursor = index
+        title.element.addEventListener('click', (e) => {
+            const dataset = (e.target as HTMLElement).dataset
+            if (dataset['type'] === 'delete') {
+                this.cursor = parseInt(dataset['index'])
                 this.action(CC_TableAction.DELETE)
-                this._cursor = NaN
-            })
+                this.cursor = NaN
+                return
+            }
 
-            const tdTitle = new Td()
-            const tdEdit = new Td()
-
-            tdTitle.child = title
-            tdEdit.child = del
-
-            tr.child = tdTitle
-            tr.child = tdEdit
-
-            this.table.child = tr
+            IPC.getInstance().navigate(bookmark.url)
         })
-        this.tableWrapper.appendChild(this.table.element)
+
+        const spanTitle = new Span()
+        spanTitle.innerHTML = bookmark.title
+
+        const del = new Button()
+        del.classList.remove('mb-3', 'p-2')
+        del.classList.add('mr-2', 'cursor-pointer', 'pl-1', 'pr-1')
+        del.text = 'Remove'
+        del.setData('type', 'delete')
+        del.setData('index', index)
+        del.addEventListener('click', () => {
+            this.cursor = index
+            this.action(CC_TableAction.DELETE)
+            this.cursor = NaN
+        })
+
+        title.child = del
+        title.child = spanTitle
+
+        return [title]
     }
 
     filterCondition(item: Bookmark, keyword: string): boolean {

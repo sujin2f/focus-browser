@@ -5,10 +5,6 @@ export default class Button extends A_HTMLFragmentWithEvent<HTMLButtonElement> {
         this.element.innerHTML = text
     }
 
-    public set className(className: string) {
-        this.element.className = className
-    }
-
     public set type(type: 'submit' | 'reset' | 'button') {
         this.element.type = type
     }

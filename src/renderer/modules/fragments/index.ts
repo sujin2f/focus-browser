@@ -33,6 +33,15 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
         return this._element
     }
 
+    private _data: Record<string, unknown> = {}
+    public setData<D>(key: string, value: D) {
+        this._data[key] = value
+        this.element.dataset[key] = `${value}`
+    }
+    public getData(key: string) {
+        return this._data[key]
+    }
+
     /**
      * For children fragments
      */
@@ -63,6 +72,10 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
         return this._children
     }
 
+    public get classList() {
+        return this.element.classList
+    }
+
     public set innerHTML(html: string) {
         this._children.forEach((child) => child.reset())
         this._children = []
@@ -86,10 +99,9 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
      * Reset
      */
     public reset() {
-        this.element.remove()
+        this.childWrapper.innerHTML = ''
         this._children.forEach((child) => child.reset())
         this._children = []
-        this.element = this.template
     }
 }
 

@@ -21,7 +21,7 @@
 -->
 <template id="template--card">
     <a
-        class="p-3 m-3 border border-gray-300 rounded-sm bg-white cursor-pointer dark:bg-gray-900 dark:border-transparent"
+        class="p-3 m-3 border border-gray-300 rounded-sm bg-white cursor-pointer dark:bg-gray-900 dark:border-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover"
         role="button"
     >
         <h2
@@ -35,13 +35,9 @@
 // Table
 -->
 <template id="template--table">
-    <div
-        class="relative flex flex-col w-full h-full overflow-x-auto overflow-y-hidden bg-clip-border"
-    >
-        <table class="w-full text-left table-auto min-w-max">
-            <thead>
-                <tr></tr>
-            </thead>
+    <div class="w-full h-full overflow-x-auto overflow-y-hidden bg-clip-border">
+        <table class="table-auto min-w-max border-collapse w-full">
+            <thead></thead>
             <tbody></tbody>
         </table>
     </div>
@@ -52,15 +48,13 @@
 </template>
 
 <template id="template--table__th">
-    <th class="p-4 border-b border-blue-gray-100">
-        <p
-            class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-        ></p>
-    </th>
+    <th
+        class="p-4 border-b border-blue-gray-100 dark:border-blue-gray-500"
+    ></th>
 </template>
 
 <template id="template--table__td">
-    <td class="p-4 border-b border-blue-gray-50"></td>
+    <td class="p-4 border-b border-blue-gray-50 dark:border-blue-gray-100"></td>
 </template>
 
 <!--
@@ -80,14 +74,15 @@
 
 <template id="template--input">
     <input
-        class="w-full text-lg p-3 rounded-sm border border-gray-300 dark:text-white dark:bg-gray-800 dark:border-transparent mb-4"
+        class="w-full text-lg p-3 rounded-sm border border-gray-300 dark:text-white dark:bg-gray-800 dark:border-transparent focus:outline-none focus:ring-2 focus:ring-pink-500 mb-4"
         type="text"
     />
 </template>
 
 <template id="template--button">
     <button
-        class="mb-4 px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+        class="mb-3 p-2 rounded-sm text-sm font-medium text-white bg-pink-900 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 cursor-pointer"
+        type="button"
     ></button>
 </template>
 

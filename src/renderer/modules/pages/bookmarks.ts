@@ -6,9 +6,10 @@ import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
-import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 import Form from '@home/modules/fragments/form'
+import Th from '@home/modules//fragments/th'
+import Span from '@home/modules/fragments/span'
 
 export default class Bookmarks extends A_PageWithTable<Bookmark> {
     readonly page = CC_Pages.Bookmark
@@ -17,10 +18,10 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     private buttonAdd: Button = new Button()
 
     // Input Form
-    private formInput: Form = new Form()
-    private formInputTitle: Input = new Input()
-    private formInputUrl: Input = new Input()
-    private formInputShortcut: Input = new Input()
+    private form: Form = new Form()
+    private inputTitle: Input = new Input()
+    private inputUrl: Input = new Input()
+    private inputShortcut: Input = new Input()
 
     private shortcuts: Record<string, string> = {}
 
@@ -31,7 +32,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
     protected hideForms() {
         super.hideForms()
-        this.formInput.hide()
+        this.form.hide()
     }
 
     protected changeMode(mode: CC_Modes): boolean {
@@ -41,17 +42,14 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
         switch (mode) {
             case CC_Modes.NEW:
-                this.formInputTitle.value =
+                this.cursor = NaN
+                this.inputTitle.value =
                     Controller.getInstance().currentUrl.title
-                this.formInputUrl.value =
-                    Controller.getInstance().currentUrl.url
-                this.formInputShortcut.value = ''
+                this.inputUrl.value = Controller.getInstance().currentUrl.url
+                this.inputShortcut.value = ''
 
-                this.hideForms()
-                this.formInput.show()
-                this.formInputTitle.focus()
-
-                this.refresh()
+                this.form.show()
+                this.inputTitle.focus()
                 return
 
             case CC_Modes.EDIT:
@@ -62,13 +60,12 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
                 const current = this.items[this._cursor]
 
-                this.formInputTitle.value = current.title
-                this.formInputUrl.value = current.url
-                this.formInputShortcut.value = current.shortcut || ''
+                this.inputTitle.value = current.title
+                this.inputUrl.value = current.url
+                this.inputShortcut.value = current.shortcut || ''
 
-                this.hideForms()
-                this.formInput.show()
-                this.formInputTitle.focus()
+                this.form.show()
+                this.inputTitle.focus()
                 return
         }
     }
@@ -81,114 +78,100 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderModifyForm()
-        this.root.appendChild(this.formInput.element)
-
         this.renderFindForm()
-        this.root.appendChild(this.formFind.element)
-
+        this.renderTable()
         this.hideForms()
 
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
-        this.renderTable()
+        this.root.appendChild(this.buttons)
+        this.root.appendChild(this.form.element)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
     private renderButtons() {
         this.buttonAdd.text = 'Add Bookmark (⌘D)'
-        this.buttonAdd.addEventListener('click', () => {
-            this.changeMode(CC_Modes.NEW)
-        })
+        this.buttonAdd.addEventListener('click', this.onSwitchAdd.bind(this))
 
         this.buttons.appendChild(this.buttonAdd.element)
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Shortcut'
-        this.table.th = 'Edit'
+    getTHeads(): Th[] {
+        const shortcut = this.createFixedCell('th')
+        shortcut.innerHTML = 'Shortcut'
 
-        this.items.forEach((bookmark, index) => {
-            const tr = new Tr()
-            tr.dataIndex = index
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+        const title = new Th()
+        title.innerHTML = 'Title'
+        title.classList.add('text-left')
 
-            // title
-            const title = new Button()
-            title.className = ''
-            title.text = bookmark.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().navigate(bookmark.url)
-            })
+        return [shortcut, title]
+    }
 
-            // Shortcode
-            const shortcut = new Button()
-            shortcut.className = ''
-            if (bookmark.shortcut) {
-                this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
-                shortcut.text = bookmark.shortcut.toUpperCase()
-                shortcut.type = 'button'
-                shortcut.className =
-                    'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-                shortcut.addEventListener('click', () => {
-                    IPC.getInstance().navigate(bookmark.url)
-                })
+    getRowCells(bookmark: Bookmark, index: number): Td[] {
+        const shortcut = this.createFixedCell()
+        const title = new Td()
+
+        title.element.addEventListener('click', (e) => {
+            const dataset = (e.target as HTMLElement).dataset
+            if (dataset['type'] === 'edit') {
+                this.cursor = parseInt(dataset['index'])
+                this.changeMode(CC_Modes.LIST)
+                this.changeMode(CC_Modes.EDIT)
+                return
             }
 
-            // Edit
-            const edit = new Button()
-            edit.className = ''
-            edit.text = 'Edit'
-            edit.addEventListener('click', () => {
-                this._cursor = index
-                this.changeMode(CC_Modes.EDIT)
-            })
-
-            const tdTitle = new Td()
-            const tdShortcut = new Td()
-            const tdEdit = new Td()
-
-            tdTitle.child = title
-            tdShortcut.child = shortcut
-            tdEdit.child = edit
-
-            tr.child = tdTitle
-            tr.child = tdShortcut
-            tr.child = tdEdit
-
-            this.table.child = tr
+            IPC.getInstance().navigate(bookmark.url)
         })
-        this.tableWrapper.appendChild(this.table.element)
+
+        if (bookmark.shortcut) {
+            const btnShortcut = new Button()
+            btnShortcut.classList.remove('mb-3', 'p-2')
+            btnShortcut.classList.add('pr-1', 'pl-1')
+            this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
+            btnShortcut.text = bookmark.shortcut.toUpperCase()
+            btnShortcut.addEventListener('click', () => {
+                IPC.getInstance().navigate(bookmark.url)
+            })
+            shortcut.child = btnShortcut
+        }
+
+        // title
+        const spanTitle = new Span()
+        spanTitle.innerHTML = bookmark.title
+
+        const edit = new Button()
+        edit.classList.remove('mb-3', 'p-2')
+        edit.classList.add('mr-2', 'cursor-pointer')
+        edit.text = '⚙️'
+        edit.setData('type', 'edit')
+        edit.setData('index', index)
+        edit.addEventListener('click', () => {
+            this._cursor = index
+            this.changeMode(CC_Modes.EDIT)
+        })
+
+        title.child = edit
+        title.child = spanTitle
+
+        return [shortcut, title]
     }
 
     private renderModifyForm() {
-        this.formInput.reset()
+        this.form.reset()
 
         const labelTitle = new Label()
         labelTitle.innerHTML = 'Title'
-        labelTitle.child = this.formInputTitle
+        labelTitle.child = this.inputTitle
 
         const labelUrl = new Label()
         labelUrl.innerHTML = 'URL'
-        labelUrl.child = this.formInputUrl
+        labelUrl.child = this.inputUrl
 
         const labelShortcut = new Label()
         labelShortcut.innerHTML = 'Shortcut'
-        labelShortcut.child = this.formInputShortcut
-        this.formInputShortcut.maxLength = 1
+        labelShortcut.child = this.inputShortcut
+        this.inputShortcut.maxLength = 1
 
         const buttonOk = new Button()
         buttonOk.text = 'OK (Enter)'
@@ -199,12 +182,12 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             this.changeMode(CC_Modes.LIST)
         })
 
-        this.formInput.child = labelTitle
-        this.formInput.child = labelUrl
-        this.formInput.child = labelShortcut
-        this.formInput.child = buttonOk
-        this.formInput.child = buttonCancel
-        this.formInput.addEventListener('submit', (e) => {
+        this.form.child = labelTitle
+        this.form.child = labelUrl
+        this.form.child = labelShortcut
+        this.form.child = buttonOk
+        this.form.child = buttonCancel
+        this.form.addEventListener('submit', (e) => {
             e.preventDefault()
             this.onEditSubmit()
         })
@@ -219,18 +202,18 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
     private onEditSubmit() {
         // TODO Validation
-        if (!this.formInputTitle.value) {
+        if (!this.inputTitle.value) {
             return
         }
 
-        if (!this.formInputUrl.value) {
+        if (!this.inputUrl.value) {
             return
         }
 
         const bookmark = {
-            title: this.formInputTitle.value,
-            url: this.formInputUrl.value,
-            shortcut: this.formInputShortcut.value,
+            title: this.inputTitle.value,
+            url: this.inputUrl.value,
+            shortcut: this.inputShortcut.value,
         }
 
         if (isNaN(this._cursor)) {
@@ -274,7 +257,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     doShortcut(e: KeyboardEvent): boolean {
         // Add Bookmark ⌘D
         if (e.key.toLowerCase() === 'd' && e.metaKey) {
-            this.changeMode(CC_Modes.NEW)
+            this.onSwitchAdd()
             return true
         }
 
@@ -288,5 +271,10 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         }
 
         super.doShortcut(e)
+    }
+
+    private onSwitchAdd() {
+        this.changeMode(CC_Modes.LIST)
+        this.changeMode(CC_Modes.NEW)
     }
 }

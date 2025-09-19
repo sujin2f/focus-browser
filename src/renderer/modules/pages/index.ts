@@ -6,15 +6,15 @@ import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Form from '@home/modules/fragments/form'
+import Tr from '@home/modules/fragments/tr'
+import Td from '@home/modules/fragments/td'
+import Th from '@home/modules/fragments/th'
 
 export default abstract class A_Page<T> {
     /**
      * Identifier
      */
     abstract readonly page: CC_Pages
-
-    protected readonly CLASSNAME_KEYBOARD =
-        'inline-block text-sm p-0.5 bg-white border-6 border-t-gray-300 border-r-gray-100 border-l-gray-400 border-b-gray-500'
 
     /**
      * All starts with here
@@ -69,14 +69,13 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         }
 
         this._mode = mode
+        this.hideForms()
 
         switch (mode) {
             case CC_Modes.LIST:
-                this.hideForms()
                 return false
 
             case CC_Modes.FIND:
-                this.hideForms()
                 this.formFind.show()
                 this.inputFindKeyword.value = ''
                 this.inputFindKeyword.focus()
@@ -104,11 +103,10 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     protected inputFindKeyword: Input = new Input()
 
     // Table
-    protected tableWrapper: HTMLElement
     protected table: Table = new Table()
 
     protected init() {
-        this.buttonFind.text = 'Find in Bookmarks (⌘F)'
+        this.buttonFind.text = 'Find (⌘F)'
         this.buttonFind.addEventListener('click', () => {
             this.changeMode(CC_Modes.FIND)
         })
@@ -116,29 +114,67 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         this.buttons = document.createElement('section')
         this.buttons.className = 'w-full flex justify-between'
 
-        this.request()
         this.render()
+        this.renderTableHeads()
+        this.request()
     }
 
     abstract request(): void
     abstract render(): void
 
-    abstract renderTable(): void
-    protected renderFindForm() {
-        const labelFindTitle = new Label()
-        labelFindTitle.innerHTML = 'Keyword'
-        labelFindTitle.child = this.inputFindKeyword
+    /**
+     * Table related methods
+     */
+    abstract getTHeads(): Th[]
+    abstract getRowCells(item: T, index: number): Td[]
+    private renderTableHeads() {
+        const header = new Tr()
+        this.getTHeads().forEach((th) => (header.child = th))
+        this.table.head = null
+        this.table.head = header
+    }
+    protected renderTable() {
+        this.table.reset()
+        this.items.forEach((item, index) => {
+            const tr = new Tr()
+            tr.setData('index', index)
+            tr.classList.add(
+                'hover',
+                'cursor-pointer',
+                'text-sm',
+                'antialiased',
+                'font-normal',
+                'leading-normal',
+                'text-blue-gray-900',
+                ...this.STYLE_HOVER,
+            )
 
-        this.formFind.child = labelFindTitle
-
-        this.inputFindKeyword.addEventListener('keyup', (e) => {
-            const keyword = this.inputFindKeyword.value
-            this.filterTable(keyword)
+            this.getRowCells(item, index).forEach((td) => (tr.child = td))
+            this.table.child = tr
         })
     }
+    protected createFixedCell(type: 'th' | 'td' = 'td'): Th | Td {
+        const td = type === 'td' ? new Td() : new Th()
+        td.classList.add(
+            'sticky',
+            'left-0',
+            'indent-1',
+            'bg-white',
+            'dark:bg-gray-950',
+            'w-1',
+            'text-center',
+        )
+        return td
+    }
+
+    protected readonly STYLE_FOCUSED = ['bg-gray-100', 'dark:bg-gray-800']
+    protected readonly STYLE_HOVER = [
+        'hover:bg-gray-100',
+        'dark:hover:bg-gray-800',
+    ]
 
     abstract filterCondition(item: T, keyword: string): boolean
-    protected filterTable(keyword: string) {
+    protected filterTable(keyword?: string) {
         const rows = this.table.children
         this.items.forEach((item, index) => {
             if (!keyword) {
@@ -156,20 +192,20 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
 
     private focusTable() {
+        let shift = 0
         this.table.children.forEach((row) => {
-            if (this._cursor === row.dataIndex) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
+            if (row.hidden) {
+                row.classList.remove(...this.STYLE_FOCUSED)
+                shift++
+                return
+            }
+            if (this._cursor + shift === row.getData('index')) {
+                row.classList.add(...this.STYLE_FOCUSED)
 
                 return
             }
 
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+            row.classList.remove(...this.STYLE_FOCUSED)
         })
     }
 
@@ -189,6 +225,19 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         this.blur()
     }
 
+    protected renderFindForm() {
+        const labelFindTitle = new Label()
+        labelFindTitle.innerHTML = 'Keyword'
+        labelFindTitle.child = this.inputFindKeyword
+
+        this.formFind.child = labelFindTitle
+
+        this.inputFindKeyword.addEventListener('keyup', () => {
+            const keyword = this.inputFindKeyword.value
+            this.filterTable(keyword)
+        })
+    }
+
     /**
      * For update and refresh
      */
@@ -200,7 +249,8 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     action(action: CC_TableAction, items: T[] = []) {
         if (action === CC_TableAction.UPDATE) {
             this.items = items
-            this.refresh()
+            this._cursor = NaN
+            this.renderTable()
         }
     }
 

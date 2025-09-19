@@ -3,9 +3,9 @@ import { CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
 import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
-import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
+import Th from '@home/modules/fragments/th'
+import Span from '@home/modules/fragments/span'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
     readonly page = CC_Pages.History
@@ -23,56 +23,38 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.root.appendChild(this.formFind.element)
+        this.renderTable()
         this.hideForms()
 
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
-        this.renderTable()
+        this.root.appendChild(this.buttons)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
     private renderButtons() {
         this.buttons.appendChild(this.buttonFind.element)
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
+    getTHeads(): Th[] {
+        const title = new Th()
+        title.innerHTML = 'Title'
+        title.classList.add('text-left')
 
-        this.items.reverse().forEach((item, index) => {
-            const tr = new Tr()
-            tr.dataIndex = this.items.length - index - 1
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+        return [title]
+    }
 
-            // title
-            const title = new Button()
-            title.className = ''
-            title.text = item.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(tr.dataIndex)
-            })
-
-            const tdTitle = new Td()
-
-            tdTitle.child = title
-
-            tr.child = tdTitle
-
-            this.table.child = tr
+    getRowCells(history: NavigationEntry, index: number): Td[] {
+        const title = new Td()
+        title.element.addEventListener('click', () => {
+            IPC.getInstance().navigateHistory(index)
         })
-        this.tableWrapper.appendChild(this.table.element)
+
+        const spanTitle = new Span()
+        spanTitle.innerHTML = history.title
+        title.child = spanTitle
+
+        return [title]
     }
 
     filterCondition(item: NavigationEntry, keyword: string): boolean {

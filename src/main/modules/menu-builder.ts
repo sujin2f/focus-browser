@@ -6,6 +6,7 @@ export interface CustomMenuItemConstructor extends MenuItemConstructorOptions {
     selector?: string
     submenu?: CustomMenuItemConstructor[] | Menu
     system?: Array<SystemType>
+    accelerators?: Record<SystemType, string>
 }
 
 /**
@@ -32,18 +33,20 @@ export default class MenuBuilder {
         system: SystemType,
         menu: CustomMenuItemConstructor[],
     ): MenuItemConstructorOptions[] {
-        return menu.map((item) => {
-            if (item.system && !item.system.includes(system)) {
+        return menu
+            .map((item) => {
+                if (item.system && !item.system.includes(system)) {
+                    delete item.system
+                    return null
+                }
+
+                if (item.submenu && Array.isArray(item.submenu)) {
+                    item.submenu = this.buildTemplate(system, item.submenu)
+                }
+
                 delete item.system
                 return item
-            }
-
-            if (item.submenu && Array.isArray(item.submenu)) {
-                item.submenu = this.buildTemplate(system, item.submenu)
-            }
-
-            delete item.system
-            return item
-        })
+            })
+            .filter((item) => item !== null) as MenuItemConstructorOptions[]
     }
 }

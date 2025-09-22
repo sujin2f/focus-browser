@@ -33,6 +33,7 @@ export enum RequestHandler {
 }
 
 export enum PageType {
+    WELCOME,
     HOME,
     ADDRESS,
     BOOKMARK,

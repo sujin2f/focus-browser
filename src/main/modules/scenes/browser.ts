@@ -46,7 +46,7 @@ export class BrowserView extends WebContentsView {
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
         try {
             if (!hasSchema) {
-                _url = new URL(_url).toString()
+                _url = new URL(`http://${_url}`).toString()
             }
 
             this.webContents.loadURL(_url).catch(() => {

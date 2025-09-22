@@ -74,12 +74,12 @@ const mainConfig = {
     target: 'electron-main',
     name: 'main',
     entry: {
-        index: './src/main/index.ts',
-        preload: './src/main/preload.ts',
+        'main/index': './src/main/index.ts',
+        preload: './src/preload.ts',
     },
 
     output: {
-        path: path.resolve(__dirname, 'release', 'app', 'dist', 'main'),
+        path: path.resolve(__dirname, 'release', 'app', 'dist'),
         filename: '[name].js',
     },
     node: {
@@ -101,6 +101,10 @@ const rendererConfig = {
         new HtmlWebpackPlugin({
             template: './src/renderer/index.html', // Your HTML template for the renderer
             filename: 'index.html',
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/welcome.html',
+            filename: 'welcome.html',
         }),
     ],
 }

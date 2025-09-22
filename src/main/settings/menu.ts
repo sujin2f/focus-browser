@@ -85,17 +85,6 @@ export const menu = (callbacks: {
         label: 'View',
         submenu: [
             {
-                label: 'Address Bar',
-                accelerator: 'CommandOrControl+L',
-                click: callbacks.address,
-            },
-            {
-                label: 'Show Control Centre',
-                accelerator: 'CommandOrControl+`',
-                click: callbacks.home,
-            },
-            { type: 'separator' },
-            {
                 label: 'Toggle Full Screen',
                 accelerator: 'Ctrl+CommandOrControl+F',
                 click: callbacks.fullscreen,
@@ -117,19 +106,8 @@ export const menu = (callbacks: {
             },
             { type: 'separator' },
             {
-                label: 'Stop',
-                accelerator: 'Escape',
-                click: callbacks.stop,
-            },
-            {
-                label: 'Reload',
-                accelerator: 'CommandOrControl+R',
-                click: callbacks.reload,
-            },
-            { type: 'separator' },
-            {
                 label: 'Toggle Developer Tools',
-                accelerator: 'Shift+CommandOrControl+I',
+                accelerator: 'Option+CommandOrControl+I',
                 click: callbacks.devtool,
             },
         ],
@@ -137,6 +115,17 @@ export const menu = (callbacks: {
     {
         label: 'Navigate',
         submenu: [
+            {
+                label: 'Address Bar',
+                accelerator: 'CommandOrControl+L',
+                click: callbacks.address,
+            },
+            {
+                label: 'Show Control Centre',
+                accelerator: 'CommandOrControl+`',
+                click: callbacks.home,
+            },
+            { type: 'separator' },
             {
                 label: 'Back',
                 accelerator: 'CommandOrControl+[',
@@ -148,6 +137,16 @@ export const menu = (callbacks: {
                 click: callbacks.historyForward,
             },
             { type: 'separator' },
+            {
+                label: 'Stop',
+                accelerator: 'Escape',
+                click: callbacks.stop,
+            },
+            {
+                label: 'Reload',
+                accelerator: 'CommandOrControl+R',
+                click: callbacks.reload,
+            },
         ],
     },
     {

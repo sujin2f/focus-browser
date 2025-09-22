@@ -7,7 +7,7 @@ import {
     RequestHandler,
     Scenes,
 } from '@src/types'
-import { message } from '@home/util'
+import { ipcRenderer } from '@home/util'
 import Controller from '../controller'
 
 export default class IPC {
@@ -24,7 +24,7 @@ export default class IPC {
     }
 
     private init() {
-        message.on(Channel.SWITCH, (scene: Scenes, url: Bookmark) => {
+        ipcRenderer.on(Channel.SWITCH, (scene: Scenes, url: Bookmark) => {
             Controller.getInstance().currentUrl = url
 
             if (scene === Scenes.HOME) {
@@ -38,16 +38,16 @@ export default class IPC {
 
     public navigate(url?: string, anchorIndex?: number) {
         if (url) {
-            message.send(Channel.SWITCH, Scenes.BROWSER, url, anchorIndex)
+            ipcRenderer.send(Channel.SWITCH, Scenes.BROWSER, url, anchorIndex)
             return
         }
 
-        message.send(Channel.SWITCH, Scenes.BROWSER)
+        ipcRenderer.send(Channel.SWITCH, Scenes.BROWSER)
     }
 
     public requestBookmarks() {
-        message.send(Channel.BOOKMARK, RequestHandler.REQUEST)
-        message.once(
+        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REQUEST)
+        ipcRenderer.once(
             Channel.BOOKMARK,
             (handler: RequestHandler.RESPONSE, bookmarks: Bookmark[]) => {
                 if (handler !== RequestHandler.RESPONSE) {
@@ -68,8 +68,8 @@ export default class IPC {
     }
 
     public requestAnchors() {
-        message.send(Channel.ANCHOR, RequestHandler.REQUEST)
-        message.once(
+        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.once(
             Channel.ANCHOR,
             (handler: RequestHandler.RESPONSE, anchors: Bookmark[]) => {
                 if (handler !== RequestHandler.RESPONSE) {
@@ -90,12 +90,12 @@ export default class IPC {
     }
 
     public removeAnchor(index: number) {
-        message.send(Channel.ANCHOR, RequestHandler.REMOVE, index)
+        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REMOVE, index)
     }
 
     public requestHistory() {
-        message.send(Channel.HISTORY, RequestHandler.REQUEST)
-        message.once(
+        ipcRenderer.send(Channel.HISTORY, RequestHandler.REQUEST)
+        ipcRenderer.once(
             Channel.HISTORY,
             (handler: RequestHandler.RESPONSE, history: NavigationEntry[]) => {
                 if (handler !== RequestHandler.RESPONSE) {
@@ -116,8 +116,8 @@ export default class IPC {
     }
 
     public requestPopupBlocker() {
-        message.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
-        message.once(
+        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.once(
             Channel.POPUP_BLOCKER,
             (
                 handler: RequestHandler.RESPONSE,
@@ -146,22 +146,27 @@ export default class IPC {
     }
 
     public navigateHistory(index: number) {
-        message.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
+        ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
     }
 
     public addBookmark(bookmark: Bookmark) {
-        message.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
+        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
     }
 
     public editBookmark(index: number, bookmark: Bookmark) {
-        message.send(Channel.BOOKMARK, RequestHandler.MODIFY, bookmark, index)
+        ipcRenderer.send(
+            Channel.BOOKMARK,
+            RequestHandler.MODIFY,
+            bookmark,
+            index,
+        )
     }
 
     public removeBookmark(index: number) {
-        message.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
+        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
     }
 
     public togglePopupBlocker(host: string) {
-        message.send(Channel.POPUP_BLOCKER, RequestHandler.MODIFY, host)
+        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.MODIFY, host)
     }
 }

@@ -9,6 +9,7 @@ import Bookmarks from '@src/renderer/modules/pages/bookmarks'
 import History from '@src/renderer/modules/pages/history'
 import Anchors from '@src/renderer/modules/pages/anchors'
 import PopupBlocker from '@src/renderer/modules/pages/popup'
+import Welcome from '@src/renderer/modules/pages/welcome'
 
 import './styles/common.css'
 
@@ -33,6 +34,11 @@ export default class Controller {
 
     constructor() {
         document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('welcome')) {
+                this.switch(PageType.WELCOME)
+                // Static page (e.g., welcome)
+                return
+            }
             checkElectron()
             IPC.getInstance()
             this.switch(PageType.HOME)
@@ -63,6 +69,10 @@ export default class Controller {
 
             case PageType.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
+                break
+
+            case PageType.WELCOME:
+                this._currentPage = new Welcome()
                 break
         }
 

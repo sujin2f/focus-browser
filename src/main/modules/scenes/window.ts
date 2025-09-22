@@ -26,7 +26,7 @@ class WithIPC extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
     protected current: Scenes = Scenes.BROWSER
-    protected setCurrent(_: Scenes) {
+    protected switch(_: Scenes) {
         throw new Error('Method not implemented.')
     }
 
@@ -45,7 +45,7 @@ class WithIPC extends ElectronBrowserWindow {
     }
 
     private onSwitch(scene: Scenes, address?: string, anchorIndex?: number) {
-        this.setCurrent(scene)
+        this.switch(scene)
 
         if (scene === Scenes.BROWSER && address) {
             this.browser.loadURL(address)
@@ -68,7 +68,7 @@ class WithIPC extends ElectronBrowserWindow {
                 return
 
             case RequestHandler.EXECUTE:
-                this.setCurrent(Scenes.BROWSER)
+                this.switch(Scenes.BROWSER)
                 this.browser.webContents.navigationHistory.goToIndex(index)
                 return
         }
@@ -144,8 +144,8 @@ export default class BrowserWindow extends WithIPC {
      * Constants
      */
     private readonly menu: CustomMenuItemConstructor[] = menu({
-        address: () => this.setCurrent(Scenes.ADDRESS),
-        home: () => this.setCurrent(Scenes.HOME),
+        address: () => this.switch(Scenes.ADDRESS),
+        home: () => this.switch(Scenes.HOME),
         reload: () => {
             if (this.current === Scenes.BROWSER) {
                 this.browser.webContents.reload()
@@ -232,7 +232,8 @@ export default class BrowserWindow extends WithIPC {
         /**
          * Restore status
          */
-        const status = new Status()
+        const status = Status.getInstance()
+        console.log('Status:', status.get('welcome'))
 
         // Restore window size
         const bounds = status.getBounds(this.getBounds())
@@ -245,9 +246,25 @@ export default class BrowserWindow extends WithIPC {
     /**
      * View controls
      */
-    protected setCurrent(scene: Scenes) {
-        if (scene !== Scenes.BROWSER && !this.centre.webContents.getURL()) {
-            this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
+    protected switch(scene: Scenes) {
+        if (scene !== Scenes.BROWSER) {
+            if (!this.centre.webContents.getURL()) {
+                const status = Status.getInstance()
+                if (status.get('welcome')) {
+                    this.centre.webContents.loadURL(
+                        resolveHtmlPath('welcome.html'),
+                    )
+                    status.set('welcome', false)
+                } else {
+                    this.centre.webContents.loadURL(
+                        resolveHtmlPath('index.html'),
+                    )
+                }
+            } else if (
+                this.centre.webContents.getURL().includes('welcome.html')
+            ) {
+                this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
+            }
         }
         this.current = scene
 
@@ -277,7 +294,7 @@ export default class BrowserWindow extends WithIPC {
      * Save current status when the app is closed
      */
     private saveStatus() {
-        const status = new Status()
+        const status = Status.getInstance()
         const bounds = this.getBounds()
         status.setNumber('width', bounds.width)
         status.setNumber('height', bounds.height)

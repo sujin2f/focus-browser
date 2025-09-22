@@ -15,7 +15,7 @@ export function resolveHtmlPath(htmlFileName: string) {
 export const isDebug =
     process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
-export const preload = path.join(__dirname, './preload.js')
+export const preload = path.join(__dirname, '..', 'preload.js')
 
 export const message = {
     on: (channel: Channel, callback: (...args: unknown[]) => void) => {

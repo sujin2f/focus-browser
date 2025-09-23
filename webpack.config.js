@@ -92,18 +92,18 @@ const rendererConfig = {
     ...commonConfig,
     target: ['web', 'electron-renderer'],
     name: 'renderer',
-    entry: './src/renderer/controller.ts',
+    entry: './src/renderer/index.ts',
     output: {
         path: path.resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/renderer/index.html', // Your HTML template for the renderer
+            template: './src/renderer/templates/index.html', // Your HTML template for the renderer
             filename: 'index.html',
         }),
         new HtmlWebpackPlugin({
-            template: './src/renderer/welcome.html',
+            template: './src/renderer/templates/welcome.html',
             filename: 'welcome.html',
         }),
     ],

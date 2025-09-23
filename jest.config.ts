@@ -8,6 +8,10 @@ const config: Config = {
     testEnvironment: 'jest-environment-jsdom',
     moduleNameMapper: {
         '^.+\\.(svg)$': '<rootDir>/.jest/svg-mock.js',
+        '^@src/(.*)$': '<rootDir>/src/$1',
+        '^@main/(.*)$': '<rootDir>/src/main/$1',
+        '^@controllers/(.*)$': '<rootDir>/src/main/controllers/$1',
+        '^@home/(.*)$': '<rootDir>/src/renderer/$1',
     },
     setupFiles: ['<rootDir>/.jest/setup.jest.js'],
     testMatch: [

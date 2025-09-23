@@ -5,7 +5,7 @@ import Button from './button'
 describe('button.spec.ts', () => {
     beforeAll(async () => {
         const html = fs.readFileSync(
-            path.resolve(__dirname, '../../index.html'),
+            path.resolve(__dirname, '../../templates/index.html'),
             'utf-8',
         )
         document.documentElement.innerHTML = html.toString()

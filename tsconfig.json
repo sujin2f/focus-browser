@@ -13,7 +13,8 @@
             "@main/*": ["./main/*"],
             "@controllers/*": ["./main/controllers/*"],
             "@home/*": ["./renderer/*"]
-        }
+        },
+        "isolatedModules": true
     },
     "include": ["src/**/*"]
 }

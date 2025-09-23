@@ -33,6 +33,7 @@ class WithIPC extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
+        message.on(Channel.PLATFORM, this.onPlatform.bind(this))
         message.on(Channel.SWITCH, this.onSwitch.bind(this))
         message.on(Channel.HISTORY, this.onHistory.bind(this))
         message.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
@@ -44,15 +45,31 @@ class WithIPC extends ElectronBrowserWindow {
         this.centre.webContents.send(Channel.SWITCH, scene, this.browser.url)
     }
 
-    private onSwitch(scene: Scenes, address?: string, anchorIndex?: number) {
+    private onPlatform(handler: RequestHandler) {
+        if (handler !== RequestHandler.REQUEST) {
+            return
+        }
+
+        this.centre.webContents.send(
+            Channel.PLATFORM,
+            RequestHandler.RESPONSE,
+            process.platform,
+        )
+    }
+
+    private onSwitch(
+        scene: Scenes,
+        address?: string,
+        handler?: RequestHandler,
+    ) {
         this.switch(scene)
 
         if (scene === Scenes.BROWSER && address) {
             this.browser.loadURL(address)
         }
 
-        if (typeof anchorIndex === 'number') {
-            Anchors.getInstance().remove(anchorIndex)
+        if (handler === RequestHandler.REMOVE) {
+            Anchors.getInstance().remove(address)
         }
     }
 
@@ -100,7 +117,7 @@ class WithIPC extends ElectronBrowserWindow {
         }
     }
 
-    private onAnchors(handler: RequestHandler, index: number) {
+    private onAnchors(handler: RequestHandler, url: string) {
         switch (handler) {
             case RequestHandler.REQUEST:
                 const bookmarks = Anchors.getInstance().get()
@@ -111,7 +128,7 @@ class WithIPC extends ElectronBrowserWindow {
                 )
                 return
             case RequestHandler.REMOVE:
-                Anchors.getInstance().remove(index)
+                Anchors.getInstance().remove(url)
                 return
         }
     }
@@ -233,7 +250,6 @@ export default class BrowserWindow extends WithIPC {
          * Restore status
          */
         const status = Status.getInstance()
-        console.log('Status:', status.get('welcome'))
 
         // Restore window size
         const bounds = status.getBounds(this.getBounds())

@@ -2,14 +2,18 @@ import {
     PageMode,
     PageType,
     TableAction,
-    PopupBlocker as T_PopupBlocker,
+    Channel,
+    RequestHandler,
+    type PopupBlocker as T_PopupBlocker,
 } from '@src/types'
-import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
 import Td from '@home/modules/fragments/td'
-import Th from '../fragments/th'
-import Span from '../fragments/span'
+import Th from '@home/modules/fragments/th'
+import Span from '@home/modules/fragments/span'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import type Tr from '@home/modules/fragments/tr'
+import { ipcRenderer } from '@src/renderer/util'
 
 export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     readonly page = PageType.POPUP_BLOCKER
@@ -20,7 +24,25 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     request(): void {
-        IPC.getInstance().requestPopupBlocker()
+        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.POPUP_BLOCKER,
+            (
+                handler: RequestHandler.RESPONSE,
+                blocked: string[],
+                allowed: string[],
+            ) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                const data = [
+                    ...allowed.map((host) => ({ host, allowed: true })),
+                    ...blocked.map((host) => ({ host, allowed: false })),
+                ]
+                this.action(TableAction.UPDATE, data)
+            },
+        )
     }
 
     render() {
@@ -36,10 +58,6 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
-    }
-
     getTHeads(): Th[] {
         const allowed = this.createFixedCell('th')
         allowed.innerHTML = 'Allowed'
@@ -51,20 +69,24 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         return [allowed, title]
     }
 
-    getRowCells(popup: T_PopupBlocker, index: number): Td[] {
+    getRowCells(
+        tr: DataListType<Tr>,
+        popup: T_PopupBlocker,
+        index: number,
+    ): Td[] {
         const allowed = this.createFixedCell()
         const title = new Td()
 
         allowed.element.addEventListener('click', () => {
-            this.cursor = index
+            this._cursor = tr
             this.action(TableAction.EXECUTE)
-            this.cursor = NaN
+            this._cursor = null
         })
 
         title.element.addEventListener('click', () => {
-            this.cursor = index
+            this._cursor = tr
             this.action(TableAction.EXECUTE)
-            this.cursor = NaN
+            this._cursor = null
         })
 
         const spanAllowed = new Span()
@@ -78,8 +100,10 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         return [allowed, title]
     }
 
-    filterCondition(item: T_PopupBlocker, keyword: string): boolean {
-        return item.host.toLowerCase().includes(keyword.toLowerCase())
+    filterCondition(item: T_PopupBlocker): boolean {
+        return item.host
+            .toLowerCase()
+            .includes(this.searchKeyword.toLowerCase())
     }
 
     action(action: TableAction, items: T_PopupBlocker[] = []) {
@@ -90,8 +114,13 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
             action === TableAction.EXECUTE ||
             action === TableAction.EDIT
         ) {
-            IPC.getInstance().togglePopupBlocker(this.items[this._cursor].host)
-            this.items[this._cursor].allowed = !this.items[this._cursor].allowed
+            const data = this._cursor.getData('data') as T_PopupBlocker
+            ipcRenderer.send(
+                Channel.POPUP_BLOCKER,
+                RequestHandler.MODIFY,
+                data.host,
+            )
+            data.allowed = !data.allowed
             this.renderTable()
             return
         }

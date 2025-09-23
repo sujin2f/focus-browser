@@ -1,6 +1,12 @@
-import { type Bookmark, PageMode, PageType, TableAction } from '@src/types'
-import Controller from '@src/renderer/controller'
-import IPC from '@home/modules/ipc'
+import {
+    type Bookmark,
+    Channel,
+    PageMode,
+    PageType,
+    RequestHandler,
+    TableAction,
+} from '@src/types'
+import Controller from '@src/renderer/modules/controller'
 
 import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
@@ -8,8 +14,11 @@ import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Td from '@home/modules/fragments/td'
 import Form from '@home/modules/fragments/form'
-import Th from '@home/modules//fragments/th'
+import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import type Tr from '@home/modules/fragments/tr'
+import { ipcRenderer, navigate } from '@src/renderer/util'
 
 export default class Bookmarks extends A_PageWithTable<Bookmark> {
     readonly page = PageType.BOOKMARK
@@ -42,7 +51,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
 
         switch (mode) {
             case PageMode.NEW:
-                this.cursor = NaN
+                this._cursor = null
                 this.inputTitle.value =
                     Controller.getInstance().currentUrl.title
                 this.inputUrl.value = Controller.getInstance().currentUrl.url
@@ -53,12 +62,12 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 return
 
             case PageMode.EDIT:
-                if (isNaN(this._cursor)) {
+                if (!this._cursor) {
                     this.changeMode(PageMode.LIST)
                     return
                 }
 
-                const current = this.items[this._cursor]
+                const current = this._cursor.getData('data') as Bookmark
 
                 this.inputTitle.value = current.title
                 this.inputUrl.value = current.url
@@ -71,7 +80,18 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     request(): void {
-        IPC.getInstance().requestBookmarks()
+        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REQUEST)
+
+        ipcRenderer.once(
+            Channel.BOOKMARK,
+            (handler: RequestHandler.RESPONSE, bookmarks: Bookmark[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                this.action(TableAction.UPDATE, bookmarks)
+            },
+        )
     }
 
     render() {
@@ -89,7 +109,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
+    protected renderButtons() {
         this.buttonAdd.text = 'Add Bookmark (⌘D)'
         this.buttonAdd.addEventListener('click', this.onSwitchAdd.bind(this))
 
@@ -108,20 +128,20 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         return [shortcut, title]
     }
 
-    getRowCells(bookmark: Bookmark, index: number): Td[] {
+    getRowCells(tr: DataListType<Tr>, bookmark: Bookmark): Td[] {
         const shortcut = this.createFixedCell()
         const title = new Td()
 
         title.element.addEventListener('click', (e) => {
-            const dataset = (e.target as HTMLElement).dataset
-            if (dataset['type'] === 'edit') {
-                this.cursor = parseInt(dataset['index'])
-                this.changeMode(PageMode.LIST)
+            const tagName = (e.target as HTMLElement).tagName.toLowerCase()
+            if (tagName === 'button') {
+                this._cursor = tr
+                this.focusTable()
                 this.changeMode(PageMode.EDIT)
                 return
             }
 
-            IPC.getInstance().navigate(bookmark.url)
+            navigate(bookmark.url)
         })
 
         if (bookmark.shortcut) {
@@ -131,7 +151,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
             btnShortcut.text = bookmark.shortcut.toUpperCase()
             btnShortcut.addEventListener('click', () => {
-                IPC.getInstance().navigate(bookmark.url)
+                navigate(bookmark.url)
             })
             shortcut.child = btnShortcut
         }
@@ -144,10 +164,9 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         edit.classList.remove('mb-3', 'p-2')
         edit.classList.add('mr-2', 'cursor-pointer')
         edit.text = '⚙️'
-        edit.setData('type', 'edit')
-        edit.setData('index', index)
         edit.addEventListener('click', () => {
-            this._cursor = index
+            this._cursor = tr
+            this.focusTable()
             this.changeMode(PageMode.EDIT)
         })
 
@@ -193,10 +212,12 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         })
     }
 
-    filterCondition(item: Bookmark, keyword: string): boolean {
+    filterCondition(item: Bookmark): boolean {
         return (
-            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.url.toLowerCase().includes(keyword.toLowerCase())
+            item.title
+                .toLowerCase()
+                .includes(this.searchKeyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(this.searchKeyword.toLowerCase())
         )
     }
 
@@ -216,12 +237,18 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             shortcut: this.inputShortcut.value,
         }
 
-        if (isNaN(this._cursor)) {
-            IPC.getInstance().addBookmark(bookmark)
+        if (!this._cursor) {
+            ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
             this.items.unshift(bookmark)
         } else {
-            IPC.getInstance().editBookmark(this._cursor, bookmark)
-            this.items[this._cursor] = bookmark
+            ipcRenderer.send(
+                Channel.BOOKMARK,
+                RequestHandler.MODIFY,
+                bookmark,
+                this._cursor.getData('index') as number,
+            )
+
+            this.items[this._cursor.getData('index') as number] = bookmark
         }
 
         this.refresh()
@@ -232,7 +259,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         super.action(action, items)
 
         if (action === TableAction.EXECUTE) {
-            IPC.getInstance().navigate(this.items[this._cursor].url)
+            navigate((this._cursor.getData('data') as Bookmark).url)
             return
         }
 
@@ -242,12 +269,14 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         }
 
         if (action === TableAction.DELETE) {
-            if (isNaN(this._cursor)) {
+            if (!this._cursor) {
                 return
             }
 
-            IPC.getInstance().removeBookmark(this._cursor)
-            this.items.splice(this._cursor, 1)
+            const index = this._cursor.getData('index') as number
+
+            ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
+            this.items.splice(index, 1)
             this.refresh()
 
             return
@@ -265,7 +294,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         if (document.activeElement.tagName.toLowerCase() !== 'input') {
             const shortcut = this.shortcuts[e.key.toLowerCase()]
             if (shortcut) {
-                IPC.getInstance().navigate(shortcut)
+                navigate(shortcut)
                 return true
             }
         }

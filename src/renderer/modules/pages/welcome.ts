@@ -1,9 +1,4 @@
 import { PageType, TableAction } from '@src/types'
-import Controller from '@home/controller'
-import IPC from '@home/modules/ipc'
-import Input from '@home/modules/fragments/input'
-import Card from '@home/modules/fragments/card'
-import Label from '@home/modules/fragments/label'
 import A_Page from '.'
 
 export default class Welcome extends A_Page<null> {

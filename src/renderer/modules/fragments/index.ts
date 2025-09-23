@@ -36,7 +36,6 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
     private _data: Record<string, unknown> = {}
     public setData<D>(key: string, value: D) {
         this._data[key] = value
-        this.element.dataset[key] = `${value}`
     }
     public getData(key: string) {
         return this._data[key]

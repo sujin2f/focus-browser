@@ -33,7 +33,12 @@ export default class Anchors extends Store<Props> {
         this.data.anchors.unshift(anchor)
     }
 
-    remove(index: number) {
-        this.data.anchors.splice(index, 1)
+    remove(url: string) {
+        for (let [index, item] of this.data.anchors.entries()) {
+            if (item.url === url) {
+                this.data.anchors.splice(index, 1)
+                return
+            }
+        }
     }
 }

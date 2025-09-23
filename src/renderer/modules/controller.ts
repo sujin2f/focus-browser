@@ -1,17 +1,20 @@
-import { Bookmark, PageType, TableAction } from '@src/types'
-import { checkElectron } from '@home/util'
+import {
+    Bookmark,
+    Channel,
+    PageType,
+    RequestHandler,
+    Scenes,
+    TableAction,
+} from '@src/types'
+import { checkElectron, ipcRenderer } from '@home/util'
 
-import Home from '@src/renderer/modules/pages/home'
-
-import IPC from '@src/renderer/modules/ipc'
 import A_Page from '@src/renderer/modules/pages'
+import Home from '@src/renderer/modules/pages/home'
 import Bookmarks from '@src/renderer/modules/pages/bookmarks'
 import History from '@src/renderer/modules/pages/history'
 import Anchors from '@src/renderer/modules/pages/anchors'
 import PopupBlocker from '@src/renderer/modules/pages/popup'
 import Welcome from '@src/renderer/modules/pages/welcome'
-
-import './styles/common.css'
 
 export default class Controller {
     static instance: Controller
@@ -22,6 +25,7 @@ export default class Controller {
         return Controller.instance
     }
 
+    public platform: string = ''
     private _currentPage: A_Page<any>
     public get currentPage() {
         return this._currentPage
@@ -34,17 +38,41 @@ export default class Controller {
 
     constructor() {
         document.addEventListener('DOMContentLoaded', () => {
+            checkElectron()
+
             if (document.getElementById('welcome')) {
                 this.switch(PageType.WELCOME)
-                // Static page (e.g., welcome)
                 return
             }
-            checkElectron()
-            IPC.getInstance()
+
+            this.initIPC()
             this.switch(PageType.HOME)
             document.addEventListener('keydown', (e) =>
                 this.currentPage.doShortcut(e),
             )
+        })
+    }
+
+    private initIPC() {
+        ipcRenderer.send(Channel.PLATFORM, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.PLATFORM,
+            (handler: RequestHandler, platform: string) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+                this.platform = platform
+            },
+        )
+        ipcRenderer.on(Channel.SWITCH, (scene: Scenes, url: Bookmark) => {
+            this.currentUrl = url
+
+            if (scene === Scenes.HOME) {
+                this.switch(PageType.HOME)
+            }
+            if (scene === Scenes.ADDRESS) {
+                this.switch(PageType.ADDRESS)
+            }
         })
     }
 
@@ -81,5 +109,3 @@ export default class Controller {
         }
     }
 }
-
-Controller.getInstance()

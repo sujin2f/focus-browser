@@ -1,9 +1,9 @@
 import { PageType, TableAction } from '@src/types'
-import Controller from '@home/controller'
-import IPC from '@home/modules/ipc'
+import Controller from '@src/renderer/modules/controller'
 import Input from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import Label from '@home/modules/fragments/label'
+import { navigate } from '@src/renderer/util'
 import A_Page from '.'
 
 type Button = {
@@ -49,13 +49,13 @@ export default class Home extends A_Page<null> {
     }
 
     private render(): void {
-        this.label.title = `Search or enter address (⌘L)`
+        this.label.title = `Enter search keyword or address (⌘L)`
         this.label.child = this.search
         this.root.appendChild(this.label.element)
 
         this.cardsContainer = document.createElement('section')
         this.cardsContainer.className =
-            'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2'
+            'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2'
 
         Object.keys(this.buttons).forEach((key) => {
             const info = this.buttons[key]
@@ -106,7 +106,7 @@ export default class Home extends A_Page<null> {
                     return
                 }
 
-                IPC.getInstance().navigate(this.search.value)
+                navigate(this.search.value)
                 this.search.value = ''
                 return
             }

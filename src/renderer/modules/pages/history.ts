@@ -1,12 +1,19 @@
 import { type NavigationEntry } from 'electron'
-import { PageMode, PageType, TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
+import {
+    Channel,
+    PageMode,
+    PageType,
+    RequestHandler,
+    TableAction,
+} from '@src/types'
 
 import { A_PageWithTable } from '.'
 import Td from '@home/modules/fragments/td'
 import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
 import Tr from '@home/modules/fragments/tr'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer } from '@src/renderer/util'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
     readonly page = PageType.HISTORY
@@ -17,7 +24,17 @@ export default class History extends A_PageWithTable<NavigationEntry> {
     }
 
     request(): void {
-        IPC.getInstance().requestHistory()
+        ipcRenderer.send(Channel.HISTORY, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.HISTORY,
+            (handler: RequestHandler.RESPONSE, history: NavigationEntry[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                this.action(TableAction.UPDATE, history)
+            },
+        )
     }
 
     render() {
@@ -33,10 +50,6 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
-    }
-
     /**
      * History need reverse order
      */
@@ -46,6 +59,7 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         this.items.forEach((item, index) => {
             const tr = new Tr()
             tr.setData('index', index)
+            tr.setData('data', item)
             tr.classList.add(
                 'hover',
                 'cursor-pointer',
@@ -57,7 +71,7 @@ export default class History extends A_PageWithTable<NavigationEntry> {
                 ...this.STYLE_HOVER,
             )
 
-            this.getRowCells(item, index).forEach((td) => (tr.child = td))
+            this.getRowCells(tr, item, index).forEach((td) => (tr.child = td))
             rows.unshift(tr)
         })
 
@@ -74,10 +88,14 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         return [title]
     }
 
-    getRowCells(history: NavigationEntry, index: number): Td[] {
+    getRowCells(
+        _: DataListType<Tr>,
+        history: NavigationEntry,
+        index: number,
+    ): Td[] {
         const title = new Td()
         title.element.addEventListener('click', () => {
-            IPC.getInstance().navigateHistory(index)
+            ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
         })
 
         const spanTitle = new Span()
@@ -87,10 +105,12 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         return [title]
     }
 
-    filterCondition(item: NavigationEntry, keyword: string): boolean {
+    filterCondition(item: NavigationEntry): boolean {
         return (
-            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.url.toLowerCase().includes(keyword.toLowerCase())
+            item.title
+                .toLowerCase()
+                .includes(this.searchKeyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(this.searchKeyword.toLowerCase())
         )
     }
 
@@ -98,8 +118,8 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         super.action(action, items)
 
         if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
-            IPC.getInstance().navigate(this.items[this._cursor].url)
-            return
+            const index = this._cursor.getData('index') as number
+            ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
         }
     }
 

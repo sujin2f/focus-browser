@@ -16,6 +16,7 @@ export enum Scenes {
 }
 
 export enum Channel {
+    PLATFORM = 'PLATFORM',
     SWITCH = 'SWITCH',
     BOOKMARK = 'BOOKMARK',
     HISTORY = 'HISTORY',

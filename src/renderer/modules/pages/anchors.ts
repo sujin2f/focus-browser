@@ -1,11 +1,20 @@
-import { type Bookmark, PageMode, PageType, TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
+import {
+    type Bookmark,
+    Channel,
+    PageMode,
+    PageType,
+    RequestHandler,
+    TableAction,
+} from '@src/types'
 
 import { A_PageWithTable } from '.'
 import Button from '@home/modules/fragments/button'
 import Td from '@home/modules/fragments/td'
 import Th from '@home/modules/fragments/th'
 import Span from '@home/modules/fragments/span'
+import type Tr from '@home/modules/fragments/tr'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer, navigate } from '@src/renderer/util'
 
 export default class Anchors extends A_PageWithTable<Bookmark> {
     readonly page = PageType.ANCHOR
@@ -16,7 +25,17 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
     }
 
     request(): void {
-        IPC.getInstance().requestAnchors()
+        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.ANCHOR,
+            (handler: RequestHandler.RESPONSE, anchors: Bookmark[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                this.action(TableAction.UPDATE, anchors)
+            },
+        )
     }
 
     render() {
@@ -32,10 +51,6 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
-    }
-
     getTHeads(): Th[] {
         const title = new Th()
         title.innerHTML = 'Title'
@@ -44,19 +59,19 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         return [title]
     }
 
-    getRowCells(bookmark: Bookmark, index: number): Td[] {
+    getRowCells(tr: DataListType<Tr>, bookmark: Bookmark, index: number): Td[] {
         const title = new Td()
 
         title.element.addEventListener('click', (e) => {
-            const dataset = (e.target as HTMLElement).dataset
-            if (dataset['type'] === 'delete') {
-                this.cursor = parseInt(dataset['index'])
+            const tagName = (e.target as HTMLElement).tagName.toLowerCase()
+            if (tagName === 'button') {
+                this._cursor = tr
                 this.action(TableAction.DELETE)
-                this.cursor = NaN
+                this._cursor = null
                 return
             }
 
-            IPC.getInstance().navigate(bookmark.url)
+            navigate(bookmark.url)
         })
 
         const spanTitle = new Span()
@@ -66,12 +81,10 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         del.classList.remove('mb-3', 'p-2')
         del.classList.add('mr-2', 'cursor-pointer', 'pl-1', 'pr-1')
         del.text = 'Remove'
-        del.setData('type', 'delete')
-        del.setData('index', index)
         del.addEventListener('click', () => {
-            this.cursor = index
+            this._cursor = tr
             this.action(TableAction.DELETE)
-            this.cursor = NaN
+            this._cursor = null
         })
 
         title.child = del
@@ -80,10 +93,12 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         return [title]
     }
 
-    filterCondition(item: Bookmark, keyword: string): boolean {
+    filterCondition(item: Bookmark): boolean {
         return (
-            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.url.toLowerCase().includes(keyword.toLowerCase())
+            item.title
+                .toLowerCase()
+                .includes(this.searchKeyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(this.searchKeyword.toLowerCase())
         )
     }
 
@@ -91,20 +106,24 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         super.action(action, items)
 
         if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
-            IPC.getInstance().navigate(
-                this.items[this._cursor].url,
-                this._cursor,
+            navigate(
+                (this._cursor.getData('data') as Bookmark).url,
+                RequestHandler.REMOVE,
             )
             return
         }
 
         if (action === TableAction.DELETE) {
-            if (isNaN(this._cursor)) {
+            if (!this._cursor) {
                 return
             }
 
-            IPC.getInstance().removeAnchor(this._cursor)
-            this.items.splice(this._cursor, 1)
+            ipcRenderer.send(
+                Channel.ANCHOR,
+                RequestHandler.REMOVE,
+                (this._cursor.getData('data') as Bookmark).url,
+            )
+            this.items.splice(this._cursor.getData('index') as number, 1)
             this.refresh()
 
             return

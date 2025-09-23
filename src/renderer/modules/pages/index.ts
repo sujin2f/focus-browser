@@ -1,5 +1,4 @@
 import { PageMode, PageType, TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
 
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
@@ -9,6 +8,8 @@ import Form from '@home/modules/fragments/form'
 import Tr from '@home/modules/fragments/tr'
 import Td from '@home/modules/fragments/td'
 import Th from '@home/modules/fragments/th'
+import DataList, { type DataListType } from '@home/modules/fragments/data-list'
+import { navigate } from '@src/renderer/util'
 
 export default abstract class A_Page<T> {
     /**
@@ -41,7 +42,7 @@ export default abstract class A_Page<T> {
                 return true
             }
 
-            IPC.getInstance().navigate()
+            navigate()
             return true
         }
 
@@ -88,11 +89,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     /**
      * Table Navigation
      */
-    protected _cursor = NaN
-    protected set cursor(cursor: number) {
-        this._cursor = cursor
-        this.focusTable()
-    }
+    protected _cursor: DataListType<Tr> | null = null
 
     // Buttons
     protected buttons: HTMLElement
@@ -101,6 +98,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     // Find Form
     protected formFind: Form = new Form()
     protected inputFindKeyword: Input = new Input()
+    protected searchKeyword: string = ''
 
     // Table
     protected table: Table = new Table()
@@ -122,11 +120,15 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     abstract request(): void
     abstract render(): void
 
+    protected renderButtons() {
+        this.buttons.appendChild(this.buttonFind.element)
+    }
+
     /**
      * Table related methods
      */
     abstract getTHeads(): Th[]
-    abstract getRowCells(item: T, index: number): Td[]
+    abstract getRowCells(tr: DataListType<Tr>, item: T, index: number): Td[]
     private renderTableHeads() {
         const header = new Tr()
         this.getTHeads().forEach((th) => (header.child = th))
@@ -135,9 +137,12 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
     protected renderTable() {
         this.table.reset()
+        const ListTr = DataList(Tr)
+        let prev: DataListType<Tr> | null = null
         this.items.forEach((item, index) => {
-            const tr = new Tr()
+            const tr = new ListTr() as unknown as DataListType<Tr>
             tr.setData('index', index)
+            tr.setData('data', item)
             tr.classList.add(
                 'hover',
                 'cursor-pointer',
@@ -149,7 +154,8 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                 ...this.STYLE_HOVER,
             )
 
-            this.getRowCells(item, index).forEach((td) => (tr.child = td))
+            this.getRowCells(tr, item, index).forEach((td) => (tr.child = td))
+            prev = this.linkTr(prev, tr)
             this.table.child = tr
         })
     }
@@ -173,58 +179,76 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         'dark:hover:bg-gray-800',
     ]
 
-    abstract filterCondition(item: T, keyword: string): boolean
-    protected filterTable(keyword?: string) {
+    abstract filterCondition(item: T): boolean
+    protected filterTable() {
         const rows = this.table.children
-        this.items.forEach((item, index) => {
-            if (!keyword) {
+        let prev: DataListType<Tr> | null = null
+        this.table.children.forEach((tr, index) => {
+            if (!this.searchKeyword) {
                 rows[index].show()
+                prev = this.linkTr(prev, tr)
                 return
             }
 
-            if (this.filterCondition(item, keyword.toLowerCase())) {
+            if (this.filterCondition(tr.getData('data') as T)) {
                 rows[index].show()
+                prev = this.linkTr(prev, tr)
                 return
             }
 
             rows[index].hide()
         })
+
+        if (this._cursor && this._cursor.hidden) {
+            this._cursor = null
+        }
     }
 
-    private focusTable() {
-        let shift = 0
+    protected focusTable() {
         this.table.children.forEach((row) => {
-            if (row.hidden) {
-                row.classList.remove(...this.STYLE_FOCUSED)
-                shift++
-                return
-            }
-            if (this._cursor + shift === row.getData('index')) {
+            if (row === this._cursor) {
                 row.classList.add(...this.STYLE_FOCUSED)
-
                 return
             }
-
             row.classList.remove(...this.STYLE_FOCUSED)
         })
     }
 
     private arrowUp() {
-        if (this._cursor > 0) {
-            this.cursor = this._cursor - 1
+        if (this._cursor && this._cursor.prev) {
+            this._cursor = this._cursor.prev
         }
+        this.focusTable()
     }
 
     private arrowDown() {
-        this.changeMode(PageMode.LIST)
-        if (isNaN(this._cursor)) {
-            this.cursor = 0
-        } else if (this._cursor < this.items.length - 1) {
-            this.cursor = this._cursor + 1
+        if (this._cursor && this._cursor.next) {
+            this._cursor = this._cursor.next
+        } else if (!this._cursor) {
+            for (let tr of this.table.children) {
+                if (!tr.hidden) {
+                    this._cursor = tr
+                    break
+                }
+            }
         }
+        this.focusTable()
         this.blur()
     }
 
+    private linkTr(prev: DataListType<Tr> | null, tr: DataListType<Tr>) {
+        if (prev) {
+            prev.next = tr
+            tr.prev = prev
+        } else {
+            tr.prev = null
+        }
+        return tr
+    }
+
+    /**
+     * Find Form (Keyword Input)
+     */
     protected renderFindForm() {
         const labelFindTitle = new Label()
         labelFindTitle.innerHTML = 'Keyword'
@@ -232,9 +256,10 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
 
         this.formFind.child = labelFindTitle
 
+        // When the user types
         this.inputFindKeyword.addEventListener('keyup', () => {
-            const keyword = this.inputFindKeyword.value
-            this.filterTable(keyword)
+            this.searchKeyword = this.inputFindKeyword.value
+            this.filterTable()
         })
     }
 
@@ -242,14 +267,14 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
      * For update and refresh
      */
     protected refresh() {
-        this._cursor = NaN
+        this._cursor = null
         this.renderTable()
     }
 
     action(action: TableAction, items: T[] = []) {
         if (action === TableAction.UPDATE) {
             this.items = items
-            this._cursor = NaN
+            this._cursor = null
             this.renderTable()
         }
     }
@@ -275,10 +300,12 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
             switch (e.key) {
                 case 'Escape':
                     if (this._mode !== PageMode.LIST) {
+                        this.searchKeyword = ''
+                        this.filterTable()
                         this.changeMode(PageMode.LIST)
                         return true
                     }
-                    IPC.getInstance().navigate()
+                    navigate()
                     return true
                 case 'ArrowUp':
                     this.arrowUp()

@@ -1,11 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { Element } from '@home/modules/fragments'
 import { PageMode, PageType, TableAction } from '@src/types'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import Td from '@home/modules/fragments/td'
-import Th from '@home/modules/fragments/th'
-import Tr from '@home/modules/fragments/tr'
 import { A_PageWithTable } from '.'
+import { isMac } from '@home/util'
 
 class Test extends A_PageWithTable<string> {
     page: PageType = PageType.WELCOME
@@ -22,15 +21,20 @@ class Test extends A_PageWithTable<string> {
         this.renderTable()
         this.hideForms()
 
-        this.root.appendChild(this.buttons)
+        this.root.appendChild(this.buttons.element)
         this.root.appendChild(this.formFind.element)
         this.root.appendChild(this.table.element)
     }
-    getTHeads(): Th[] {
-        return [new Th()]
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [this.table.createTh()]
     }
-    getRowCells(tr: DataListType<Tr>, item: string, index: number): Td[] {
-        const td = new Td()
+
+    getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        item: string,
+        index: number,
+    ): Element<HTMLTableCellElement>[] {
+        const td = this.table.createTd()
         td.innerHTML = item
         return [td]
     }
@@ -52,7 +56,7 @@ class Test extends A_PageWithTable<string> {
     }
 }
 
-jest.mock('@src/renderer/util', () => ({
+jest.mock('@home/util', () => ({
     ipcRenderer: {
         on: jest.fn(),
         send: jest.fn(),
@@ -81,9 +85,16 @@ describe('A_PageWithTable', () => {
                 .querySelector('form')
                 .classList.contains('hidden'),
         ).toBeTruthy()
-        document.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'f', metaKey: true }),
-        )
+        if (isMac()) {
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'f', metaKey: true }),
+            )
+        } else {
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'f', ctrlKey: true }),
+            )
+        }
+
         expect(
             document
                 .querySelector('#root')

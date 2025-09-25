@@ -8,12 +8,10 @@ import {
 } from '@src/types'
 
 import { A_PageWithTable } from '.'
-import Td from '@home/modules/fragments/td'
-import Th from '@home/modules/fragments/th'
-import Span from '@home/modules/fragments/span'
+import { Element } from '@home/modules/fragments'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import type Tr from '@home/modules/fragments/tr'
-import { ipcRenderer } from '@src/renderer/util'
+import { ipcRenderer } from '@home/util'
+import Heading from '../fragments/heading'
 
 export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     readonly page = PageType.POPUP_BLOCKER
@@ -53,51 +51,54 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         this.renderTable()
         this.hideForms()
 
-        this.root.appendChild(this.buttons)
+        // H1
+        const heading = new Heading(1, {}, 'Popup Blocker')
+
+        this.root.appendChild(heading.element)
+        this.root.appendChild(this.buttons.element)
         this.root.appendChild(this.formFind.element)
         this.root.appendChild(this.table.element)
     }
 
-    getTHeads(): Th[] {
-        const allowed = this.createFixedCell('th')
-        allowed.innerHTML = 'Allowed'
-
-        const title = new Th()
-        title.innerHTML = 'Title'
-        title.classList.add('text-left')
-
-        return [allowed, title]
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createFixedCell('th', {}, 'Allowed'),
+            this.table.createTh({ className: ['text-left'] }, 'Title'),
+        ]
     }
 
     getRowCells(
-        tr: DataListType<Tr>,
+        tr: DataListType<Element<HTMLTableRowElement>>,
         popup: T_PopupBlocker,
         index: number,
-    ): Td[] {
-        const allowed = this.createFixedCell()
-        const title = new Td()
-
-        allowed.element.addEventListener('click', () => {
-            this._cursor = tr
-            this.action(TableAction.EXECUTE)
-            this._cursor = null
-        })
-
-        title.element.addEventListener('click', () => {
-            this._cursor = tr
-            this.action(TableAction.EXECUTE)
-            this._cursor = null
-        })
-
-        const spanAllowed = new Span()
-        spanAllowed.innerHTML = popup.allowed ? '✅' : ''
-        allowed.child = spanAllowed
-
-        const spanTitle = new Span()
-        spanTitle.innerHTML = popup.host
-        title.child = spanTitle
-
-        return [allowed, title]
+    ): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createFixedCell(
+                'td',
+                {
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.EXECUTE)
+                        this._cursor = null
+                    },
+                },
+                new Element<HTMLSpanElement>(
+                    'span',
+                    {},
+                    popup.allowed ? '✅' : '',
+                ),
+            ),
+            this.table.createTd(
+                {
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.EXECUTE)
+                        this._cursor = null
+                    },
+                },
+                new Element<HTMLSpanElement>('span', {}, popup.host),
+            ),
+        ]
     }
 
     filterCondition(item: T_PopupBlocker): boolean {

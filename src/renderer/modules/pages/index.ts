@@ -1,15 +1,14 @@
 import { PageMode, PageType, TableAction } from '@src/types'
 
+import { Element } from '@home/modules/fragments'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Form from '@home/modules/fragments/form'
-import Tr from '@home/modules/fragments/tr'
-import Td from '@home/modules/fragments/td'
-import Th from '@home/modules/fragments/th'
 import DataList, { type DataListType } from '@home/modules/fragments/data-list'
-import { navigate } from '@src/renderer/util'
+import { isMac, navigate } from '@home/util'
+import ButtonGroup from '../fragments/button-group'
 
 export default abstract class A_Page<T> {
     /**
@@ -25,13 +24,23 @@ export default abstract class A_Page<T> {
     }
 
     constructor() {
-        this.root.innerHTML = ''
+        if (this.root) {
+            this.root.innerHTML = ''
+        }
+    }
+
+    protected init() {
+        this.render()
     }
 
     /**
      * For additional actions
      */
-    abstract action(action: TableAction, ...arg: unknown[]): void
+    action(action: TableAction, ...arg: unknown[]) {
+        if (action === TableAction.INFO) {
+            this.render()
+        }
+    }
     /**
      * Shortcut
      */
@@ -52,6 +61,8 @@ export default abstract class A_Page<T> {
     protected blur() {
         ;(document.activeElement as HTMLElement).blur()
     }
+
+    abstract render(): void
 }
 
 export abstract class A_PageWithTable<T> extends A_Page<T> {
@@ -89,11 +100,15 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     /**
      * Table Navigation
      */
-    protected _cursor: DataListType<Tr> | null = null
+    protected _cursor: DataListType<Element<HTMLTableRowElement>> | null = null
 
     // Buttons
-    protected buttons: HTMLElement
-    protected buttonFind: Button = new Button()
+    protected buttons: ButtonGroup = new ButtonGroup()
+    protected buttonFind: Button = new Button({
+        onClick: () => {
+            this.changeMode(PageMode.FIND)
+        },
+    })
 
     // Find Form
     protected formFind: Form = new Form()
@@ -104,73 +119,61 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     protected table: Table = new Table()
 
     protected init() {
-        this.buttonFind.text = 'Find (⌘F)'
-        this.buttonFind.addEventListener('click', () => {
-            this.changeMode(PageMode.FIND)
-        })
+        super.init()
 
-        this.buttons = document.createElement('section')
-        this.buttons.className = 'w-full flex justify-between'
+        if (isMac()) {
+            this.buttonFind.append('Find (⌘F)')
+        } else {
+            this.buttonFind.append('Find (Ctrl+F)')
+        }
 
-        this.render()
         this.renderTableHeads()
         this.request()
     }
 
     abstract request(): void
-    abstract render(): void
 
     protected renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
+        this.buttons.append(this.buttonFind)
     }
 
     /**
      * Table related methods
      */
-    abstract getTHeads(): Th[]
-    abstract getRowCells(tr: DataListType<Tr>, item: T, index: number): Td[]
+    abstract getTHeads(): Element<HTMLTableCellElement>[]
+    abstract getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        item: T,
+        index: number,
+    ): Element<HTMLTableCellElement>[]
     private renderTableHeads() {
-        const header = new Tr()
-        this.getTHeads().forEach((th) => (header.child = th))
-        this.table.head = null
-        this.table.head = header
+        this.table.appendHead(...this.getTHeads())
     }
     protected renderTable() {
         this.table.reset()
-        const ListTr = DataList(Tr)
-        let prev: DataListType<Tr> | null = null
+        const ListTr = DataList(Element<HTMLTableRowElement>)
+        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
         this.items.forEach((item, index) => {
-            const tr = new ListTr() as unknown as DataListType<Tr>
+            const tr = new ListTr('tr', {
+                className: [
+                    'hover',
+                    'cursor-pointer',
+                    'text-sm',
+                    'antialiased',
+                    'font-normal',
+                    'leading-normal',
+                    'text-blue-gray-900',
+                    ...this.STYLE_HOVER,
+                ],
+            }) as unknown as DataListType<Element<HTMLTableRowElement>>
             tr.setData('index', index)
             tr.setData('data', item)
-            tr.classList.add(
-                'hover',
-                'cursor-pointer',
-                'text-sm',
-                'antialiased',
-                'font-normal',
-                'leading-normal',
-                'text-blue-gray-900',
-                ...this.STYLE_HOVER,
-            )
 
-            this.getRowCells(tr, item, index).forEach((td) => (tr.child = td))
+            // TODO remove tr from prop
+            tr.append(...this.getRowCells(tr, item, index))
             prev = this.linkTr(prev, tr)
-            this.table.child = tr
+            this.table.append(tr)
         })
-    }
-    protected createFixedCell(type: 'th' | 'td' = 'td'): Th | Td {
-        const td = type === 'td' ? new Td() : new Th()
-        td.classList.add(
-            'sticky',
-            'left-0',
-            'indent-1',
-            'bg-white',
-            'dark:bg-gray-950',
-            'w-1',
-            'text-center',
-        )
-        return td
     }
 
     protected readonly STYLE_FOCUSED = ['bg-gray-100', 'dark:bg-gray-800']
@@ -182,7 +185,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     abstract filterCondition(item: T): boolean
     protected filterTable() {
         const rows = this.table.children
-        let prev: DataListType<Tr> | null = null
+        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
         this.table.children.forEach((tr, index) => {
             if (!this.searchKeyword) {
                 rows[index].show()
@@ -236,7 +239,10 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         this.blur()
     }
 
-    private linkTr(prev: DataListType<Tr> | null, tr: DataListType<Tr>) {
+    private linkTr(
+        prev: DataListType<Element<HTMLTableRowElement>> | null,
+        tr: DataListType<Element<HTMLTableRowElement>>,
+    ) {
         if (prev) {
             prev.next = tr
             tr.prev = prev
@@ -250,11 +256,10 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
      * Find Form (Keyword Input)
      */
     protected renderFindForm() {
-        const labelFindTitle = new Label()
-        labelFindTitle.innerHTML = 'Keyword'
-        labelFindTitle.child = this.inputFindKeyword
-
-        this.formFind.child = labelFindTitle
+        this.formFind = new Form()
+        const labelFindTitle = new Label({}, this.inputFindKeyword)
+        labelFindTitle.title = 'Keyword'
+        this.formFind.append(labelFindTitle)
 
         // When the user types
         this.inputFindKeyword.addEventListener('keyup', () => {
@@ -272,18 +277,22 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
 
     action(action: TableAction, items: T[] = []) {
+        super.action(action)
+
         if (action === TableAction.UPDATE) {
             this.items = items
             this._cursor = null
-            this.renderTable()
+            this.render()
         }
     }
 
     public doShortcut(e: KeyboardEvent): boolean {
         // Find Key ⌘F
-        if (e.key.toLowerCase() === 'f' && e.metaKey) {
-            this.changeMode(PageMode.FIND)
-            return true
+        if (e.key.toLowerCase() === 'f') {
+            if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
+                this.changeMode(PageMode.FIND)
+                return true
+            }
         }
 
         if (document.activeElement.tagName.toLowerCase() === 'input') {
@@ -316,7 +325,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                     return true
 
                 case 'Enter':
-                    if (e.metaKey) {
+                    if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                         this.action(TableAction.EDIT)
                         return true
                     }

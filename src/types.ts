@@ -1,3 +1,5 @@
+import type { Menu as ElectronMenu, MenuItemConstructorOptions } from 'electron'
+
 export type Bookmark = {
     url: string
     title: string
@@ -13,10 +15,11 @@ export enum Scenes {
     BROWSER,
     HOME,
     ADDRESS, // home with address bar focused
+    WELCOME,
 }
 
 export enum Channel {
-    PLATFORM = 'PLATFORM',
+    INFO = 'INFO',
     SWITCH = 'SWITCH',
     BOOKMARK = 'BOOKMARK',
     HISTORY = 'HISTORY',
@@ -53,8 +56,68 @@ export enum PageMode {
 export enum TableAction {
     EDIT,
     UPDATE,
-    FOCUS,
     BLUR,
     DELETE,
     EXECUTE,
+    INFO,
+}
+
+type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
+export type Shortcuts = Record<string, Menu>
+export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
+export type ShortcutStore = {
+    menu: MenuBlock
+    shortcuts: Shortcuts
+}
+
+export enum SystemType {
+    DARWIN = 'darwin',
+    DEFAULT = 'default',
+}
+
+export enum MenuCategory {
+    FOCUS = 'Focus',
+    EDIT = 'Edit',
+    VIEW = 'View',
+    NAVIGATE = 'Navigate',
+    WINDOW = 'Window',
+}
+
+export enum Menu {
+    ABOUT = 'About Focus',
+    HIDE = 'Hide Focus',
+    HIDE_OTHERS = 'Hide Others',
+    SHOW_ALL = 'Show All',
+    QUIT = 'Quit',
+    UNDO = 'Undo',
+    REDO = 'Redo',
+    CUT = 'Cut',
+    COPY = 'Copy',
+    PASTE = 'Paste',
+    SELECT_ALL = 'Select All',
+    ADD_BOOKMARK = 'Add Bookmark',
+    ADD_ANCHOR = 'Add Anchor',
+    FULL_SCREEN = 'Toggle Full Screen',
+    RESET_ZOOM = 'Reset Zoom',
+    ZOOM_IN = 'Zoom In',
+    ZOOM_OUT = 'Zoom Out',
+    DEVTOOLS = 'Toggle Developer Tools',
+    ADDRESS = 'Address Bar',
+    CENTRE = 'Control Centre',
+    BACK = 'Back',
+    FORWARD = 'Forward',
+    STOP = 'Stop',
+    RELOAD = 'Reload',
+    MINIMIZE = 'Minimize',
+    CLOSE = 'Close',
+    BRING_TO_FRONT = 'Bring to Front',
+    s0001 = 's0001',
+    s0002 = 's0002',
+    s0003 = 's0003',
+}
+
+export type ElementProps = {
+    className: string[]
+    hide: boolean
+    onClick: (ev: HTMLElementEventMap['click']) => any
 }

@@ -1,6 +1,7 @@
-import { A_HTMLFragmentWithEvent } from '.'
+import { ElementProps } from '@src/types'
+import { Element } from '.'
 
-export default class Input extends A_HTMLFragmentWithEvent<HTMLInputElement> {
+export default class Input extends Element<HTMLInputElement> {
     public set type(type: string) {
         this.element.setAttribute('type', type)
     }
@@ -33,7 +34,26 @@ export default class Input extends A_HTMLFragmentWithEvent<HTMLInputElement> {
         this.element.blur()
     }
 
-    public constructor() {
-        super('template--input')
+    public constructor(
+        props: Partial<ElementProps> = {},
+        ...children: (string | Element<HTMLElement>)[]
+    ) {
+        super('input', props, ...children)
+        this.type = 'text'
+        this.element.classList.add(
+            'w-full',
+            'text-lg',
+            'p-3',
+            'rounded-sm',
+            'border',
+            'border-gray-300',
+            'dark:text-white',
+            'dark:bg-gray-800',
+            'dark:border-transparent',
+            'focus:outline-none',
+            'focus:ring-2',
+            'focus:ring-pink-500',
+            'mb-4',
+        )
     }
 }

@@ -1,7 +1,8 @@
-import { A_HTMLFragmentWithEvent } from '.'
+import { Element } from '.'
 
-export default class Form extends A_HTMLFragmentWithEvent<HTMLFormElement> {
+export default class Form extends Element<HTMLFormElement> {
     public constructor() {
-        super('template--form')
+        super('form')
+        this.element.classList.add('max-w-2xl', 'm-auto', 'p-3')
     }
 }

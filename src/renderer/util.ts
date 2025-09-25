@@ -1,4 +1,5 @@
 import { Channel, RequestHandler, Scenes } from '@src/types'
+import { Element } from './modules/fragments'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -20,3 +21,36 @@ export const navigate = (url?: string, handler?: RequestHandler) => {
 
     ipcRenderer.send(Channel.SWITCH, Scenes.BROWSER)
 }
+
+export const shortcutToHtml = (shortcut: string) => {
+    const keys = shortcut
+        .split('+')
+        .map((key) => key.trim())
+        .map(
+            (key) =>
+                new Element(
+                    'kbd',
+                    {
+                        className: [
+                            'border',
+                            'bg-gray-400',
+                            'text-gray-800',
+                            'pr-1',
+                            'pl-1',
+                        ],
+                    },
+                    key,
+                ),
+        )
+
+    return []
+        .concat(
+            ...keys.map((n) => [
+                n,
+                new Element('span', { className: ['text-gray-500'] }, '+'),
+            ]),
+        )
+        .slice(0, -1)
+}
+
+export const isMac = () => navigator.userAgent.indexOf('Mac') != -1

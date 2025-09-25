@@ -5,10 +5,10 @@ import {
 } from 'electron'
 
 import { Bookmark } from '@src/types'
-import Logger from '@src/main/modules/logger'
+import Logger from '@main/modules/logger'
 
-import History from '@src/main/modules/store/history'
-import PopupBlocker from '@src/main/modules/store/popup'
+import History from '@main/modules/store/history'
+import PopupBlocker from '@main/modules/store/popup'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {

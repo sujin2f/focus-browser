@@ -8,12 +8,10 @@ import {
 } from '@src/types'
 
 import { A_PageWithTable } from '.'
-import Td from '@home/modules/fragments/td'
-import Th from '@home/modules/fragments/th'
-import Span from '@home/modules/fragments/span'
-import Tr from '@home/modules/fragments/tr'
+import { Element } from '@home/modules/fragments'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import { ipcRenderer } from '@src/renderer/util'
+import { ipcRenderer } from '@home/util'
+import Heading from '../fragments/heading'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
     readonly page = PageType.HISTORY
@@ -45,7 +43,11 @@ export default class History extends A_PageWithTable<NavigationEntry> {
         this.renderTable()
         this.hideForms()
 
-        this.root.appendChild(this.buttons)
+        // H1
+        const heading = new Heading(1, {}, 'History')
+
+        this.root.appendChild(heading.element)
+        this.root.appendChild(this.buttons.element)
         this.root.appendChild(this.formFind.element)
         this.root.appendChild(this.table.element)
     }
@@ -54,55 +56,55 @@ export default class History extends A_PageWithTable<NavigationEntry> {
      * History need reverse order
      */
     protected renderTable() {
-        const rows: Tr[] = []
+        const rows: Element<HTMLTableRowElement>[] = []
         this.table.reset()
         this.items.forEach((item, index) => {
-            const tr = new Tr()
+            const tr = new Element<HTMLTableRowElement>('tr', {
+                className: [
+                    'hover',
+                    'cursor-pointer',
+                    'text-sm',
+                    'antialiased',
+                    'font-normal',
+                    'leading-normal',
+                    'text-blue-gray-900',
+                    ...this.STYLE_HOVER,
+                ],
+            })
             tr.setData('index', index)
             tr.setData('data', item)
-            tr.classList.add(
-                'hover',
-                'cursor-pointer',
-                'text-sm',
-                'antialiased',
-                'font-normal',
-                'leading-normal',
-                'text-blue-gray-900',
-                ...this.STYLE_HOVER,
-            )
 
-            this.getRowCells(tr, item, index).forEach((td) => (tr.child = td))
+            // TODO remove tr from prop
+            tr.append(...this.getRowCells(tr, item, index))
             rows.unshift(tr)
         })
 
-        rows.forEach((tr) => {
-            this.table.child = tr
-        })
+        this.table.append(...rows)
     }
 
-    getTHeads(): Th[] {
-        const title = new Th()
-        title.innerHTML = 'Title'
-        title.classList.add('text-left')
-
-        return [title]
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [this.table.createTh({ className: ['text-left'] }, 'Title')]
     }
 
     getRowCells(
-        _: DataListType<Tr>,
+        _: DataListType<Element<HTMLTableRowElement>>,
         history: NavigationEntry,
         index: number,
-    ): Td[] {
-        const title = new Td()
-        title.element.addEventListener('click', () => {
-            ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
-        })
-
-        const spanTitle = new Span()
-        spanTitle.innerHTML = history.title
-        title.child = spanTitle
-
-        return [title]
+    ): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createTd(
+                {
+                    onClick: () => {
+                        ipcRenderer.send(
+                            Channel.HISTORY,
+                            RequestHandler.EXECUTE,
+                            index,
+                        )
+                    },
+                },
+                new Element('span', {}, history.title),
+            ),
+        ]
     }
 
     filterCondition(item: NavigationEntry): boolean {

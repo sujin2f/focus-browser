@@ -1,20 +1,21 @@
 import {
-    Bookmark,
     Channel,
     PageType,
     RequestHandler,
     Scenes,
     TableAction,
+    type Shortcuts,
 } from '@src/types'
 import { checkElectron, ipcRenderer } from '@home/util'
 
-import A_Page from '@src/renderer/modules/pages'
-import Home from '@src/renderer/modules/pages/home'
-import Bookmarks from '@src/renderer/modules/pages/bookmarks'
-import History from '@src/renderer/modules/pages/history'
-import Anchors from '@src/renderer/modules/pages/anchors'
-import PopupBlocker from '@src/renderer/modules/pages/popup'
-import Welcome from '@src/renderer/modules/pages/welcome'
+import A_Page from '@home/modules/pages'
+import Home from '@home/modules/pages/home'
+import Bookmarks from '@home/modules/pages/bookmarks'
+import History from '@home/modules/pages/history'
+import Anchors from '@home/modules/pages/anchors'
+import PopupBlocker from '@home/modules/pages/popup'
+import Welcome from '@home/modules/pages/welcome'
+import Address from './pages/address'
 
 export default class Controller {
     static instance: Controller
@@ -25,87 +26,92 @@ export default class Controller {
         return Controller.instance
     }
 
-    public platform: string = ''
+    public helpText: boolean = false
+    public shortcut?: Shortcuts
     private _currentPage: A_Page<any>
     public get currentPage() {
         return this._currentPage
-    }
-
-    public currentUrl: Bookmark = {
-        url: '',
-        title: '',
     }
 
     constructor() {
         document.addEventListener('DOMContentLoaded', () => {
             checkElectron()
 
-            if (document.getElementById('welcome')) {
-                this.switch(PageType.WELCOME)
-                return
-            }
-
-            this.initIPC()
-            this.switch(PageType.HOME)
             document.addEventListener('keydown', (e) =>
                 this.currentPage.doShortcut(e),
             )
+
+            this.initIPC()
+            this.switch(PageType.HOME)
         })
     }
 
     private initIPC() {
-        ipcRenderer.send(Channel.PLATFORM, RequestHandler.REQUEST)
+        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
         ipcRenderer.once(
-            Channel.PLATFORM,
-            (handler: RequestHandler, platform: string) => {
+            Channel.INFO,
+            (
+                handler: RequestHandler,
+                shortcut: Shortcuts,
+                helpText: boolean,
+            ) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
-                this.platform = platform
+                this.shortcut = shortcut
+                this.helpText = helpText
+
+                this._currentPage.action(TableAction.INFO)
             },
         )
-        ipcRenderer.on(Channel.SWITCH, (scene: Scenes, url: Bookmark) => {
-            this.currentUrl = url
+        ipcRenderer.on(Channel.SWITCH, (scene: Scenes) => {
+            switch (scene) {
+                case Scenes.HOME:
+                    this.switch(PageType.HOME)
+                    break
 
-            if (scene === Scenes.HOME) {
-                this.switch(PageType.HOME)
-            }
-            if (scene === Scenes.ADDRESS) {
-                this.switch(PageType.ADDRESS)
+                case Scenes.ADDRESS:
+                    this.switch(PageType.ADDRESS)
+                    break
+
+                case Scenes.WELCOME:
+                    this.switch(PageType.WELCOME)
+                    break
             }
         })
     }
 
     switch(page: PageType) {
+        if (this._currentPage && this._currentPage.page === page) {
+            return
+        }
+
         switch (page) {
             case PageType.HOME:
-            case PageType.ADDRESS:
                 this._currentPage = new Home()
                 break
-
+            case PageType.ADDRESS:
+                this._currentPage = new Address()
+                break
             case PageType.BOOKMARK:
                 this._currentPage = new Bookmarks()
                 break
-
             case PageType.HISTORY:
                 this._currentPage = new History()
                 break
-
             case PageType.ANCHOR:
                 this._currentPage = new Anchors()
                 break
-
             case PageType.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
                 break
-
             case PageType.WELCOME:
                 this._currentPage = new Welcome()
                 break
         }
 
-        if (page === PageType.ADDRESS) {
-            this._currentPage.action(TableAction.FOCUS)
+        if (this.shortcut) {
+            this._currentPage.action(TableAction.INFO)
         }
     }
 }

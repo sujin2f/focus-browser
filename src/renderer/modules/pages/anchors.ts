@@ -8,13 +8,13 @@ import {
 } from '@src/types'
 
 import { A_PageWithTable } from '.'
+import { Element } from '@home/modules/fragments'
 import Button from '@home/modules/fragments/button'
-import Td from '@home/modules/fragments/td'
-import Th from '@home/modules/fragments/th'
-import Span from '@home/modules/fragments/span'
-import type Tr from '@home/modules/fragments/tr'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import { ipcRenderer, navigate } from '@src/renderer/util'
+import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
+import Heading from '../fragments/heading'
+import Callout from '../fragments/callout'
+import Controller from '../controller'
 
 export default class Anchors extends A_PageWithTable<Bookmark> {
     readonly page = PageType.ANCHOR
@@ -46,49 +46,92 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         this.renderTable()
         this.hideForms()
 
-        this.root.appendChild(this.buttons)
+        // H1
+        const heading = new Heading(1, {}, 'Anchor')
+        this.root.appendChild(heading.element)
+
+        this.renderCallout()
+
+        this.root.appendChild(this.buttons.element)
         this.root.appendChild(this.formFind.element)
         this.root.appendChild(this.table.element)
     }
 
-    getTHeads(): Th[] {
-        const title = new Th()
-        title.innerHTML = 'Title'
-        title.classList.add('text-left')
-
-        return [title]
+    private renderCallout() {
+        if (!Controller.getInstance().helpText) {
+            return
+        }
+        const command = isMac() ? '⌘' : 'Ctrl+'
+        const callout = new Callout(
+            { className: ['mb-4'] },
+            new Element(
+                'p',
+                { className: ['text-gray-300', 'mb-2'] },
+                'Press ',
+                ...shortcutToHtml(`${command}+/`),
+                ' to add a current page to the anchor.',
+            ),
+            new Element(
+                'p',
+                { className: ['text-gray-300'] },
+                'Anchor is a temporary bookmark that is automatically deleted once you visited.',
+            ),
+        )
+        this.root.appendChild(callout.element)
     }
 
-    getRowCells(tr: DataListType<Tr>, bookmark: Bookmark, index: number): Td[] {
-        const title = new Td()
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createTh(
+                {
+                    className: ['text-left'],
+                },
+                'Title',
+            ),
+        ]
+    }
 
-        title.element.addEventListener('click', (e) => {
-            const tagName = (e.target as HTMLElement).tagName.toLowerCase()
-            if (tagName === 'button') {
-                this._cursor = tr
-                this.action(TableAction.DELETE)
-                this._cursor = null
-                return
-            }
+    getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        bookmark: Bookmark,
+        index: number,
+    ): Element<HTMLTableCellElement>[] {
+        const title = this.table.createTd(
+            {
+                onClick: (e) => {
+                    const tagName = (
+                        e.target as HTMLElement
+                    ).tagName.toLowerCase()
+                    if (tagName === 'button') {
+                        this._cursor = tr
+                        this.action(TableAction.DELETE)
+                        this._cursor = null
+                        return
+                    }
 
-            navigate(bookmark.url)
-        })
-
-        const spanTitle = new Span()
-        spanTitle.innerHTML = bookmark.title
-
-        const del = new Button()
-        del.classList.remove('mb-3', 'p-2')
-        del.classList.add('mr-2', 'cursor-pointer', 'pl-1', 'pr-1')
-        del.text = 'Remove'
-        del.addEventListener('click', () => {
-            this._cursor = tr
-            this.action(TableAction.DELETE)
-            this._cursor = null
-        })
-
-        title.child = del
-        title.child = spanTitle
+                    navigate(bookmark.url, RequestHandler.REMOVE)
+                },
+            },
+            new Button(
+                {
+                    className: [
+                        'mr-2',
+                        'cursor-pointer',
+                        'pl-1',
+                        'pr-1',
+                        '-mb-3',
+                        '-p-2',
+                    ],
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.DELETE)
+                        this._cursor = null
+                    },
+                },
+                'Remove',
+            ),
+            new Element('span', {}, bookmark.title),
+        )
 
         return [title]
     }

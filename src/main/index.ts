@@ -1,5 +1,5 @@
 import { app, Menu } from 'electron'
-import BrowserWindow from '@src/main/modules/scenes/window'
+import BrowserWindow from '@main/modules/scenes/window'
 import Logger from './modules/logger'
 
 /**

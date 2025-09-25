@@ -8,6 +8,7 @@ type Props = {
     y: number
     maxHistory: number
     welcome: boolean
+    helpText: boolean
 }
 
 export default class Status extends Store<Props> {
@@ -21,6 +22,7 @@ export default class Status extends Store<Props> {
                 y: NaN,
                 maxHistory: 200,
                 welcome: true,
+                helpText: true,
             })
             Status.instance.parse()
         }

@@ -102,10 +102,6 @@ const rendererConfig = {
             template: './src/renderer/templates/index.html', // Your HTML template for the renderer
             filename: 'index.html',
         }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/welcome.html',
-            filename: 'welcome.html',
-        }),
     ],
 }
 

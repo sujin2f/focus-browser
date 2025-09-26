@@ -27,145 +27,138 @@ import Popup from '@main/modules/store/popup'
 import Shortcut from '@main/modules/store/shortcut'
 
 import { BrowserView } from '@main/modules/scenes/browser'
+import Logger from '../logger'
 
-class WithIPC extends ElectronBrowserWindow {
+/**
+ * All starts with here
+ */
+export default class BrowserWindow extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
     protected current: Scenes = Scenes.BROWSER
-    protected switch(_: Scenes) {
-        throw new Error('Method not implemented.')
-    }
 
+    /**
+     * Constants
+     */
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
+        /**
+         * Menu
+         */
+        this.buildMenu()
+
+        /**
+         * IPC
+         */
         message.on(Channel.INFO, this.onInfo.bind(this))
         message.on(Channel.SWITCH, this.onSwitch.bind(this))
         message.on(Channel.HISTORY, this.onHistory.bind(this))
         message.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
         message.on(Channel.ANCHOR, this.onAnchors.bind(this))
         message.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
+
+        /**
+         * Set views
+         */
+        this.browser = new BrowserView({
+            webPreferences: {
+                session: session.fromPartition('persist:my-partition'),
+                partition: 'persist:my-partition',
+            },
+        })
+        // Enable pinch zoom
+        this.browser.webContents.setVisualZoomLevelLimits(1, 3)
+        // #20 Web Title to App Title
+        this.browser.webContents.on('page-title-updated', (e, title) => {
+            this.title = title
+        })
+
+        this.contentView = this.browser
+
+        /**
+         * Restore status
+         */
+        const status = Status.getInstance()
+
+        // Restore window size
+        const bounds = status.getBounds(this.getBounds())
+        this.setBounds(bounds)
+
+        this.setEventListeners()
+
+        /**
+         * Centre
+         */
+        this.centre = new WebContentsView({
+            webPreferences: {
+                preload,
+            },
+        })
+        this.centre.webContents
+            .loadURL(resolveHtmlPath('index.html'))
+            .then(() => {
+                this.sendInfo()
+                if (status.get('welcome')) {
+                    this.switch(Scenes.WELCOME)
+                    status.set('welcome', false)
+                }
+            })
+            .catch((e) => Logger.getInstance().error(e))
     }
 
-    protected sendInfo() {
-        this.centre.webContents.send(
-            Channel.INFO,
-            RequestHandler.RESPONSE,
-            Shortcut.getInstance().get('shortcuts'),
-            Status.getInstance().get('helpText'),
-        )
-    }
-
-    private onInfo(handler: RequestHandler, data: Record<string, unknown>) {
-        if (handler === RequestHandler.MODIFY && data.helpText) {
-            Status.getInstance().set('helpText', data.helpText)
+    /**
+     * View controls
+     */
+    protected switch(scene: Scenes) {
+        this.current = scene
+        if (scene === Scenes.BROWSER) {
+            this.contentView = this.browser
+            return
         }
+
+        this.contentView = this.centre
+        this.centre.webContents.send(Channel.SWITCH, scene)
+        this.centre.webContents.focus()
     }
 
-    private onSwitch(
-        scene: Scenes,
-        address?: string,
-        handler?: RequestHandler,
-    ) {
-        this.switch(scene)
+    private setEventListeners() {
+        this.addListener('close', () => this.saveStatus())
+    }
 
-        if (scene === Scenes.BROWSER && address) {
-            this.browser.loadURL(address)
+    /**
+     * Save current status when the app is closed
+     */
+    private saveStatus() {
+        const status = Status.getInstance()
+        const bounds = this.getBounds()
+        status.setNumber('width', bounds.width)
+        status.setNumber('height', bounds.height)
+        status.setNumber('x', bounds.x)
+        status.setNumber('y', bounds.y)
+        status.save()
+
+        // Save history
+        if (this.browser.webContents) {
+            const history = new History()
+            history.write(
+                this.browser.webContents.navigationHistory.getActiveIndex(),
+                this.browser.webContents.navigationHistory.getAllEntries(),
+                status.getNumber('maxHistory'),
+            )
         }
 
-        if (handler === RequestHandler.REMOVE) {
-            Anchors.getInstance().remove(address)
-        }
+        // Save Popup Blocker
+        PopupBlocker.getInstance().save()
+
+        // Save Bookmark
+        Bookmarks.getInstance().save()
+        Anchors.getInstance().save()
     }
 
-    private onHistory(handler: RequestHandler, index: number) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                this.centre.webContents.send(
-                    Channel.HISTORY,
-                    RequestHandler.RESPONSE,
-                    this.browser.webContents.navigationHistory.getAllEntries(),
-                )
-
-                return
-
-            case RequestHandler.EXECUTE:
-                this.switch(Scenes.BROWSER)
-                this.browser.webContents.navigationHistory.goToIndex(index)
-                return
-        }
-    }
-
-    private onBookmarks(
-        handler: RequestHandler,
-        bookmark: Bookmark,
-        index: number,
-    ) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                const bookmarks = Bookmarks.getInstance().get()
-                this.centre.webContents.send(
-                    Channel.BOOKMARK,
-                    RequestHandler.RESPONSE,
-                    bookmarks,
-                    this.browser.webContents.getTitle(),
-                    this.browser.webContents.getURL(),
-                )
-                return
-            case RequestHandler.ADD:
-                Bookmarks.getInstance().push(bookmark)
-                return
-            case RequestHandler.MODIFY:
-                Bookmarks.getInstance().edit(index, bookmark)
-                return
-            case RequestHandler.REMOVE:
-                Bookmarks.getInstance().remove(bookmark as unknown as number)
-                return
-        }
-    }
-
-    private onAnchors(handler: RequestHandler, url: string) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                const bookmarks = Anchors.getInstance().get()
-                this.centre.webContents.send(
-                    Channel.ANCHOR,
-                    RequestHandler.RESPONSE,
-                    bookmarks,
-                )
-                return
-            case RequestHandler.REMOVE:
-                Anchors.getInstance().remove(url)
-                return
-        }
-    }
-
-    private onPopupBlocker(handler: RequestHandler, host: string) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                const blocked = Popup.getInstance().get('blocked')
-                const allowed = Popup.getInstance().get('allowed')
-                this.centre.webContents.send(
-                    Channel.POPUP_BLOCKER,
-                    RequestHandler.RESPONSE,
-                    Array.from(blocked as string[]),
-                    Array.from(allowed as string[]),
-                )
-                return
-
-            case RequestHandler.MODIFY:
-                Popup.getInstance().toggle(host)
-                return
-        }
-    }
-}
-
-class WithMenu extends WithIPC {
-    constructor(options?: BaseWindowConstructorOptions) {
-        super(options)
-        this.buildMenu()
-    }
-
+    /**
+     * Menu
+     */
     private buildMenu() {
         const data = this.addMenuCallbacks(
             Shortcut.getInstance().get('menu') as MenuBlock,
@@ -277,112 +270,122 @@ class WithMenu extends WithIPC {
 
         return menu
     }
-}
 
-/**
- * All starts with here
- */
-export default class BrowserWindow extends WithMenu {
     /**
-     * Constants
+     * IPC
      */
-    constructor(options?: BaseWindowConstructorOptions) {
-        super(options)
-        this.autoHideMenuBar = true
-
-        /**
-         * Set views
-         */
-        this.browser = new BrowserView({
-            webPreferences: {
-                session: session.fromPartition('persist:my-partition'),
-                partition: 'persist:my-partition',
-            },
-        })
-        // Enable pinch zoom
-        this.browser.webContents.setVisualZoomLevelLimits(1, 3)
-        // #20 Web Title to App Title
-        this.browser.webContents.on('page-title-updated', (e, title) => {
-            this.title = title
-        })
-
-        this.contentView = this.browser
-
-        /**
-         * Restore status
-         */
-        const status = Status.getInstance()
-
-        // Restore window size
-        const bounds = status.getBounds(this.getBounds())
-        this.setBounds(bounds)
-
-        this.setEventListeners()
-
-        /**
-         * Centre
-         */
-        this.centre = new WebContentsView({
-            webPreferences: {
-                preload,
-            },
-        })
-        this.centre.webContents
-            .loadURL(resolveHtmlPath('index.html'))
-            .then(() => {
-                this.sendInfo()
-                if (status.get('welcome')) {
-                    this.switch(Scenes.WELCOME)
-                }
-            })
+    protected sendInfo() {
+        this.centre.webContents.send(
+            Channel.INFO,
+            RequestHandler.RESPONSE,
+            Shortcut.getInstance().get('shortcuts'),
+            Status.getInstance().get('helpText'),
+        )
     }
 
-    /**
-     * View controls
-     */
-    protected switch(scene: Scenes) {
-        this.current = scene
-        if (scene === Scenes.BROWSER) {
-            this.contentView = this.browser
-            return
+    private onInfo(handler: RequestHandler, data: Record<string, unknown>) {
+        if (
+            handler === RequestHandler.MODIFY &&
+            (data.helpText || data.helpText === false)
+        ) {
+            Status.getInstance().set('helpText', data.helpText)
+        }
+    }
+
+    private onSwitch(
+        scene: Scenes,
+        address?: string,
+        handler?: RequestHandler,
+    ) {
+        this.switch(scene)
+
+        if (scene === Scenes.BROWSER && address) {
+            this.browser.loadURL(address)
         }
 
-        this.contentView = this.centre
-        this.centre.webContents.send(Channel.SWITCH, scene)
-        this.centre.webContents.focus()
-    }
-
-    private setEventListeners() {
-        this.addListener('close', this.saveStatus.bind(this))
-    }
-
-    /**
-     * Save current status when the app is closed
-     */
-    private saveStatus() {
-        const status = Status.getInstance()
-        const bounds = this.getBounds()
-        status.setNumber('width', bounds.width)
-        status.setNumber('height', bounds.height)
-        status.setNumber('x', bounds.x)
-        status.setNumber('y', bounds.y)
-        status.save()
-
-        // Save history
-        if (this.browser.webContents) {
-            const history = new History()
-            history.write(
-                this.browser.webContents.navigationHistory.getActiveIndex(),
-                this.browser.webContents.navigationHistory.getAllEntries(),
-                status.getNumber('maxHistory'),
-            )
+        if (handler === RequestHandler.REMOVE) {
+            Anchors.getInstance().remove(address)
         }
+    }
 
-        // Save Popup Blocker
-        PopupBlocker.getInstance().save()
+    private onHistory(handler: RequestHandler, index: number) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                this.centre.webContents.send(
+                    Channel.HISTORY,
+                    RequestHandler.RESPONSE,
+                    this.browser.webContents.navigationHistory.getAllEntries(),
+                )
 
-        // Save Bookmark
-        Bookmarks.getInstance().save()
-        Anchors.getInstance().save()
+                return
+
+            case RequestHandler.EXECUTE:
+                this.switch(Scenes.BROWSER)
+                this.browser.webContents.navigationHistory.goToIndex(index)
+                return
+        }
+    }
+
+    private onBookmarks(
+        handler: RequestHandler,
+        bookmark: Bookmark,
+        index: number,
+    ) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const bookmarks = Bookmarks.getInstance().get()
+                this.centre.webContents.send(
+                    Channel.BOOKMARK,
+                    RequestHandler.RESPONSE,
+                    bookmarks,
+                    this.browser.webContents.getTitle(),
+                    this.browser.webContents.getURL(),
+                )
+                return
+            case RequestHandler.ADD:
+                Bookmarks.getInstance().push(bookmark)
+                return
+            case RequestHandler.MODIFY:
+                Bookmarks.getInstance().edit(index, bookmark)
+                return
+            case RequestHandler.REMOVE:
+                Bookmarks.getInstance().remove(bookmark as unknown as number)
+                return
+        }
+    }
+
+    private onAnchors(handler: RequestHandler, url: string) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const bookmarks = Anchors.getInstance().get()
+                this.centre.webContents.send(
+                    Channel.ANCHOR,
+                    RequestHandler.RESPONSE,
+                    bookmarks,
+                )
+                return
+            case RequestHandler.REMOVE:
+                Anchors.getInstance().remove(url)
+                return
+        }
+    }
+
+    private onPopupBlocker(handler: RequestHandler, host: string) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const blocked = Popup.getInstance().get('blocked')
+                const allowed = Popup.getInstance().get('allowed')
+                this.centre.webContents.send(
+                    Channel.POPUP_BLOCKER,
+                    RequestHandler.RESPONSE,
+                    Array.from(blocked as string[]),
+                    Array.from(allowed as string[]),
+                )
+                return
+
+            case RequestHandler.MODIFY:
+                Popup.getInstance().toggle(host)
+                return
+        }
     }
 }

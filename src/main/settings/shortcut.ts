@@ -149,6 +149,12 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
     },
     [SystemType.DEFAULT]: {
         menu: {
+            [MenuCategory.FILE]: {
+                [Menu.QUIT]: {
+                    accelerator: 'Control+Q',
+                    role: 'quit',
+                },
+            },
             [MenuCategory.EDIT]: {
                 [Menu.UNDO]: {
                     accelerator: 'Control+Z',
@@ -226,11 +232,11 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 },
                 [Menu.RELOAD]: {
                     accelerator: 'Control+R',
-                    role: 'reload',
                 },
             },
         },
         shortcuts: {
+            'Control+Q': Menu.QUIT,
             'Control+Z': Menu.UNDO,
             'Control+Shift+Z': Menu.REDO,
             'Control+X': Menu.CUT,

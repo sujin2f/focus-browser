@@ -77,6 +77,7 @@ export enum SystemType {
 
 export enum MenuCategory {
     FOCUS = 'Focus',
+    FILE = 'FILE',
     EDIT = 'Edit',
     VIEW = 'View',
     NAVIGATE = 'Navigate',

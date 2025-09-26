@@ -1,6 +1,5 @@
 import { app, Menu } from 'electron'
 import BrowserWindow from '@main/modules/scenes/window'
-import Logger from './modules/logger'
 
 /**
  * Add event listeners...
@@ -15,9 +14,10 @@ app.on('window-all-closed', () => {
 
 app.whenReady()
     .then(() => {
-        Logger.getInstance().info(`Platform: ${process.platform}`)
         Menu.setApplicationMenu(null)
         const window = new BrowserWindow()
+        window.setAutoHideMenuBar(true)
+
         // Main.getInstance()
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the

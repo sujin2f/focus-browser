@@ -1,78 +1,121 @@
-import { CC_Pages, CC_TableAction } from '@src/types'
-import Controller from '@home/controller'
-import IPC from '@home/modules/ipc'
+import { PageType, TableAction } from '@src/types'
+import Controller from '@home/modules/controller'
 import Input from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
+import Label from '@home/modules/fragments/label'
+import { isMac, navigate, shortcutToHtml } from '@home/util'
 import A_Page from '.'
+import CardContainer from '../fragments/card-container'
+import Callout from '../fragments/callout'
+import Heading from '../fragments/heading'
+import { Element } from '../fragments'
 
 type Button = {
     title: string
     description: string
-    destination: CC_Pages
+    destination: PageType
+}
+
+const buttons: Record<string, Button> = {
+    bookmarks: {
+        title: 'Bookmark (B)',
+        description: 'Manage bookmarks',
+        destination: PageType.BOOKMARK,
+    },
+    anchor: {
+        title: 'Anchor (A)',
+        description:
+            'Temporary bookmark that will be deleted once you clicked it.',
+        destination: PageType.ANCHOR,
+    },
+    history: {
+        title: 'History (H)',
+        description: 'Manage history',
+        destination: PageType.HISTORY,
+    },
+    popup: {
+        title: 'Popup Blocker (P)',
+        description: 'Manage Popup Blocker',
+        destination: PageType.POPUP_BLOCKER,
+    },
+    welcome: {
+        title: 'Visit Welcome Page',
+        description: 'Double check the basic features of Focus',
+        destination: PageType.WELCOME,
+    },
 }
 
 export default class Home extends A_Page<null> {
-    public readonly page = CC_Pages.Home
+    public page = PageType.HOME
 
-    private search: Input = new Input()
-
-    private buttons: Record<string, Button> = {
-        bookmarks: {
-            title: 'Bookmarks (B)',
-            description: 'Manage bookmarks',
-            destination: CC_Pages.Bookmark,
-        },
-        anchor: {
-            title: 'Anchor (A)',
-            description:
-                'Temporary bookmark that will be deleted once you clicked it.',
-            destination: CC_Pages.Anchor,
-        },
-        history: {
-            title: 'History (H)',
-            description: 'Manage history',
-            destination: CC_Pages.History,
-        },
-        popup: {
-            title: 'Popup Blocker (P)',
-            description: 'Manage Popup Blocker',
-            destination: CC_Pages.PopupBlocker,
-        },
-    }
+    protected search: Input = new Input()
 
     constructor() {
         super()
-        this.render()
+        this.init()
     }
 
-    private render(): void {
-        this.search.placeholder = 'Search or enter address (⌘L)'
-        this.root.appendChild(this.search.element)
+    render(): void {
+        this.root.innerHTML = ''
 
-        const cards = document.createElement('div')
-        cards.className = 'grid grid-cols-2 sm:grid-cols-3'
+        // Location Bar
+        const command = isMac() ? '⌘' : 'Ctrl+'
+        const label = new Label(
+            {},
+            `Enter search keyword or address (${command}L)`,
+            this.search,
+        )
+        this.root.appendChild(label.element)
 
-        Object.keys(this.buttons).forEach((key) => {
-            const info = this.buttons[key]
+        this.renderCallout()
+
+        // Cards
+        const cardContainer = new CardContainer()
+        Object.keys(buttons).forEach((key) => {
+            const info = buttons[key]
             const card = new Card()
 
             card.title = info.title
             card.description = info.description
-            card.addEventListener('click', () =>
-                Controller.getInstance().switch(info.destination),
-            )
+            card.addEventListener('click', () => {
+                Controller.getInstance().switch(info.destination)
+            })
 
-            cards.appendChild(card.element)
+            cardContainer.append(card)
         })
-
-        this.root.appendChild(cards)
+        this.root.appendChild(cardContainer.element)
     }
 
-    action(action: CC_TableAction) {
-        if (action === CC_TableAction.FOCUS) {
-            this.search.focus()
+    private renderCallout() {
+        if (!Controller.getInstance().helpText) {
             return
         }
+        const command = isMac() ? '⌘' : 'Ctrl+'
+        const callout = new Callout(
+            { className: ['mb-2'] },
+            new Element(
+                'p',
+                { className: ['text-gray-300', 'mb-2'] },
+                'Press ',
+                ...shortcutToHtml('Escape'),
+                ' key to switch to a browser mode. From browser mode,',
+                new Element('br'),
+                'you can come back here by pressing ',
+                ...shortcutToHtml(`${command}+\``),
+                ' or ',
+                ...shortcutToHtml(`${command}+L`),
+            ),
+            new Element(
+                'p',
+                { className: ['text-gray-300'] },
+                'In the browser mode, press ',
+                ...shortcutToHtml(`${command}+[`),
+                ' and ',
+                ...shortcutToHtml(`${command}+]`),
+                ' to navigate back and forward.',
+            ),
+        )
+        this.root.appendChild(callout.element)
     }
 
     doShortcut(e: KeyboardEvent): boolean {
@@ -80,19 +123,19 @@ export default class Home extends A_Page<null> {
             switch (e.key) {
                 case 'B':
                 case 'b':
-                    Controller.getInstance().switch(CC_Pages.Bookmark)
+                    Controller.getInstance().switch(PageType.BOOKMARK)
                     return
                 case 'h':
                 case 'H':
-                    Controller.getInstance().switch(CC_Pages.History)
+                    Controller.getInstance().switch(PageType.HISTORY)
                     return
                 case 'a':
                 case 'A':
-                    Controller.getInstance().switch(CC_Pages.Anchor)
+                    Controller.getInstance().switch(PageType.ANCHOR)
                     return
                 case 'p':
                 case 'P':
-                    Controller.getInstance().switch(CC_Pages.PopupBlocker)
+                    Controller.getInstance().switch(PageType.POPUP_BLOCKER)
                     return
             }
         } else {
@@ -101,7 +144,7 @@ export default class Home extends A_Page<null> {
                     return
                 }
 
-                IPC.getInstance().navigate(this.search.value)
+                navigate(this.search.value)
                 this.search.value = ''
                 return
             }

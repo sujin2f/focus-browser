@@ -1,18 +1,20 @@
 import {
-    CC_Modes,
-    CC_Pages,
-    CC_TableAction,
-    PopupBlocker as T_PopupBlocker,
+    PageMode,
+    PageType,
+    TableAction,
+    Channel,
+    RequestHandler,
+    type PopupBlocker as T_PopupBlocker,
 } from '@src/types'
-import IPC from '@home/modules/ipc'
 
 import { A_PageWithTable } from '.'
-import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
-import Td from '@home/modules/fragments/td'
+import { Element } from '@home/modules/fragments'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer } from '@home/util'
+import Heading from '../fragments/heading'
 
 export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
-    readonly page = CC_Pages.PopupBlocker
+    readonly page = PageType.POPUP_BLOCKER
 
     constructor() {
         super()
@@ -20,109 +22,106 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     request(): void {
-        IPC.getInstance().requestPopupBlocker()
+        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.POPUP_BLOCKER,
+            (
+                handler: RequestHandler.RESPONSE,
+                blocked: string[],
+                allowed: string[],
+            ) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                const data = [
+                    ...allowed.map((host) => ({ host, allowed: true })),
+                    ...blocked.map((host) => ({ host, allowed: false })),
+                ]
+                this.action(TableAction.UPDATE, data)
+            },
+        )
     }
 
     render() {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.formFind.classList.add('hidden')
-        this.root.appendChild(this.formFind)
-
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
         this.renderTable()
+        this.hideForms()
+
+        // H1
+        const heading = new Heading(1, {}, 'Popup Blocker')
+
+        this.root.appendChild(heading.element)
+        this.root.appendChild(this.buttons.element)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createFixedCell('th', {}, 'Allowed'),
+            this.table.createTh({ className: ['text-left'] }, 'Title'),
+        ]
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Allowed'
-        this.table.th = 'Toggle'
-
-        this.items.reverse().forEach((item, index) => {
-            const tr = new Tr()
-            tr.dataIndex = this.items.length - index - 1
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-
-            // title
-            const title = new Button()
-            title.text = item.host
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
-
-            // allowed
-            const allowed = new Button()
-            allowed.text = item.allowed ? 'V' : ''
-            allowed.type = 'button'
-            allowed.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            allowed.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
-
-            // Button
-            const button = new Button()
-            button.className = ''
-            button.text = 'Toggle'
-            button.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.EXECUTE)
-                this._cursor = NaN
-            })
-
-            const tdTitle = new Td()
-            const tdAllowed = new Td()
-            const tdButton = new Td()
-
-            tdTitle.child = title
-            tdAllowed.child = allowed
-            tdButton.child = button
-
-            tr.child = tdTitle
-            tr.child = tdAllowed
-            tr.child = tdButton
-
-            this.table.child = tr
-        })
-        this.tableWrapper.appendChild(this.table.element)
+    getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        popup: T_PopupBlocker,
+        index: number,
+    ): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createFixedCell(
+                'td',
+                {
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.EXECUTE)
+                        this._cursor = null
+                    },
+                },
+                new Element<HTMLSpanElement>(
+                    'span',
+                    {},
+                    popup.allowed ? '✅' : '',
+                ),
+            ),
+            this.table.createTd(
+                {
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.EXECUTE)
+                        this._cursor = null
+                    },
+                },
+                new Element<HTMLSpanElement>('span', {}, popup.host),
+            ),
+        ]
     }
 
-    filterCondition(item: T_PopupBlocker, keyword: string): boolean {
-        return item.host.toLowerCase().includes(keyword.toLowerCase())
+    filterCondition(item: T_PopupBlocker): boolean {
+        return item.host
+            .toLowerCase()
+            .includes(this.searchKeyword.toLowerCase())
     }
 
-    action(action: CC_TableAction, items: T_PopupBlocker[] = []) {
+    action(action: TableAction, items: T_PopupBlocker[] = []) {
         super.action(action, items)
 
         if (
-            action === CC_TableAction.DELETE ||
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
+            action === TableAction.DELETE ||
+            action === TableAction.EXECUTE ||
+            action === TableAction.EDIT
         ) {
-            IPC.getInstance().togglePopupBlocker(this.items[this._cursor].host)
-            this.items[this._cursor].allowed = !this.items[this._cursor].allowed
+            const data = this._cursor.getData('data') as T_PopupBlocker
+            ipcRenderer.send(
+                Channel.POPUP_BLOCKER,
+                RequestHandler.MODIFY,
+                data.host,
+            )
+            data.allowed = !data.allowed
             this.renderTable()
             return
         }
@@ -134,7 +133,7 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         }
 
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

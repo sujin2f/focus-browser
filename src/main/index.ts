@@ -1,5 +1,5 @@
 import { app, Menu } from 'electron'
-import BrowserWindow from '@src/main/modules/scenes/window'
+import BrowserWindow from '@main/modules/scenes/window'
 
 /**
  * Add event listeners...
@@ -16,6 +16,8 @@ app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
         const window = new BrowserWindow()
+        window.setAutoHideMenuBar(true)
+
         // Main.getInstance()
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the

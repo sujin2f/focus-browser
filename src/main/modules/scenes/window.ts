@@ -2,213 +2,61 @@ import {
     session,
     BrowserWindow as ElectronBrowserWindow,
     WebContentsView,
+    Menu,
+    type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
 } from 'electron'
 
 import { preload, resolveHtmlPath, message } from '@main/util'
-import { Bookmark, IPC_Channels, IPC_RequestHandler, Scenes } from '@src/types'
+import {
+    Channel,
+    RequestHandler,
+    Scenes,
+    MenuCategory,
+    Menu as E_Menu,
+    type Bookmark,
+    type MenuBlock,
+} from '@src/types'
 
-import History from '@src/main/modules/store/history'
-import Status from '@src/main/modules/store/status'
-import Bookmarks from '@src/main/modules/store/bookmarks'
-import PopupBlocker from '@src/main/modules/store/popup'
-import Anchors from '@src/main/modules/store/anchors'
+import History from '@main/modules/store/history'
+import Status from '@main/modules/store/status'
+import Bookmarks from '@main/modules/store/bookmarks'
+import PopupBlocker from '@main/modules/store/popup'
+import Anchors from '@main/modules/store/anchors'
+import Popup from '@main/modules/store/popup'
+import Shortcut from '@main/modules/store/shortcut'
 
-import MenuBuilder, {
-    CustomMenuItemConstructor,
-} from '@src/main/modules/menu-builder'
-import { menu } from '@src/main/settings/menu'
-
-import { BrowserView } from '@src/main/modules/scenes/browser'
-import Popup from '@src/main/modules/store/popup'
-
-class WithIPC extends ElectronBrowserWindow {
-    protected browser: BrowserView
-    protected centre: WebContentsView
-    protected current: Scenes = Scenes.Browser
-    protected setCurrent(_: Scenes) {
-        throw new Error('Method not implemented.')
-    }
-
-    constructor(options?: BaseWindowConstructorOptions) {
-        super(options)
-
-        message.on(IPC_Channels.Switch, this.onSwitch.bind(this))
-        message.on(IPC_Channels.History, this.onHistory.bind(this))
-        message.on(IPC_Channels.Bookmarks, this.onBookmarks.bind(this))
-        message.on(IPC_Channels.Anchors, this.onAnchors.bind(this))
-        message.on(IPC_Channels.PopupBlocker, this.onPopupBlocker.bind(this))
-    }
-
-    protected sendPageInfo(scene: Scenes) {
-        this.centre.webContents.send(
-            IPC_Channels.Switch,
-            scene,
-            this.browser.url,
-        )
-    }
-
-    private onSwitch(scene: Scenes, address?: string, anchorIndex?: number) {
-        this.setCurrent(scene)
-
-        if (scene === Scenes.Browser && address) {
-            this.browser.loadURL(address)
-        }
-
-        if (typeof anchorIndex === 'number') {
-            Anchors.getInstance().remove(anchorIndex)
-        }
-    }
-
-    private onHistory(handler: IPC_RequestHandler, index: number) {
-        switch (handler) {
-            case IPC_RequestHandler.Request:
-                this.centre.webContents.send(
-                    IPC_Channels.History,
-                    IPC_RequestHandler.Response,
-                    this.browser.webContents.navigationHistory.getAllEntries(),
-                )
-
-                return
-
-            case IPC_RequestHandler.Execute:
-                this.setCurrent(Scenes.Browser)
-                this.browser.webContents.navigationHistory.goToIndex(index)
-                return
-        }
-    }
-
-    private onBookmarks(
-        handler: IPC_RequestHandler,
-        bookmark: Bookmark,
-        index: number,
-    ) {
-        switch (handler) {
-            case IPC_RequestHandler.Request:
-                const bookmarks = Bookmarks.getInstance().get()
-                this.centre.webContents.send(
-                    IPC_Channels.Bookmarks,
-                    IPC_RequestHandler.Response,
-                    bookmarks,
-                )
-                return
-            case IPC_RequestHandler.Add:
-                Bookmarks.getInstance().push(bookmark)
-                return
-            case IPC_RequestHandler.Modify:
-                Bookmarks.getInstance().edit(index, bookmark)
-                return
-            case IPC_RequestHandler.Remove:
-                Bookmarks.getInstance().remove(bookmark as unknown as number)
-                return
-        }
-    }
-
-    private onAnchors(handler: IPC_RequestHandler, index: number) {
-        switch (handler) {
-            case IPC_RequestHandler.Request:
-                const bookmarks = Anchors.getInstance().get()
-                this.centre.webContents.send(
-                    IPC_Channels.Anchors,
-                    IPC_RequestHandler.Response,
-                    bookmarks,
-                )
-                return
-            case IPC_RequestHandler.Remove:
-                Anchors.getInstance().remove(index)
-                return
-        }
-    }
-
-    private onPopupBlocker(handler: IPC_RequestHandler, host: string) {
-        switch (handler) {
-            case IPC_RequestHandler.Request:
-                const blocked = Popup.getInstance().get('blocked')
-                const allowed = Popup.getInstance().get('allowed')
-                this.centre.webContents.send(
-                    IPC_Channels.PopupBlocker,
-                    IPC_RequestHandler.Response,
-                    Array.from(blocked as string[]),
-                    Array.from(allowed as string[]),
-                )
-                return
-
-            case IPC_RequestHandler.Modify:
-                Popup.getInstance().toggle(host)
-                return
-        }
-    }
-}
+import { BrowserView } from '@main/modules/scenes/browser'
+import Logger from '../logger'
 
 /**
  * All starts with here
  */
-export default class BrowserWindow extends WithIPC {
+export default class BrowserWindow extends ElectronBrowserWindow {
+    protected browser: BrowserView
+    protected centre: WebContentsView
+    protected current: Scenes = Scenes.BROWSER
+
     /**
      * Constants
      */
-    private readonly menu: CustomMenuItemConstructor[] = menu({
-        address: () => this.setCurrent(Scenes.Address),
-        home: () => this.setCurrent(Scenes.Home),
-        reload: () => {
-            if (this.current === Scenes.Browser) {
-                this.browser.webContents.reload()
-            }
-        },
-        stop: () => {
-            if (this.current === Scenes.Browser) {
-                this.browser.webContents.stop()
-            }
-        },
-        fullscreen: () => {
-            this.setFullScreen(true)
-        },
-        devtool: () => {
-            if (this.current === Scenes.Browser) {
-                this.browser.webContents.openDevTools()
-                this.centre.webContents.closeDevTools()
-                return
-            }
-            this.browser.webContents.closeDevTools()
-            this.centre.webContents.openDevTools()
-        },
-        historyBack: () => {
-            if (
-                this.current === Scenes.Browser &&
-                this.browser.webContents.navigationHistory.canGoBack()
-            ) {
-                this.browser.webContents.navigationHistory.goBack()
-            }
-        },
-        historyForward: () => {
-            if (
-                this.current === Scenes.Browser &&
-                this.browser.webContents.navigationHistory.canGoForward()
-            ) {
-                this.browser.webContents.navigationHistory.goForward()
-            }
-        },
-        addBookmark: () => {
-            if (this.current === Scenes.Browser) {
-                Bookmarks.getInstance().push({
-                    url: this.browser.webContents.getURL(),
-                    title: this.browser.webContents.getTitle(),
-                })
-            }
-        },
-        addAnchor: () => {
-            if (this.current === Scenes.Browser) {
-                Anchors.getInstance().push({
-                    url: this.browser.webContents.getURL(),
-                    title: this.browser.webContents.getTitle(),
-                })
-            }
-        },
-    })
-
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
-        this.autoHideMenuBar = true
+
+        /**
+         * Menu
+         */
+        this.buildMenu()
+
+        /**
+         * IPC
+         */
+        message.on(Channel.INFO, this.onInfo.bind(this))
+        message.on(Channel.SWITCH, this.onSwitch.bind(this))
+        message.on(Channel.HISTORY, this.onHistory.bind(this))
+        message.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
+        message.on(Channel.ANCHOR, this.onAnchors.bind(this))
+        message.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
 
         /**
          * Set views
@@ -221,11 +69,6 @@ export default class BrowserWindow extends WithIPC {
         })
         // Enable pinch zoom
         this.browser.webContents.setVisualZoomLevelLimits(1, 3)
-        this.centre = new WebContentsView({
-            webPreferences: {
-                preload,
-            },
-        })
         // #20 Web Title to App Title
         this.browser.webContents.on('page-title-updated', (e, title) => {
             this.title = title
@@ -236,52 +79,58 @@ export default class BrowserWindow extends WithIPC {
         /**
          * Restore status
          */
-        const status = new Status()
+        const status = Status.getInstance()
 
         // Restore window size
         const bounds = status.getBounds(this.getBounds())
         this.setBounds(bounds)
 
         this.setEventListeners()
-        new MenuBuilder(this.menu)
+
+        /**
+         * Centre
+         */
+        this.centre = new WebContentsView({
+            webPreferences: {
+                preload,
+            },
+        })
+        this.centre.webContents
+            .loadURL(resolveHtmlPath('index.html'))
+            .then(() => {
+                this.sendInfo()
+                if (status.get('welcome')) {
+                    this.switch(Scenes.WELCOME)
+                    status.set('welcome', false)
+                }
+            })
+            .catch((e) => Logger.getInstance().error(e))
     }
 
     /**
      * View controls
      */
-    protected setCurrent(scene: Scenes) {
-        if (scene !== Scenes.Browser && !this.centre.webContents.getURL()) {
-            this.centre.webContents.loadURL(resolveHtmlPath('index.html'))
-        }
+    protected switch(scene: Scenes) {
         this.current = scene
-
-        if (scene === Scenes.Browser) {
+        if (scene === Scenes.BROWSER) {
             this.contentView = this.browser
-        } else {
-            this.contentView = this.centre
-
-            if (this.centre.webContents.isLoading()) {
-                this.centre.webContents.once('did-finish-load', () => {
-                    this.sendPageInfo(scene)
-                })
-            } else {
-                this.sendPageInfo(scene)
-            }
-            this.centre.webContents.focus()
+            return
         }
+
+        this.contentView = this.centre
+        this.centre.webContents.send(Channel.SWITCH, scene)
+        this.centre.webContents.focus()
     }
 
     private setEventListeners() {
-        this.addListener('close', () => {
-            this.saveStatus()
-        })
+        this.addListener('close', () => this.saveStatus())
     }
 
     /**
      * Save current status when the app is closed
      */
     private saveStatus() {
-        const status = new Status()
+        const status = Status.getInstance()
         const bounds = this.getBounds()
         status.setNumber('width', bounds.width)
         status.setNumber('height', bounds.height)
@@ -305,5 +154,238 @@ export default class BrowserWindow extends WithIPC {
         // Save Bookmark
         Bookmarks.getInstance().save()
         Anchors.getInstance().save()
+    }
+
+    /**
+     * Menu
+     */
+    private buildMenu() {
+        const data = this.addMenuCallbacks(
+            Shortcut.getInstance().get('menu') as MenuBlock,
+        )
+
+        const menu: MenuItemConstructorOptions[] = []
+
+        Object.keys(data).forEach((key) => {
+            const submenu: MenuItemConstructorOptions[] = []
+            Object.keys(data[key as MenuCategory]).forEach((subKey) => {
+                if (subKey.startsWith('s0')) {
+                    submenu.push({ type: 'separator' })
+                    return
+                }
+                submenu.push({
+                    label: subKey,
+                    ...data[key as MenuCategory][subKey as E_Menu],
+                } as MenuItemConstructorOptions)
+            })
+            menu.push({
+                label: key,
+                submenu: submenu,
+            })
+        })
+
+        const built = Menu.buildFromTemplate(menu)
+        Menu.setApplicationMenu(built)
+    }
+
+    private addMenuCallbacks(menu: MenuBlock) {
+        menu[MenuCategory.EDIT][E_Menu.ADD_BOOKMARK].click = () => {
+            if (this.current === Scenes.BROWSER) {
+                Bookmarks.getInstance().push({
+                    url: this.browser.webContents.getURL(),
+                    title: this.browser.webContents.getTitle(),
+                })
+            }
+        }
+
+        menu[MenuCategory.EDIT][E_Menu.ADD_ANCHOR].click = () => {
+            if (this.current === Scenes.BROWSER) {
+                Anchors.getInstance().push({
+                    url: this.browser.webContents.getURL(),
+                    title: this.browser.webContents.getTitle(),
+                })
+            }
+        }
+
+        menu[MenuCategory.VIEW][E_Menu.FULL_SCREEN].click = () => {
+            this.setFullScreen(!this.fullScreen)
+        }
+
+        menu[MenuCategory.VIEW][E_Menu.DEVTOOLS].click = () => {
+            if (
+                this.browser.webContents.isDevToolsOpened() ||
+                this.centre.webContents.isDevToolsOpened()
+            ) {
+                this.browser.webContents.closeDevTools()
+                this.centre.webContents.closeDevTools()
+                return
+            }
+
+            if (this.current === Scenes.BROWSER) {
+                this.browser.webContents.openDevTools()
+                this.centre.webContents.closeDevTools()
+                return
+            }
+            this.browser.webContents.closeDevTools()
+            this.centre.webContents.openDevTools()
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.ADDRESS].click = () => {
+            this.switch(Scenes.ADDRESS)
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.CENTRE].click = () => {
+            this.switch(Scenes.HOME)
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.BACK].click = () => {
+            if (
+                this.current === Scenes.BROWSER &&
+                this.browser.webContents.navigationHistory.canGoBack()
+            ) {
+                this.browser.webContents.navigationHistory.goBack()
+            }
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.FORWARD].click = () => {
+            if (
+                this.current === Scenes.BROWSER &&
+                this.browser.webContents.navigationHistory.canGoForward()
+            ) {
+                this.browser.webContents.navigationHistory.goForward()
+            }
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
+            if (this.current === Scenes.BROWSER) {
+                this.browser.webContents.reload()
+            }
+        }
+
+        menu[MenuCategory.NAVIGATE][E_Menu.STOP].click = () => {
+            if (this.current === Scenes.BROWSER) {
+                this.browser.webContents.stop()
+            }
+        }
+
+        return menu
+    }
+
+    /**
+     * IPC
+     */
+    protected sendInfo() {
+        this.centre.webContents.send(
+            Channel.INFO,
+            RequestHandler.RESPONSE,
+            Shortcut.getInstance().get('shortcuts'),
+            Status.getInstance().get('helpText'),
+        )
+    }
+
+    private onInfo(handler: RequestHandler, data: Record<string, unknown>) {
+        if (
+            handler === RequestHandler.MODIFY &&
+            (data.helpText || data.helpText === false)
+        ) {
+            Status.getInstance().set('helpText', data.helpText)
+        }
+    }
+
+    private onSwitch(
+        scene: Scenes,
+        address?: string,
+        handler?: RequestHandler,
+    ) {
+        this.switch(scene)
+
+        if (scene === Scenes.BROWSER && address) {
+            this.browser.loadURL(address)
+        }
+
+        if (handler === RequestHandler.REMOVE) {
+            Anchors.getInstance().remove(address)
+        }
+    }
+
+    private onHistory(handler: RequestHandler, index: number) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                this.centre.webContents.send(
+                    Channel.HISTORY,
+                    RequestHandler.RESPONSE,
+                    this.browser.webContents.navigationHistory.getAllEntries(),
+                )
+
+                return
+
+            case RequestHandler.EXECUTE:
+                this.switch(Scenes.BROWSER)
+                this.browser.webContents.navigationHistory.goToIndex(index)
+                return
+        }
+    }
+
+    private onBookmarks(
+        handler: RequestHandler,
+        bookmark: Bookmark,
+        index: number,
+    ) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const bookmarks = Bookmarks.getInstance().get()
+                this.centre.webContents.send(
+                    Channel.BOOKMARK,
+                    RequestHandler.RESPONSE,
+                    bookmarks,
+                    this.browser.webContents.getTitle(),
+                    this.browser.webContents.getURL(),
+                )
+                return
+            case RequestHandler.ADD:
+                Bookmarks.getInstance().push(bookmark)
+                return
+            case RequestHandler.MODIFY:
+                Bookmarks.getInstance().edit(index, bookmark)
+                return
+            case RequestHandler.REMOVE:
+                Bookmarks.getInstance().remove(bookmark as unknown as number)
+                return
+        }
+    }
+
+    private onAnchors(handler: RequestHandler, url: string) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const bookmarks = Anchors.getInstance().get()
+                this.centre.webContents.send(
+                    Channel.ANCHOR,
+                    RequestHandler.RESPONSE,
+                    bookmarks,
+                )
+                return
+            case RequestHandler.REMOVE:
+                Anchors.getInstance().remove(url)
+                return
+        }
+    }
+
+    private onPopupBlocker(handler: RequestHandler, host: string) {
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                const blocked = Popup.getInstance().get('blocked')
+                const allowed = Popup.getInstance().get('allowed')
+                this.centre.webContents.send(
+                    Channel.POPUP_BLOCKER,
+                    RequestHandler.RESPONSE,
+                    Array.from(blocked as string[]),
+                    Array.from(allowed as string[]),
+                )
+                return
+
+            case RequestHandler.MODIFY:
+                Popup.getInstance().toggle(host)
+                return
+        }
     }
 }

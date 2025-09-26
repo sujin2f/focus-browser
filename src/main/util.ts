@@ -1,6 +1,6 @@
 import { WebContents, ipcMain } from 'electron'
 import * as path from 'path'
-import { IPC_Channels } from '@src/types'
+import { Channel } from '@src/types'
 
 export function resolveHtmlPath(htmlFileName: string) {
     if (process.env.NODE_ENV === 'development') {
@@ -15,19 +15,15 @@ export function resolveHtmlPath(htmlFileName: string) {
 export const isDebug =
     process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
-export const preload = path.join(__dirname, './preload.js')
+export const preload = path.join(__dirname, '..', 'preload.js')
 
 export const message = {
-    on: (channel: IPC_Channels, callback: (...args: unknown[]) => void) => {
+    on: (channel: Channel, callback: (...args: unknown[]) => void) => {
         ipcMain.on(channel, async (_, ...args: unknown[]) => {
             callback(...args)
         })
     },
-    send: (
-        webContents: WebContents,
-        channel: IPC_Channels,
-        ...args: unknown[]
-    ) => {
+    send: (webContents: WebContents, channel: Channel, ...args: unknown[]) => {
         webContents.send(channel, ...args)
     },
 }

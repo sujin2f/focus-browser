@@ -8,19 +8,25 @@ type Props = {
     y: number
     maxHistory: number
     welcome: boolean
+    helpText: boolean
 }
 
 export default class Status extends Store<Props> {
-    constructor() {
-        super('status', {
-            width: 1024,
-            height: 728,
-            x: NaN,
-            y: NaN,
-            maxHistory: 200,
-            welcome: true,
-        })
-        this.parse()
+    static instance: Status
+    static getInstance(): Status {
+        if (!Status.instance) {
+            Status.instance = new Status('status', {
+                width: 1024,
+                height: 728,
+                x: NaN,
+                y: NaN,
+                maxHistory: 200,
+                welcome: true,
+                helpText: true,
+            })
+            Status.instance.parse()
+        }
+        return Status.instance
     }
 
     public getNumber(key: string) {

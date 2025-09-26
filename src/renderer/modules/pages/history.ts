@@ -1,14 +1,20 @@
 import { type NavigationEntry } from 'electron'
-import { CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
+import {
+    Channel,
+    PageMode,
+    PageType,
+    RequestHandler,
+    TableAction,
+} from '@src/types'
 
 import { A_PageWithTable } from '.'
-import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
-import Td from '@home/modules/fragments/td'
+import { Element } from '@home/modules/fragments'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer } from '@home/util'
+import Heading from '../fragments/heading'
 
 export default class History extends A_PageWithTable<NavigationEntry> {
-    readonly page = CC_Pages.History
+    readonly page = PageType.HISTORY
 
     constructor() {
         super()
@@ -16,81 +22,106 @@ export default class History extends A_PageWithTable<NavigationEntry> {
     }
 
     request(): void {
-        IPC.getInstance().requestHistory()
+        ipcRenderer.send(Channel.HISTORY, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.HISTORY,
+            (handler: RequestHandler.RESPONSE, history: NavigationEntry[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                this.action(TableAction.UPDATE, history)
+            },
+        )
     }
 
     render() {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.formFind.classList.add('hidden')
-        this.root.appendChild(this.formFind)
-
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
         this.renderTable()
+        this.hideForms()
+
+        // H1
+        const heading = new Heading(1, {}, 'History')
+
+        this.root.appendChild(heading.element)
+        this.root.appendChild(this.buttons.element)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
-    }
-
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
+    /**
+     * History need reverse order
+     */
+    protected renderTable() {
+        const rows: Element<HTMLTableRowElement>[] = []
         this.table.reset()
-        this.table.th = 'Title'
-
-        this.items.reverse().forEach((item, index) => {
-            const tr = new Tr()
-            tr.dataIndex = this.items.length - index - 1
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-
-            // title
-            const title = new Button()
-            title.className = ''
-            title.text = item.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().navigateHistory(tr.dataIndex)
+        this.items.forEach((item, index) => {
+            const tr = new Element<HTMLTableRowElement>('tr', {
+                className: [
+                    'hover',
+                    'cursor-pointer',
+                    'text-sm',
+                    'antialiased',
+                    'font-normal',
+                    'leading-normal',
+                    'text-blue-gray-900',
+                    ...this.STYLE_HOVER,
+                ],
             })
+            tr.setData('index', index)
+            tr.setData('data', item)
 
-            const tdTitle = new Td()
-
-            tdTitle.child = title
-
-            tr.child = tdTitle
-
-            this.table.child = tr
+            // TODO remove tr from prop
+            tr.append(...this.getRowCells(tr, item, index))
+            rows.unshift(tr)
         })
-        this.tableWrapper.appendChild(this.table.element)
+
+        this.table.append(...rows)
     }
 
-    filterCondition(item: NavigationEntry, keyword: string): boolean {
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [this.table.createTh({ className: ['text-left'] }, 'Title')]
+    }
+
+    getRowCells(
+        _: DataListType<Element<HTMLTableRowElement>>,
+        history: NavigationEntry,
+        index: number,
+    ): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createTd(
+                {
+                    onClick: () => {
+                        ipcRenderer.send(
+                            Channel.HISTORY,
+                            RequestHandler.EXECUTE,
+                            index,
+                        )
+                    },
+                },
+                new Element('span', {}, history.title),
+            ),
+        ]
+    }
+
+    filterCondition(item: NavigationEntry): boolean {
         return (
-            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.url.toLowerCase().includes(keyword.toLowerCase())
+            item.title
+                .toLowerCase()
+                .includes(this.searchKeyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(this.searchKeyword.toLowerCase())
         )
     }
 
-    action(action: CC_TableAction, items: NavigationEntry[] = []) {
+    action(action: TableAction, items: NavigationEntry[] = []) {
         super.action(action, items)
 
-        if (
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
-        ) {
-            IPC.getInstance().navigate(this.items[this._cursor].url)
-            return
+        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
+            const index = this._cursor.getData('index') as number
+            ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
         }
     }
 
@@ -99,7 +130,7 @@ export default class History extends A_PageWithTable<NavigationEntry> {
             return
         }
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

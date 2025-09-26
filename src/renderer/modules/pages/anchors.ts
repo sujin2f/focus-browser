@@ -1,13 +1,23 @@
-import { type Bookmark, CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
+import {
+    type Bookmark,
+    Channel,
+    PageMode,
+    PageType,
+    RequestHandler,
+    TableAction,
+} from '@src/types'
 
 import { A_PageWithTable } from '.'
+import { Element } from '@home/modules/fragments'
 import Button from '@home/modules/fragments/button'
-import Tr from '@home/modules/fragments/tr'
-import Td from '@home/modules/fragments/td'
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
+import Heading from '../fragments/heading'
+import Callout from '../fragments/callout'
+import Controller from '../controller'
 
 export default class Anchors extends A_PageWithTable<Bookmark> {
-    readonly page = CC_Pages.Anchor
+    readonly page = PageType.ANCHOR
 
     constructor() {
         super()
@@ -15,107 +25,148 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
     }
 
     request(): void {
-        IPC.getInstance().requestAnchors()
+        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.once(
+            Channel.ANCHOR,
+            (handler: RequestHandler.RESPONSE, anchors: Bookmark[]) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+
+                this.action(TableAction.UPDATE, anchors)
+            },
+        )
     }
 
     render() {
         this.root.innerHTML = ''
 
         this.renderButtons()
-        this.root.appendChild(this.buttons)
-
         this.renderFindForm()
-        this.formFind.classList.add('hidden')
-        this.root.appendChild(this.formFind)
-
-        this.tableWrapper = document.createElement('section')
-        this.tableWrapper.appendChild(this.table.element)
-        this.root.appendChild(this.tableWrapper)
         this.renderTable()
+        this.hideForms()
+
+        // H1
+        const heading = new Heading(1, {}, 'Anchor')
+        this.root.appendChild(heading.element)
+
+        this.renderCallout()
+
+        this.root.appendChild(this.buttons.element)
+        this.root.appendChild(this.formFind.element)
+        this.root.appendChild(this.table.element)
     }
 
-    private renderButtons() {
-        this.buttons.appendChild(this.buttonFind.element)
+    private renderCallout() {
+        if (!Controller.getInstance().helpText) {
+            return
+        }
+        const command = isMac() ? '⌘' : 'Ctrl+'
+        const callout = new Callout(
+            { className: ['mb-4'] },
+            new Element(
+                'p',
+                { className: ['text-gray-300', 'mb-2'] },
+                'Press ',
+                ...shortcutToHtml(`${command}+/`),
+                ' to add a current page to the anchor.',
+            ),
+            new Element(
+                'p',
+                { className: ['text-gray-300'] },
+                'Anchor is a temporary bookmark that is automatically deleted once you visited.',
+            ),
+        )
+        this.root.appendChild(callout.element)
     }
 
-    renderTable() {
-        this.tableWrapper.innerHTML = ''
-        this.table.reset()
-        this.table.th = 'Title'
-        this.table.th = 'Delete'
-
-        this.items.forEach((bookmark, index) => {
-            const tr = new Tr()
-            tr.dataIndex = index
-            tr.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
-
-            // title
-            const title = new Button()
-            title.className = ''
-            title.text = bookmark.title
-            title.type = 'button'
-            title.className =
-                'block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900'
-            title.className = ''
-            title.addEventListener('click', () => {
-                IPC.getInstance().navigate(bookmark.url, index)
-            })
-
-            // Delete
-            const del = new Button()
-            del.className = ''
-            del.text = 'Delete'
-            del.addEventListener('click', () => {
-                this._cursor = index
-                this.action(CC_TableAction.DELETE)
-                this._cursor = NaN
-            })
-
-            const tdTitle = new Td()
-            const tdEdit = new Td()
-
-            tdTitle.child = title
-            tdEdit.child = del
-
-            tr.child = tdTitle
-            tr.child = tdEdit
-
-            this.table.child = tr
-        })
-        this.tableWrapper.appendChild(this.table.element)
+    getTHeads(): Element<HTMLTableCellElement>[] {
+        return [
+            this.table.createTh(
+                {
+                    className: ['text-left'],
+                },
+                'Title',
+            ),
+        ]
     }
 
-    filterCondition(item: Bookmark, keyword: string): boolean {
+    getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        bookmark: Bookmark,
+        index: number,
+    ): Element<HTMLTableCellElement>[] {
+        const title = this.table.createTd(
+            {
+                onClick: (e) => {
+                    const tagName = (
+                        e.target as HTMLElement
+                    ).tagName.toLowerCase()
+                    if (tagName === 'button') {
+                        this._cursor = tr
+                        this.action(TableAction.DELETE)
+                        this._cursor = null
+                        return
+                    }
+
+                    navigate(bookmark.url, RequestHandler.REMOVE)
+                },
+            },
+            new Button(
+                {
+                    className: [
+                        'mr-2',
+                        'cursor-pointer',
+                        'pl-1',
+                        'pr-1',
+                        '-mb-3',
+                        '-p-2',
+                    ],
+                    onClick: () => {
+                        this._cursor = tr
+                        this.action(TableAction.DELETE)
+                        this._cursor = null
+                    },
+                },
+                'Remove',
+            ),
+            new Element('span', {}, bookmark.title),
+        )
+
+        return [title]
+    }
+
+    filterCondition(item: Bookmark): boolean {
         return (
-            item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            item.url.toLowerCase().includes(keyword.toLowerCase())
+            item.title
+                .toLowerCase()
+                .includes(this.searchKeyword.toLowerCase()) ||
+            item.url.toLowerCase().includes(this.searchKeyword.toLowerCase())
         )
     }
 
-    action(action: CC_TableAction, items: Bookmark[] = []) {
+    action(action: TableAction, items: Bookmark[] = []) {
         super.action(action, items)
 
-        if (
-            action === CC_TableAction.EXECUTE ||
-            action === CC_TableAction.EDIT
-        ) {
-            IPC.getInstance().navigate(
-                this.items[this._cursor].url,
-                this._cursor,
+        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
+            navigate(
+                (this._cursor.getData('data') as Bookmark).url,
+                RequestHandler.REMOVE,
             )
             return
         }
 
-        if (action === CC_TableAction.DELETE) {
-            if (isNaN(this._cursor)) {
+        if (action === TableAction.DELETE) {
+            if (!this._cursor) {
                 return
             }
 
-            IPC.getInstance().removeAnchor(this._cursor)
-            this.items.splice(this._cursor, 1)
+            ipcRenderer.send(
+                Channel.ANCHOR,
+                RequestHandler.REMOVE,
+                (this._cursor.getData('data') as Bookmark).url,
+            )
+            this.items.splice(this._cursor.getData('index') as number, 1)
             this.refresh()
 
             return
@@ -128,7 +179,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         }
 
         if (e.key.length === 1) {
-            this.changeMode(CC_Modes.FIND)
+            this.changeMode(PageMode.FIND)
         }
     }
 }

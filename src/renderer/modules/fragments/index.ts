@@ -1,30 +1,9 @@
-/**
- * Base class for HTML Template
- */
-export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
+import { ElementProps } from '@src/types'
+
+export class Element<T extends HTMLElement> {
     /**
-     * The templateId will capture <template /> and put the clone in this.element
-     * @param {string} templateId
-     * @param {string} childWrapperQuerySelector If not set, use the root element
+     * Element
      */
-    protected constructor(
-        private templateId: string,
-        private childWrapperQuerySelector?: string,
-    ) {
-        this.element = this.template
-    }
-
-    protected get template() {
-        const template = document.getElementById(
-            this.templateId,
-        ) as HTMLTemplateElement
-        if (!template) {
-            throw new Error(`Template id ${this.templateId} does not exist.`)
-        }
-        const node = template.content.cloneNode(true) as DocumentFragment
-        return node.firstElementChild as T
-    }
-
     private _element: T
     protected set element(element: T) {
         this._element = element
@@ -33,40 +12,54 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
         return this._element
     }
 
+    constructor(
+        tag: string,
+        { className, hide, onClick }: Partial<ElementProps> = {},
+        ...children: (string | Element<HTMLElement>)[]
+    ) {
+        this.element = document.createElement(tag) as T
+        this.append(...children)
+
+        if (className) {
+            const clsSet = new Set<string>()
+
+            className.forEach((cls) => {
+                if (cls.startsWith('-')) {
+                    clsSet.delete(cls.slice(1))
+                    return
+                }
+                clsSet.add(cls)
+            })
+
+            this.classList.add(...clsSet.values())
+        }
+
+        if (hide) {
+            this.hide()
+        }
+
+        if (onClick) {
+            this.addEventListener('click', onClick.bind(this))
+        }
+    }
+
     /**
-     * For children fragments
+     * Data
      */
-    protected _children: A_HTMLFragment[] = []
-
-    protected get childWrapper() {
-        if (!this.childWrapperQuerySelector) {
-            return this.element
-        }
-
-        const wrapper = this.element.querySelector(
-            this.childWrapperQuerySelector,
-        )
-        if (!wrapper) {
-            throw new Error(
-                `The element for query selector ${this.childWrapperQuerySelector} does not exist.`,
-            )
-        }
-        return wrapper
+    private _data: Record<string, unknown> = {}
+    public setData<D>(key: string, value: D) {
+        this._data[key] = value
+    }
+    public getData(key: string) {
+        return this._data[key]
     }
 
-    public set child(child: A_HTMLFragment) {
-        this._children.push(child)
-        this.childWrapper.appendChild(child.element)
-    }
-
-    public get children() {
-        return this._children
+    public get classList() {
+        return this.element.classList
     }
 
     public set innerHTML(html: string) {
-        this._children.forEach((child) => child.reset())
-        this._children = []
-        this.childWrapper.innerHTML = html
+        this.element.innerHTML = html
     }
 
     /**
@@ -83,19 +76,8 @@ export abstract class A_HTMLFragment<T extends HTMLElement = HTMLElement> {
     }
 
     /**
-     * Reset
+     * Events
      */
-    public reset() {
-        this.element.remove()
-        this._children.forEach((child) => child.reset())
-        this._children = []
-        this.element = this.template
-    }
-}
-
-export abstract class A_HTMLFragmentWithEvent<
-    T extends HTMLElement,
-> extends A_HTMLFragment<T> {
     public addEventListener<K extends keyof HTMLElementEventMap>(
         type: K,
         listener: (this: T, ev: HTMLElementEventMap[K]) => any,
@@ -117,6 +99,22 @@ export abstract class A_HTMLFragmentWithEvent<
             type,
             listener as EventListenerOrEventListenerObject,
             options,
+        )
+    }
+
+    public append(...children: (string | Element<HTMLElement>)[]) {
+        this.element.append(
+            ...children.map((child) =>
+                typeof child === 'string' ? child : child.element,
+            ),
+        )
+    }
+
+    public prepend(...children: (string | Element<HTMLElement>)[]) {
+        this.element.prepend(
+            ...children.map((child) =>
+                typeof child === 'string' ? child : child.element,
+            ),
         )
     }
 }

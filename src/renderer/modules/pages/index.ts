@@ -1,16 +1,20 @@
-import { CC_Modes, CC_Pages, CC_TableAction } from '@src/types'
-import IPC from '@home/modules/ipc'
+import { PageMode, PageType, TableAction } from '@src/types'
 
+import { Element } from '@home/modules/fragments'
 import Table from '@home/modules/fragments/table'
 import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
+import Form from '@home/modules/fragments/form'
+import DataList, { type DataListType } from '@home/modules/fragments/data-list'
+import { isMac, navigate } from '@home/util'
+import ButtonGroup from '../fragments/button-group'
 
 export default abstract class A_Page<T> {
     /**
      * Identifier
      */
-    abstract readonly page: CC_Pages
+    abstract readonly page: PageType
 
     /**
      * All starts with here
@@ -20,13 +24,23 @@ export default abstract class A_Page<T> {
     }
 
     constructor() {
-        this.root.innerHTML = ''
+        if (this.root) {
+            this.root.innerHTML = ''
+        }
+    }
+
+    protected init() {
+        this.render()
     }
 
     /**
      * For additional actions
      */
-    abstract action(action: CC_TableAction, ...arg: unknown[]): void
+    action(action: TableAction, ...arg: unknown[]) {
+        if (action === TableAction.INFO) {
+            this.render()
+        }
+    }
     /**
      * Shortcut
      */
@@ -37,7 +51,7 @@ export default abstract class A_Page<T> {
                 return true
             }
 
-            IPC.getInstance().navigate()
+            navigate()
             return true
         }
 
@@ -47,6 +61,8 @@ export default abstract class A_Page<T> {
     protected blur() {
         ;(document.activeElement as HTMLElement).blur()
     }
+
+    abstract render(): void
 }
 
 export abstract class A_PageWithTable<T> extends A_Page<T> {
@@ -55,25 +71,24 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     /**
      * Modes like list, edit, find...
      */
-    protected _mode: CC_Modes = CC_Modes.LIST
+    protected _mode: PageMode = PageMode.LIST
     protected hideForms() {
-        this.formFind.classList.add('hidden')
+        this.formFind.hide()
     }
-    protected changeMode(mode: CC_Modes): boolean {
+    protected changeMode(mode: PageMode): boolean {
         if (this._mode === mode) {
             return false
         }
 
         this._mode = mode
+        this.hideForms()
 
         switch (mode) {
-            case CC_Modes.LIST:
-                this.hideForms()
+            case PageMode.LIST:
                 return false
 
-            case CC_Modes.FIND:
-                this.hideForms()
-                this.formFind.classList.remove('hidden')
+            case PageMode.FIND:
+                this.formFind.show()
                 this.inputFindKeyword.value = ''
                 this.inputFindKeyword.focus()
                 return false
@@ -85,140 +100,222 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     /**
      * Table Navigation
      */
-    protected _cursor = NaN
-    protected set cursor(cursor: number) {
-        this._cursor = cursor
-        this.focusTable()
-    }
+    protected _cursor: DataListType<Element<HTMLTableRowElement>> | null = null
 
     // Buttons
-    protected buttons: HTMLElement
-    protected buttonFind: Button = new Button()
+    protected buttons: ButtonGroup = new ButtonGroup()
+    protected buttonFind: Button = new Button({
+        onClick: () => {
+            this.changeMode(PageMode.FIND)
+        },
+    })
 
     // Find Form
-    protected formFind: HTMLFormElement
+    protected formFind: Form = new Form()
     protected inputFindKeyword: Input = new Input()
+    protected searchKeyword: string = ''
 
     // Table
-    protected tableWrapper: HTMLElement
     protected table: Table = new Table()
 
     protected init() {
-        this.buttonFind.text = 'Find in Bookmarks (⌘F)'
-        this.buttonFind.addEventListener('click', () => {
-            this.changeMode(CC_Modes.FIND)
-        })
+        super.init()
 
-        this.buttons = document.createElement('section')
-        this.buttons.className = 'w-full flex justify-between'
+        if (isMac()) {
+            this.buttonFind.append('Find (⌘F)')
+        } else {
+            this.buttonFind.append('Find (Ctrl+F)')
+        }
 
+        this.renderTableHeads()
         this.request()
-        this.render()
     }
 
     abstract request(): void
-    abstract render(): void
 
-    abstract renderTable(): void
-    protected renderFindForm() {
-        this.formFind = document.createElement('form')
-        const labelFindTitle = new Label()
-        labelFindTitle.innerHTML = 'Keyword'
-        labelFindTitle.child = this.inputFindKeyword
+    protected renderButtons() {
+        this.buttons.append(this.buttonFind)
+    }
 
-        this.formFind.appendChild(labelFindTitle.element)
+    /**
+     * Table related methods
+     */
+    abstract getTHeads(): Element<HTMLTableCellElement>[]
+    abstract getRowCells(
+        tr: DataListType<Element<HTMLTableRowElement>>,
+        item: T,
+        index: number,
+    ): Element<HTMLTableCellElement>[]
+    private renderTableHeads() {
+        this.table.appendHead(...this.getTHeads())
+    }
+    protected renderTable() {
+        this.table.reset()
+        const ListTr = DataList(Element<HTMLTableRowElement>)
+        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
+        this.items.forEach((item, index) => {
+            const tr = new ListTr('tr', {
+                className: [
+                    'hover',
+                    'cursor-pointer',
+                    'text-sm',
+                    'antialiased',
+                    'font-normal',
+                    'leading-normal',
+                    'text-blue-gray-900',
+                    ...this.STYLE_HOVER,
+                ],
+            }) as unknown as DataListType<Element<HTMLTableRowElement>>
+            tr.setData('index', index)
+            tr.setData('data', item)
 
-        this.inputFindKeyword.addEventListener('keyup', (e) => {
-            const keyword = this.inputFindKeyword.value
-            this.filterTable(keyword)
+            // TODO remove tr from prop
+            tr.append(...this.getRowCells(tr, item, index))
+            prev = this.linkTr(prev, tr)
+            this.table.append(tr)
         })
     }
 
-    abstract filterCondition(item: T, keyword: string): boolean
-    protected filterTable(keyword: string) {
+    protected readonly STYLE_FOCUSED = ['bg-gray-100', 'dark:bg-gray-800']
+    protected readonly STYLE_HOVER = [
+        'hover:bg-gray-100',
+        'dark:hover:bg-gray-800',
+    ]
+
+    abstract filterCondition(item: T): boolean
+    protected filterTable() {
         const rows = this.table.children
-        this.items.forEach((item, index) => {
-            if (!keyword) {
+        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
+        this.table.children.forEach((tr, index) => {
+            if (!this.searchKeyword) {
                 rows[index].show()
+                prev = this.linkTr(prev, tr)
                 return
             }
 
-            if (this.filterCondition(item, keyword.toLowerCase())) {
+            if (this.filterCondition(tr.getData('data') as T)) {
                 rows[index].show()
+                prev = this.linkTr(prev, tr)
                 return
             }
 
             rows[index].hide()
         })
+
+        if (this._cursor && this._cursor.hidden) {
+            this._cursor = null
+        }
     }
 
-    private focusTable() {
+    protected focusTable() {
         this.table.children.forEach((row) => {
-            if (this._cursor === row.dataIndex) {
-                row.element.setAttribute(
-                    'class',
-                    'border-l border-l-fuchsia-600 border-l-4',
-                )
-
+            if (row === this._cursor) {
+                row.classList.add(...this.STYLE_FOCUSED)
                 return
             }
-
-            row.element.setAttribute(
-                'class',
-                'border-l border-l-transparent border-l-4',
-            )
+            row.classList.remove(...this.STYLE_FOCUSED)
         })
     }
 
     private arrowUp() {
-        if (this._cursor > 0) {
-            this.cursor = this._cursor - 1
+        if (this._cursor && this._cursor.prev) {
+            this._cursor = this._cursor.prev
         }
+        this.focusTable()
     }
 
     private arrowDown() {
-        if (isNaN(this._cursor)) {
-            this.cursor = 0
+        if (this._cursor && this._cursor.next) {
+            this._cursor = this._cursor.next
+        } else if (!this._cursor) {
+            for (let tr of this.table.children) {
+                if (!tr.hidden) {
+                    this._cursor = tr
+                    break
+                }
+            }
         }
-        if (this._cursor < this.items.length - 1) {
-            this.cursor = this._cursor + 1
-        }
+        this.focusTable()
         this.blur()
+    }
+
+    private linkTr(
+        prev: DataListType<Element<HTMLTableRowElement>> | null,
+        tr: DataListType<Element<HTMLTableRowElement>>,
+    ) {
+        if (prev) {
+            prev.next = tr
+            tr.prev = prev
+        } else {
+            tr.prev = null
+        }
+        return tr
+    }
+
+    /**
+     * Find Form (Keyword Input)
+     */
+    protected renderFindForm() {
+        this.formFind = new Form()
+        const labelFindTitle = new Label({}, this.inputFindKeyword)
+        labelFindTitle.title = 'Keyword'
+        this.formFind.append(labelFindTitle)
+
+        // When the user types
+        this.inputFindKeyword.addEventListener('keyup', () => {
+            this.searchKeyword = this.inputFindKeyword.value
+            this.filterTable()
+        })
     }
 
     /**
      * For update and refresh
      */
     protected refresh() {
-        this._cursor = NaN
+        this._cursor = null
         this.renderTable()
     }
 
-    action(action: CC_TableAction, items: T[] = []) {
-        if (action === CC_TableAction.UPDATE) {
+    action(action: TableAction, items: T[] = []) {
+        super.action(action)
+
+        if (action === TableAction.UPDATE) {
             this.items = items
-            this.refresh()
+            this._cursor = null
+            this.render()
         }
     }
 
     public doShortcut(e: KeyboardEvent): boolean {
         // Find Key ⌘F
-        if (e.key.toLowerCase() === 'f' && e.metaKey) {
-            this.changeMode(CC_Modes.FIND)
-            return true
+        if (e.key.toLowerCase() === 'f') {
+            if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
+                this.changeMode(PageMode.FIND)
+                return true
+            }
         }
 
         if (document.activeElement.tagName.toLowerCase() === 'input') {
             switch (e.key) {
                 case 'ArrowDown':
-                    this.arrowDown()
-                    return true
+                    if (!e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+                        this.arrowDown()
+                        return true
+                    }
                 case 'Escape':
-                    this.changeMode(CC_Modes.LIST)
-                    return true
+                    this.changeMode(PageMode.LIST)
             }
         } else {
             switch (e.key) {
+                case 'Escape':
+                    if (this._mode !== PageMode.LIST) {
+                        this.searchKeyword = ''
+                        this.filterTable()
+                        this.changeMode(PageMode.LIST)
+                        return true
+                    }
+                    navigate()
+                    return true
                 case 'ArrowUp':
                     this.arrowUp()
                     return true
@@ -228,19 +325,19 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                     return true
 
                 case 'Enter':
-                    if (e.metaKey) {
-                        this.action(CC_TableAction.EDIT)
+                    if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
+                        this.action(TableAction.EDIT)
                         return true
                     }
-                    this.action(CC_TableAction.EXECUTE)
+                    this.action(TableAction.EXECUTE)
                     return true
 
                 case ' ':
-                    this.action(CC_TableAction.EXECUTE)
+                    this.action(TableAction.EXECUTE)
                     return true
 
                 case 'Delete':
-                    this.action(CC_TableAction.DELETE)
+                    this.action(TableAction.DELETE)
                     return true
             }
         }

@@ -244,6 +244,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         labelShortcut.title = 'Shortcut'
 
         const buttonOk = new Button({}, 'OK (Enter)')
+        buttonOk.type = 'submit'
         const buttonCancel = new Button(
             {
                 onClick: () => {

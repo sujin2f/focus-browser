@@ -49,14 +49,11 @@ export class BrowserView extends WebContentsView {
                 _url = new URL(`http://${_url}`).toString()
             }
 
-            this.webContents.loadURL(_url).catch(() => {
-                // If loading the URL fails (e.g., invalid URL), perform a search instead
-                // TODO search engine option
-                _url = `https://duckduckgo.com/?q=${url}`
-                this.webContents.loadURL(_url)
-            })
+            this.webContents.loadURL(_url)
         } catch {
-            _url = `https://duckduckgo.com/search?q=${url}`
+            // When the navigation failed, search DuckDuckGo
+            // TODO search engine option
+            _url = `https://duckduckgo.com/?q=${url}`
             this.webContents.loadURL(_url)
         }
     }

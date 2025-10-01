@@ -2,11 +2,10 @@ import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
 import Controller from '@home/modules/controller'
-import Input from '@home/modules/fragments/input'
+import { Input } from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
-import Label from '@home/modules/fragments/label'
 import CardContainer from '@home/modules/fragments/card-container'
-import Callout from '@home/modules/fragments/callout'
+import { Callout } from '@home/modules/fragments/callout'
 
 import { isMac, navigate, shortcutToHtml } from '@home/util'
 import { PageType } from '@src/types'
@@ -62,7 +61,7 @@ const buttons: Record<string, T_Card> = {
  */
 export class Home extends A_Page {
     public page = PageType.HOME
-    protected search: Input = new Input()
+    protected search: Input
     private location: Element<HTMLElement> = new Element('section')
     private helpText: Element<HTMLElement> = new Element('section')
     private cards: Element<HTMLElement> = new Element('section')
@@ -81,11 +80,10 @@ export class Home extends A_Page {
     render(): void {
         // Location Bar
         const command = isMac() ? '⌘' : 'Ctrl+'
-        const label = new Label(
-            { title: `Enter search keyword or address (${command}L)` },
-            this.search,
-        )
-        this.location.append(label)
+        this.search = new Input({
+            label: `Enter search keyword or address (${command}L)`,
+        })
+        this.location.append(this.search)
 
         // Cards
         const cardContainer = new CardContainer()
@@ -106,6 +104,8 @@ export class Home extends A_Page {
 
     cbInfoUpdated() {
         if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'

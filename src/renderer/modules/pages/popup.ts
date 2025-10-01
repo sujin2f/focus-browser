@@ -41,8 +41,8 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                 }
 
                 const data = [
-                    ...allowed.map((host) => ({ host, allowed: true })),
                     ...blocked.map((host) => ({ host, allowed: false })),
+                    ...allowed.map((host) => ({ host, allowed: true })),
                 ]
                 this.action(TableAction.UPDATE, data)
             },

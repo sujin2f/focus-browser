@@ -1,19 +1,85 @@
-import { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/types'
 import { Element } from '.'
 
 type Props = {
+    label: string
     type: string
     value: string
     checked: boolean
+    maxLength: number
     onChange: (ev: HTMLElementEventMap['change']) => any
 }
 
-export default class Input extends Element<HTMLInputElement> {
+export class Input extends Element<HTMLLabelElement> {
+    private input: Element<HTMLInputElement>
+    private _label: Element<HTMLParagraphElement>
+
+    private _error?: Element<HTMLParagraphElement>
+    public set error(error: string) {
+        if (this._error) {
+            this._error.destroy()
+        }
+
+        if (!error) {
+            this.input.classList.remove(
+                'border-pink-900',
+                'dark:border-pink-600',
+            )
+            this.input.classList.add(
+                'border-gray-300',
+                'dark:border-transparent',
+            )
+            return
+        }
+
+        this.input.classList.add('border-pink-900', 'dark:border-pink-600')
+        this.input.classList.remove(
+            'border-gray-300',
+            'dark:border-transparent',
+        )
+        this._error = new Element(
+            'p',
+            {
+                className: [
+                    'mt-1',
+                    'pl-3',
+                    'text-pink-900',
+                    'dark:text-pink-600',
+                ],
+            },
+            error,
+        )
+        this.append(this._error)
+    }
+
+    public set label(label: string) {
+        if (this._label) {
+            this._label.destroy()
+        }
+
+        this._label = new Element<HTMLParagraphElement>(
+            'p',
+            {
+                className: [
+                    'inline-block',
+                    'text-md',
+                    'font-light',
+                    'text-gray-700',
+                    'mb-0.5',
+                    'pl-3',
+                    'dark:text-gray-300',
+                ],
+            },
+            label,
+        )
+        this.prepend(this._label)
+    }
+
     public set type(type: string) {
-        this.element.type = type
+        this.input.element.type = type
 
         if (type !== 'checkbox' && type !== 'radio') {
-            this.element.classList.add(
+            this.input.classList.add(
                 'w-full',
                 'text-lg',
                 'p-3',
@@ -26,61 +92,80 @@ export default class Input extends Element<HTMLInputElement> {
                 'focus:outline-none',
                 'focus:ring-2',
                 'focus:ring-pink-500',
-                'mb-4',
             )
         } else {
-            this.element.classList.add('ml-4')
+            this.input.classList.add('ml-4')
         }
     }
 
     public set placeholder(placeholder: string) {
-        this.element.placeholder = placeholder
+        this.input.element.placeholder = placeholder
     }
 
     public set maxLength(maxLength: number) {
-        this.element.maxLength = maxLength
+        this.input.element.maxLength = maxLength
     }
 
     public set value(value: string) {
-        this.element.value = value
+        this.input.element.value = value
     }
 
     public get value() {
-        return this.element.value
+        return this.input.element.value
     }
 
     public set checked(checked: boolean) {
-        if (this.element.type !== 'checkbox' && this.element.type !== 'radio') {
+        if (
+            this.input.element.type !== 'checkbox' &&
+            this.input.element.type !== 'radio'
+        ) {
             throw new Error(
                 'Checked attribute only allowed for checkbox or radio type.',
             )
         }
-        this.element.checked = checked
+        this.input.element.checked = checked
     }
 
     public get checked() {
-        if (this.element.type !== 'checkbox' && this.element.type !== 'radio') {
+        if (
+            this.input.element.type !== 'checkbox' &&
+            this.input.element.type !== 'radio'
+        ) {
             throw new Error(
                 'Checked attribute only allowed for checkbox or radio type.',
             )
         }
 
-        return this.element.checked
+        return this.input.element.checked
     }
 
     public focus() {
-        this.element.focus()
+        this.input.element.focus()
     }
 
     public blur() {
-        this.element.blur()
+        this.input.element.blur()
     }
 
     public constructor(
-        props: Partial<ElementProps & Props> = {},
+        { className = [], ...props }: Partial<ElementProps & Props> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
-        super('input', props, ...children)
+        super(
+            'label',
+            {
+                className: [...className, 'mb-4', 'block'],
+                ...props,
+            },
+            ...children,
+        )
+
+        this.input = new Element('input')
+        this.element.append(this.input.element)
+
+        if (props.label) {
+            this.label = props.label
+        }
 
         this.type = props.type ? props.type : 'text'
 
@@ -94,6 +179,10 @@ export default class Input extends Element<HTMLInputElement> {
 
         if (props.onChange) {
             this.addEventListener('change', props.onChange.bind(this))
+        }
+
+        if (props.maxLength) {
+            this.maxLength = props.maxLength
         }
     }
 }

@@ -2,8 +2,8 @@ import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 import Controller from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
-import Button from '@home/modules/fragments/button'
-import Callout from '@home/modules/fragments/callout'
+import { Button } from '@home/modules/fragments/button'
+import { Callout } from '@home/modules/fragments/callout'
 
 import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
@@ -47,6 +47,8 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     cbInfoUpdated(): void {
         if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'

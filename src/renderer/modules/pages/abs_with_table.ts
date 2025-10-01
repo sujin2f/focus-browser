@@ -2,11 +2,10 @@ import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
 import Table from '@home/modules/fragments/table'
-import Button from '@home/modules/fragments/button'
-import Label from '@home/modules/fragments/label'
-import Input from '@home/modules/fragments/input'
-import Form from '@home/modules/fragments/form'
-import ButtonGroup from '@home/modules/fragments/button-group'
+import { Button } from '@home/modules/fragments/button'
+import { Input } from '@home/modules/fragments/input'
+import { Form } from '@home/modules/fragments/form'
+import { ButtonGroup } from '@home/modules/fragments/button-group'
 import Heading from '@home/modules/fragments/heading'
 import DataList, { type DataListType } from '@home/modules/fragments/data-list'
 
@@ -43,7 +42,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
     // Find Form
     protected formFind: Form = new Form()
-    protected inputFindKeyword: Input = new Input()
+    protected inputFindKeyword: Input = new Input({ label: 'Keyword' })
     protected searchKeyword: string = ''
     protected buttonFind: Button = new Button({
         onClick: () => {
@@ -116,11 +115,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
      * Find Form (Keyword Input)
      */
     private renderFindForm() {
-        const labelFindTitle = new Label(
-            { title: 'Keyword' },
-            this.inputFindKeyword,
-        )
-        this.formFind.append(labelFindTitle)
+        this.formFind.append(this.inputFindKeyword)
 
         // When the user types
         this.inputFindKeyword.addEventListener('keyup', () => {

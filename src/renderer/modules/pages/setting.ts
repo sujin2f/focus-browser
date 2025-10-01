@@ -3,13 +3,9 @@ import { A_Page } from '@home/modules/pages/abs_page'
 import { Element } from '@home/modules/fragments'
 import Heading from '@home/modules/fragments/heading'
 import Controller from '@home/modules/controller'
-import Input from '@home/modules/fragments/input'
-import Card from '@home/modules/fragments/card'
-import Label from '@home/modules/fragments/label'
-import CardContainer from '@home/modules/fragments/card-container'
-import Callout from '@home/modules/fragments/callout'
+import { Input } from '@home/modules/fragments/input'
 
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
+import { ipcRenderer } from '@home/util'
 import { Channel, PageType, RequestHandler } from '@src/types'
 
 export class Setting extends A_Page {
@@ -24,10 +20,8 @@ export class Setting extends A_Page {
         const wrapper = new Element('section', {
             className: ['w-4/6', 'mx-auto'],
         })
-        this.root.append(wrapper.element)
 
         const title: Heading = new Heading(1, {}, 'Setting')
-        wrapper.append(title)
 
         const helpText = new Input({
             type: 'checkbox',
@@ -38,32 +32,29 @@ export class Setting extends A_Page {
                 })
                 Controller.getInstance().setting.helpText = helpText.checked
             },
+            label: 'Show Help Text',
         })
-        wrapper.append(
-            new Label(
-                { title: 'Show Help Text', className: ['block', 'mb-2'] },
-                helpText,
-            ),
-        )
 
         const maxHistory = new Input({
             type: 'number',
             value: Controller.getInstance().setting.maxHistory.toString(),
             onChange: () => {
+                maxHistory.error = ''
+                const value = parseInt(maxHistory.value)
+                if (value < 10) {
+                    maxHistory.error = 'This value must be bigger than 9.'
+                    return
+                }
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
-                    maxHistory: parseInt(maxHistory.value),
+                    maxHistory: value,
                 })
-                Controller.getInstance().setting.maxHistory = parseInt(
-                    maxHistory.value,
-                )
+                Controller.getInstance().setting.maxHistory = value
             },
+            label: 'Maximum History',
         })
-        wrapper.append(
-            new Label(
-                { title: 'Maximum History', className: ['block', 'mb-2'] },
-                maxHistory,
-            ),
-        )
+
+        this.root.append(wrapper.element)
+        wrapper.append(title, helpText, maxHistory)
     }
 
     cbInfoUpdated() {

@@ -46,7 +46,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
     }
 
     cbInfoUpdated(): void {
-        if (!Controller.getInstance().helpText) {
+        if (!Controller.getInstance().setting.helpText) {
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'

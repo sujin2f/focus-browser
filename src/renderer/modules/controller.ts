@@ -3,8 +3,8 @@ import {
     PageType,
     RequestHandler,
     Scenes,
+    StatusProps,
     TableAction,
-    type Shortcuts,
 } from '@src/types'
 import { checkElectron, ipcRenderer } from '@home/util'
 
@@ -15,7 +15,8 @@ import { History } from '@home/modules/pages/history'
 import { Anchors } from '@home/modules/pages/anchors'
 import { PopupBlocker } from '@home/modules/pages/popup'
 import { Welcome } from '@home/modules/pages/welcome'
-import { Address } from './pages/address'
+import { Address } from '@home/modules/pages/address'
+import { Setting } from '@home/modules/pages/setting'
 
 export default class Controller {
     static instance: Controller
@@ -26,8 +27,7 @@ export default class Controller {
         return Controller.instance
     }
 
-    public helpText: boolean = false
-    public shortcut?: Shortcuts
+    public setting: StatusProps
     private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
@@ -50,16 +50,11 @@ export default class Controller {
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
         ipcRenderer.once(
             Channel.INFO,
-            (
-                handler: RequestHandler,
-                shortcut: Shortcuts,
-                helpText: boolean,
-            ) => {
+            (handler: RequestHandler, setting: StatusProps) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
-                this.shortcut = shortcut
-                this.helpText = helpText
+                this.setting = setting
 
                 this._currentPage.action(TableAction.INFO)
             },
@@ -108,9 +103,16 @@ export default class Controller {
             case PageType.WELCOME:
                 this._currentPage = new Welcome()
                 break
+            case PageType.SETTING:
+                this._currentPage = new Setting()
+
+                if (this.setting) {
+                    this._currentPage.action(TableAction.INFO)
+                }
+                break
         }
 
-        if (this.shortcut) {
+        if (this.setting) {
             this._currentPage.action(TableAction.INFO)
         }
     }

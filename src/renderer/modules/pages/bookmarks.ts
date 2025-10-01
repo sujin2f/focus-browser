@@ -128,7 +128,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     cbInfoUpdated() {
-        if (!Controller.getInstance().helpText) {
+        if (!Controller.getInstance().setting.helpText) {
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -221,15 +221,15 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     private renderModifyForm() {
-        const labelTitle = new Label({}, this.inputTitle)
-        labelTitle.title = 'Title'
+        const labelTitle = new Label({ title: 'Title' }, this.inputTitle)
 
-        const labelUrl = new Label({}, this.inputUrl)
-        labelUrl.title = 'URL'
+        const labelUrl = new Label({ title: 'URL' }, this.inputUrl)
 
         this.inputShortcut.maxLength = 1
-        const labelShortcut = new Label({}, this.inputShortcut)
-        labelShortcut.title = 'Shortcut'
+        const labelShortcut = new Label(
+            { title: 'Shortcut' },
+            this.inputShortcut,
+        )
 
         const buttonOk = new Button({}, 'OK (Enter)')
         buttonOk.type = 'submit'

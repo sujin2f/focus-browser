@@ -42,6 +42,11 @@ const buttons: Record<string, T_Card> = {
         description: 'Manage Popup Blocker',
         destination: PageType.POPUP_BLOCKER,
     },
+    setting: {
+        title: 'Setting',
+        description: '',
+        destination: PageType.SETTING,
+    },
     welcome: {
         title: 'Visit Welcome Page',
         description: 'Double check the basic features of Focus',
@@ -77,8 +82,7 @@ export class Home extends A_Page {
         // Location Bar
         const command = isMac() ? '⌘' : 'Ctrl+'
         const label = new Label(
-            {},
-            `Enter search keyword or address (${command}L)`,
+            { title: `Enter search keyword or address (${command}L)` },
             this.search,
         )
         this.location.append(label)
@@ -101,7 +105,7 @@ export class Home extends A_Page {
     }
 
     cbInfoUpdated() {
-        if (!Controller.getInstance().helpText) {
+        if (!Controller.getInstance().setting.helpText) {
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'

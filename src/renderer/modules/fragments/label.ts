@@ -1,6 +1,10 @@
 import { ElementProps } from '@src/types'
 import { Element } from '.'
 
+type Props = {
+    title: string
+}
+
 export default class Label extends Element<HTMLLabelElement> {
     public set title(title: string) {
         this.p.innerHTML = title
@@ -9,7 +13,7 @@ export default class Label extends Element<HTMLLabelElement> {
     private p = new Element<HTMLParagraphElement>('p')
 
     constructor(
-        props: Partial<ElementProps> = {},
+        props: Partial<ElementProps & Props> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
         super('label', props)
@@ -23,5 +27,8 @@ export default class Label extends Element<HTMLLabelElement> {
             'dark:text-gray-300',
         )
         this.append(this.p, ...children)
+        if (props.title) {
+            this.title = props.title
+        }
     }
 }

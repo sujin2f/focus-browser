@@ -59,20 +59,8 @@ export default class Controller {
                 this._currentPage.action(TableAction.INFO)
             },
         )
-        ipcRenderer.on(Channel.SWITCH, (scene: Scenes) => {
-            switch (scene) {
-                case Scenes.HOME:
-                    this.switch(PageType.HOME)
-                    break
-
-                case Scenes.ADDRESS:
-                    this.switch(PageType.ADDRESS)
-                    break
-
-                case Scenes.WELCOME:
-                    this.switch(PageType.WELCOME)
-                    break
-            }
+        ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
+            this.switch(scene)
         })
     }
 

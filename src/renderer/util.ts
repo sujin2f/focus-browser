@@ -1,4 +1,4 @@
-import { Channel, RequestHandler, Scenes } from '@src/types'
+import { Channel, RequestHandler, SceneBrowser } from '@src/types'
 import { Element } from '@home/modules/fragments'
 
 export const checkElectron = () => {
@@ -15,11 +15,11 @@ export const ipcRenderer = {
 
 export const navigate = (url?: string, handler?: RequestHandler) => {
     if (url) {
-        ipcRenderer.send(Channel.SWITCH, Scenes.BROWSER, url, handler)
+        ipcRenderer.send(Channel.SWITCH, SceneBrowser.BROWSER, url, handler)
         return
     }
 
-    ipcRenderer.send(Channel.SWITCH, Scenes.BROWSER)
+    ipcRenderer.send(Channel.SWITCH, SceneBrowser.BROWSER)
 }
 
 export const shortcutToHtml = (shortcut: string) => {

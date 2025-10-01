@@ -23,16 +23,12 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     push(bookmark: Bookmark) {
         for (const item of this._data.bookmarks) {
             if (item.url === bookmark.url) {
-                return
+                return false
             }
         }
 
-        new Notification({
-            title: 'Focus',
-            body: 'New Bookmark Added',
-            silent: true,
-        }).show()
         this._data.bookmarks.unshift(bookmark)
+        return true
     }
 
     remove(index: number) {

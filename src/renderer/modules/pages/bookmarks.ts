@@ -61,6 +61,16 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         this.buttonGroup.prepend(buttonAdd)
 
         this.renderModifyForm()
+
+        this.inputFindKeyword.addEventListener('input', () => {
+            const shortcut =
+                this.shortcuts[this.inputFindKeyword.value.toLowerCase()]
+            if (shortcut) {
+                navigate(shortcut)
+                return true
+            }
+        })
+
         this.forms.append(this.form)
         this.hideForms()
     }
@@ -226,7 +236,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     private renderModifyForm() {
         this.inputTitle = new Input({ label: 'Title' })
         this.inputUrl = new Input({ label: 'URL' })
-        this.inputShortcut = new Input({ maxLength: 1, label: 'Shortcut' })
+        this.inputShortcut = new Input({ maxLength: 2, label: 'Shortcut' })
 
         const buttonOk = new Button({ type: 'submit' }, 'OK (Enter)')
         const buttonCancel = new Button(
@@ -291,7 +301,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         const bookmark = {
             title: this.inputTitle.value,
             url: this.inputUrl.value,
-            shortcut: this.inputShortcut.value,
+            shortcut: this.inputShortcut.value.toLowerCase(),
         }
 
         if (!this._cursor) {
@@ -358,16 +368,16 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             }
         }
 
-        // Bookmark Shortcut
-        if (document.activeElement.tagName.toLowerCase() !== 'input') {
-            const shortcut = this.shortcuts[e.key.toLowerCase()]
-            if (shortcut) {
-                navigate(shortcut)
-                return true
-            }
+        if (super.doShortcut(e)) {
+            return
         }
 
-        super.doShortcut(e)
+        if (
+            document.activeElement.tagName.toLowerCase() !== 'input' &&
+            e.key.length === 1
+        ) {
+            this.changeMode(PageMode.FIND)
+        }
     }
 
     private onSwitchAdd() {

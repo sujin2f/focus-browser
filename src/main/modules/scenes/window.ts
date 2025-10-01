@@ -3,6 +3,7 @@ import {
     BrowserWindow as ElectronBrowserWindow,
     WebContentsView,
     Menu,
+    Notification,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
 } from 'electron'
@@ -11,12 +12,14 @@ import { preload, resolveHtmlPath, message } from '@main/util'
 import {
     Channel,
     RequestHandler,
-    Scenes,
     MenuCategory,
     Menu as E_Menu,
+    SceneBrowser,
+    PageType,
+    type Scenes,
     type Bookmark,
     type MenuBlock,
-    StatusProps,
+    type StatusProps,
 } from '@src/types'
 
 import History from '@main/modules/store/history'
@@ -36,7 +39,7 @@ import Logger from '../logger'
 export class BrowserWindow extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
-    protected current: Scenes = Scenes.BROWSER
+    protected current: Scenes = SceneBrowser.BROWSER
 
     /**
      * Constants
@@ -101,7 +104,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
             .then(() => {
                 this.sendInfo()
                 if (status.get('welcome')) {
-                    this.switch(Scenes.WELCOME)
+                    this.switch(PageType.WELCOME)
                     status.set('welcome', false)
                 }
             })
@@ -113,7 +116,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
      */
     protected switch(scene: Scenes) {
         this.current = scene
-        if (scene === Scenes.BROWSER) {
+        if (scene === SceneBrowser.BROWSER) {
             this.contentView = this.browser
             return
         }
@@ -125,6 +128,27 @@ export class BrowserWindow extends ElectronBrowserWindow {
 
     private setEventListeners() {
         this.addListener('close', () => this.saveStatus())
+
+        // Popup Blocker
+        this.browser.webContents.setWindowOpenHandler((data) => {
+            const url = new URL(data.url)
+            if (PopupBlocker.getInstance().isAllowed(url.host)) {
+                this.loadURL(data.url)
+                return { action: 'deny' }
+            }
+
+            PopupBlocker.getInstance().block(url.host)
+            const notification = new Notification({
+                title: 'Focus',
+                body: `Popup blocked from ${url.host}`,
+                silent: true,
+            })
+            notification.addListener('click', () => {
+                this.switch(PageType.POPUP_BLOCKER)
+            })
+            notification.show()
+            return { action: 'deny' }
+        })
     }
 
     /**
@@ -212,20 +236,38 @@ export class BrowserWindow extends ElectronBrowserWindow {
 
     private addMenuCallbacks(menu: MenuBlock) {
         menu[MenuCategory.EDIT][E_Menu.ADD_BOOKMARK].click = () => {
-            if (this.current === Scenes.BROWSER) {
-                Bookmarks.getInstance().push({
+            if (this.current === SceneBrowser.BROWSER) {
+                const added = Bookmarks.getInstance().push({
                     url: this.browser.webContents.getURL(),
                     title: this.browser.webContents.getTitle(),
                 })
+                if (!added) {
+                    return
+                }
+                this.showBookmarkNotification()
             }
         }
 
         menu[MenuCategory.EDIT][E_Menu.ADD_ANCHOR].click = () => {
-            if (this.current === Scenes.BROWSER) {
-                Anchors.getInstance().push({
+            if (this.current === SceneBrowser.BROWSER) {
+                const added = Anchors.getInstance().push({
                     url: this.browser.webContents.getURL(),
                     title: this.browser.webContents.getTitle(),
                 })
+
+                if (!added) {
+                    return
+                }
+
+                const notification = new Notification({
+                    title: 'Focus',
+                    body: 'New Anchor Added',
+                    silent: true,
+                })
+                notification.addListener('click', () => {
+                    this.switch(PageType.ANCHOR)
+                })
+                notification.show()
             }
         }
 
@@ -243,7 +285,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 return
             }
 
-            if (this.current === Scenes.BROWSER) {
+            if (this.current === SceneBrowser.BROWSER) {
                 this.browser.webContents.openDevTools()
                 this.centre.webContents.closeDevTools()
                 return
@@ -253,16 +295,16 @@ export class BrowserWindow extends ElectronBrowserWindow {
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.ADDRESS].click = () => {
-            this.switch(Scenes.ADDRESS)
+            this.switch(PageType.ADDRESS)
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.CENTRE].click = () => {
-            this.switch(Scenes.HOME)
+            this.switch(PageType.HOME)
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.BACK].click = () => {
             if (
-                this.current === Scenes.BROWSER &&
+                this.current === SceneBrowser.BROWSER &&
                 this.browser.webContents.navigationHistory.canGoBack()
             ) {
                 this.browser.webContents.navigationHistory.goBack()
@@ -271,7 +313,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
 
         menu[MenuCategory.NAVIGATE][E_Menu.FORWARD].click = () => {
             if (
-                this.current === Scenes.BROWSER &&
+                this.current === SceneBrowser.BROWSER &&
                 this.browser.webContents.navigationHistory.canGoForward()
             ) {
                 this.browser.webContents.navigationHistory.goForward()
@@ -279,13 +321,13 @@ export class BrowserWindow extends ElectronBrowserWindow {
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
-            if (this.current === Scenes.BROWSER) {
+            if (this.current === SceneBrowser.BROWSER) {
                 this.browser.webContents.reload()
             }
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.STOP].click = () => {
-            if (this.current === Scenes.BROWSER) {
+            if (this.current === SceneBrowser.BROWSER) {
                 this.browser.webContents.stop()
             }
         }
@@ -321,7 +363,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
     ) {
         this.switch(scene)
 
-        if (scene === Scenes.BROWSER && address) {
+        if (scene === SceneBrowser.BROWSER && address) {
             this.browser.loadURL(address)
         }
 
@@ -342,7 +384,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 return
 
             case RequestHandler.EXECUTE:
-                this.switch(Scenes.BROWSER)
+                this.switch(SceneBrowser.BROWSER)
                 this.browser.webContents.navigationHistory.goToIndex(index)
                 return
         }
@@ -365,7 +407,11 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 )
                 return
             case RequestHandler.ADD:
-                Bookmarks.getInstance().push(bookmark)
+                const added = Bookmarks.getInstance().push(bookmark)
+                if (!added) {
+                    return
+                }
+                this.showBookmarkNotification()
                 return
             case RequestHandler.MODIFY:
                 Bookmarks.getInstance().edit(index, bookmark)
@@ -409,5 +455,17 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 Popup.getInstance().toggle(host)
                 return
         }
+    }
+
+    private showBookmarkNotification() {
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        })
+        notification.addListener('click', () => {
+            this.switch(PageType.BOOKMARK)
+        })
+        notification.show()
     }
 }

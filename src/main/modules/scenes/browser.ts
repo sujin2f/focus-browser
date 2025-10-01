@@ -45,11 +45,12 @@ export class BrowserView extends WebContentsView {
         // If the schema is missing, prepend 'http://' to allow the URL constructor
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
         try {
-            if (!hasSchema) {
-                _url = new URL(`http://${_url}`).toString()
-            }
+            _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
 
-            this.webContents.loadURL(_url)
+            this.webContents.loadURL(_url).catch(() => {
+                _url = `https://duckduckgo.com/?q=${url}`
+                this.webContents.loadURL(_url)
+            })
         } catch {
             // When the navigation failed, search DuckDuckGo
             // TODO search engine option
@@ -91,23 +92,6 @@ export class BrowserView extends WebContentsView {
                     )
                     return
                 })
-        })
-
-        // Popup Blocker
-        this.webContents.setWindowOpenHandler((data) => {
-            const url = new URL(data.url)
-            if (PopupBlocker.getInstance().isAllowed(url.host)) {
-                this.loadURL(data.url)
-                return { action: 'deny' }
-            }
-
-            PopupBlocker.getInstance().block(url.host)
-            new Notification({
-                title: 'Focus',
-                body: `Popup blocked from ${url.host}`,
-                silent: true,
-            }).show()
-            return { action: 'deny' }
         })
     }
 }

@@ -22,12 +22,25 @@ export type PopupBlocker = {
     allowed?: boolean
 }
 
-export enum Scenes {
-    BROWSER,
-    HOME,
-    ADDRESS, // home with address bar focused
+/**
+ * Control centre pages
+ */
+export enum PageType {
     WELCOME,
+    HOME,
+    ADDRESS,
+    BOOKMARK,
+    HISTORY,
+    ANCHOR,
+    POPUP_BLOCKER,
+    SETTING,
 }
+
+export enum SceneBrowser {
+    BROWSER,
+}
+
+export type Scenes = PageType | SceneBrowser
 
 export enum Channel {
     INFO = 'INFO',
@@ -45,17 +58,6 @@ export enum RequestHandler {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
-}
-
-export enum PageType {
-    WELCOME,
-    HOME,
-    ADDRESS,
-    BOOKMARK,
-    HISTORY,
-    ANCHOR,
-    POPUP_BLOCKER,
-    SETTING,
 }
 
 export enum PageMode {

@@ -21,16 +21,12 @@ export default class Anchors extends Store<Props> {
     push(anchor: Bookmark) {
         for (const item of this._data.anchors) {
             if (item.url === anchor.url) {
-                return
+                return false
             }
         }
 
-        new Notification({
-            title: 'Focus',
-            body: 'New Anchor Added',
-            silent: true,
-        }).show()
         this._data.anchors.unshift(anchor)
+        return true
     }
 
     remove(url: string) {

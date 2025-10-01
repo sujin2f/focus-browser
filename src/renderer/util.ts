@@ -1,5 +1,5 @@
 import { Channel, RequestHandler, Scenes } from '@src/types'
-import { Element } from './modules/fragments'
+import { Element } from '@home/modules/fragments'
 
 export const checkElectron = () => {
     if (!window.electron) {

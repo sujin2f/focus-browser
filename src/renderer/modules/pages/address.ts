@@ -1,8 +1,9 @@
+import { Home } from '@home/modules/pages/home'
+
 import { PageType } from '@src/types'
-import Home from './home'
 import { isMac } from '@src/renderer/util'
 
-export default class Address extends Home {
+export class Address extends Home {
     public readonly page = PageType.ADDRESS
 
     render(): void {

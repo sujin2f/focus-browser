@@ -1,3 +1,9 @@
+import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
+
+import { Element } from '@home/modules/fragments'
+
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer } from '@home/util'
 import {
     PageMode,
     PageType,
@@ -7,18 +13,18 @@ import {
     type PopupBlocker as T_PopupBlocker,
 } from '@src/types'
 
-import { A_PageWithTable } from '.'
-import { Element } from '@home/modules/fragments'
-import type { DataListType } from '@home/modules/fragments/data-list'
-import { ipcRenderer } from '@home/util'
-import Heading from '../fragments/heading'
-
-export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
+export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
+    order: 'ASC' | 'DESC' = 'DESC'
     readonly page = PageType.POPUP_BLOCKER
 
     constructor() {
         super()
         this.init()
+    }
+
+    protected init() {
+        super.init()
+        this.title.innerHTML = 'Popup Blocker'
     }
 
     request(): void {
@@ -41,23 +47,6 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                 this.action(TableAction.UPDATE, data)
             },
         )
-    }
-
-    render() {
-        this.root.innerHTML = ''
-
-        this.renderButtons()
-        this.renderFindForm()
-        this.renderTable()
-        this.hideForms()
-
-        // H1
-        const heading = new Heading(1, {}, 'Popup Blocker')
-
-        this.root.appendChild(heading.element)
-        this.root.appendChild(this.buttons.element)
-        this.root.appendChild(this.formFind.element)
-        this.root.appendChild(this.table.element)
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -121,8 +110,17 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                 RequestHandler.MODIFY,
                 data.host,
             )
-            data.allowed = !data.allowed
-            this.renderTable()
+            this.items = this.items.map((item) => {
+                if (item.host === data.host) {
+                    return {
+                        ...item,
+                        allowed: !data.allowed,
+                    }
+                }
+
+                return item
+            })
+            this.refresh()
             return
         }
     }
@@ -135,5 +133,9 @@ export default class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         if (e.key.length === 1) {
             this.changeMode(PageMode.FIND)
         }
+    }
+
+    cbInfoUpdated(): void {
+        return
     }
 }

@@ -3,10 +3,14 @@ import * as path from 'path'
 import { Element } from '@home/modules/fragments'
 import { PageMode, PageType, TableAction } from '@src/types'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import { A_PageWithTable } from '.'
+import { A_PageWithTable } from './abs_with_table'
 import { isMac } from '@home/util'
 
 class Test extends A_PageWithTable<string> {
+    order: 'ASC' | 'DESC' = 'ASC'
+    cbInfoUpdated(): void {
+        throw new Error('Method not implemented.')
+    }
     page: PageType = PageType.WELCOME
 
     constructor() {
@@ -15,16 +19,6 @@ class Test extends A_PageWithTable<string> {
     }
 
     request(): void {}
-    render(): void {
-        this.renderButtons()
-        this.renderFindForm()
-        this.renderTable()
-        this.hideForms()
-
-        this.root.appendChild(this.buttons.element)
-        this.root.appendChild(this.formFind.element)
-        this.root.appendChild(this.table.element)
-    }
     getTHeads(): Element<HTMLTableCellElement>[] {
         return [this.table.createTh()]
     }
@@ -56,14 +50,6 @@ class Test extends A_PageWithTable<string> {
     }
 }
 
-jest.mock('@home/util', () => ({
-    ipcRenderer: {
-        on: jest.fn(),
-        send: jest.fn(),
-        once: jest.fn(),
-    },
-}))
-
 describe('A_PageWithTable', () => {
     beforeAll(async () => {
         const html = fs.readFileSync(
@@ -85,6 +71,7 @@ describe('A_PageWithTable', () => {
                 .querySelector('form')
                 .classList.contains('hidden'),
         ).toBeTruthy()
+
         if (isMac()) {
             document.dispatchEvent(
                 new KeyboardEvent('keydown', { key: 'f', metaKey: true }),

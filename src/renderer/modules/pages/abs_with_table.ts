@@ -1,4 +1,4 @@
-import { PageMode, PageType, TableAction } from '@src/types'
+import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
 import Table from '@home/modules/fragments/table'
@@ -6,81 +6,63 @@ import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Form from '@home/modules/fragments/form'
+import ButtonGroup from '@home/modules/fragments/button-group'
 import DataList, { type DataListType } from '@home/modules/fragments/data-list'
+
+import { PageMode, TableAction } from '@src/types'
 import { isMac, navigate } from '@home/util'
-import ButtonGroup from '../fragments/button-group'
+import Heading from '../fragments/heading'
 
-export default abstract class A_Page<T> {
-    /**
-     * Identifier
-     */
-    abstract readonly page: PageType
-
-    /**
-     * All starts with here
-     */
-    protected get root() {
-        return document.getElementById('root')
-    }
-
-    constructor() {
-        if (this.root) {
-            this.root.innerHTML = ''
-        }
-    }
-
-    protected init() {
-        this.render()
-    }
-
-    /**
-     * For additional actions
-     */
-    action(action: TableAction, ...arg: unknown[]) {
-        if (action === TableAction.INFO) {
-            this.render()
-        }
-    }
-    /**
-     * Shortcut
-     */
-    public doShortcut(e: KeyboardEvent): boolean {
-        if (e.key === 'Escape') {
-            if (document.activeElement.tagName.toLowerCase() === 'input') {
-                this.blur()
-                return true
-            }
-
-            navigate()
-            return true
-        }
-
-        return false
-    }
-
-    protected blur() {
-        ;(document.activeElement as HTMLElement).blur()
-    }
-
-    abstract render(): void
-}
-
-export abstract class A_PageWithTable<T> extends A_Page<T> {
+/**
+ * Page with Table
+ * The HTML layout is :
+ * - <title />
+ * - <button-group />
+ * - <forms />
+ * - <help-text />
+ * - <table-wrapper />
+ */
+export abstract class A_PageWithTable<T> extends A_Page {
     protected items: T[] = []
+    abstract order: 'ASC' | 'DESC'
+
+    // HTML Layout
+    protected title: Heading = new Heading(1, {}, '')
+    protected buttonGroup: ButtonGroup = new ButtonGroup()
+    protected forms: Element<HTMLElement> = new Element('section')
+    protected helpText: Element<HTMLElement> = new Element('section')
+    protected tableWrapper: Element<HTMLElement> = new Element('section')
 
     /**
-     * Modes like list, edit, find...
+     * Table Navigation
      */
-    protected _mode: PageMode = PageMode.LIST
-    protected hideForms() {
-        this.formFind.hide()
-    }
+    protected _cursor: DataListType<Element<HTMLTableRowElement>> | null = null
+
+    // Table
+    protected table: Table = new Table()
+
+    // Find Form
+    protected formFind: Form = new Form()
+    protected inputFindKeyword: Input = new Input()
+    protected searchKeyword: string = ''
+    protected buttonFind: Button = new Button({
+        onClick: () => {
+            this.changeMode(PageMode.FIND)
+        },
+    })
+
+    // Style
+    protected readonly STYLE_FOCUSED = ['border-red-100', 'dark:border-red-800']
+    protected readonly STYLE_HOVER = [
+        'hover:bg-gray-100',
+        'dark:hover:bg-gray-800',
+    ]
+
     protected changeMode(mode: PageMode): boolean {
-        if (this._mode === mode) {
+        if (!super.changeMode(mode)) {
             return false
         }
 
-        this._mode = mode
         this.hideForms()
 
         switch (mode) {
@@ -97,29 +79,25 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         return true
     }
 
-    /**
-     * Table Navigation
-     */
-    protected _cursor: DataListType<Element<HTMLTableRowElement>> | null = null
-
-    // Buttons
-    protected buttons: ButtonGroup = new ButtonGroup()
-    protected buttonFind: Button = new Button({
-        onClick: () => {
-            this.changeMode(PageMode.FIND)
-        },
-    })
-
-    // Find Form
-    protected formFind: Form = new Form()
-    protected inputFindKeyword: Input = new Input()
-    protected searchKeyword: string = ''
-
-    // Table
-    protected table: Table = new Table()
+    protected hideForms() {
+        this.formFind.hide()
+    }
 
     protected init() {
-        super.init()
+        this.root.innerHTML = ''
+
+        this.buttonGroup.append(this.buttonFind)
+        this.forms.append(this.formFind)
+        this.tableWrapper.append(this.table)
+        this.renderFindForm()
+
+        this.root.append(
+            this.title.element,
+            this.buttonGroup.element,
+            this.forms.element,
+            this.helpText.element,
+            this.tableWrapper.element,
+        )
 
         if (isMac()) {
             this.buttonFind.append('Find (⌘F)')
@@ -127,15 +105,32 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
             this.buttonFind.append('Find (Ctrl+F)')
         }
 
-        this.renderTableHeads()
+        // Heads
+        this.table.appendHead(...this.getTHeads())
+
+        this.hideForms()
         this.request()
     }
 
-    abstract request(): void
+    /**
+     * Find Form (Keyword Input)
+     */
+    private renderFindForm() {
+        const labelFindTitle = new Label({}, this.inputFindKeyword)
+        labelFindTitle.title = 'Keyword'
+        this.formFind.append(labelFindTitle)
 
-    protected renderButtons() {
-        this.buttons.append(this.buttonFind)
+        // When the user types
+        this.inputFindKeyword.addEventListener('keyup', () => {
+            this.searchKeyword = this.inputFindKeyword.value
+            this.filterTable()
+        })
     }
+
+    /**
+     * Request table data
+     */
+    abstract request(): void
 
     /**
      * Table related methods
@@ -146,14 +141,14 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         item: T,
         index: number,
     ): Element<HTMLTableCellElement>[]
-    private renderTableHeads() {
-        this.table.appendHead(...this.getTHeads())
-    }
-    protected renderTable() {
+    private renderTable() {
         this.table.reset()
+
         const ListTr = DataList(Element<HTMLTableRowElement>)
         let prev: DataListType<Element<HTMLTableRowElement>> | null = null
-        this.items.forEach((item, index) => {
+
+        const items = this.order === 'ASC' ? this.items : this.items.reverse()
+        items.forEach((item, index) => {
             const tr = new ListTr('tr', {
                 className: [
                     'hover',
@@ -163,27 +158,29 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                     'font-normal',
                     'leading-normal',
                     'text-blue-gray-900',
+                    'border-l-5',
+                    'border-transparent',
                     ...this.STYLE_HOVER,
                 ],
             }) as unknown as DataListType<Element<HTMLTableRowElement>>
-            tr.setData('index', index)
+
+            const dataIndex =
+                this.order === 'ASC' ? index : this.items.length - index - 1
+            tr.setData('index', dataIndex)
             tr.setData('data', item)
 
-            // TODO remove tr from prop
-            tr.append(...this.getRowCells(tr, item, index))
+            tr.append(...this.getRowCells(tr, item, dataIndex))
             prev = this.linkTr(prev, tr)
-            this.table.append(tr)
+
+            this.table.appendBody(tr)
         })
     }
 
-    protected readonly STYLE_FOCUSED = ['bg-gray-100', 'dark:bg-gray-800']
-    protected readonly STYLE_HOVER = [
-        'hover:bg-gray-100',
-        'dark:hover:bg-gray-800',
-    ]
-
+    /**
+     * Filtering Table
+     */
     abstract filterCondition(item: T): boolean
-    protected filterTable() {
+    private filterTable() {
         const rows = this.table.children
         let prev: DataListType<Element<HTMLTableRowElement>> | null = null
         this.table.children.forEach((tr, index) => {
@@ -217,14 +214,15 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
         })
     }
 
-    private arrowUp() {
+    protected arrowUp() {
         if (this._cursor && this._cursor.prev) {
             this._cursor = this._cursor.prev
         }
+
         this.focusTable()
     }
 
-    private arrowDown() {
+    protected arrowDown() {
         if (this._cursor && this._cursor.next) {
             this._cursor = this._cursor.next
         } else if (!this._cursor) {
@@ -235,6 +233,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
                 }
             }
         }
+
         this.focusTable()
         this.blur()
     }
@@ -253,22 +252,6 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
     }
 
     /**
-     * Find Form (Keyword Input)
-     */
-    protected renderFindForm() {
-        this.formFind = new Form()
-        const labelFindTitle = new Label({}, this.inputFindKeyword)
-        labelFindTitle.title = 'Keyword'
-        this.formFind.append(labelFindTitle)
-
-        // When the user types
-        this.inputFindKeyword.addEventListener('keyup', () => {
-            this.searchKeyword = this.inputFindKeyword.value
-            this.filterTable()
-        })
-    }
-
-    /**
      * For update and refresh
      */
     protected refresh() {
@@ -281,8 +264,7 @@ export abstract class A_PageWithTable<T> extends A_Page<T> {
 
         if (action === TableAction.UPDATE) {
             this.items = items
-            this._cursor = null
-            this.render()
+            this.refresh()
         }
     }
 

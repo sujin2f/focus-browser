@@ -1,22 +1,26 @@
-import { PageType, TableAction } from '@src/types'
+import { A_Page } from '@home/modules/pages/abs_page'
+
+import { Element } from '@home/modules/fragments'
 import Controller from '@home/modules/controller'
 import Input from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import Label from '@home/modules/fragments/label'
-import { isMac, navigate, shortcutToHtml } from '@home/util'
-import A_Page from '.'
-import CardContainer from '../fragments/card-container'
-import Callout from '../fragments/callout'
-import Heading from '../fragments/heading'
-import { Element } from '../fragments'
+import CardContainer from '@home/modules/fragments/card-container'
+import Callout from '@home/modules/fragments/callout'
 
-type Button = {
+import { isMac, navigate, shortcutToHtml } from '@home/util'
+import { PageType } from '@src/types'
+
+/**
+ * For creating cards
+ */
+type T_Card = {
     title: string
     description: string
     destination: PageType
 }
 
-const buttons: Record<string, Button> = {
+const buttons: Record<string, T_Card> = {
     bookmarks: {
         title: 'Bookmark (B)',
         description: 'Manage bookmarks',
@@ -45,19 +49,31 @@ const buttons: Record<string, Button> = {
     },
 }
 
-export default class Home extends A_Page<null> {
+/**
+ * The HTML layout is :
+ * - <location />
+ * - <help-text />
+ * - <cards />
+ */
+export class Home extends A_Page {
     public page = PageType.HOME
-
     protected search: Input = new Input()
+    private location: Element<HTMLElement> = new Element('section')
+    private helpText: Element<HTMLElement> = new Element('section')
+    private cards: Element<HTMLElement> = new Element('section')
 
     constructor() {
         super()
-        this.init()
+        this.root.innerHTML = ''
+        this.root.append(
+            this.location.element,
+            this.helpText.element,
+            this.cards.element,
+        )
+        this.render()
     }
 
     render(): void {
-        this.root.innerHTML = ''
-
         // Location Bar
         const command = isMac() ? '⌘' : 'Ctrl+'
         const label = new Label(
@@ -65,9 +81,7 @@ export default class Home extends A_Page<null> {
             `Enter search keyword or address (${command}L)`,
             this.search,
         )
-        this.root.appendChild(label.element)
-
-        this.renderCallout()
+        this.location.append(label)
 
         // Cards
         const cardContainer = new CardContainer()
@@ -83,10 +97,10 @@ export default class Home extends A_Page<null> {
 
             cardContainer.append(card)
         })
-        this.root.appendChild(cardContainer.element)
+        this.cards.append(cardContainer)
     }
 
-    private renderCallout() {
+    cbInfoUpdated() {
         if (!Controller.getInstance().helpText) {
             return
         }
@@ -115,7 +129,7 @@ export default class Home extends A_Page<null> {
                 ' to navigate back and forward.',
             ),
         )
-        this.root.appendChild(callout.element)
+        this.helpText.append(callout)
     }
 
     doShortcut(e: KeyboardEvent): boolean {

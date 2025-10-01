@@ -2,9 +2,9 @@ import type { ElementProps } from '@src/types'
 import { Element } from '.'
 import type Button from './button'
 
-export default class ButtonGroup extends Element<HTMLDivElement> {
+export default class ButtonGroup extends Element<HTMLElement> {
     constructor(props: Partial<ElementProps> = {}, ...children: Button[]) {
-        super('div', props)
+        super('section', props)
         this.element.classList.add('flex', 'justify-between')
         this.append(...children)
     }

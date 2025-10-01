@@ -10,10 +10,7 @@ export default class Table extends Element<HTMLDivElement> {
 
     constructor() {
         super('div')
-        this.init()
-    }
 
-    private init() {
         this.element.classList.add(
             'w-full',
             'h-full',
@@ -35,9 +32,6 @@ export default class Table extends Element<HTMLDivElement> {
     }
 
     public appendHead(...children: Element<HTMLTableCellElement>[]) {
-        if (!this.body) {
-            this.init()
-        }
         if (!this.head) {
             this.headRow = new Element('tr')
             this.head = new Element('thead', {}, this.headRow)
@@ -110,24 +104,18 @@ export default class Table extends Element<HTMLDivElement> {
             : this.createTh(props, ...children)
     }
 
-    public append(...children: Element<HTMLTableRowElement>[]) {
-        if (!this.body) {
-            this.init()
-        }
-
+    public appendBody(...children: Element<HTMLTableRowElement>[]) {
         this.body.append(...children)
         this.children.push(...children)
     }
 
-    public prepend(...children: Element<HTMLTableRowElement>[]) {
-        if (!this.body) {
-            this.init()
-        }
+    public prependBody(...children: Element<HTMLTableRowElement>[]) {
         this.body.prepend(...children)
         this.children.unshift(...children)
     }
 
     public reset() {
-        this.body.innerHTML = ''
+        this.children.forEach((row) => row.element.remove())
+        this.children = []
     }
 }

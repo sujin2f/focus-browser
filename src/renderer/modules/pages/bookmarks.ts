@@ -1,4 +1,4 @@
-import { A_PageWithTable } from '.'
+import { A_PageWithTable } from './abs_with_table'
 import { Element } from '@home/modules/fragments'
 import Button from '@home/modules/fragments/button'
 import Label from '@home/modules/fragments/label'
@@ -6,7 +6,6 @@ import Input from '@home/modules/fragments/input'
 import Form from '@home/modules/fragments/form'
 import type { DataListType } from '@home/modules/fragments/data-list'
 import ButtonGroup from '@home/modules/fragments/button-group'
-import Heading from '@home/modules/fragments/heading'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
@@ -21,7 +20,9 @@ import {
 import Callout from '../fragments/callout'
 import Controller from '../controller'
 
-export default class Bookmarks extends A_PageWithTable<Bookmark> {
+export class Bookmarks extends A_PageWithTable<Bookmark> {
+    order: 'ASC' | 'DESC' = 'ASC'
+
     readonly page = PageType.BOOKMARK
 
     // Add Form
@@ -40,6 +41,27 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     constructor() {
         super()
         this.init()
+    }
+
+    protected init() {
+        super.init()
+        this.title.innerHTML = 'Bookmark'
+
+        const buttonAdd: Button = new Button({
+            onClick: this.onSwitchAdd.bind(this),
+        })
+
+        if (isMac()) {
+            buttonAdd.append('Add Bookmark (⌘D)')
+        } else {
+            buttonAdd.append('Add Bookmark (Ctrl+D)')
+        }
+
+        this.buttonGroup.prepend(buttonAdd)
+
+        this.renderModifyForm()
+        this.forms.append(this.form)
+        this.hideForms()
     }
 
     protected hideForms() {
@@ -105,26 +127,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         )
     }
 
-    render() {
-        this.root.innerHTML = ''
-
-        this.renderButtons()
-        this.renderModifyForm()
-        this.renderFindForm()
-        this.renderTable()
-        this.hideForms()
-
-        const heading = new Heading(1, {}, 'Bookmark')
-
-        this.root.appendChild(heading.element)
-        this.renderCallout()
-        this.root.appendChild(this.buttons.element)
-        this.root.appendChild(this.form.element)
-        this.root.appendChild(this.formFind.element)
-        this.root.appendChild(this.table.element)
-    }
-
-    private renderCallout() {
+    cbInfoUpdated() {
         if (!Controller.getInstance().helpText) {
             return
         }
@@ -154,22 +157,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 ...shortcutToHtml('A'),
             ),
         )
-        this.root.appendChild(callout.element)
-    }
-
-    protected renderButtons() {
-        this.buttons.innerHTML = ''
-        const buttonAdd: Button = new Button({
-            onClick: this.onSwitchAdd.bind(this),
-        })
-
-        if (isMac()) {
-            buttonAdd.append('Add Bookmark (⌘D)')
-        } else {
-            buttonAdd.append('Add Bookmark (Ctrl+D)')
-        }
-
-        this.buttons.append(buttonAdd, this.buttonFind)
+        this.helpText.append(callout)
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -360,5 +348,19 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     private onSwitchAdd() {
         this.changeMode(PageMode.LIST)
         this.changeMode(PageMode.NEW)
+    }
+
+    protected arrowUp() {
+        if (this._mode === PageMode.NEW || this._mode === PageMode.EDIT) {
+            return
+        }
+        super.arrowUp()
+    }
+
+    protected arrowDown() {
+        if (this._mode === PageMode.NEW || this._mode === PageMode.EDIT) {
+            return
+        }
+        super.arrowDown()
     }
 }

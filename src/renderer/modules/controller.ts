@@ -8,14 +8,14 @@ import {
 } from '@src/types'
 import { checkElectron, ipcRenderer } from '@home/util'
 
-import A_Page from '@home/modules/pages'
-import Home from '@home/modules/pages/home'
-import Bookmarks from '@home/modules/pages/bookmarks'
-import History from '@home/modules/pages/history'
-import Anchors from '@home/modules/pages/anchors'
-import PopupBlocker from '@home/modules/pages/popup'
-import Welcome from '@home/modules/pages/welcome'
-import Address from './pages/address'
+import { A_Page } from '@src/renderer/modules/pages/abs_page'
+import { Home } from '@home/modules/pages/home'
+import { Bookmarks } from '@home/modules/pages/bookmarks'
+import { History } from '@home/modules/pages/history'
+import { Anchors } from '@home/modules/pages/anchors'
+import { PopupBlocker } from '@home/modules/pages/popup'
+import { Welcome } from '@home/modules/pages/welcome'
+import { Address } from './pages/address'
 
 export default class Controller {
     static instance: Controller
@@ -28,7 +28,7 @@ export default class Controller {
 
     public helpText: boolean = false
     public shortcut?: Shortcuts
-    private _currentPage: A_Page<any>
+    private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
     }

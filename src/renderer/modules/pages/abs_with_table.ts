@@ -7,11 +7,11 @@ import Label from '@home/modules/fragments/label'
 import Input from '@home/modules/fragments/input'
 import Form from '@home/modules/fragments/form'
 import ButtonGroup from '@home/modules/fragments/button-group'
+import Heading from '@home/modules/fragments/heading'
 import DataList, { type DataListType } from '@home/modules/fragments/data-list'
 
 import { PageMode, TableAction } from '@src/types'
 import { isMac, navigate } from '@home/util'
-import Heading from '../fragments/heading'
 
 /**
  * Page with Table
@@ -116,8 +116,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
      * Find Form (Keyword Input)
      */
     private renderFindForm() {
-        const labelFindTitle = new Label({}, this.inputFindKeyword)
-        labelFindTitle.title = 'Keyword'
+        const labelFindTitle = new Label(
+            { title: 'Keyword' },
+            this.inputFindKeyword,
+        )
         this.formFind.append(labelFindTitle)
 
         // When the user types

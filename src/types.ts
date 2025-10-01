@@ -1,4 +1,15 @@
-import type { Menu as ElectronMenu, MenuItemConstructorOptions } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
+
+export type StatusProps = {
+    width: number
+    height: number
+    x: number
+    y: number
+    maxHistory: number
+    welcome: boolean
+    helpText: boolean
+    shortcuts?: Shortcuts
+}
 
 export type Bookmark = {
     url: string
@@ -44,6 +55,7 @@ export enum PageType {
     HISTORY,
     ANCHOR,
     POPUP_BLOCKER,
+    SETTING,
 }
 
 export enum PageMode {

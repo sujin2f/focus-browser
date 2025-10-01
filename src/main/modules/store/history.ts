@@ -21,8 +21,8 @@ export default class History extends Store<{
     }
 
     public get current() {
-        if (this.data.history.length) {
-            return this.data.history.at(this.data.index)
+        if (this._data.history.length) {
+            return this._data.history.at(this._data.index)
         }
 
         return
@@ -37,7 +37,7 @@ export default class History extends Store<{
         const index = shift > 0 ? _index - shift : _index
         const history = _history.slice(shift)
 
-        this.data = { index, history }
+        this._data = { index, history }
         super.save()
     }
 }

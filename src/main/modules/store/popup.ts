@@ -22,7 +22,7 @@ export default class Popup extends Store<T_Popup> {
     public modified = false
 
     public toggle(host: string) {
-        if (this.data.blocked.has(host)) {
+        if (this._data.blocked.has(host)) {
             this.allow(host)
         } else {
             this.block(host)
@@ -30,25 +30,25 @@ export default class Popup extends Store<T_Popup> {
     }
 
     public block(host: string) {
-        this.data.blocked.add(host)
-        this.data.allowed.delete(host)
+        this._data.blocked.add(host)
+        this._data.allowed.delete(host)
     }
 
     public allow(host: string) {
-        this.data.blocked.delete(host)
-        this.data.allowed.add(host)
+        this._data.blocked.delete(host)
+        this._data.allowed.add(host)
     }
 
     public isAllowed(host: string) {
-        return this.data.allowed.has(host)
+        return this._data.allowed.has(host)
     }
 
     save() {
         fs.writeFileSync(
             this.path,
             JSON.stringify({
-                blocked: Array.from(this.data.blocked),
-                allowed: Array.from(this.data.allowed),
+                blocked: Array.from(this._data.blocked),
+                allowed: Array.from(this._data.allowed),
             }),
             {
                 encoding: 'utf-8',
@@ -59,12 +59,12 @@ export default class Popup extends Store<T_Popup> {
     parse() {
         try {
             const parsed = JSON.parse(fs.readFileSync(this.path, 'utf-8'))
-            this.data = {
+            this._data = {
                 blocked: new Set(parsed.blocked),
                 allowed: new Set(parsed.allowed),
             }
         } catch (error) {
-            this.data = this.defaults
+            this._data = this.defaults
         }
     }
 }

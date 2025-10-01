@@ -35,7 +35,7 @@ export default class Callout extends Element<HTMLDivElement> {
                     ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                         helpText: false,
                     })
-                    Controller.getInstance().helpText = false
+                    Controller.getInstance().setting.helpText = false
                     Controller.getInstance().currentPage.action(
                         TableAction.INFO,
                     )

@@ -13,15 +13,15 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     get() {
-        return this.data.bookmarks
+        return this._data.bookmarks
     }
 
     edit(index: number, bookmark: Bookmark) {
-        this.data.bookmarks[index] = bookmark
+        this._data.bookmarks[index] = bookmark
     }
 
     push(bookmark: Bookmark) {
-        for (const item of this.data.bookmarks) {
+        for (const item of this._data.bookmarks) {
             if (item.url === bookmark.url) {
                 return
             }
@@ -32,10 +32,10 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
             body: 'New Bookmark Added',
             silent: true,
         }).show()
-        this.data.bookmarks.unshift(bookmark)
+        this._data.bookmarks.unshift(bookmark)
     }
 
     remove(index: number) {
-        this.data.bookmarks.splice(index, 1)
+        this._data.bookmarks.splice(index, 1)
     }
 }

@@ -16,6 +16,7 @@ import {
     Menu as E_Menu,
     type Bookmark,
     type MenuBlock,
+    StatusProps,
 } from '@src/types'
 
 import History from '@main/modules/store/history'
@@ -275,20 +276,20 @@ export default class BrowserWindow extends ElectronBrowserWindow {
      * IPC
      */
     protected sendInfo() {
-        this.centre.webContents.send(
-            Channel.INFO,
-            RequestHandler.RESPONSE,
-            Shortcut.getInstance().get('shortcuts'),
-            Status.getInstance().get('helpText'),
-        )
+        this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
+            shortcuts: Shortcut.getInstance().get('shortcuts'),
+            ...Status.getInstance().data,
+        })
     }
 
-    private onInfo(handler: RequestHandler, data: Record<string, unknown>) {
-        if (
-            handler === RequestHandler.MODIFY &&
-            (data.helpText || data.helpText === false)
-        ) {
-            Status.getInstance().set('helpText', data.helpText)
+    private onInfo(handler: RequestHandler, data: Partial<StatusProps>) {
+        if (handler === RequestHandler.MODIFY) {
+            Status.getInstance().merge(data)
+            return
+        }
+
+        if (handler === RequestHandler.REQUEST) {
+            this.sendInfo()
         }
     }
 

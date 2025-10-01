@@ -1,11 +1,13 @@
-import { A_PageWithTable } from './abs_with_table'
+import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
+import Controller from '@home/modules/controller'
+
 import { Element } from '@home/modules/fragments'
-import Button from '@home/modules/fragments/button'
-import Label from '@home/modules/fragments/label'
-import Input from '@home/modules/fragments/input'
-import Form from '@home/modules/fragments/form'
+import { Button } from '@home/modules/fragments/button'
+import { Input } from '@home/modules/fragments/input'
+import { Form } from '@home/modules/fragments/form'
+import { ButtonGroup } from '@home/modules/fragments/button-group'
+import { Callout } from '@home/modules/fragments/callout'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import ButtonGroup from '@home/modules/fragments/button-group'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
@@ -17,8 +19,6 @@ import {
     TableAction,
     type Bookmark,
 } from '@src/types'
-import Callout from '../fragments/callout'
-import Controller from '../controller'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
     order: 'ASC' | 'DESC' = 'ASC'
@@ -27,9 +27,10 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     // Add Form
     private form: Form = new Form()
-    private inputTitle: Input = new Input()
-    private inputUrl: Input = new Input()
-    private inputShortcut: Input = new Input()
+
+    private inputTitle: Input
+    private inputUrl: Input
+    private inputShortcut: Input
 
     private shortcuts: Record<string, string> = {}
 
@@ -129,6 +130,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     cbInfoUpdated() {
         if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -221,36 +224,35 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     private renderModifyForm() {
-        const labelTitle = new Label({ title: 'Title' }, this.inputTitle)
+        this.inputTitle = new Input({ label: 'Title' })
+        this.inputUrl = new Input({ label: 'URL' })
+        this.inputShortcut = new Input({ maxLength: 1, label: 'Shortcut' })
 
-        const labelUrl = new Label({ title: 'URL' }, this.inputUrl)
-
-        this.inputShortcut.maxLength = 1
-        const labelShortcut = new Label(
-            { title: 'Shortcut' },
-            this.inputShortcut,
-        )
-
-        const buttonOk = new Button({}, 'OK (Enter)')
-        buttonOk.type = 'submit'
+        const buttonOk = new Button({ type: 'submit' }, 'OK (Enter)')
         const buttonCancel = new Button(
             {
                 onClick: () => {
                     this.changeMode(PageMode.LIST)
                 },
+                type: 'reset',
             },
             'Cancel (Esc)',
         )
-        buttonCancel.type = 'reset'
 
         const buttons = new ButtonGroup({}, buttonCancel, buttonOk)
 
-        this.form = new Form()
-        this.form.append(labelTitle, labelUrl, labelShortcut, buttons)
-        this.form.addEventListener('submit', (e) => {
-            e.preventDefault()
-            this.onEditSubmit()
-        })
+        this.form = new Form(
+            {
+                onSubmit: (e) => {
+                    e.preventDefault()
+                    this.onEditSubmit()
+                },
+            },
+            this.inputTitle,
+            this.inputUrl,
+            this.inputShortcut,
+            buttons,
+        )
     }
 
     filterCondition(item: Bookmark): boolean {
@@ -262,13 +264,27 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         )
     }
 
+    /**
+     * When Add/Edit form is submitted.
+     */
     private onEditSubmit() {
-        // TODO Validation
+        this.inputTitle.error = ''
+        this.inputUrl.error = ''
+
         if (!this.inputTitle.value) {
+            this.inputTitle.error = 'Title cannot be empty!'
             return
         }
 
         if (!this.inputUrl.value) {
+            this.inputUrl.error = 'URL cannot be empty!'
+            return
+        }
+
+        try {
+            new URL(this.inputUrl.value)
+        } catch {
+            this.inputUrl.error = 'The value is not URL!'
             return
         }
 
@@ -279,6 +295,15 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         }
 
         if (!this._cursor) {
+            // Validate duplication
+            const duplication = this.items.filter(
+                (item) => item.url === bookmark.url,
+            )
+            if (duplication.length) {
+                this.inputUrl.error = 'The URL is already registered!'
+                return
+            }
+
             ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
             this.items.unshift(bookmark)
         } else {

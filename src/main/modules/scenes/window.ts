@@ -33,7 +33,7 @@ import Logger from '../logger'
 /**
  * All starts with here
  */
-export default class BrowserWindow extends ElectronBrowserWindow {
+export class BrowserWindow extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
     protected current: Scenes = Scenes.BROWSER
@@ -141,12 +141,33 @@ export default class BrowserWindow extends ElectronBrowserWindow {
 
         // Save history
         if (this.browser.webContents) {
-            const history = new History()
-            history.write(
-                this.browser.webContents.navigationHistory.getActiveIndex(),
-                this.browser.webContents.navigationHistory.getAllEntries(),
-                status.getNumber('maxHistory'),
-            )
+            // Remove duplication
+            let prevUrl = ''
+            const entries = [
+                ...this.browser.webContents.navigationHistory.getAllEntries(),
+            ].filter((item) => {
+                if (item.url !== prevUrl) {
+                    prevUrl = item.url
+                    return true
+                }
+
+                return false
+            })
+
+            // Find current index
+            let index = 0
+            const indexed =
+                this.browser.webContents.navigationHistory.getAllEntries()[
+                    this.browser.webContents.navigationHistory.getActiveIndex()
+                ].url
+            for (let [i, item] of entries.entries()) {
+                if (item.url === indexed) {
+                    index = i
+                    break
+                }
+            }
+
+            new History().write(index, entries, status.getNumber('maxHistory'))
         }
 
         // Save Popup Blocker

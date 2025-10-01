@@ -1,8 +1,8 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import ButtonGroup from '@home/modules/fragments/button-group'
-import Button from '@home/modules/fragments/button'
+import { ButtonGroup } from '@home/modules/fragments/button-group'
+import { Button } from '@home/modules/fragments/button'
 import Heading from '@home/modules/fragments/heading'
 
 import { PageType } from '@src/types'

@@ -117,4 +117,8 @@ export class Element<T extends HTMLElement> {
             ),
         )
     }
+
+    public destroy() {
+        this.element.remove()
+    }
 }

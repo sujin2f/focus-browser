@@ -1,8 +1,8 @@
 import type { ElementProps } from '@src/types'
-import { Element } from '.'
-import type Button from './button'
+import { Element } from '@home/modules/fragments'
+import type { Button } from '@home/modules/fragments/button'
 
-export default class ButtonGroup extends Element<HTMLElement> {
+export class ButtonGroup extends Element<HTMLElement> {
     constructor(props: Partial<ElementProps> = {}, ...children: Button[]) {
         super('section', props)
         this.element.classList.add('flex', 'justify-between')

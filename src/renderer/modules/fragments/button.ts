@@ -1,20 +1,28 @@
-import { ElementProps } from '@src/types'
-import { Element } from '.'
+import type { ElementProps } from '@src/types'
+import { Element } from '@home/modules/fragments'
 
-export default class Button extends Element<HTMLButtonElement> {
-    public set type(type: 'submit' | 'reset' | 'button') {
+type ButtonTypes = 'submit' | 'reset' | 'button'
+type Props = {
+    type: ButtonTypes
+}
+export class Button extends Element<HTMLButtonElement> {
+    public set type(type: ButtonTypes) {
         this.element.type = type
     }
 
     constructor(
-        { className = [], hide, onClick }: Partial<ElementProps> = {},
+        {
+            className = [],
+            type = 'button',
+            ...props
+        }: Partial<ElementProps & Props> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
         super(
             'button',
             {
-                hide,
-                onClick,
+                hide: props.hide,
+                onClick: props.onClick,
                 className: [
                     'mb-3',
                     'p-2',
@@ -34,6 +42,7 @@ export default class Button extends Element<HTMLButtonElement> {
             },
             ...children,
         )
-        this.element.type = 'button'
+
+        this.element.type = type
     }
 }

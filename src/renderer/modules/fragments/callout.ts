@@ -1,10 +1,12 @@
-import { Channel, ElementProps, RequestHandler, TableAction } from '@src/types'
-import { Element } from '.'
-import Button from './button'
-import { ipcRenderer } from '@home/util'
-import Controller from '../controller'
+import { Element } from '@home/modules/fragments'
+import Controller from '@home/modules/controller'
 
-export default class Callout extends Element<HTMLDivElement> {
+import { Button } from '@home/modules/fragments/button'
+
+import { ipcRenderer } from '@home/util'
+import { Channel, ElementProps, RequestHandler, TableAction } from '@src/types'
+
+export class Callout extends Element<HTMLDivElement> {
     private button: Button
     private wrapper: Element<HTMLDivElement>
 

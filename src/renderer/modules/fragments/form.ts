@@ -1,8 +1,26 @@
+import { ElementProps } from '@src/types'
 import { Element } from '.'
 
-export default class Form extends Element<HTMLFormElement> {
-    public constructor() {
-        super('form')
-        this.element.classList.add('max-w-2xl', 'm-auto', 'p-3')
+type Props = {
+    onSubmit: (ev: HTMLElementEventMap['submit']) => any
+}
+
+export class Form extends Element<HTMLFormElement> {
+    public constructor(
+        { className = [], ...props }: Partial<ElementProps & Props> = {},
+        ...children: (string | Element<HTMLElement>)[]
+    ) {
+        super(
+            'form',
+            {
+                ...props,
+                className: [...className, 'max-w-2xl', 'm-auto', 'p-3'],
+            },
+            ...children,
+        )
+
+        if (props.onSubmit) {
+            this.addEventListener('submit', props.onSubmit)
+        }
     }
 }

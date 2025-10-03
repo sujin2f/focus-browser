@@ -1,6 +1,6 @@
 import { type Rectangle } from 'electron'
 import Store from './store'
-import { StatusProps } from '@src/types'
+import type { Info, StatusProps } from '@src/types'
 
 export default class Status extends Store<StatusProps> {
     static instance: Status
@@ -14,6 +14,7 @@ export default class Status extends Store<StatusProps> {
                 maxHistory: 200,
                 welcome: true,
                 helpText: true,
+                adBlocker: true,
             })
             Status.instance.parse()
         }
@@ -43,7 +44,7 @@ export default class Status extends Store<StatusProps> {
         return bounds as Rectangle
     }
 
-    public merge(value: Partial<StatusProps>) {
+    public merge(value: Info) {
         const { shortcuts, ...newValue } = value
         this._data = {
             ...this._data,

@@ -1,5 +1,8 @@
 import type { MenuItemConstructorOptions } from 'electron'
 
+/**
+ * stores in status.json
+ */
 export type StatusProps = {
     width: number
     height: number
@@ -8,8 +11,17 @@ export type StatusProps = {
     maxHistory: number
     welcome: boolean
     helpText: boolean
-    shortcuts?: Shortcuts
+    adBlocker: boolean
 }
+
+/**
+ * for IPC comm.
+ */
+export type Info = Partial<
+    StatusProps & {
+        shortcuts: Shortcuts
+    }
+>
 
 export type Bookmark = {
     url: string

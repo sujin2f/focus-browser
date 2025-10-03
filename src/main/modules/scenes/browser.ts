@@ -1,14 +1,15 @@
 import {
     WebContentsView,
-    Notification,
     type WebContentsViewConstructorOptions,
 } from 'electron'
+import { ElectronBlocker } from '@main/modules/adblocker-electron'
+import fetch from 'cross-fetch' // required 'fetch'
 
 import { Bookmark } from '@src/types'
 import Logger from '@main/modules/logger'
 
 import History from '@main/modules/store/history'
-import PopupBlocker from '@main/modules/store/popup'
+import Status from '@main/modules/store/status'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -16,6 +17,11 @@ export class BrowserView extends WebContentsView {
             title: this.webContents.getTitle(),
             url: this.webContents.getURL(),
         }
+    }
+
+    private _blocker: ElectronBlocker
+    public get blocker() {
+        return this._blocker
     }
 
     /**
@@ -79,19 +85,18 @@ export class BrowserView extends WebContentsView {
         return ''
     }
 
-    private setAdBlocker() {
-        import('@ghostery/adblocker-webextension').then((extension) => {
-            extension.WebExtensionBlocker.fromPrebuiltAdsAndTracking()
-                .then((blocker) => {
-                    blocker.enableBlockingInBrowser(this)
-                })
-                .catch((e) => {
-                    Logger.getInstance().info(
-                        'Importing @ghostery/adblocker-webextension has been failed:',
-                        e,
-                    )
-                    return
-                })
-        })
+    private async setAdBlocker() {
+        if (!Status.getInstance().get('adBlocker')) {
+            return
+        }
+
+        ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+            .then((blocker) => {
+                this._blocker = blocker
+                this._blocker.enableBlockingInSession(this.webContents.session)
+            })
+            .catch((e: any) => {
+                Logger.getInstance().error(e)
+            })
     }
 }

@@ -2,9 +2,8 @@ import {
     Channel,
     PageType,
     RequestHandler,
-    Scenes,
-    StatusProps,
     TableAction,
+    type Info,
 } from '@src/types'
 import { checkElectron, ipcRenderer } from '@home/util'
 
@@ -27,7 +26,7 @@ export default class Controller {
         return Controller.instance
     }
 
-    public setting: StatusProps
+    public setting: Info
     private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
@@ -50,7 +49,7 @@ export default class Controller {
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
         ipcRenderer.once(
             Channel.INFO,
-            (handler: RequestHandler, setting: StatusProps) => {
+            (handler: RequestHandler, setting: Info) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }

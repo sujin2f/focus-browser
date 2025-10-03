@@ -1,4 +1,3 @@
-import { Notification } from 'electron'
 import { Bookmark } from '@src/types'
 import Store from './store'
 

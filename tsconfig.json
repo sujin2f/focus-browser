@@ -7,12 +7,11 @@
         "noImplicitAny": true,
         "sourceMap": true,
         "outDir": "./release/app/dist",
-        "baseUrl": "./src",
         "paths": {
-            "@src/*": ["./*"],
-            "@main/*": ["./main/*"],
-            "@controllers/*": ["./main/controllers/*"],
-            "@home/*": ["./renderer/*"]
+            "@src/*": ["./src/*"],
+            "@main/*": ["./src/main/*"],
+            "@controllers/*": ["./src/main/controllers/*"],
+            "@home/*": ["./src/renderer/*"]
         },
         "isolatedModules": true
     },

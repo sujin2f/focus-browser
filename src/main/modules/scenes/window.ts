@@ -19,7 +19,7 @@ import {
     type Scenes,
     type Bookmark,
     type MenuBlock,
-    type StatusProps,
+    type Info,
 } from '@src/types'
 
 import History from '@main/modules/store/history'
@@ -345,7 +345,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
         })
     }
 
-    private onInfo(handler: RequestHandler, data: Partial<StatusProps>) {
+    private onInfo(handler: RequestHandler, data: Partial<Info>) {
         if (handler === RequestHandler.MODIFY) {
             Status.getInstance().merge(data)
             return

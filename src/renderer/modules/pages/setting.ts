@@ -53,8 +53,20 @@ export class Setting extends A_Page {
             label: 'Maximum History',
         })
 
+        const adBlocker = new Input({
+            type: 'checkbox',
+            checked: Controller.getInstance().setting.adBlocker,
+            onChange: () => {
+                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    adBlocker: adBlocker.checked,
+                })
+                Controller.getInstance().setting.adBlocker = adBlocker.checked
+            },
+            label: 'Use Ad-Blocker',
+        })
+
         this.root.append(wrapper.element)
-        wrapper.append(title, helpText, maxHistory)
+        wrapper.append(title, helpText, maxHistory, adBlocker)
     }
 
     cbInfoUpdated() {

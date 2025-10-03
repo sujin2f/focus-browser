@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "A lightweight browser without tabs, built with Electron.",
     "license": "MIT",
     "scripts": {
@@ -18,6 +18,13 @@
         "test": "jest --no-cache --forceExit --coverage"
     },
     "author": "Sujin Choi",
+    "dependencies": {
+        "@ghostery/adblocker-electron": "^2.11.6",
+        "@ghostery/adblocker-webextension": "^2.11.6",
+        "cross-fetch": "^4.1.0",
+        "electron": "^38.2.0",
+        "electron-log": "^5.4.3"
+    },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",
         "@tailwindcss/postcss": "^4.1.12",
@@ -30,7 +37,6 @@
         "cross-env": "^10.0.0",
         "css-loader": "^7.1.2",
         "electron-builder": "^26.0.12",
-        "electron-debug": "^4.1.0",
         "electronmon": "^2.0.3",
         "eslint": "^9.34.0",
         "html-loader": "^5.1.0",
@@ -103,10 +109,5 @@
             "app": "release/app",
             "output": "release/build"
         }
-    },
-    "dependencies": {
-        "@ghostery/adblocker-webextension": "^2.11.6",
-        "electron": "^37.4.0",
-        "electron-log": "^5.4.3"
     }
 }

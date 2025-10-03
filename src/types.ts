@@ -1,4 +1,27 @@
-import type { Menu as ElectronMenu, MenuItemConstructorOptions } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
+
+/**
+ * stores in status.json
+ */
+export type StatusProps = {
+    width: number
+    height: number
+    x: number
+    y: number
+    maxHistory: number
+    welcome: boolean
+    helpText: boolean
+    adBlocker: boolean
+}
+
+/**
+ * for IPC comm.
+ */
+export type Info = Partial<
+    StatusProps & {
+        shortcuts: Shortcuts
+    }
+>
 
 export type Bookmark = {
     url: string
@@ -11,12 +34,25 @@ export type PopupBlocker = {
     allowed?: boolean
 }
 
-export enum Scenes {
-    BROWSER,
-    HOME,
-    ADDRESS, // home with address bar focused
+/**
+ * Control centre pages
+ */
+export enum PageType {
     WELCOME,
+    HOME,
+    ADDRESS,
+    BOOKMARK,
+    HISTORY,
+    ANCHOR,
+    POPUP_BLOCKER,
+    SETTING,
 }
+
+export enum SceneBrowser {
+    BROWSER,
+}
+
+export type Scenes = PageType | SceneBrowser
 
 export enum Channel {
     INFO = 'INFO',
@@ -34,16 +70,6 @@ export enum RequestHandler {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
-}
-
-export enum PageType {
-    WELCOME,
-    HOME,
-    ADDRESS,
-    BOOKMARK,
-    HISTORY,
-    ANCHOR,
-    POPUP_BLOCKER,
 }
 
 export enum PageMode {

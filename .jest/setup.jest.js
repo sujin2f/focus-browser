@@ -8,8 +8,10 @@
 // const observe = jest.fn()
 // const unobserve = jest.fn()
 // const disconnect = jest.fn()
-// global.window.IntersectionObserver = jest.fn(() => ({
-//     observe,
-//     unobserve,
-//     disconnect,
-// }))
+global.window.electron = {
+    ipcRenderer: {
+        on: jest.fn(),
+        sendMessage: jest.fn(),
+        once: jest.fn(),
+    },
+}

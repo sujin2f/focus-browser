@@ -1,22 +1,25 @@
-import { PageType, TableAction } from '@src/types'
-import Controller from '@home/modules/controller'
-import Input from '@home/modules/fragments/input'
-import Card from '@home/modules/fragments/card'
-import Label from '@home/modules/fragments/label'
-import { isMac, navigate, shortcutToHtml } from '@home/util'
-import A_Page from '.'
-import CardContainer from '../fragments/card-container'
-import Callout from '../fragments/callout'
-import Heading from '../fragments/heading'
-import { Element } from '../fragments'
+import { A_Page } from '@home/modules/pages/abs_page'
 
-type Button = {
+import { Element } from '@home/modules/fragments'
+import Controller from '@home/modules/controller'
+import { Input } from '@home/modules/fragments/input'
+import Card from '@home/modules/fragments/card'
+import CardContainer from '@home/modules/fragments/card-container'
+import { Callout } from '@home/modules/fragments/callout'
+
+import { isMac, navigate, shortcutToHtml } from '@home/util'
+import { PageType } from '@src/types'
+
+/**
+ * For creating cards
+ */
+type T_Card = {
     title: string
     description: string
     destination: PageType
 }
 
-const buttons: Record<string, Button> = {
+const buttons: Record<string, T_Card> = {
     bookmarks: {
         title: 'Bookmark (B)',
         description: 'Manage bookmarks',
@@ -38,6 +41,11 @@ const buttons: Record<string, Button> = {
         description: 'Manage Popup Blocker',
         destination: PageType.POPUP_BLOCKER,
     },
+    setting: {
+        title: 'Setting',
+        description: '',
+        destination: PageType.SETTING,
+    },
     welcome: {
         title: 'Visit Welcome Page',
         description: 'Double check the basic features of Focus',
@@ -45,29 +53,37 @@ const buttons: Record<string, Button> = {
     },
 }
 
-export default class Home extends A_Page<null> {
+/**
+ * The HTML layout is :
+ * - <location />
+ * - <help-text />
+ * - <cards />
+ */
+export class Home extends A_Page {
     public page = PageType.HOME
-
-    protected search: Input = new Input()
+    protected search: Input
+    private location: Element<HTMLElement> = new Element('section')
+    private helpText: Element<HTMLElement> = new Element('section')
+    private cards: Element<HTMLElement> = new Element('section')
 
     constructor() {
         super()
-        this.init()
+        this.root.innerHTML = ''
+        this.root.append(
+            this.location.element,
+            this.helpText.element,
+            this.cards.element,
+        )
+        this.render()
     }
 
     render(): void {
-        this.root.innerHTML = ''
-
         // Location Bar
         const command = isMac() ? '⌘' : 'Ctrl+'
-        const label = new Label(
-            {},
-            `Enter search keyword or address (${command}L)`,
-            this.search,
-        )
-        this.root.appendChild(label.element)
-
-        this.renderCallout()
+        this.search = new Input({
+            label: `Enter search keyword or address (${command}L)`,
+        })
+        this.location.append(this.search)
 
         // Cards
         const cardContainer = new CardContainer()
@@ -83,11 +99,13 @@ export default class Home extends A_Page<null> {
 
             cardContainer.append(card)
         })
-        this.root.appendChild(cardContainer.element)
+        this.cards.append(cardContainer)
     }
 
-    private renderCallout() {
-        if (!Controller.getInstance().helpText) {
+    cbInfoUpdated() {
+        if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -115,7 +133,7 @@ export default class Home extends A_Page<null> {
                 ' to navigate back and forward.',
             ),
         )
-        this.root.appendChild(callout.element)
+        this.helpText.append(callout)
     }
 
     doShortcut(e: KeyboardEvent): boolean {

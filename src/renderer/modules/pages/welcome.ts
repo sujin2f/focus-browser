@@ -1,22 +1,23 @@
-import { PageType, TableAction } from '@src/types'
-import A_Page from '.'
-import { isMac, navigate } from '@home/util'
-import ButtonGroup from '@home/modules/fragments/button-group'
-import Button from '@home/modules/fragments/button'
-import Heading from '@home/modules/fragments/heading'
-import { Element } from '@home/modules/fragments'
+import { A_Page } from '@home/modules/pages/abs_page'
 
-export default class Welcome extends A_Page<null> {
+import { Element } from '@home/modules/fragments'
+import { ButtonGroup } from '@home/modules/fragments/button-group'
+import { Button } from '@home/modules/fragments/button'
+import Heading from '@home/modules/fragments/heading'
+
+import { PageType } from '@src/types'
+import { isMac, navigate } from '@home/util'
+
+export class Welcome extends A_Page {
     public readonly page = PageType.WELCOME
 
     constructor() {
         super()
-        this.init()
+        this.root.innerHTML = ''
+        this.render()
     }
 
     render() {
-        this.root.innerHTML = ''
-
         // H1
         const heading = new Heading(
             1,
@@ -89,5 +90,9 @@ export default class Welcome extends A_Page<null> {
             buttons,
         )
         this.root.appendChild(container.element)
+    }
+
+    cbInfoUpdated(): void {
+        return
     }
 }

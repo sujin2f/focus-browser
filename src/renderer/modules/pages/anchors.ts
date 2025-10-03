@@ -1,27 +1,34 @@
+import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
+import Controller from '@home/modules/controller'
+
+import { Element } from '@home/modules/fragments'
+import { Button } from '@home/modules/fragments/button'
+import { Callout } from '@home/modules/fragments/callout'
+
+import type { DataListType } from '@home/modules/fragments/data-list'
+import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 import {
-    type Bookmark,
     Channel,
     PageMode,
     PageType,
     RequestHandler,
     TableAction,
+    type Bookmark,
 } from '@src/types'
 
-import { A_PageWithTable } from '.'
-import { Element } from '@home/modules/fragments'
-import Button from '@home/modules/fragments/button'
-import type { DataListType } from '@home/modules/fragments/data-list'
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
-import Heading from '../fragments/heading'
-import Callout from '../fragments/callout'
-import Controller from '../controller'
+export class Anchors extends A_PageWithTable<Bookmark> {
+    public order: 'ASC' | 'DESC' = 'DESC'
 
-export default class Anchors extends A_PageWithTable<Bookmark> {
     readonly page = PageType.ANCHOR
 
     constructor() {
         super()
         this.init()
+    }
+
+    protected init() {
+        super.init()
+        this.title.innerHTML = 'Anchor'
     }
 
     request(): void {
@@ -38,27 +45,10 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
         )
     }
 
-    render() {
-        this.root.innerHTML = ''
-
-        this.renderButtons()
-        this.renderFindForm()
-        this.renderTable()
-        this.hideForms()
-
-        // H1
-        const heading = new Heading(1, {}, 'Anchor')
-        this.root.appendChild(heading.element)
-
-        this.renderCallout()
-
-        this.root.appendChild(this.buttons.element)
-        this.root.appendChild(this.formFind.element)
-        this.root.appendChild(this.table.element)
-    }
-
-    private renderCallout() {
-        if (!Controller.getInstance().helpText) {
+    cbInfoUpdated(): void {
+        if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -77,7 +67,7 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
                 'Anchor is a temporary bookmark that is automatically deleted once you visited.',
             ),
         )
-        this.root.appendChild(callout.element)
+        this.helpText.append(callout)
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -94,7 +84,6 @@ export default class Anchors extends A_PageWithTable<Bookmark> {
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
         bookmark: Bookmark,
-        index: number,
     ): Element<HTMLTableCellElement>[] {
         const title = this.table.createTd(
             {

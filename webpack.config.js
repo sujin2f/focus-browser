@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 const commonConfig = {
     mode: process.env.NODE_ENV || 'development',
+    devtool: 'source-map',
     output: {
         clean: true, // Clean the output directory before emit.
         library: { type: 'commonjs2' },
@@ -76,15 +77,13 @@ const mainConfig = {
     entry: {
         'main/index': './src/main/index.ts',
         preload: './src/preload.ts',
+        'adblocker-preload':
+            './node_modules/@ghostery/adblocker-electron-preload/dist/index.cjs',
     },
-
     output: {
         path: path.resolve(__dirname, 'release', 'app', 'dist'),
         filename: '[name].js',
-    },
-    node: {
-        __dirname: false,
-        __filename: false,
+        chunkFilename: '[name].chunk.js',
     },
 }
 

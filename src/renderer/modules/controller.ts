@@ -2,20 +2,20 @@ import {
     Channel,
     PageType,
     RequestHandler,
-    Scenes,
     TableAction,
-    type Shortcuts,
+    type Info,
 } from '@src/types'
 import { checkElectron, ipcRenderer } from '@home/util'
 
-import A_Page from '@home/modules/pages'
-import Home from '@home/modules/pages/home'
-import Bookmarks from '@home/modules/pages/bookmarks'
-import History from '@home/modules/pages/history'
-import Anchors from '@home/modules/pages/anchors'
-import PopupBlocker from '@home/modules/pages/popup'
-import Welcome from '@home/modules/pages/welcome'
-import Address from './pages/address'
+import { A_Page } from '@src/renderer/modules/pages/abs_page'
+import { Home } from '@home/modules/pages/home'
+import { Bookmarks } from '@home/modules/pages/bookmarks'
+import { History } from '@home/modules/pages/history'
+import { Anchors } from '@home/modules/pages/anchors'
+import { PopupBlocker } from '@home/modules/pages/popup'
+import { Welcome } from '@home/modules/pages/welcome'
+import { Address } from '@home/modules/pages/address'
+import { Setting } from '@home/modules/pages/setting'
 
 export default class Controller {
     static instance: Controller
@@ -26,9 +26,8 @@ export default class Controller {
         return Controller.instance
     }
 
-    public helpText: boolean = false
-    public shortcut?: Shortcuts
-    private _currentPage: A_Page<any>
+    public setting: Info
+    private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
     }
@@ -50,34 +49,17 @@ export default class Controller {
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
         ipcRenderer.once(
             Channel.INFO,
-            (
-                handler: RequestHandler,
-                shortcut: Shortcuts,
-                helpText: boolean,
-            ) => {
+            (handler: RequestHandler, setting: Info) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
-                this.shortcut = shortcut
-                this.helpText = helpText
+                this.setting = setting
 
                 this._currentPage.action(TableAction.INFO)
             },
         )
-        ipcRenderer.on(Channel.SWITCH, (scene: Scenes) => {
-            switch (scene) {
-                case Scenes.HOME:
-                    this.switch(PageType.HOME)
-                    break
-
-                case Scenes.ADDRESS:
-                    this.switch(PageType.ADDRESS)
-                    break
-
-                case Scenes.WELCOME:
-                    this.switch(PageType.WELCOME)
-                    break
-            }
+        ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
+            this.switch(scene)
         })
     }
 
@@ -108,9 +90,16 @@ export default class Controller {
             case PageType.WELCOME:
                 this._currentPage = new Welcome()
                 break
+            case PageType.SETTING:
+                this._currentPage = new Setting()
+
+                if (this.setting) {
+                    this._currentPage.action(TableAction.INFO)
+                }
+                break
         }
 
-        if (this.shortcut) {
+        if (this.setting) {
             this._currentPage.action(TableAction.INFO)
         }
     }

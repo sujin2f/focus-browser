@@ -1,4 +1,3 @@
-import { Notification } from 'electron'
 import { Bookmark } from '@src/types'
 import Store from './store'
 
@@ -15,28 +14,24 @@ export default class Anchors extends Store<Props> {
     }
 
     get() {
-        return this.data.anchors
+        return this._data.anchors
     }
 
     push(anchor: Bookmark) {
-        for (const item of this.data.anchors) {
+        for (const item of this._data.anchors) {
             if (item.url === anchor.url) {
-                return
+                return false
             }
         }
 
-        new Notification({
-            title: 'Focus',
-            body: 'New Anchor Added',
-            silent: true,
-        }).show()
-        this.data.anchors.unshift(anchor)
+        this._data.anchors.unshift(anchor)
+        return true
     }
 
     remove(url: string) {
-        for (let [index, item] of this.data.anchors.entries()) {
+        for (let [index, item] of this._data.anchors.entries()) {
             if (item.url === url) {
-                this.data.anchors.splice(index, 1)
+                this._data.anchors.splice(index, 1)
                 return
             }
         }

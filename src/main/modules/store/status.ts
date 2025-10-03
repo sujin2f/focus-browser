@@ -1,17 +1,8 @@
 import { type Rectangle } from 'electron'
 import Store from './store'
+import type { Info, StatusProps } from '@src/types'
 
-type Props = {
-    width: number
-    height: number
-    x: number
-    y: number
-    maxHistory: number
-    welcome: boolean
-    helpText: boolean
-}
-
-export default class Status extends Store<Props> {
+export default class Status extends Store<StatusProps> {
     static instance: Status
     static getInstance(): Status {
         if (!Status.instance) {
@@ -23,6 +14,7 @@ export default class Status extends Store<Props> {
                 maxHistory: 200,
                 welcome: true,
                 helpText: true,
+                adBlocker: true,
             })
             Status.instance.parse()
         }
@@ -40,15 +32,23 @@ export default class Status extends Store<Props> {
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
         const bounds = {
             ...current,
-            width: this.data.width,
-            height: this.data.height,
+            width: this._data.width,
+            height: this._data.height,
         }
-        if (!isNaN(this.data.x)) {
-            bounds.x = this.data.x
+        if (!isNaN(this._data.x)) {
+            bounds.x = this._data.x
         }
-        if (!isNaN(this.data.y)) {
-            bounds.y = this.data.y
+        if (!isNaN(this._data.y)) {
+            bounds.y = this._data.y
         }
         return bounds as Rectangle
+    }
+
+    public merge(value: Info) {
+        const { shortcuts, ...newValue } = value
+        this._data = {
+            ...this._data,
+            ...newValue,
+        }
     }
 }

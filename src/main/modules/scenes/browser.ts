@@ -1,14 +1,15 @@
 import {
     WebContentsView,
-    Notification,
     type WebContentsViewConstructorOptions,
 } from 'electron'
+import { ElectronBlocker } from '@main/modules/adblocker-electron'
+import fetch from 'cross-fetch' // required 'fetch'
 
 import { Bookmark } from '@src/types'
 import Logger from '@main/modules/logger'
 
 import History from '@main/modules/store/history'
-import PopupBlocker from '@main/modules/store/popup'
+import Status from '@main/modules/store/status'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -16,6 +17,11 @@ export class BrowserView extends WebContentsView {
             title: this.webContents.getTitle(),
             url: this.webContents.getURL(),
         }
+    }
+
+    private _blocker: ElectronBlocker
+    public get blocker() {
+        return this._blocker
     }
 
     /**
@@ -45,11 +51,12 @@ export class BrowserView extends WebContentsView {
         // If the schema is missing, prepend 'http://' to allow the URL constructor
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
         try {
-            if (!hasSchema) {
-                _url = new URL(`http://${_url}`).toString()
-            }
+            _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
 
-            this.webContents.loadURL(_url)
+            this.webContents.loadURL(_url).catch(() => {
+                _url = `https://duckduckgo.com/?q=${url}`
+                this.webContents.loadURL(_url)
+            })
         } catch {
             // When the navigation failed, search DuckDuckGo
             // TODO search engine option
@@ -78,36 +85,18 @@ export class BrowserView extends WebContentsView {
         return ''
     }
 
-    private setAdBlocker() {
-        import('@ghostery/adblocker-webextension').then((extension) => {
-            extension.WebExtensionBlocker.fromPrebuiltAdsAndTracking()
-                .then((blocker) => {
-                    blocker.enableBlockingInBrowser(this)
-                })
-                .catch((e) => {
-                    Logger.getInstance().info(
-                        'Importing @ghostery/adblocker-webextension has been failed:',
-                        e,
-                    )
-                    return
-                })
-        })
+    private async setAdBlocker() {
+        if (!Status.getInstance().get('adBlocker')) {
+            return
+        }
 
-        // Popup Blocker
-        this.webContents.setWindowOpenHandler((data) => {
-            const url = new URL(data.url)
-            if (PopupBlocker.getInstance().isAllowed(url.host)) {
-                this.loadURL(data.url)
-                return { action: 'deny' }
-            }
-
-            PopupBlocker.getInstance().block(url.host)
-            new Notification({
-                title: 'Focus',
-                body: `Popup blocked from ${url.host}`,
-                silent: true,
-            }).show()
-            return { action: 'deny' }
-        })
+        ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+            .then((blocker) => {
+                this._blocker = blocker
+                this._blocker.enableBlockingInSession(this.webContents.session)
+            })
+            .catch((e: any) => {
+                Logger.getInstance().error(e)
+            })
     }
 }

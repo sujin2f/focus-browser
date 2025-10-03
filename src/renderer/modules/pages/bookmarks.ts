@@ -1,12 +1,13 @@
-import { A_PageWithTable } from '.'
+import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
+import Controller from '@home/modules/controller'
+
 import { Element } from '@home/modules/fragments'
-import Button from '@home/modules/fragments/button'
-import Label from '@home/modules/fragments/label'
-import Input from '@home/modules/fragments/input'
-import Form from '@home/modules/fragments/form'
+import { Button } from '@home/modules/fragments/button'
+import { Input } from '@home/modules/fragments/input'
+import { Form } from '@home/modules/fragments/form'
+import { ButtonGroup } from '@home/modules/fragments/button-group'
+import { Callout } from '@home/modules/fragments/callout'
 import type { DataListType } from '@home/modules/fragments/data-list'
-import ButtonGroup from '@home/modules/fragments/button-group'
-import Heading from '@home/modules/fragments/heading'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
@@ -18,17 +19,18 @@ import {
     TableAction,
     type Bookmark,
 } from '@src/types'
-import Callout from '../fragments/callout'
-import Controller from '../controller'
 
-export default class Bookmarks extends A_PageWithTable<Bookmark> {
+export class Bookmarks extends A_PageWithTable<Bookmark> {
+    order: 'ASC' | 'DESC' = 'ASC'
+
     readonly page = PageType.BOOKMARK
 
     // Add Form
     private form: Form = new Form()
-    private inputTitle: Input = new Input()
-    private inputUrl: Input = new Input()
-    private inputShortcut: Input = new Input()
+
+    private inputTitle: Input
+    private inputUrl: Input
+    private inputShortcut: Input
 
     private shortcuts: Record<string, string> = {}
 
@@ -40,6 +42,37 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     constructor() {
         super()
         this.init()
+    }
+
+    protected init() {
+        super.init()
+        this.title.innerHTML = 'Bookmark'
+
+        const buttonAdd: Button = new Button({
+            onClick: this.onSwitchAdd.bind(this),
+        })
+
+        if (isMac()) {
+            buttonAdd.append('Add Bookmark (⌘D)')
+        } else {
+            buttonAdd.append('Add Bookmark (Ctrl+D)')
+        }
+
+        this.buttonGroup.prepend(buttonAdd)
+
+        this.renderModifyForm()
+
+        this.inputFindKeyword.addEventListener('input', () => {
+            const shortcut =
+                this.shortcuts[this.inputFindKeyword.value.toLowerCase()]
+            if (shortcut) {
+                navigate(shortcut)
+                return true
+            }
+        })
+
+        this.forms.append(this.form)
+        this.hideForms()
     }
 
     protected hideForms() {
@@ -105,27 +138,10 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         )
     }
 
-    render() {
-        this.root.innerHTML = ''
-
-        this.renderButtons()
-        this.renderModifyForm()
-        this.renderFindForm()
-        this.renderTable()
-        this.hideForms()
-
-        const heading = new Heading(1, {}, 'Bookmark')
-
-        this.root.appendChild(heading.element)
-        this.renderCallout()
-        this.root.appendChild(this.buttons.element)
-        this.root.appendChild(this.form.element)
-        this.root.appendChild(this.formFind.element)
-        this.root.appendChild(this.table.element)
-    }
-
-    private renderCallout() {
-        if (!Controller.getInstance().helpText) {
+    cbInfoUpdated() {
+        if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -154,22 +170,7 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
                 ...shortcutToHtml('A'),
             ),
         )
-        this.root.appendChild(callout.element)
-    }
-
-    protected renderButtons() {
-        this.buttons.innerHTML = ''
-        const buttonAdd: Button = new Button({
-            onClick: this.onSwitchAdd.bind(this),
-        })
-
-        if (isMac()) {
-            buttonAdd.append('Add Bookmark (⌘D)')
-        } else {
-            buttonAdd.append('Add Bookmark (Ctrl+D)')
-        }
-
-        this.buttons.append(buttonAdd, this.buttonFind)
+        this.helpText.append(callout)
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -233,36 +234,35 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     private renderModifyForm() {
-        const labelTitle = new Label({}, this.inputTitle)
-        labelTitle.title = 'Title'
+        this.inputTitle = new Input({ label: 'Title' })
+        this.inputUrl = new Input({ label: 'URL' })
+        this.inputShortcut = new Input({ maxLength: 2, label: 'Shortcut' })
 
-        const labelUrl = new Label({}, this.inputUrl)
-        labelUrl.title = 'URL'
-
-        this.inputShortcut.maxLength = 1
-        const labelShortcut = new Label({}, this.inputShortcut)
-        labelShortcut.title = 'Shortcut'
-
-        const buttonOk = new Button({}, 'OK (Enter)')
-        buttonOk.type = 'submit'
+        const buttonOk = new Button({ type: 'submit' }, 'OK (Enter)')
         const buttonCancel = new Button(
             {
                 onClick: () => {
                     this.changeMode(PageMode.LIST)
                 },
+                type: 'reset',
             },
             'Cancel (Esc)',
         )
-        buttonCancel.type = 'reset'
 
         const buttons = new ButtonGroup({}, buttonCancel, buttonOk)
 
-        this.form = new Form()
-        this.form.append(labelTitle, labelUrl, labelShortcut, buttons)
-        this.form.addEventListener('submit', (e) => {
-            e.preventDefault()
-            this.onEditSubmit()
-        })
+        this.form = new Form(
+            {
+                onSubmit: (e) => {
+                    e.preventDefault()
+                    this.onEditSubmit()
+                },
+            },
+            this.inputTitle,
+            this.inputUrl,
+            this.inputShortcut,
+            buttons,
+        )
     }
 
     filterCondition(item: Bookmark): boolean {
@@ -274,23 +274,46 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
         )
     }
 
+    /**
+     * When Add/Edit form is submitted.
+     */
     private onEditSubmit() {
-        // TODO Validation
+        this.inputTitle.error = ''
+        this.inputUrl.error = ''
+
         if (!this.inputTitle.value) {
+            this.inputTitle.error = 'Title cannot be empty!'
             return
         }
 
         if (!this.inputUrl.value) {
+            this.inputUrl.error = 'URL cannot be empty!'
+            return
+        }
+
+        try {
+            new URL(this.inputUrl.value)
+        } catch {
+            this.inputUrl.error = 'The value is not URL!'
             return
         }
 
         const bookmark = {
             title: this.inputTitle.value,
             url: this.inputUrl.value,
-            shortcut: this.inputShortcut.value,
+            shortcut: this.inputShortcut.value.toLowerCase(),
         }
 
         if (!this._cursor) {
+            // Validate duplication
+            const duplication = this.items.filter(
+                (item) => item.url === bookmark.url,
+            )
+            if (duplication.length) {
+                this.inputUrl.error = 'The URL is already registered!'
+                return
+            }
+
             ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
             this.items.unshift(bookmark)
         } else {
@@ -345,20 +368,34 @@ export default class Bookmarks extends A_PageWithTable<Bookmark> {
             }
         }
 
-        // Bookmark Shortcut
-        if (document.activeElement.tagName.toLowerCase() !== 'input') {
-            const shortcut = this.shortcuts[e.key.toLowerCase()]
-            if (shortcut) {
-                navigate(shortcut)
-                return true
-            }
+        if (super.doShortcut(e)) {
+            return
         }
 
-        super.doShortcut(e)
+        if (
+            document.activeElement.tagName.toLowerCase() !== 'input' &&
+            e.key.length === 1
+        ) {
+            this.changeMode(PageMode.FIND)
+        }
     }
 
     private onSwitchAdd() {
         this.changeMode(PageMode.LIST)
         this.changeMode(PageMode.NEW)
+    }
+
+    protected arrowUp() {
+        if (this._mode === PageMode.NEW || this._mode === PageMode.EDIT) {
+            return
+        }
+        super.arrowUp()
+    }
+
+    protected arrowDown() {
+        if (this._mode === PageMode.NEW || this._mode === PageMode.EDIT) {
+            return
+        }
+        super.arrowDown()
     }
 }

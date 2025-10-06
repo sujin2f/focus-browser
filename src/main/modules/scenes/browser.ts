@@ -1,4 +1,7 @@
 import {
+    clipboard,
+    Menu,
+    nativeImage,
     WebContentsView,
     type WebContentsViewConstructorOptions,
 } from 'electron'
@@ -35,6 +38,37 @@ export class BrowserView extends WebContentsView {
         this.setAdBlocker()
         const url = this.restoreHistory() || this.DEFAULT_URL
         this.loadURL(url)
+
+        // Enable pinch zoom
+        this.webContents.setVisualZoomLevelLimits(1, 3)
+
+        // Context Menu
+        this.webContents.on('context-menu', async (_event, params) => {
+            // only show the context menu if the element is editable
+            if (params.hasImageContents) {
+                const menu = Menu.buildFromTemplate([
+                    {
+                        label: 'Copy Image',
+                        click: () => this.copyImageToClipboard(params.srcURL),
+                    },
+                    {
+                        label: 'Copy Image Address',
+                        click: () => clipboard.writeText(params.srcURL),
+                    },
+                ])
+                menu.popup()
+            }
+
+            if (params.linkURL) {
+                const menu = Menu.buildFromTemplate([
+                    {
+                        label: 'Copy Link URL',
+                        click: () => clipboard.writeText(params.linkURL),
+                    },
+                ])
+                menu.popup()
+            }
+        })
     }
 
     /**
@@ -136,5 +170,18 @@ export class BrowserView extends WebContentsView {
             .catch((e: any) => {
                 Logger.getInstance().error('Ad-Blocker is failed to load: ', e)
             })
+    }
+
+    private async copyImageToClipboard(imageUrl: string) {
+        try {
+            await fetch(imageUrl).then(async (response) => {
+                const blob = await (await response.blob()).arrayBuffer()
+                const buffer = Buffer.from(blob)
+                const image = nativeImage.createFromBuffer(buffer)
+                clipboard.writeImage(image)
+            })
+        } catch (error) {
+            console.error('Error fetching or processing image:', error)
+        }
     }
 }

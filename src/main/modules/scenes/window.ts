@@ -71,8 +71,6 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 partition: 'persist:my-partition',
             },
         })
-        // Enable pinch zoom
-        this.browser.webContents.setVisualZoomLevelLimits(1, 3)
         // #20 Web Title to App Title
         this.browser.webContents.on('page-title-updated', (e, title) => {
             this.title = title
@@ -133,7 +131,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
         this.browser.webContents.setWindowOpenHandler((data) => {
             const url = new URL(data.url)
             if (PopupBlocker.getInstance().isAllowed(url.host)) {
-                this.loadURL(data.url)
+                this.browser.loadURL(url.toString())
                 return { action: 'deny' }
             }
 

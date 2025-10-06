@@ -443,6 +443,11 @@ export class BrowserWindow extends ElectronBrowserWindow {
             case RequestHandler.REQUEST:
                 const blocked = Popup.getInstance().get('blocked')
                 const allowed = Popup.getInstance().get('allowed')
+                Logger.getInstance().log(
+                    'Popup blocker request: ',
+                    blocked,
+                    allowed,
+                )
                 this.centre.webContents.send(
                     Channel.POPUP_BLOCKER,
                     RequestHandler.RESPONSE,
@@ -467,5 +472,14 @@ export class BrowserWindow extends ElectronBrowserWindow {
             this.switch(PageType.BOOKMARK)
         })
         notification.show()
+    }
+
+    show() {
+        if (this.current === SceneBrowser.BROWSER) {
+            this.browser.webContents.focus()
+        } else {
+            this.centre.webContents.focus()
+        }
+        super.show()
     }
 }

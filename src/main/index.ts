@@ -1,5 +1,6 @@
 import { app, Menu } from 'electron'
 import { BrowserWindow } from '@main/modules/scenes/window'
+import Logger from './modules/logger'
 
 /**
  * Add event listeners...
@@ -20,6 +21,7 @@ app.whenReady()
 
         // Main.getInstance()
         app.on('activate', () => {
+            Logger.getInstance().log('activate, focused?: ', window.isFocused())
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
             window.show()

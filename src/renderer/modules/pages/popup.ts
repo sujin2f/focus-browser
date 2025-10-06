@@ -5,7 +5,6 @@ import { Element } from '@home/modules/fragments'
 import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer } from '@home/util'
 import {
-    PageMode,
     PageType,
     TableAction,
     Channel,
@@ -14,7 +13,7 @@ import {
 } from '@src/types'
 
 export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
-    order: 'ASC' | 'DESC' = 'DESC'
+    order: 'ASC' | 'DESC' = 'ASC'
     readonly page = PageType.POPUP_BLOCKER
 
     constructor() {
@@ -41,8 +40,8 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                 }
 
                 const data = [
-                    ...blocked.map((host) => ({ host, allowed: false })),
                     ...allowed.map((host) => ({ host, allowed: true })),
+                    ...blocked.map((host) => ({ host, allowed: false })),
                 ]
                 this.action(TableAction.UPDATE, data)
             },
@@ -59,7 +58,6 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
         popup: T_PopupBlocker,
-        index: number,
     ): Element<HTMLTableCellElement>[] {
         return [
             this.table.createFixedCell(
@@ -68,7 +66,6 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                     onClick: () => {
                         this._cursor = tr
                         this.action(TableAction.EXECUTE)
-                        this._cursor = null
                     },
                 },
                 new Element<HTMLSpanElement>(
@@ -82,7 +79,6 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                     onClick: () => {
                         this._cursor = tr
                         this.action(TableAction.EXECUTE)
-                        this._cursor = null
                     },
                 },
                 new Element<HTMLSpanElement>('span', {}, popup.host),
@@ -105,33 +101,16 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
             action === TableAction.EDIT
         ) {
             const data = this._cursor.getData('data') as T_PopupBlocker
+            const index = this._cursor.getData('index') as number
             ipcRenderer.send(
                 Channel.POPUP_BLOCKER,
                 RequestHandler.MODIFY,
                 data.host,
             )
-            this.items = this.items.map((item) => {
-                if (item.host === data.host) {
-                    return {
-                        ...item,
-                        allowed: !data.allowed,
-                    }
-                }
-
-                return item
-            })
+            this.items[index].allowed = !data.allowed
+            this._cursor = null
             this.refresh()
             return
-        }
-    }
-
-    doShortcut(e: KeyboardEvent): boolean {
-        if (super.doShortcut(e)) {
-            return
-        }
-
-        if (e.key.length === 1) {
-            this.changeMode(PageMode.FIND)
         }
     }
 

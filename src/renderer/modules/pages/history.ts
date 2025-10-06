@@ -84,15 +84,6 @@ export class History extends A_PageWithTable<NavigationEntry> {
         }
     }
 
-    doShortcut(e: KeyboardEvent): boolean {
-        if (super.doShortcut(e)) {
-            return
-        }
-        if (e.key.length === 1) {
-            this.changeMode(PageMode.FIND)
-        }
-    }
-
     cbInfoUpdated(): void {
         return
     }

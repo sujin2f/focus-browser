@@ -21,11 +21,10 @@ export default class Logger {
         return Logger.instance
     }
 
-    private mode = 'production' // development or production
     private logger: I_Logger
 
     constructor() {
-        if (this.mode === 'development') {
+        if (process.env.NODE_PROD !== 'alpha') {
             this.logger = require('electron-log')
             this.logger.initialize()
             return

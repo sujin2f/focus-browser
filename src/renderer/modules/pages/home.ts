@@ -137,22 +137,21 @@ export class Home extends A_Page {
     }
 
     doShortcut(e: KeyboardEvent): boolean {
-        if (document.activeElement.tagName.toLowerCase() !== 'input') {
-            switch (e.key) {
-                case 'B':
-                case 'b':
+        if (
+            e.location === e.DOM_KEY_LOCATION_STANDARD &&
+            document.activeElement.tagName.toLowerCase() !== 'input'
+        ) {
+            switch (e.code) {
+                case 'KeyB':
                     Controller.getInstance().switch(PageType.BOOKMARK)
                     return
-                case 'h':
-                case 'H':
+                case 'KeyH':
                     Controller.getInstance().switch(PageType.HISTORY)
                     return
-                case 'a':
-                case 'A':
+                case 'KeyA':
                     Controller.getInstance().switch(PageType.ANCHOR)
                     return
-                case 'p':
-                case 'P':
+                case 'KeyP':
                     Controller.getInstance().switch(PageType.POPUP_BLOCKER)
                     return
             }

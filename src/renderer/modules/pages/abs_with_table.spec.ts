@@ -18,6 +18,9 @@ class Test extends A_PageWithTable<string> {
         this.init()
     }
 
+    /**
+     * Request IPC for table data
+     */
     request(): void {}
     getTHeads(): Element<HTMLTableCellElement>[] {
         return [this.table.createTh()]
@@ -44,7 +47,8 @@ class Test extends A_PageWithTable<string> {
             return
         }
 
-        if (e.key.length === 1) {
+        // Find mode
+        if (e.location === e.DOM_KEY_LOCATION_STANDARD) {
             this.changeMode(PageMode.FIND)
         }
     }

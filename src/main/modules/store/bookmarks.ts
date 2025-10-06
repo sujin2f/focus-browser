@@ -1,5 +1,6 @@
 import { Bookmark } from '@src/types'
 import Store from './store'
+import Logger from '../logger'
 
 export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     static instance: Bookmarks
@@ -16,6 +17,12 @@ export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     edit(index: number, bookmark: Bookmark) {
+        Logger.getInstance().log(
+            'Bookmark edited from: ',
+            this._data.bookmarks[index],
+            ' to: ',
+            bookmark,
+        )
         this._data.bookmarks[index] = bookmark
     }
 

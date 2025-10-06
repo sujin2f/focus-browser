@@ -107,7 +107,13 @@ export abstract class A_PageWithTable<T> extends A_Page {
         // Heads
         this.table.appendHead(...this.getTHeads())
 
+        // Disable Enter for Find form
+        this.formFind.addEventListener('submit', (e) => e.preventDefault())
+
         this.hideForms()
+        /**
+         * Request IPC for settings
+         */
         this.request()
     }
 
@@ -138,13 +144,14 @@ export abstract class A_PageWithTable<T> extends A_Page {
         item: T,
         index: number,
     ): Element<HTMLTableCellElement>[]
-    private renderTable() {
+    private renderTable(reorder = true) {
         this.table.reset()
 
         const ListTr = DataList(Element<HTMLTableRowElement>)
         let prev: DataListType<Element<HTMLTableRowElement>> | null = null
 
-        const items = this.order === 'ASC' ? this.items : this.items.reverse()
+        const items =
+            !reorder || this.order === 'ASC' ? this.items : this.items.reverse()
         items.forEach((item, index) => {
             const tr = new ListTr('tr', {
                 className: [
@@ -253,7 +260,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
      */
     protected refresh() {
         this._cursor = null
-        this.renderTable()
+        this.renderTable(false)
     }
 
     action(action: TableAction, items: T[] = []) {
@@ -261,13 +268,14 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
         if (action === TableAction.UPDATE) {
             this.items = items
-            this.refresh()
+            this._cursor = null
+            this.renderTable()
         }
     }
 
     public doShortcut(e: KeyboardEvent): boolean {
         // Find Key ⌘F
-        if (e.key.toLowerCase() === 'f') {
+        if (e.code === 'KeyF') {
             if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                 this.changeMode(PageMode.FIND)
                 return true
@@ -304,6 +312,9 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     return true
 
                 case 'Enter':
+                    if (!this._cursor) {
+                        return
+                    }
                     if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                         this.action(TableAction.EDIT)
                         return true
@@ -312,10 +323,16 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     return true
 
                 case ' ':
+                    if (!this._cursor) {
+                        return
+                    }
                     this.action(TableAction.EXECUTE)
                     return true
 
                 case 'Delete':
+                    if (!this._cursor) {
+                        return
+                    }
                     this.action(TableAction.DELETE)
                     return true
             }

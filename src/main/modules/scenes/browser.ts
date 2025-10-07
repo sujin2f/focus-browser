@@ -3,14 +3,17 @@ import {
     Menu,
     nativeImage,
     WebContentsView,
+    Notification,
     type WebContentsViewConstructorOptions,
     type ContextMenuParams,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
-import fetch from 'cross-fetch' // required 'fetch'
+import fetch from 'cross-fetch'
 
-import { Bookmark } from '@src/types'
+import { Bookmark, PageType, Scenes } from '@src/types'
 import Logger from '@main/modules/logger'
+
+import PopupBlocker from '@main/modules/store/popup'
 
 import History from '@main/modules/store/history'
 import Status from '@main/modules/store/status'
@@ -33,10 +36,15 @@ export class BrowserView extends WebContentsView {
      */
     private readonly DEFAULT_URL = 'https://duckduckgo.com/'
 
-    constructor(options?: WebContentsViewConstructorOptions) {
-        super(options || {})
+    constructor(
+        options: WebContentsViewConstructorOptions,
+        private switchMode: (scene: Scenes) => void,
+    ) {
+        super(options)
 
         this.setAdBlocker()
+        this.setPopupBlocker()
+
         const url = this.restoreHistory() || this.DEFAULT_URL
         this.loadURL(url)
 
@@ -147,6 +155,28 @@ export class BrowserView extends WebContentsView {
             .catch((e: any) => {
                 Logger.getInstance().error('Ad-Blocker is failed to load: ', e)
             })
+    }
+
+    private setPopupBlocker() {
+        this.webContents.setWindowOpenHandler((data) => {
+            const url = new URL(data.url)
+            if (PopupBlocker.getInstance().isAllowed(url.host)) {
+                this.loadURL(url.toString())
+                return { action: 'deny' }
+            }
+
+            PopupBlocker.getInstance().block(url.host)
+            const notification = new Notification({
+                title: 'Focus',
+                body: `Popup blocked from ${url.host}`,
+                silent: true,
+            })
+            notification.addListener('click', () => {
+                this.switchMode(PageType.POPUP_BLOCKER)
+            })
+            notification.show()
+            return { action: 'deny' }
+        })
     }
 
     private async showContextMenu(_: unknown, params: ContextMenuParams) {

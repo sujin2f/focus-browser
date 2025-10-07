@@ -17,7 +17,7 @@ import {
 } from '@src/types'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
-    public order: 'ASC' | 'DESC' = 'DESC'
+    public order: 'ASC' | 'DESC' = 'ASC'
 
     readonly page = PageType.ANCHOR
 

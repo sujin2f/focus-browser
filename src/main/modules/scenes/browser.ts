@@ -41,6 +41,7 @@ export class BrowserView extends WebContentsView {
 
         // Enable pinch zoom
         this.webContents.setVisualZoomLevelLimits(1, 3)
+        this.webContents.setZoomFactor(1)
 
         // Context Menu
         this.webContents.on('context-menu', async (_event, params) => {

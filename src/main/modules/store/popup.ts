@@ -47,8 +47,8 @@ export default class Popup extends Store<T_Popup> {
         fs.writeFileSync(
             this.path,
             JSON.stringify({
-                blocked: Array.from(this._data.blocked),
-                allowed: Array.from(this._data.allowed),
+                blocked: Array.from(this._data.blocked).filter((v) => v),
+                allowed: Array.from(this._data.allowed).filter((v) => v),
             }),
             {
                 encoding: 'utf-8',

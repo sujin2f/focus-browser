@@ -336,9 +336,10 @@ export class BrowserWindow extends ElectronBrowserWindow {
     /**
      * IPC
      */
-    protected sendInfo() {
+    protected async sendInfo() {
         this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
             shortcuts: Shortcut.getInstance().get('shortcuts'),
+            cache: await this.browser.webContents.session.getCacheSize(),
             ...Status.getInstance().data,
         })
     }

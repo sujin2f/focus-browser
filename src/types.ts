@@ -20,6 +20,7 @@ export type StatusProps = {
 export type Info = Partial<
     StatusProps & {
         shortcuts: Shortcuts
+        cache: number
     }
 >
 

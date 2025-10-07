@@ -57,8 +57,8 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        popup: T_PopupBlocker,
     ): Element<HTMLTableCellElement>[] {
+        const popup = tr.getData('data') as T_PopupBlocker
         return [
             this.table.createFixedCell(
                 'td',
@@ -107,7 +107,8 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                 RequestHandler.MODIFY,
                 data.host,
             )
-            this.items[index].allowed = !data.allowed
+
+            this.items[index].allowed = !this.items[index].allowed
             this._cursor = null
             this.refresh()
             return

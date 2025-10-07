@@ -141,18 +141,14 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract getTHeads(): Element<HTMLTableCellElement>[]
     abstract getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        item: T,
-        index: number,
     ): Element<HTMLTableCellElement>[]
-    private renderTable(reorder = true) {
+    private renderTable() {
         this.table.reset()
 
         const ListTr = DataList(Element<HTMLTableRowElement>)
         let prev: DataListType<Element<HTMLTableRowElement>> | null = null
 
-        const items =
-            !reorder || this.order === 'ASC' ? this.items : this.items.reverse()
-        items.forEach((item, index) => {
+        this.items.forEach((item, index) => {
             const tr = new ListTr('tr', {
                 className: [
                     'hover',
@@ -168,12 +164,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
                 ],
             }) as unknown as DataListType<Element<HTMLTableRowElement>>
 
-            const dataIndex =
-                this.order === 'ASC' ? index : this.items.length - index - 1
-            tr.setData('index', dataIndex)
+            tr.setData('index', index)
             tr.setData('data', item)
 
-            tr.append(...this.getRowCells(tr, item, dataIndex))
+            tr.append(...this.getRowCells(tr))
             prev = this.linkTr(prev, tr)
 
             this.table.appendBody(tr)
@@ -260,14 +254,18 @@ export abstract class A_PageWithTable<T> extends A_Page {
      */
     protected refresh() {
         this._cursor = null
-        this.renderTable(false)
+        this.renderTable()
     }
 
     action(action: TableAction, items: T[] = []) {
         super.action(action)
 
         if (action === TableAction.UPDATE) {
-            this.items = items
+            if (this.order === 'ASC') {
+                this.items = items
+            } else {
+                this.items = items.reverse()
+            }
             this._cursor = null
             this.renderTable()
         }

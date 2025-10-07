@@ -83,8 +83,9 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        bookmark: Bookmark,
     ): Element<HTMLTableCellElement>[] {
+        const bookmark = tr.getData('data') as Bookmark
+
         const title = this.table.createTd(
             {
                 onClick: (e) => {

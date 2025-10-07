@@ -28,11 +28,9 @@ class Test extends A_PageWithTable<string> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        item: string,
-        index: number,
     ): Element<HTMLTableCellElement>[] {
         const td = this.table.createTd()
-        td.innerHTML = item
+        td.innerHTML = tr.getData('data') as string
         return [td]
     }
     filterCondition(item: string): boolean {

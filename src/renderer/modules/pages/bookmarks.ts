@@ -183,8 +183,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        bookmark: Bookmark,
     ): Element<HTMLTableCellElement>[] {
+        const bookmark = tr.getData('data') as Bookmark
         const shortcut = this.table.createFixedCell()
         if (bookmark.shortcut) {
             this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
@@ -318,14 +318,16 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
             this.items.unshift(bookmark)
         } else {
+            const index = this._cursor.getData('index') as number
+
             ipcRenderer.send(
                 Channel.BOOKMARK,
                 RequestHandler.MODIFY,
                 bookmark,
-                this._cursor.getData('index') as number,
+                this.order === 'ASC' ? index : this.items.length - index - 1,
             )
 
-            this.items[this._cursor.getData('index') as number] = bookmark
+            this.items[index] = bookmark
         }
 
         this.refresh()
@@ -352,7 +354,11 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
             const index = this._cursor.getData('index') as number
 
-            ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
+            ipcRenderer.send(
+                Channel.BOOKMARK,
+                RequestHandler.REMOVE,
+                this.order === 'ASC' ? index : this.items.length - index - 1,
+            )
             this.items.splice(index, 1)
             this.refresh()
 

@@ -5,13 +5,7 @@ import { Element } from '@home/modules/fragments'
 
 import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer } from '@home/util'
-import {
-    Channel,
-    PageMode,
-    PageType,
-    RequestHandler,
-    TableAction,
-} from '@src/types'
+import { Channel, PageType, RequestHandler, TableAction } from '@src/types'
 
 export class History extends A_PageWithTable<NavigationEntry> {
     order: 'ASC' | 'DESC' = 'DESC'
@@ -36,6 +30,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
                     return
                 }
 
+                console.log(history)
                 this.action(TableAction.UPDATE, history)
             },
         )
@@ -46,10 +41,10 @@ export class History extends A_PageWithTable<NavigationEntry> {
     }
 
     getRowCells(
-        _: DataListType<Element<HTMLTableRowElement>>,
-        history: NavigationEntry,
-        index: number,
+        tr: DataListType<Element<HTMLTableRowElement>>,
     ): Element<HTMLTableCellElement>[] {
+        const history = tr.getData('data') as NavigationEntry
+        const index = tr.getData('index') as number
         return [
             this.table.createTd(
                 {
@@ -57,7 +52,9 @@ export class History extends A_PageWithTable<NavigationEntry> {
                         ipcRenderer.send(
                             Channel.HISTORY,
                             RequestHandler.EXECUTE,
-                            index,
+                            this.order === 'ASC'
+                                ? index
+                                : this.items.length - index - 1,
                         )
                     },
                 },
@@ -80,7 +77,11 @@ export class History extends A_PageWithTable<NavigationEntry> {
 
         if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
             const index = this._cursor.getData('index') as number
-            ipcRenderer.send(Channel.HISTORY, RequestHandler.EXECUTE, index)
+            ipcRenderer.send(
+                Channel.HISTORY,
+                RequestHandler.EXECUTE,
+                this.order === 'ASC' ? index : this.items.length - index - 1,
+            )
         }
     }
 

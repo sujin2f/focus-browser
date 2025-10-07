@@ -4,6 +4,7 @@ import {
     nativeImage,
     WebContentsView,
     type WebContentsViewConstructorOptions,
+    type ContextMenuParams,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch' // required 'fetch'
@@ -44,32 +45,7 @@ export class BrowserView extends WebContentsView {
         this.webContents.setZoomFactor(1)
 
         // Context Menu
-        this.webContents.on('context-menu', async (_event, params) => {
-            // only show the context menu if the element is editable
-            if (params.hasImageContents) {
-                const menu = Menu.buildFromTemplate([
-                    {
-                        label: 'Copy Image',
-                        click: () => this.copyImageToClipboard(params.srcURL),
-                    },
-                    {
-                        label: 'Copy Image Address',
-                        click: () => clipboard.writeText(params.srcURL),
-                    },
-                ])
-                menu.popup()
-            }
-
-            if (params.linkURL) {
-                const menu = Menu.buildFromTemplate([
-                    {
-                        label: 'Copy Link URL',
-                        click: () => clipboard.writeText(params.linkURL),
-                    },
-                ])
-                menu.popup()
-            }
-        })
+        this.webContents.on('context-menu', this.showContextMenu.bind(this))
     }
 
     /**
@@ -171,6 +147,33 @@ export class BrowserView extends WebContentsView {
             .catch((e: any) => {
                 Logger.getInstance().error('Ad-Blocker is failed to load: ', e)
             })
+    }
+
+    private async showContextMenu(_: unknown, params: ContextMenuParams) {
+        // only show the context menu if the element is editable
+        if (params.hasImageContents) {
+            const menu = Menu.buildFromTemplate([
+                {
+                    label: 'Copy Image',
+                    click: () => this.copyImageToClipboard(params.srcURL),
+                },
+                {
+                    label: 'Copy Image Address',
+                    click: () => clipboard.writeText(params.srcURL),
+                },
+            ])
+            menu.popup()
+        }
+
+        if (params.linkURL) {
+            const menu = Menu.buildFromTemplate([
+                {
+                    label: 'Copy Link URL',
+                    click: () => clipboard.writeText(params.linkURL),
+                },
+            ])
+            menu.popup()
+        }
     }
 
     private async copyImageToClipboard(imageUrl: string) {

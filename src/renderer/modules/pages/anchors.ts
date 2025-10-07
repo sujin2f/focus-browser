@@ -17,7 +17,7 @@ import {
 } from '@src/types'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
-    public order: 'ASC' | 'DESC' = 'DESC'
+    public order: 'ASC' | 'DESC' = 'ASC'
 
     readonly page = PageType.ANCHOR
 
@@ -83,8 +83,9 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        bookmark: Bookmark,
     ): Element<HTMLTableCellElement>[] {
+        const bookmark = tr.getData('data') as Bookmark
+
         const title = this.table.createTd(
             {
                 onClick: (e) => {
@@ -159,16 +160,6 @@ export class Anchors extends A_PageWithTable<Bookmark> {
             this.refresh()
 
             return
-        }
-    }
-
-    doShortcut(e: KeyboardEvent): boolean {
-        if (super.doShortcut(e)) {
-            return
-        }
-
-        if (e.key.length === 1) {
-            this.changeMode(PageMode.FIND)
         }
     }
 }

@@ -43,17 +43,19 @@ export abstract class A_Page {
      */
     public doShortcut(e: KeyboardEvent): boolean {
         if (e.key === 'Escape') {
+            // unFocus input
             if (document.activeElement.tagName.toLowerCase() === 'input') {
                 this.blur()
                 return true
             }
 
+            // Back to List mode
             if (this._mode !== PageMode.LIST) {
                 this.changeMode(PageMode.LIST)
                 return
             }
 
-            // Go back to browser mode
+            // Back to browser mode
             navigate()
             return true
         }

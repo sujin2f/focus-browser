@@ -1,6 +1,10 @@
 import {
+    clipboard,
+    Menu,
+    nativeImage,
     WebContentsView,
     type WebContentsViewConstructorOptions,
+    type ContextMenuParams,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch' // required 'fetch'
@@ -35,6 +39,13 @@ export class BrowserView extends WebContentsView {
         this.setAdBlocker()
         const url = this.restoreHistory() || this.DEFAULT_URL
         this.loadURL(url)
+
+        // Enable pinch zoom
+        this.webContents.setVisualZoomLevelLimits(1, 3)
+        this.webContents.setZoomFactor(1)
+
+        // Context Menu
+        this.webContents.on('context-menu', this.showContextMenu.bind(this))
     }
 
     /**
@@ -50,14 +61,20 @@ export class BrowserView extends WebContentsView {
 
         // If the schema is missing, prepend 'http://' to allow the URL constructor
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
+        Logger.getInstance().error('Try to load URL: ', _url, hasSchema)
         try {
             _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
 
             this.webContents.loadURL(_url).catch(() => {
+                Logger.getInstance().error('Filed to load URL: ', _url)
                 _url = `https://duckduckgo.com/?q=${url}`
                 this.webContents.loadURL(_url)
             })
         } catch {
+            Logger.getInstance().error(
+                'Filed to load URL (try/catch block): ',
+                _url,
+            )
             // When the navigation failed, search DuckDuckGo
             // TODO search engine option
             _url = `https://duckduckgo.com/?q=${url}`
@@ -87,6 +104,7 @@ export class BrowserView extends WebContentsView {
 
     private async setAdBlocker() {
         if (!Status.getInstance().get('adBlocker')) {
+            Logger.getInstance().log('Ad-Blocker is disabled.')
             return
         }
 
@@ -94,9 +112,80 @@ export class BrowserView extends WebContentsView {
             .then((blocker) => {
                 this._blocker = blocker
                 this._blocker.enableBlockingInSession(this.webContents.session)
+                Logger.getInstance().log('Ad-Blocker is enabled.')
+
+                // For debug
+                // blocker.on('request-blocked', (request) => {
+                //     console.log('blocked', request.tabId, request.url)
+                // })
+
+                // blocker.on('request-redirected', (request) => {
+                //     console.log('redirected', request.tabId, request.url)
+                // })
+
+                // blocker.on('request-whitelisted', (request) => {
+                //     console.log('whitelisted', request.tabId, request.url)
+                // })
+
+                // blocker.on('csp-injected', (request, csps) => {
+                //     console.log('csp', request.url, csps)
+                // })
+
+                // blocker.on('script-injected', (script: string, url: string) => {
+                //     console.log('script', script.length, url)
+                // })
+
+                // blocker.on('style-injected', (style: string, url: string) => {
+                //     console.log('style', style.length, url)
+                // })
+
+                // blocker.on(
+                //     'filter-matched',
+                //     console.log.bind(console, 'filter-matched'),
+                // )
             })
             .catch((e: any) => {
-                Logger.getInstance().error(e)
+                Logger.getInstance().error('Ad-Blocker is failed to load: ', e)
             })
+    }
+
+    private async showContextMenu(_: unknown, params: ContextMenuParams) {
+        // only show the context menu if the element is editable
+        if (params.hasImageContents) {
+            const menu = Menu.buildFromTemplate([
+                {
+                    label: 'Copy Image',
+                    click: () => this.copyImageToClipboard(params.srcURL),
+                },
+                {
+                    label: 'Copy Image Address',
+                    click: () => clipboard.writeText(params.srcURL),
+                },
+            ])
+            menu.popup()
+        }
+
+        if (params.linkURL) {
+            const menu = Menu.buildFromTemplate([
+                {
+                    label: 'Copy Link URL',
+                    click: () => clipboard.writeText(params.linkURL),
+                },
+            ])
+            menu.popup()
+        }
+    }
+
+    private async copyImageToClipboard(imageUrl: string) {
+        try {
+            await fetch(imageUrl).then(async (response) => {
+                const blob = await (await response.blob()).arrayBuffer()
+                const buffer = Buffer.from(blob)
+                const image = nativeImage.createFromBuffer(buffer)
+                clipboard.writeImage(image)
+            })
+        } catch (error) {
+            console.error('Error fetching or processing image:', error)
+        }
     }
 }

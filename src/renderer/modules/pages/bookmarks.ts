@@ -32,12 +32,17 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     private inputUrl: Input
     private inputShortcut: Input
 
+    // Store Shortcut
     private shortcuts: Record<string, string> = {}
 
-    private currentUrl: Bookmark = {
+    // Browser info
+    private browserUrl: Bookmark = {
         url: '',
         title: '',
     }
+
+    // Shortcut temp store
+    private shortcutKeyIn = ''
 
     constructor() {
         super()
@@ -62,14 +67,10 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
         this.renderModifyForm()
 
-        this.inputFindKeyword.addEventListener('input', () => {
-            const shortcut =
-                this.shortcuts[this.inputFindKeyword.value.toLowerCase()]
-            if (shortcut) {
-                navigate(shortcut)
-                return true
-            }
-        })
+        this.inputFindKeyword.addEventListener(
+            'keyup',
+            this.onBookmarkShortcut.bind(this),
+        )
 
         this.forms.append(this.form)
         this.hideForms()
@@ -88,8 +89,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         switch (mode) {
             case PageMode.NEW:
                 this._cursor = null
-                this.inputTitle.value = this.currentUrl.title
-                this.inputUrl.value = this.currentUrl.url
+                this.inputTitle.value = this.browserUrl.title
+                this.inputUrl.value = this.browserUrl.url
                 this.inputShortcut.value = ''
 
                 this.form.show()
@@ -130,7 +131,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
                 }
 
                 this.action(TableAction.UPDATE, bookmarks)
-                this.currentUrl = {
+                this.browserUrl = {
                     title: title || '',
                     url: url || '',
                 }
@@ -182,8 +183,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
-        bookmark: Bookmark,
     ): Element<HTMLTableCellElement>[] {
+        const bookmark = tr.getData('data') as Bookmark
         const shortcut = this.table.createFixedCell()
         if (bookmark.shortcut) {
             this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
@@ -317,14 +318,16 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
             this.items.unshift(bookmark)
         } else {
+            const index = this._cursor.getData('index') as number
+
             ipcRenderer.send(
                 Channel.BOOKMARK,
                 RequestHandler.MODIFY,
                 bookmark,
-                this._cursor.getData('index') as number,
+                this.order === 'ASC' ? index : this.items.length - index - 1,
             )
 
-            this.items[this._cursor.getData('index') as number] = bookmark
+            this.items[index] = bookmark
         }
 
         this.refresh()
@@ -351,7 +354,11 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
             const index = this._cursor.getData('index') as number
 
-            ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REMOVE, index)
+            ipcRenderer.send(
+                Channel.BOOKMARK,
+                RequestHandler.REMOVE,
+                this.order === 'ASC' ? index : this.items.length - index - 1,
+            )
             this.items.splice(index, 1)
             this.refresh()
 
@@ -359,9 +366,32 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         }
     }
 
+    /**
+     * User shortcut input
+     * For non-English keyboard, extract English key stroke from KeyboardEvent
+     */
+    private onBookmarkShortcut(e: KeyboardEvent) {
+        // Allow standard location only
+        if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
+            return
+        }
+
+        if (e.code.startsWith('Key')) {
+            this.shortcutKeyIn += e.code.charAt(3)
+        } else {
+            this.shortcutKeyIn += e.key
+        }
+
+        const shortcut = this.shortcuts[this.shortcutKeyIn.toLowerCase()]
+        if (shortcut) {
+            navigate(shortcut)
+            return true
+        }
+    }
+
     doShortcut(e: KeyboardEvent): boolean {
         // Add Bookmark ⌘D
-        if (e.key.toLowerCase() === 'd') {
+        if (e.code === 'KeyD') {
             if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                 this.onSwitchAdd()
                 return true
@@ -372,10 +402,12 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             return
         }
 
+        // User input Shortcut
         if (
             document.activeElement.tagName.toLowerCase() !== 'input' &&
-            e.key.length === 1
+            e.location === e.DOM_KEY_LOCATION_STANDARD
         ) {
+            this.shortcutKeyIn = ''
             this.changeMode(PageMode.FIND)
         }
     }

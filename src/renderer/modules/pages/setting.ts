@@ -72,8 +72,4 @@ export class Setting extends A_Page {
     cbInfoUpdated() {
         this.render()
     }
-
-    doShortcut(e: KeyboardEvent): boolean {
-        return super.doShortcut(e)
-    }
 }

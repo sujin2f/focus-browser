@@ -13,8 +13,8 @@
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=renderer",
         "lint": "eslint -c .eslintrc --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package": "npm run build && electron-builder build --publish never",
-        "package:builder": "electron-builder build --publish never",
+        "package:alpha": "NODE_PROD=alpha electron-builder build --publish never",
+        "package:beta": "NODE_PROD=beta electron-builder build --publish never",
         "test": "jest --no-cache --forceExit --coverage"
     },
     "author": "Sujin Choi",
@@ -60,7 +60,7 @@
     },
     "build": {
         "productName": "Focus",
-        "appId": "org.sujin.Focus",
+        "appId": "sujin.Focus",
         "asar": true,
         "files": [
             "dist",

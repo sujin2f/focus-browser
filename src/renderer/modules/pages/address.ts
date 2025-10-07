@@ -13,7 +13,7 @@ export class Address extends Home {
 
     doShortcut(e: KeyboardEvent): boolean {
         if (
-            e.key.toLowerCase() === 'l' &&
+            e.code === 'KeyL' &&
             ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey))
         ) {
             this.search.focus()

@@ -1,6 +1,7 @@
-import { type NavigationEntry } from 'electron'
+import type { NavigationEntry } from 'electron'
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 
+import { Button } from '@home/modules/fragments/button'
 import { Element } from '@home/modules/fragments'
 
 import type { DataListType } from '@home/modules/fragments/data-list'
@@ -19,6 +20,19 @@ export class History extends A_PageWithTable<NavigationEntry> {
     protected init() {
         super.init()
         this.title.innerHTML = 'History'
+
+        // Empty history
+        const button = new Button(
+            {
+                onClick: () => {
+                    ipcRenderer.send(Channel.HISTORY, RequestHandler.REMOVE)
+                    this.items = []
+                    this.refresh()
+                },
+            },
+            'Empty History',
+        )
+        this.buttonGroup.prepend(button)
     }
 
     request(): void {

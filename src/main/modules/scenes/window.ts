@@ -386,6 +386,10 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 this.switch(SceneBrowser.BROWSER)
                 this.browser.webContents.navigationHistory.goToIndex(index)
                 return
+
+            case RequestHandler.REMOVE:
+                this.browser.webContents.navigationHistory.clear()
+                return
         }
     }
 

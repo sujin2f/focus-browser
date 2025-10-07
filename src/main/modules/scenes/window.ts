@@ -1,7 +1,6 @@
 import {
     session,
     BrowserWindow as ElectronBrowserWindow,
-    WebContentsView,
     Menu,
     Notification,
     type MenuItemConstructorOptions,
@@ -27,18 +26,18 @@ import Status from '@main/modules/store/status'
 import Bookmarks from '@main/modules/store/bookmarks'
 import PopupBlocker from '@main/modules/store/popup'
 import Anchors from '@main/modules/store/anchors'
-import Popup from '@main/modules/store/popup'
 import Shortcut from '@main/modules/store/shortcut'
 
 import { BrowserView } from '@main/modules/scenes/browser'
-import Logger from '../logger'
+import { CentreView } from '@main/modules/scenes/centre'
+import Logger from '@main/modules/logger'
 
 /**
  * All starts with here
  */
 export class BrowserWindow extends ElectronBrowserWindow {
     protected browser: BrowserView
-    protected centre: WebContentsView
+    protected centre: CentreView
     protected current: Scenes = SceneBrowser.BROWSER
 
     /**
@@ -59,22 +58,27 @@ export class BrowserWindow extends ElectronBrowserWindow {
         message.on(Channel.SWITCH, this.onSwitch.bind(this))
         message.on(Channel.HISTORY, this.onHistory.bind(this))
         message.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
-        message.on(Channel.ANCHOR, this.onAnchors.bind(this))
-        message.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
 
         /**
          * Set views
          */
-        this.browser = new BrowserView({
-            webPreferences: {
-                session: session.fromPartition('persist:my-partition'),
-                partition: 'persist:my-partition',
+        this.browser = new BrowserView(
+            {
+                webPreferences: {
+                    session: session.fromPartition('persist:my-partition'),
+                    partition: 'persist:my-partition',
+                },
             },
-        })
+            this.switch.bind(this),
+        )
         // #20 Web Title to App Title
         this.browser.webContents.on('page-title-updated', (e, title) => {
             this.title = title
         })
+        this.browser.webContents.on(
+            'will-navigate',
+            () => (this.title = 'Loading...'),
+        )
 
         this.contentView = this.browser
 
@@ -87,12 +91,10 @@ export class BrowserWindow extends ElectronBrowserWindow {
         const bounds = status.getBounds(this.getBounds())
         this.setBounds(bounds)
 
-        this.setEventListeners()
-
         /**
          * Centre
          */
-        this.centre = new WebContentsView({
+        this.centre = new CentreView({
             webPreferences: {
                 preload,
             },
@@ -100,13 +102,18 @@ export class BrowserWindow extends ElectronBrowserWindow {
         this.centre.webContents
             .loadURL(resolveHtmlPath('index.html'))
             .then(() => {
-                this.sendInfo()
+                this.centre.sendInfo(
+                    this.browser.webContents.session.getCacheSize(),
+                )
                 if (status.get('welcome')) {
                     this.switch(PageType.WELCOME)
                     status.set('welcome', false)
                 }
             })
             .catch((e) => Logger.getInstance().error(e))
+
+        // Close action
+        this.addListener('close', () => this.saveStatus())
     }
 
     /**
@@ -122,31 +129,6 @@ export class BrowserWindow extends ElectronBrowserWindow {
         this.contentView = this.centre
         this.centre.webContents.send(Channel.SWITCH, scene)
         this.centre.webContents.focus()
-    }
-
-    private setEventListeners() {
-        this.addListener('close', () => this.saveStatus())
-
-        // Popup Blocker
-        this.browser.webContents.setWindowOpenHandler((data) => {
-            const url = new URL(data.url)
-            if (PopupBlocker.getInstance().isAllowed(url.host)) {
-                this.browser.loadURL(url.toString())
-                return { action: 'deny' }
-            }
-
-            PopupBlocker.getInstance().block(url.host)
-            const notification = new Notification({
-                title: 'Focus',
-                body: `Popup blocked from ${url.host}`,
-                silent: true,
-            })
-            notification.addListener('click', () => {
-                this.switch(PageType.POPUP_BLOCKER)
-            })
-            notification.show()
-            return { action: 'deny' }
-        })
     }
 
     /**
@@ -336,14 +318,6 @@ export class BrowserWindow extends ElectronBrowserWindow {
     /**
      * IPC
      */
-    protected async sendInfo() {
-        this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
-            shortcuts: Shortcut.getInstance().get('shortcuts'),
-            cache: await this.browser.webContents.session.getCacheSize(),
-            ...Status.getInstance().data,
-        })
-    }
-
     private onInfo(handler: RequestHandler, data: Partial<Info>) {
         if (handler === RequestHandler.MODIFY) {
             Status.getInstance().merge(data)
@@ -351,7 +325,9 @@ export class BrowserWindow extends ElectronBrowserWindow {
         }
 
         if (handler === RequestHandler.REQUEST) {
-            this.sendInfo()
+            this.centre.sendInfo(
+                this.browser.webContents.session.getCacheSize(),
+            )
         }
     }
 
@@ -374,12 +350,9 @@ export class BrowserWindow extends ElectronBrowserWindow {
     private onHistory(handler: RequestHandler, index: number) {
         switch (handler) {
             case RequestHandler.REQUEST:
-                this.centre.webContents.send(
-                    Channel.HISTORY,
-                    RequestHandler.RESPONSE,
+                this.centre.sendHistory(
                     this.browser.webContents.navigationHistory.getAllEntries(),
                 )
-
                 return
 
             case RequestHandler.EXECUTE:
@@ -400,11 +373,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
     ) {
         switch (handler) {
             case RequestHandler.REQUEST:
-                const bookmarks = Bookmarks.getInstance().get()
-                this.centre.webContents.send(
-                    Channel.BOOKMARK,
-                    RequestHandler.RESPONSE,
-                    bookmarks,
+                this.centre.sendBookmarks(
                     this.browser.webContents.getTitle(),
                     this.browser.webContents.getURL(),
                 )
@@ -421,46 +390,6 @@ export class BrowserWindow extends ElectronBrowserWindow {
                 return
             case RequestHandler.REMOVE:
                 Bookmarks.getInstance().remove(bookmark as unknown as number)
-                return
-        }
-    }
-
-    private onAnchors(handler: RequestHandler, url: string) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                const bookmarks = Anchors.getInstance().get()
-                this.centre.webContents.send(
-                    Channel.ANCHOR,
-                    RequestHandler.RESPONSE,
-                    bookmarks,
-                )
-                return
-            case RequestHandler.REMOVE:
-                Anchors.getInstance().remove(url)
-                return
-        }
-    }
-
-    private onPopupBlocker(handler: RequestHandler, host: string) {
-        switch (handler) {
-            case RequestHandler.REQUEST:
-                const blocked = Popup.getInstance().get('blocked')
-                const allowed = Popup.getInstance().get('allowed')
-                Logger.getInstance().log(
-                    'Popup blocker request: ',
-                    blocked,
-                    allowed,
-                )
-                this.centre.webContents.send(
-                    Channel.POPUP_BLOCKER,
-                    RequestHandler.RESPONSE,
-                    Array.from(blocked as string[]),
-                    Array.from(allowed as string[]),
-                )
-                return
-
-            case RequestHandler.MODIFY:
-                Popup.getInstance().toggle(host)
                 return
         }
     }

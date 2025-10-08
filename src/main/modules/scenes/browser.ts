@@ -31,6 +31,8 @@ export class BrowserView extends WebContentsView {
         return this._blocker
     }
 
+    public failedUrl?: string
+
     /**
      * Constants
      */
@@ -72,22 +74,19 @@ export class BrowserView extends WebContentsView {
         Logger.getInstance().error('Try to load URL: ', _url, hasSchema)
         try {
             _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
+        } catch {}
 
-            this.webContents.loadURL(_url).catch(() => {
-                Logger.getInstance().error('Filed to load URL: ', _url)
-                _url = `https://duckduckgo.com/?q=${url}`
-                this.webContents.loadURL(_url)
-            })
-        } catch {
-            Logger.getInstance().error(
-                'Filed to load URL (try/catch block): ',
-                _url,
-            )
-            // When the navigation failed, search DuckDuckGo
-            // TODO search engine option
-            _url = `https://duckduckgo.com/?q=${url}`
-            this.webContents.loadURL(_url)
-        }
+        this.webContents.loadURL(_url).catch((e) => {
+            Logger.getInstance().error('loadURL failed: ', e)
+            if (e.code === 'ERR_INTERNET_DISCONNECTED') {
+                this.failedUrl = _url
+                this.switchMode(PageType.OFFLINE)
+                return
+            }
+
+            this.webContents.loadURL(`https://duckduckgo.com/?q=${url}`)
+            this.failedUrl = null
+        })
     }
 
     /**
@@ -217,5 +216,16 @@ export class BrowserView extends WebContentsView {
         } catch (error) {
             console.error('Error fetching or processing image:', error)
         }
+    }
+
+    /**
+     * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
+     */
+    public reload() {
+        if (this.failedUrl) {
+            this.loadURL(this.failedUrl)
+            return
+        }
+        this.webContents.reload()
     }
 }

@@ -72,13 +72,11 @@ export class BrowserWindow extends ElectronBrowserWindow {
             this.switch.bind(this),
         )
         // #20 Web Title to App Title
-        this.browser.webContents.on('page-title-updated', (e, title) => {
-            this.title = title
-        })
-        this.browser.webContents.on(
-            'will-navigate',
-            () => (this.title = 'Loading...'),
-        )
+        this.browser.webContents
+            .on('page-title-updated', (e, title) => {
+                this.title = title
+            })
+            .on('will-navigate', () => (this.title = 'Loading...'))
 
         this.contentView = this.browser
 
@@ -123,6 +121,9 @@ export class BrowserWindow extends ElectronBrowserWindow {
         this.current = scene
         if (scene === SceneBrowser.BROWSER) {
             this.contentView = this.browser
+            if (this.browser.failedUrl) {
+                this.browser.reload()
+            }
             return
         }
 
@@ -302,7 +303,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
 
         menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
-                this.browser.webContents.reload()
+                this.browser.reload()
             }
         }
 
@@ -325,6 +326,13 @@ export class BrowserWindow extends ElectronBrowserWindow {
         }
 
         if (handler === RequestHandler.REQUEST) {
+            if (data) {
+                this.centre.sendLocation(
+                    this.browser.webContents.getTitle(),
+                    this.browser.webContents.getURL(),
+                )
+                return
+            }
             this.centre.sendInfo(
                 this.browser.webContents.session.getCacheSize(),
             )
@@ -339,6 +347,10 @@ export class BrowserWindow extends ElectronBrowserWindow {
         this.switch(scene)
 
         if (scene === SceneBrowser.BROWSER && address) {
+            if (address === 'reload') {
+                this.browser.reload()
+                return
+            }
             this.browser.loadURL(address)
         }
 
@@ -373,10 +385,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
     ) {
         switch (handler) {
             case RequestHandler.REQUEST:
-                this.centre.sendBookmarks(
-                    this.browser.webContents.getTitle(),
-                    this.browser.webContents.getURL(),
-                )
+                this.centre.sendBookmarks()
                 return
             case RequestHandler.ADD:
                 const added = Bookmarks.getInstance().push(bookmark)

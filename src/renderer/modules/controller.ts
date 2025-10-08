@@ -16,6 +16,7 @@ import { PopupBlocker } from '@home/modules/pages/popup'
 import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
+import { Offline } from '@home/modules/pages/offline'
 
 export default class Controller {
     static instance: Controller
@@ -26,7 +27,7 @@ export default class Controller {
         return Controller.instance
     }
 
-    public setting: Info
+    public setting: Info = {}
     private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
@@ -40,24 +41,27 @@ export default class Controller {
                 this.currentPage.doShortcut(e),
             )
 
+            this.requestInfo()
             this.initIPC()
             this.switch(PageType.HOME)
         })
     }
 
-    private initIPC() {
-        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
+    private requestInfo(isLocation: boolean = false) {
+        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, isLocation)
         ipcRenderer.once(
             Channel.INFO,
             (handler: RequestHandler, setting: Info) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
-                this.setting = setting
-
+                this.setting = { ...this.setting, ...setting }
                 this._currentPage.action(TableAction.INFO)
             },
         )
+    }
+
+    private initIPC() {
         ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
             this.switch(scene)
         })
@@ -76,6 +80,7 @@ export default class Controller {
                 this._currentPage = new Address()
                 break
             case PageType.BOOKMARK:
+                this.requestInfo(true)
                 this._currentPage = new Bookmarks()
                 break
             case PageType.HISTORY:
@@ -92,15 +97,13 @@ export default class Controller {
                 break
             case PageType.SETTING:
                 this._currentPage = new Setting()
-
-                if (this.setting) {
-                    this._currentPage.action(TableAction.INFO)
-                }
+                break
+            case PageType.OFFLINE:
+                this.requestInfo(true)
+                this._currentPage = new Offline()
                 break
         }
 
-        if (this.setting) {
-            this._currentPage.action(TableAction.INFO)
-        }
+        this._currentPage.action(TableAction.INFO)
     }
 }

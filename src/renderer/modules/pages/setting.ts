@@ -11,10 +11,6 @@ import { Channel, PageType, RequestHandler } from '@src/types'
 export class Setting extends A_Page {
     public page = PageType.SETTING
 
-    constructor() {
-        super()
-    }
-
     render(): void {
         this.root.innerHTML = ''
         const wrapper = new Element('section', {

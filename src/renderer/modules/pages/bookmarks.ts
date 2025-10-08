@@ -35,12 +35,6 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     // Store Shortcut
     private shortcuts: Record<string, string> = {}
 
-    // Browser info
-    private browserUrl: Bookmark = {
-        url: '',
-        title: '',
-    }
-
     // Shortcut temp store
     private shortcutKeyIn = ''
 
@@ -89,8 +83,9 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         switch (mode) {
             case PageMode.NEW:
                 this._cursor = null
-                this.inputTitle.value = this.browserUrl.title
-                this.inputUrl.value = this.browserUrl.url
+                this.inputTitle.value =
+                    Controller.getInstance().setting.title || ''
+                this.inputUrl.value = Controller.getInstance().setting.url || ''
                 this.inputShortcut.value = ''
 
                 this.form.show()
@@ -120,21 +115,12 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
         ipcRenderer.once(
             Channel.BOOKMARK,
-            (
-                handler: RequestHandler.RESPONSE,
-                bookmarks: Bookmark[],
-                title: string,
-                url: string,
-            ) => {
+            (handler: RequestHandler.RESPONSE, bookmarks: Bookmark[]) => {
                 if (handler !== RequestHandler.RESPONSE) {
                     return
                 }
 
                 this.action(TableAction.UPDATE, bookmarks)
-                this.browserUrl = {
-                    title: title || '',
-                    url: url || '',
-                }
             },
         )
     }

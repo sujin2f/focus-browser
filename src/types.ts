@@ -21,6 +21,8 @@ export type Info = Partial<
     StatusProps & {
         shortcuts: Shortcuts
         cache: number
+        title: string
+        url: string
     }
 >
 
@@ -47,6 +49,7 @@ export enum PageType {
     ANCHOR,
     POPUP_BLOCKER,
     SETTING,
+    OFFLINE,
 }
 
 export enum SceneBrowser {

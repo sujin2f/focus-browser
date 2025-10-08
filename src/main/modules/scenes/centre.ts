@@ -31,17 +31,22 @@ export class CentreView extends WebContentsView {
         })
     }
 
+    public async sendLocation(title: string, url: string) {
+        this.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
+            title,
+            url,
+        })
+    }
+
     public sendHistory(entries: NavigationEntry[]) {
         this.webContents.send(Channel.HISTORY, RequestHandler.RESPONSE, entries)
     }
 
-    public sendBookmarks(title: string, url: string) {
+    public sendBookmarks() {
         this.webContents.send(
             Channel.BOOKMARK,
             RequestHandler.RESPONSE,
             Bookmarks.getInstance().get(),
-            title,
-            url,
         )
     }
 

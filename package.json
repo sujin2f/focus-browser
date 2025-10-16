@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "A lightweight browser without tabs, built with Electron.",
     "license": "MIT",
     "scripts": {
@@ -60,7 +60,7 @@
     },
     "build": {
         "productName": "Focus",
-        "appId": "sujin.Focus",
+        "appId": "com.sujinc.focus",
         "asar": true,
         "files": [
             "dist",
@@ -101,9 +101,7 @@
         },
         "linux": {
             "target": [
-                "AppImage",
-                "rpm",
-                "deb"
+                "AppImage"
             ],
             "category": "Utilities"
         },

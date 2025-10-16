@@ -77,7 +77,8 @@ export class BrowserView extends WebContentsView {
         } catch {}
 
         this.webContents.loadURL(_url).catch((e) => {
-            Logger.getInstance().error('loadURL failed: ', e)
+            // TODO for the network that needs login like public cafe
+            Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this.failedUrl = _url
                 this.switchMode(PageType.OFFLINE)
@@ -152,7 +153,11 @@ export class BrowserView extends WebContentsView {
                 // )
             })
             .catch((e: any) => {
-                Logger.getInstance().error('Ad-Blocker is failed to load: ', e)
+                // TODO when network connection failed and reconnected, try to activate ad-blocker.
+                Logger.getInstance().error(
+                    'Ad-Blocker is failed to load: ',
+                    JSON.stringify(e),
+                )
             })
     }
 

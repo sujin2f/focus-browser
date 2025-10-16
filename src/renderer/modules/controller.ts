@@ -18,7 +18,7 @@ import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
 
-export default class Controller {
+export class Controller {
     static instance: Controller
     static getInstance(): Controller {
         if (!Controller.instance) {
@@ -68,6 +68,8 @@ export default class Controller {
     }
 
     switch(page: PageType) {
+        this.requestInfo(true)
+
         if (this._currentPage && this._currentPage.page === page) {
             return
         }
@@ -80,7 +82,6 @@ export default class Controller {
                 this._currentPage = new Address()
                 break
             case PageType.BOOKMARK:
-                this.requestInfo(true)
                 this._currentPage = new Bookmarks()
                 break
             case PageType.HISTORY:
@@ -99,11 +100,8 @@ export default class Controller {
                 this._currentPage = new Setting()
                 break
             case PageType.OFFLINE:
-                this.requestInfo(true)
                 this._currentPage = new Offline()
                 break
         }
-
-        this._currentPage.action(TableAction.INFO)
     }
 }

@@ -1,7 +1,7 @@
 import { ElementProps } from '@src/types'
 import { Element } from '.'
 
-export default class Heading extends Element<HTMLHeadingElement> {
+export class Heading extends Element<HTMLHeadingElement> {
     constructor(
         level: 1 | 2 | 3 | 4 | 5 | 6,
         props: Partial<ElementProps> = {},

@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import Heading from '@home/modules/fragments/heading'
+import { Heading } from '@home/modules/fragments/heading'
 import { Button } from '@home/modules/fragments/button'
 
 import { ipcRenderer } from '@home/util'

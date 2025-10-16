@@ -1,5 +1,5 @@
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
-import Controller from '@home/modules/controller'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
@@ -9,7 +9,6 @@ import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 import {
     Channel,
-    PageMode,
     PageType,
     RequestHandler,
     TableAction,

@@ -1,8 +1,8 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import Heading from '@home/modules/fragments/heading'
-import Controller from '@home/modules/controller'
+import { Heading } from '@home/modules/fragments/heading'
+import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 
 import { ipcRenderer } from '@home/util'

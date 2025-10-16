@@ -1,5 +1,5 @@
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
-import Controller from '@home/modules/controller'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
@@ -388,7 +388,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             return
         }
 
-        // User input Shortcut
+        // User input Shortcut or find
         if (
             document.activeElement.tagName.toLowerCase() !== 'input' &&
             e.location === e.DOM_KEY_LOCATION_STANDARD

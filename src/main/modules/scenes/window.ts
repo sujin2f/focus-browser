@@ -71,10 +71,10 @@ export class BrowserWindow extends ElectronBrowserWindow {
             },
             this.switch.bind(this),
         )
-        // #20 Web Title to App Title
+        // Web Title to App Title
         this.browser.webContents
-            .on('page-title-updated', (e, title) => {
-                this.title = title
+            .on('did-finish-load', () => {
+                this.title = this.browser.webContents.getTitle()
             })
             .on('will-navigate', () => (this.title = 'Loading...'))
 
@@ -303,6 +303,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
 
         menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
+                this.title = 'Reloading...'
                 this.browser.reload()
             }
         }

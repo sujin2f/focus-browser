@@ -107,11 +107,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.centre.sendBookmarks()
                 return
             case RequestHandler.ADD:
-                const added = Bookmarks.getInstance().push(bookmark)
-                if (!added) {
-                    return
-                }
-                this.showBookmarkNotification()
+                Bookmarks.getInstance().push(bookmark)
                 return
             case RequestHandler.MODIFY:
                 Bookmarks.getInstance().edit(index, bookmark)

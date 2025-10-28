@@ -59,6 +59,11 @@ export class Anchors extends A_PageWithTable<Bookmark> {
             new Element(
                 'p',
                 { className: ['text-gray-300', 'mb-2'] },
+                'Click title above or press Esc to go back to switch to browser mode.',
+            ),
+            new Element(
+                'p',
+                { className: ['text-gray-300', 'mb-2'] },
                 'Press ',
                 ...shortcutToHtml(`${command}+/`),
                 ' to add a current page to the anchor.',

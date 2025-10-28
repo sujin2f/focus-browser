@@ -142,7 +142,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
     ): Element<HTMLTableCellElement>[]
-    private renderTable() {
+    protected renderTable() {
         this.table.reset()
 
         const ListTr = DataList(Element<HTMLTableRowElement>)
@@ -247,14 +247,6 @@ export abstract class A_PageWithTable<T> extends A_Page {
             tr.prev = null
         }
         return tr
-    }
-
-    /**
-     * For update and refresh
-     */
-    protected refresh() {
-        this._cursor = null
-        this.renderTable()
     }
 
     action(action: TableAction, items: T[] = []) {

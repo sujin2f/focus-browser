@@ -125,7 +125,10 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         )
     }
 
-    cbInfoUpdated() {
+    refresh() {
+        this._cursor = null
+        this.renderTable()
+
         if (!Controller.getInstance().setting.helpText) {
             this.helpText.destroy()
             this.helpText = new Element('section')

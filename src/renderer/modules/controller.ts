@@ -41,7 +41,6 @@ export class Controller {
                 this.currentPage.doShortcut(e),
             )
 
-            this.requestInfo()
             this.initIPC()
             this.switch(PageType.HOME)
         })
@@ -68,7 +67,7 @@ export class Controller {
     }
 
     switch(page: PageType) {
-        this.requestInfo(true)
+        this.requestInfo(!!this.setting.maxHistory)
 
         if (this._currentPage && this._currentPage.page === page) {
             return

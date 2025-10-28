@@ -23,7 +23,7 @@ export abstract class A_Page {
     /**
      * Abstracts
      */
-    abstract cbInfoUpdated(): void
+    abstract refresh(): void
 
     protected get root() {
         return document.getElementById('root')
@@ -34,7 +34,7 @@ export abstract class A_Page {
      */
     public action(action: TableAction, ...arg: unknown[]) {
         if (action === TableAction.INFO) {
-            this.cbInfoUpdated()
+            this.refresh()
         }
     }
 

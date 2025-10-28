@@ -44,7 +44,6 @@ export class History extends A_PageWithTable<NavigationEntry> {
                     return
                 }
 
-                console.log(history)
                 this.action(TableAction.UPDATE, history)
             },
         )
@@ -99,7 +98,8 @@ export class History extends A_PageWithTable<NavigationEntry> {
         }
     }
 
-    cbInfoUpdated(): void {
-        return
+    refresh(): void {
+        this._cursor = null
+        this.renderTable()
     }
 }

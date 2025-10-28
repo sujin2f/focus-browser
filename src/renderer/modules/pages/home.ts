@@ -68,7 +68,7 @@ export class Home extends A_Page {
     private helpText: Element<HTMLElement> = new Element('section')
     private cards: Element<HTMLElement> = new Element('section')
 
-    cbInfoUpdated() {
+    refresh() {
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()

@@ -2,10 +2,10 @@ import {
     WebContentsView,
     type WebContentsViewConstructorOptions,
     type NavigationEntry,
+    ipcMain,
 } from 'electron'
 
 import { Channel, RequestHandler } from '@src/types'
-import { message } from '@main/util'
 import Logger from '@main/modules/logger'
 
 import Status from '@main/modules/store/status'
@@ -17,8 +17,8 @@ import Bookmarks from '@main/modules/store/bookmarks'
 export class CentreView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        message.on(Channel.ANCHOR, this.onAnchors.bind(this))
-        message.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
+        ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
+        ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
     }
     /**
      * IPC

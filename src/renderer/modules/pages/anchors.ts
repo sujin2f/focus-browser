@@ -44,7 +44,10 @@ export class Anchors extends A_PageWithTable<Bookmark> {
         )
     }
 
-    cbInfoUpdated(): void {
+    refresh(): void {
+        this._cursor = null
+        this.renderTable()
+
         if (!Controller.getInstance().setting.helpText) {
             this.helpText.destroy()
             this.helpText = new Element('section')

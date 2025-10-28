@@ -219,7 +219,10 @@ export class BrowserView extends WebContentsView {
                 clipboard.writeImage(image)
             })
         } catch (error) {
-            console.error('Error fetching or processing image:', error)
+            Logger.getInstance().error(
+                'Error fetching or processing image:',
+                error,
+            )
         }
     }
 

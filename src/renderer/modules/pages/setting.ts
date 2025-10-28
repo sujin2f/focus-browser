@@ -11,7 +11,7 @@ import { Channel, PageType, RequestHandler } from '@src/types'
 export class Setting extends A_Page {
     public page = PageType.SETTING
 
-    render(): void {
+    refresh() {
         this.root.innerHTML = ''
         const wrapper = new Element('section', {
             className: ['w-4/6', 'mx-auto'],
@@ -63,9 +63,5 @@ export class Setting extends A_Page {
 
         this.root.append(wrapper.element)
         wrapper.append(title, helpText, maxHistory, adBlocker)
-    }
-
-    cbInfoUpdated() {
-        this.render()
     }
 }

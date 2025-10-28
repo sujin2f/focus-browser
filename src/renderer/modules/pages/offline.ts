@@ -10,7 +10,7 @@ import { Channel, PageType, SceneBrowser } from '@src/types'
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
 
-    render(): void {
+    refresh(): void {
         this.root.innerHTML = ''
         const title = new Heading(
             1,
@@ -45,9 +45,5 @@ export class Offline extends A_Page {
             reload,
         )
         this.root.append(container.element)
-    }
-
-    cbInfoUpdated() {
-        this.render()
     }
 }

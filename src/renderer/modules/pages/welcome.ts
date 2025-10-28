@@ -13,10 +13,7 @@ export class Welcome extends A_Page {
 
     constructor() {
         super()
-        this.render()
-    }
 
-    render() {
         this.root.innerHTML = ''
         // H1
         const heading = new Heading(
@@ -92,5 +89,5 @@ export class Welcome extends A_Page {
         this.root.appendChild(container.element)
     }
 
-    cbInfoUpdated(): void {}
+    refresh(): void {}
 }

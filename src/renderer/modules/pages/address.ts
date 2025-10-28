@@ -5,8 +5,8 @@ import { PageType } from '@src/types'
 export class Address extends Home {
     public readonly page = PageType.ADDRESS
 
-    cbInfoUpdated(): void {
-        super.cbInfoUpdated()
+    refresh(): void {
+        super.refresh()
         this.focus()
     }
 }

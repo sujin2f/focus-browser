@@ -11,14 +11,21 @@ export class Element<T extends HTMLElement> {
     public get element(): T {
         return this._element
     }
+    private _children: (string | Element<HTMLElement>)[] = []
 
     constructor(
-        tag: string,
-        { className, hide, onClick }: Partial<ElementProps> = {},
+        private tag: string,
+        private props: Partial<ElementProps> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
-        this.element = document.createElement(tag) as T
-        this.append(...children)
+        this._children = children
+        this.constInit()
+    }
+
+    private constInit() {
+        const { className, hide, onClick } = this.props
+        this.element = document.createElement(this.tag) as T
+        this.append(...this._children)
 
         if (className) {
             const clsSet = new Set<string>()
@@ -120,5 +127,9 @@ export class Element<T extends HTMLElement> {
 
     public destroy() {
         this.element.remove()
+    }
+
+    public reset() {
+        this.constInit()
     }
 }

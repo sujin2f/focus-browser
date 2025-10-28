@@ -1,7 +1,7 @@
 import { ElementProps } from '@src/types'
 import { Element } from '.'
 
-export default class Table extends Element<HTMLDivElement> {
+export class Table extends Element<HTMLDivElement> {
     private table: Element<HTMLTableElement>
     private head?: Element<HTMLTableSectionElement>
     private headRow?: Element<HTMLTableRowElement>

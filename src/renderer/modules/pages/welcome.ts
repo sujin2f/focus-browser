@@ -3,7 +3,7 @@ import { A_Page } from '@home/modules/pages/abs_page'
 import { Element } from '@home/modules/fragments'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Button } from '@home/modules/fragments/button'
-import Heading from '@home/modules/fragments/heading'
+import { Heading } from '@home/modules/fragments/heading'
 
 import { PageType } from '@src/types'
 import { isMac, navigate } from '@home/util'
@@ -13,10 +13,7 @@ export class Welcome extends A_Page {
 
     constructor() {
         super()
-        this.render()
-    }
 
-    render() {
         this.root.innerHTML = ''
         // H1
         const heading = new Heading(
@@ -92,5 +89,5 @@ export class Welcome extends A_Page {
         this.root.appendChild(container.element)
     }
 
-    cbInfoUpdated(): void {}
+    refresh(): void {}
 }

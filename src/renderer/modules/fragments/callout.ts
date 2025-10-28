@@ -1,5 +1,5 @@
 import { Element } from '@home/modules/fragments'
-import Controller from '@home/modules/controller'
+import { Controller } from '@home/modules/controller'
 
 import { Button } from '@home/modules/fragments/button'
 

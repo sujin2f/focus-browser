@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import Heading from '@home/modules/fragments/heading'
+import { Heading } from '@home/modules/fragments/heading'
 import { Button } from '@home/modules/fragments/button'
 
 import { ipcRenderer } from '@home/util'
@@ -10,7 +10,7 @@ import { Channel, PageType, SceneBrowser } from '@src/types'
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
 
-    render(): void {
+    refresh(): void {
         this.root.innerHTML = ''
         const title = new Heading(
             1,
@@ -45,9 +45,5 @@ export class Offline extends A_Page {
             reload,
         )
         this.root.append(container.element)
-    }
-
-    cbInfoUpdated() {
-        this.render()
     }
 }

@@ -115,7 +115,5 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         }
     }
 
-    cbInfoUpdated(): void {
-        return
-    }
+    refresh(): void {}
 }

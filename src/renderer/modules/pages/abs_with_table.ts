@@ -1,12 +1,12 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import Table from '@home/modules/fragments/table'
+import { Table } from '@home/modules/fragments/table'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
-import Heading from '@home/modules/fragments/heading'
+import { Heading } from '@home/modules/fragments/heading'
 import DataList, { type DataListType } from '@home/modules/fragments/data-list'
 
 import { PageMode, TableAction } from '@src/types'
@@ -142,7 +142,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract getRowCells(
         tr: DataListType<Element<HTMLTableRowElement>>,
     ): Element<HTMLTableCellElement>[]
-    private renderTable() {
+    protected renderTable() {
         this.table.reset()
 
         const ListTr = DataList(Element<HTMLTableRowElement>)
@@ -247,14 +247,6 @@ export abstract class A_PageWithTable<T> extends A_Page {
             tr.prev = null
         }
         return tr
-    }
-
-    /**
-     * For update and refresh
-     */
-    protected refresh() {
-        this._cursor = null
-        this.renderTable()
     }
 
     action(action: TableAction, items: T[] = []) {

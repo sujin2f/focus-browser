@@ -8,7 +8,7 @@ import { isMac } from '@home/util'
 
 class Test extends A_PageWithTable<string> {
     order: 'ASC' | 'DESC' = 'ASC'
-    cbInfoUpdated(): void {
+    refresh(): void {
         throw new Error('Method not implemented.')
     }
     page: PageType = PageType.WELCOME
@@ -39,16 +39,6 @@ class Test extends A_PageWithTable<string> {
 
     action(action: TableAction, items: string[] = []) {
         super.action(action, items)
-    }
-    doShortcut(e: KeyboardEvent): boolean {
-        if (super.doShortcut(e)) {
-            return
-        }
-
-        // Find mode
-        if (e.location === e.DOM_KEY_LOCATION_STANDARD) {
-            this.changeMode(PageMode.FIND)
-        }
     }
 }
 
@@ -90,18 +80,5 @@ describe('A_PageWithTable', () => {
                 .querySelector('form')
                 .classList.contains('hidden'),
         ).toBeFalsy()
-    })
-
-    test('a to open find form and find', async () => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
-        document.querySelector('input').value = 'a'
-        document
-            .querySelector('input')
-            .dispatchEvent(new KeyboardEvent('keyup', { key: 'a' }))
-
-        const tr = document.querySelectorAll('tr')
-        expect(tr[0].classList.contains('hidden')).toBeFalsy()
-        expect(tr[1].classList.contains('hidden')).toBeTruthy()
-        expect(tr[2].classList.contains('hidden')).toBeTruthy()
     })
 })

@@ -209,7 +209,6 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.s0001]: {},
                 [Menu.DEVTOOLS]: {
                     accelerator: 'Control+Shift+I',
-                    role: 'toggleDevTools',
                 },
             },
             [MenuCategory.NAVIGATE]: {

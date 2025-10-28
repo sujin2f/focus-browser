@@ -12,6 +12,7 @@ import {
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
 import { adBlockerPreload } from '@src/main/util'
+import Logger from '../logger'
 
 const { ipcMain } = electron
 
@@ -243,7 +244,10 @@ export class ElectronBlocker extends FiltersEngine {
             try {
                 event.sender.executeJavaScript(script, true)
             } catch (e) {
-                console.error('@ghostery/adblocker scriptlet crashed', e)
+                Logger.getInstance().error(
+                    '@ghostery/adblocker scriptlet crashed',
+                    e,
+                )
             }
         }
     }

@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import Controller from '@home/modules/controller'
+import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
@@ -56,6 +56,7 @@ const buttons: Record<string, T_Card> = {
 /**
  * The HTML layout is :
  * - <location />
+ * - <current URL />
  * - <help-text />
  * - <cards />
  */
@@ -63,21 +64,24 @@ export class Home extends A_Page {
     public page = PageType.HOME
     protected search: Input
     private location: Element<HTMLElement> = new Element('section')
+    private currentURL: Element<HTMLElement> = new Element('section')
     private helpText: Element<HTMLElement> = new Element('section')
     private cards: Element<HTMLElement> = new Element('section')
 
-    constructor() {
-        super()
+    refresh() {
+        this.location.reset()
+        this.currentURL.reset()
+        this.helpText.reset()
+        this.cards.reset()
+
         this.root.innerHTML = ''
         this.root.append(
             this.location.element,
+            this.currentURL.element,
             this.helpText.element,
             this.cards.element,
         )
-        this.render()
-    }
 
-    render(): void {
         // Location Bar
         const command = isMac() ? '⌘' : 'Ctrl+'
         this.search = new Input({
@@ -100,12 +104,13 @@ export class Home extends A_Page {
             cardContainer.append(card)
         })
         this.cards.append(cardContainer)
+
+        this.renderHelpText()
     }
 
-    cbInfoUpdated() {
+    private renderHelpText() {
         if (!Controller.getInstance().setting.helpText) {
-            this.helpText.destroy()
-            this.helpText = new Element('section')
+            this.helpText.reset()
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
@@ -136,7 +141,20 @@ export class Home extends A_Page {
         this.helpText.append(callout)
     }
 
+    protected focus() {
+        this.search.value = Controller.getInstance().setting.url
+        this.search.input.element.select()
+    }
+
     doShortcut(e: KeyboardEvent): boolean {
+        if (
+            e.code === 'KeyL' &&
+            ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey))
+        ) {
+            this.focus()
+            return
+        }
+
         if (
             e.location === e.DOM_KEY_LOCATION_STANDARD &&
             document.activeElement.tagName.toLowerCase() !== 'input'

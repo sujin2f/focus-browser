@@ -11,7 +11,10 @@ type Props = {
 }
 
 export class Input extends Element<HTMLLabelElement> {
-    private input: Element<HTMLInputElement>
+    private _input: Element<HTMLInputElement>
+    public get input() {
+        return this._input
+    }
     private _label: Element<HTMLParagraphElement>
 
     private _error?: Element<HTMLParagraphElement>
@@ -21,19 +24,19 @@ export class Input extends Element<HTMLLabelElement> {
         }
 
         if (!error) {
-            this.input.classList.remove(
+            this._input.classList.remove(
                 'border-pink-900',
                 'dark:border-pink-600',
             )
-            this.input.classList.add(
+            this._input.classList.add(
                 'border-gray-300',
                 'dark:border-transparent',
             )
             return
         }
 
-        this.input.classList.add('border-pink-900', 'dark:border-pink-600')
-        this.input.classList.remove(
+        this._input.classList.add('border-pink-900', 'dark:border-pink-600')
+        this._input.classList.remove(
             'border-gray-300',
             'dark:border-transparent',
         )
@@ -76,10 +79,10 @@ export class Input extends Element<HTMLLabelElement> {
     }
 
     public set type(type: string) {
-        this.input.element.type = type
+        this._input.element.type = type
 
         if (type !== 'checkbox' && type !== 'radio') {
-            this.input.classList.add(
+            this._input.classList.add(
                 'w-full',
                 'text-lg',
                 'p-3',
@@ -94,57 +97,57 @@ export class Input extends Element<HTMLLabelElement> {
                 'focus:ring-pink-500',
             )
         } else {
-            this.input.classList.add('ml-4')
+            this._input.classList.add('ml-4')
         }
     }
 
     public set placeholder(placeholder: string) {
-        this.input.element.placeholder = placeholder
+        this._input.element.placeholder = placeholder
     }
 
     public set maxLength(maxLength: number) {
-        this.input.element.maxLength = maxLength
+        this._input.element.maxLength = maxLength
     }
 
     public set value(value: string) {
-        this.input.element.value = value
+        this._input.element.value = value
     }
 
     public get value() {
-        return this.input.element.value
+        return this._input.element.value
     }
 
     public set checked(checked: boolean) {
         if (
-            this.input.element.type !== 'checkbox' &&
-            this.input.element.type !== 'radio'
+            this._input.element.type !== 'checkbox' &&
+            this._input.element.type !== 'radio'
         ) {
             throw new Error(
                 'Checked attribute only allowed for checkbox or radio type.',
             )
         }
-        this.input.element.checked = checked
+        this._input.element.checked = checked
     }
 
     public get checked() {
         if (
-            this.input.element.type !== 'checkbox' &&
-            this.input.element.type !== 'radio'
+            this._input.element.type !== 'checkbox' &&
+            this._input.element.type !== 'radio'
         ) {
             throw new Error(
                 'Checked attribute only allowed for checkbox or radio type.',
             )
         }
 
-        return this.input.element.checked
+        return this._input.element.checked
     }
 
     public focus() {
-        this.input.element.focus()
+        this._input.element.focus()
     }
 
     public blur() {
-        this.input.element.blur()
+        this._input.element.blur()
     }
 
     public constructor(
@@ -160,8 +163,8 @@ export class Input extends Element<HTMLLabelElement> {
             ...children,
         )
 
-        this.input = new Element('input')
-        this.element.append(this.input.element)
+        this._input = new Element('input')
+        this.element.append(this._input.element)
 
         if (props.label) {
             this.label = props.label

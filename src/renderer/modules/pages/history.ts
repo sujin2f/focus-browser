@@ -1,8 +1,10 @@
 import type { NavigationEntry } from 'electron'
+import { Controller } from '@home/modules/controller'
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 
 import { Button } from '@home/modules/fragments/button'
 import { Element } from '@home/modules/fragments'
+import { Callout } from '@home/modules/fragments/callout'
 
 import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer } from '@home/util'
@@ -101,5 +103,20 @@ export class History extends A_PageWithTable<NavigationEntry> {
     refresh(): void {
         this._cursor = null
         this.renderTable()
+
+        if (!Controller.getInstance().setting.helpText) {
+            this.helpText.destroy()
+            this.helpText = new Element('section')
+            return
+        }
+        const callout = new Callout(
+            { className: ['mb-4'] },
+            new Element(
+                'p',
+                { className: ['text-gray-300', 'mb-2'] },
+                'Click title above or press Esc to go back to switch to browser mode.',
+            ),
+        )
+        this.helpText.append(callout)
     }
 }

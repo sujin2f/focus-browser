@@ -67,37 +67,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     private addMenuCallbacks(menu: MenuBlock) {
         menu[MenuCategory.EDIT][E_Menu.ADD_BOOKMARK].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
-                const added = Bookmarks.getInstance().push({
-                    url: this.browser.webContents.getURL(),
-                    title: this.browser.webContents.getTitle(),
-                })
-                if (!added) {
-                    return
-                }
-                this.showBookmarkNotification()
+                this.browser.addBookmark()
             }
         }
 
         menu[MenuCategory.EDIT][E_Menu.ADD_ANCHOR].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
-                const added = Anchors.getInstance().push({
-                    url: this.browser.webContents.getURL(),
-                    title: this.browser.webContents.getTitle(),
-                })
-
-                if (!added) {
-                    return
-                }
-
-                const notification = new Notification({
-                    title: 'Focus',
-                    body: 'New Anchor Added',
-                    silent: true,
-                })
-                notification.addListener('click', () => {
-                    this.switch(PageType.ANCHOR)
-                })
-                notification.show()
+                this.browser.addAnchor()
             }
         }
 
@@ -133,19 +109,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.BACK].click = () => {
-            if (
-                this.current === SceneBrowser.BROWSER &&
-                this.browser.webContents.navigationHistory.canGoBack()
-            ) {
+            if (this.current === SceneBrowser.BROWSER) {
                 this.browser.webContents.navigationHistory.goBack()
             }
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.FORWARD].click = () => {
-            if (
-                this.current === SceneBrowser.BROWSER &&
-                this.browser.webContents.navigationHistory.canGoForward()
-            ) {
+            if (this.current === SceneBrowser.BROWSER) {
                 this.browser.webContents.navigationHistory.goForward()
             }
         }
@@ -166,6 +136,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         return menu
     }
 
-    abstract showBookmarkNotification(): void
     abstract switch(scene: Scenes): void
 }

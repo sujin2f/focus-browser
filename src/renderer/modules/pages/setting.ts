@@ -61,7 +61,27 @@ export class Setting extends A_Page {
             label: 'Use Ad-Blocker',
         })
 
+        let cacheSize = Controller.getInstance().setting.cache
+        let cacheText = ''
+        const mb = 1024 * 1024
+        if (cacheSize < mb) {
+            cacheText = `${cacheSize} bytes`
+        } else if (cacheSize < mb * 1024) {
+            cacheSize = cacheSize / mb
+            cacheText = `${cacheSize.toFixed(2)} Mb`
+        } else {
+            cacheSize = cacheSize / (mb * 1024)
+            cacheText = `${cacheSize.toFixed(2)} Gb`
+        }
+        const cache = new Element(
+            'div',
+            {
+                onClick: () => {},
+            },
+            `Cache size: ${cacheText}`,
+        )
+
         this.root.append(wrapper.element)
-        wrapper.append(title, helpText, maxHistory, adBlocker)
+        wrapper.append(title, helpText, maxHistory, cache)
     }
 }

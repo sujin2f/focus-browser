@@ -1,8 +1,9 @@
 import {
     WebContentsView,
+    ipcMain,
     type WebContentsViewConstructorOptions,
     type NavigationEntry,
-    ipcMain,
+    type IpcMainEvent,
 } from 'electron'
 
 import { Channel, RequestHandler } from '@src/types'
@@ -50,7 +51,7 @@ export class CentreView extends WebContentsView {
         )
     }
 
-    private onAnchors(handler: RequestHandler, url: string) {
+    private onAnchors(_: IpcMainEvent, handler: RequestHandler, url: string) {
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.webContents.send(
@@ -66,7 +67,11 @@ export class CentreView extends WebContentsView {
         }
     }
 
-    private onPopupBlocker(handler: RequestHandler, host: string) {
+    private onPopupBlocker(
+        _: IpcMainEvent,
+        handler: RequestHandler,
+        host: string,
+    ) {
         switch (handler) {
             case RequestHandler.REQUEST:
                 const blocked = Popup.getInstance().get('blocked')

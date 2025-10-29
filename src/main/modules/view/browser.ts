@@ -6,6 +6,8 @@ import {
     Notification,
     type WebContentsViewConstructorOptions,
     type ContextMenuParams,
+    type MenuItemConstructorOptions,
+    type MenuItem,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
@@ -14,9 +16,10 @@ import { Bookmark, PageType, Scenes } from '@src/types'
 import Logger from '@main/modules/logger'
 
 import PopupBlocker from '@main/modules/store/popup'
-
 import History from '@main/modules/store/history'
 import Status from '@main/modules/store/status'
+import Bookmarks from '@main/modules/store/bookmarks'
+import Anchors from '@main/modules/store/anchors'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -184,9 +187,32 @@ export class BrowserView extends WebContentsView {
     }
 
     private async showContextMenu(_: unknown, params: ContextMenuParams) {
+        const menu: Array<MenuItemConstructorOptions | MenuItem> = [
+            {
+                label: 'Add Bookmark',
+                click: () => this.addBookmark(),
+            },
+            {
+                label: 'Add Anchor',
+                click: () => this.addAnchor(),
+            },
+            { type: 'separator' },
+            {
+                label: 'Control Centre',
+                click: () => this.switchMode(PageType.HOME),
+            },
+            {
+                label: 'Back',
+                click: () => this.webContents.navigationHistory.goBack(),
+            },
+            {
+                label: 'Forward',
+                click: () => this.webContents.navigationHistory.goForward(),
+            },
+        ]
         // only show the context menu if the element is editable
         if (params.hasImageContents) {
-            const menu = Menu.buildFromTemplate([
+            Menu.buildFromTemplate([
                 {
                     label: 'Copy Image',
                     click: () => this.copyImageToClipboard(params.srcURL),
@@ -195,19 +221,25 @@ export class BrowserView extends WebContentsView {
                     label: 'Copy Image Address',
                     click: () => clipboard.writeText(params.srcURL),
                 },
-            ])
-            menu.popup()
+                { type: 'separator' },
+                ...menu,
+            ]).popup()
+            return
         }
 
         if (params.linkURL) {
-            const menu = Menu.buildFromTemplate([
+            Menu.buildFromTemplate([
                 {
                     label: 'Copy Link URL',
                     click: () => clipboard.writeText(params.linkURL),
                 },
-            ])
-            menu.popup()
+                { type: 'separator' },
+                ...menu,
+            ]).popup()
+            return
         }
+
+        Menu.buildFromTemplate([...menu]).popup()
     }
 
     private async copyImageToClipboard(imageUrl: string) {
@@ -235,5 +267,45 @@ export class BrowserView extends WebContentsView {
             return
         }
         this.webContents.reload()
+    }
+
+    public addBookmark() {
+        const added = Bookmarks.getInstance().push({
+            url: this.webContents.getURL(),
+            title: this.webContents.getTitle(),
+        })
+        if (!added) {
+            return
+        }
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        })
+        notification.addListener('click', () => {
+            this.switchMode(PageType.BOOKMARK)
+        })
+        notification.show()
+    }
+    public addAnchor() {
+        const added = Anchors.getInstance().push({
+            url: this.webContents.getURL(),
+            title: this.webContents.getTitle(),
+        })
+
+        if (!added) {
+            return
+        }
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Anchor Added',
+            silent: true,
+        })
+        notification.addListener('click', () => {
+            this.switchMode(PageType.ANCHOR)
+        })
+        notification.show()
     }
 }

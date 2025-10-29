@@ -149,18 +149,6 @@ export class BrowserWindow extends AbsWindowIPC {
         Anchors.getInstance().save()
     }
 
-    public showBookmarkNotification() {
-        const notification = new Notification({
-            title: 'Focus',
-            body: 'New Bookmark Added',
-            silent: true,
-        })
-        notification.addListener('click', () => {
-            this.switch(PageType.BOOKMARK)
-        })
-        notification.show()
-    }
-
     show() {
         if (this.current === SceneBrowser.BROWSER) {
             this.browser.webContents.focus()

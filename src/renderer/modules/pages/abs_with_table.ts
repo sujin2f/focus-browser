@@ -26,7 +26,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract order: 'ASC' | 'DESC'
 
     // HTML Layout
-    protected title: Heading = new Heading(1, {}, '')
+    protected title: Heading = new Heading(1, { onClick: () => navigate() }, '')
     protected buttonGroup: ButtonGroup = new ButtonGroup()
     protected forms: Element<HTMLElement> = new Element('section')
     protected helpText: Element<HTMLElement> = new Element('section')

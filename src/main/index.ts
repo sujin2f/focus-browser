@@ -1,6 +1,7 @@
 import { app, Menu } from 'electron'
 import { BrowserWindow } from '@main/modules/window/window'
 import Logger from './modules/logger'
+import { icon } from './util'
 
 /**
  * Add event listeners...
@@ -16,7 +17,9 @@ app.on('window-all-closed', () => {
 app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
-        const window = BrowserWindow.getInstance()
+        const window = BrowserWindow.getInstance({
+            icon,
+        })
         window.setAutoHideMenuBar(true)
 
         // Main.getInstance()

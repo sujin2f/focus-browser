@@ -48,7 +48,13 @@ export class Controller {
 
     private requestInfo(isLocation: boolean = false) {
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, isLocation)
-        ipcRenderer.once(
+    }
+
+    private initIPC() {
+        ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
+            this.switch(scene)
+        })
+        ipcRenderer.on(
             Channel.INFO,
             (handler: RequestHandler, setting: Info) => {
                 if (handler !== RequestHandler.RESPONSE) {
@@ -58,12 +64,6 @@ export class Controller {
                 this._currentPage.action(TableAction.INFO)
             },
         )
-    }
-
-    private initIPC() {
-        ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
-            this.switch(scene)
-        })
     }
 
     switch(page: PageType) {

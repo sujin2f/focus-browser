@@ -76,9 +76,14 @@ export class Setting extends A_Page {
         const cache = new Element(
             'div',
             {
-                onClick: () => {},
+                onClick: () => {
+                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                        cache: true,
+                    })
+                },
+                className: ['cursor-pointer'],
             },
-            `Cache size: ${cacheText}`,
+            `Cache size: ${cacheText} (Click to clear)`,
         )
 
         this.root.append(wrapper.element)

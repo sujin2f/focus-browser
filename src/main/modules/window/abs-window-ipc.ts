@@ -37,12 +37,22 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
     }
 
-    private async onInfo(
+    private onInfo(
         _: IpcMainEvent,
         handler: RequestHandler,
         data: Partial<Info>,
     ) {
+        /**
+         * Modifying status
+         */
         if (handler === RequestHandler.MODIFY) {
+            // Clear cache
+            if (data.hasOwnProperty('cache')) {
+                this.browser.webContents.session.clearCache()
+                this.sendInfo()
+                return
+            }
+
             Status.getInstance().merge(data)
             return
         }
@@ -60,15 +70,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            this.centre.webContents.send(
-                Channel.INFO,
-                RequestHandler.RESPONSE,
-                {
-                    shortcuts: Shortcut.getInstance().get('shortcuts'),
-                    cache: await this.browser.webContents.session.getCacheSize(),
-                    ...Status.getInstance().data,
-                },
-            )
+            this.sendInfo()
         }
     }
 
@@ -183,5 +185,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Popup.getInstance().toggle(host)
                 return
         }
+    }
+
+    private async sendInfo() {
+        this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
+            shortcuts: Shortcut.getInstance().get('shortcuts'),
+            cache: await this.browser.webContents.session.getCacheSize(),
+            ...Status.getInstance().data,
+        })
     }
 }

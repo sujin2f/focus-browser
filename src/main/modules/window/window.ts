@@ -88,6 +88,7 @@ export class BrowserWindow extends AbsWindowIPC {
         if (scene === SceneBrowser.BROWSER) {
             this.contentView = this.browser
             if (this.browser.failedUrl) {
+                this.title = 'Loading...'
                 this.browser.reload()
             }
             return

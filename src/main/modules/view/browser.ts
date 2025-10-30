@@ -29,7 +29,7 @@ export class BrowserView extends WebContentsView {
         }
     }
 
-    private _blocker: ElectronBlocker
+    private _blocker?: ElectronBlocker | false
     public get blocker() {
         return this._blocker
     }
@@ -67,6 +67,7 @@ export class BrowserView extends WebContentsView {
      */
     public loadURL(url: string) {
         this.webContents.stop()
+        this.setAdBlocker()
         let _url = url
 
         // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
@@ -114,15 +115,20 @@ export class BrowserView extends WebContentsView {
     }
 
     private async setAdBlocker() {
+        if (this._blocker || this.blocker === false) {
+            return
+        }
+
         if (!Status.getInstance().get('adBlocker')) {
+            this._blocker = false
             Logger.getInstance().log('Ad-Blocker is disabled.')
             return
         }
 
         ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
             .then((blocker) => {
+                blocker.enableBlockingInSession(this.webContents.session)
                 this._blocker = blocker
-                this._blocker.enableBlockingInSession(this.webContents.session)
                 Logger.getInstance().log('Ad-Blocker is enabled.')
 
                 // For debug
@@ -208,6 +214,10 @@ export class BrowserView extends WebContentsView {
             {
                 label: 'Forward',
                 click: () => this.webContents.navigationHistory.goForward(),
+            },
+            {
+                label: 'Reload',
+                click: () => this.webContents.reload(),
             },
         ]
         // only show the context menu if the element is editable

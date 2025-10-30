@@ -61,6 +61,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         this.switch(scene)
 
         if (scene === SceneBrowser.BROWSER && address) {
+            this.title = 'Loading...'
             if (address === 'reload') {
                 this.browser.reload()
                 return

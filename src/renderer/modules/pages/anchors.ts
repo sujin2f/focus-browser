@@ -99,10 +99,8 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                     const tagName = (
                         e.target as HTMLElement
                     ).tagName.toLowerCase()
+
                     if (tagName === 'button') {
-                        this._cursor = tr
-                        this.action(TableAction.DELETE)
-                        this._cursor = null
                         return
                     }
 
@@ -122,7 +120,6 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                     onClick: () => {
                         this._cursor = tr
                         this.action(TableAction.DELETE)
-                        this._cursor = null
                     },
                 },
                 'Remove',
@@ -164,6 +161,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                 (this._cursor.getData('data') as Bookmark).url,
             )
             this.items.splice(this._cursor.getData('index') as number, 1)
+            this._cursor = null
             this.refresh()
 
             return

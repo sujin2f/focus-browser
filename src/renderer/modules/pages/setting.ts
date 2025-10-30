@@ -82,6 +82,6 @@ export class Setting extends A_Page {
         )
 
         this.root.append(wrapper.element)
-        wrapper.append(title, helpText, maxHistory, cache)
+        wrapper.append(title, helpText, maxHistory, adBlocker, cache)
     }
 }

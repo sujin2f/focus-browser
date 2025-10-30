@@ -1,6 +1,6 @@
 import {
     session,
-    Notification,
+    WebContentsView,
     type BaseWindowConstructorOptions,
 } from 'electron'
 
@@ -14,7 +14,6 @@ import PopupBlocker from '@main/modules/store/popup'
 import Anchors from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { CentreView } from '@src/main/modules/view/centre'
 import Logger from '@main/modules/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
@@ -22,6 +21,14 @@ import { AbsWindowIPC } from './abs-window-ipc'
  * All starts with here
  */
 export class BrowserWindow extends AbsWindowIPC {
+    static instance: BrowserWindow
+    static getInstance(options?: BaseWindowConstructorOptions): BrowserWindow {
+        if (!BrowserWindow.instance) {
+            BrowserWindow.instance = new BrowserWindow(options)
+        }
+        return BrowserWindow.instance
+    }
+
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
@@ -39,21 +46,22 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     private initBrowser() {
-        this.browser = new BrowserView(
-            {
-                webPreferences: {
-                    session: session.fromPartition('persist:my-partition'),
-                    partition: 'persist:my-partition',
-                },
+        this.browser = new BrowserView({
+            webPreferences: {
+                session: session.fromPartition('persist:my-partition'),
+                partition: 'persist:my-partition',
             },
-            this.switch.bind(this),
-        )
+        })
         // Web Title to App Title
         this.browser.webContents
             .on('did-finish-load', () => {
                 this.title = this.browser.webContents.getTitle()
             })
+            .on('page-title-updated', (_, title) => {
+                this.title = title
+            })
             .on('will-navigate', () => (this.title = 'Loading...'))
+            .on('context-menu', this.showContextMenu.bind(this))
 
         this.contentView = this.browser
     }
@@ -61,7 +69,7 @@ export class BrowserWindow extends AbsWindowIPC {
     private initCentre() {
         const status = Status.getInstance()
 
-        this.centre = new CentreView({
+        this.centre = new WebContentsView({
             webPreferences: {
                 preload,
             },

@@ -1,25 +1,18 @@
 import {
-    clipboard,
-    Menu,
-    nativeImage,
     WebContentsView,
     Notification,
     type WebContentsViewConstructorOptions,
-    type ContextMenuParams,
-    type MenuItemConstructorOptions,
-    type MenuItem,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
-import { Bookmark, PageType, Scenes } from '@src/types'
+import { Bookmark, PageType } from '@src/types'
 import Logger from '@main/modules/logger'
 
 import PopupBlocker from '@main/modules/store/popup'
 import History from '@main/modules/store/history'
 import Status from '@main/modules/store/status'
-import Bookmarks from '@main/modules/store/bookmarks'
-import Anchors from '@main/modules/store/anchors'
+import { BrowserWindow } from '../window/window'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -41,10 +34,7 @@ export class BrowserView extends WebContentsView {
      */
     private readonly DEFAULT_URL = 'https://duckduckgo.com/'
 
-    constructor(
-        options: WebContentsViewConstructorOptions,
-        private switchMode: (scene: Scenes) => void,
-    ) {
+    constructor(options: WebContentsViewConstructorOptions) {
         super(options)
 
         this.setAdBlocker()
@@ -56,9 +46,6 @@ export class BrowserView extends WebContentsView {
         // Enable pinch zoom
         this.webContents.setVisualZoomLevelLimits(1, 3)
         this.webContents.setZoomFactor(1)
-
-        // Context Menu
-        this.webContents.on('context-menu', this.showContextMenu.bind(this))
     }
 
     /**
@@ -85,7 +72,7 @@ export class BrowserView extends WebContentsView {
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this.failedUrl = _url
-                this.switchMode(PageType.OFFLINE)
+                BrowserWindow.getInstance().switch(PageType.OFFLINE)
                 return
             }
 
@@ -185,87 +172,11 @@ export class BrowserView extends WebContentsView {
                 silent: true,
             })
             notification.addListener('click', () => {
-                this.switchMode(PageType.POPUP_BLOCKER)
+                BrowserWindow.getInstance().switch(PageType.POPUP_BLOCKER)
             })
             notification.show()
             return { action: 'deny' }
         })
-    }
-
-    private async showContextMenu(_: unknown, params: ContextMenuParams) {
-        const menu: Array<MenuItemConstructorOptions | MenuItem> = [
-            {
-                label: 'Add Bookmark',
-                click: () => this.addBookmark(),
-            },
-            {
-                label: 'Add Anchor',
-                click: () => this.addAnchor(),
-            },
-            { type: 'separator' },
-            {
-                label: 'Control Centre',
-                click: () => this.switchMode(PageType.HOME),
-            },
-            {
-                label: 'Back',
-                click: () => this.webContents.navigationHistory.goBack(),
-            },
-            {
-                label: 'Forward',
-                click: () => this.webContents.navigationHistory.goForward(),
-            },
-            {
-                label: 'Reload',
-                click: () => this.webContents.reload(),
-            },
-        ]
-        // only show the context menu if the element is editable
-        if (params.hasImageContents) {
-            Menu.buildFromTemplate([
-                {
-                    label: 'Copy Image',
-                    click: () => this.copyImageToClipboard(params.srcURL),
-                },
-                {
-                    label: 'Copy Image Address',
-                    click: () => clipboard.writeText(params.srcURL),
-                },
-                { type: 'separator' },
-                ...menu,
-            ]).popup()
-            return
-        }
-
-        if (params.linkURL) {
-            Menu.buildFromTemplate([
-                {
-                    label: 'Copy Link URL',
-                    click: () => clipboard.writeText(params.linkURL),
-                },
-                { type: 'separator' },
-                ...menu,
-            ]).popup()
-            return
-        }
-
-        Menu.buildFromTemplate([...menu]).popup()
-    }
-
-    private async copyImageToClipboard(imageUrl: string) {
-        try {
-            await fetch(imageUrl).then(async (response) => {
-                const blob = await (await response.blob()).arrayBuffer()
-                const buffer = Buffer.from(blob)
-                const image = nativeImage.createFromBuffer(buffer)
-                clipboard.writeImage(image)
-            })
-        } catch (error) {
-            Logger.getInstance().error(
-                'Error fetching or processing image:',
-                error,
-            )
-        }
     }
 
     /**
@@ -277,45 +188,5 @@ export class BrowserView extends WebContentsView {
             return
         }
         this.webContents.reload()
-    }
-
-    public addBookmark() {
-        const added = Bookmarks.getInstance().push({
-            url: this.webContents.getURL(),
-            title: this.webContents.getTitle(),
-        })
-        if (!added) {
-            return
-        }
-
-        const notification = new Notification({
-            title: 'Focus',
-            body: 'New Bookmark Added',
-            silent: true,
-        })
-        notification.addListener('click', () => {
-            this.switchMode(PageType.BOOKMARK)
-        })
-        notification.show()
-    }
-    public addAnchor() {
-        const added = Anchors.getInstance().push({
-            url: this.webContents.getURL(),
-            title: this.webContents.getTitle(),
-        })
-
-        if (!added) {
-            return
-        }
-
-        const notification = new Notification({
-            title: 'Focus',
-            body: 'New Anchor Added',
-            silent: true,
-        })
-        notification.addListener('click', () => {
-            this.switchMode(PageType.ANCHOR)
-        })
-        notification.show()
     }
 }

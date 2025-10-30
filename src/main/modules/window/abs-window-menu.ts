@@ -1,10 +1,16 @@
 import {
     BrowserWindow as ElectronBrowserWindow,
+    WebContentsView,
     Menu,
     Notification,
+    clipboard,
+    nativeImage,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
+    type ContextMenuParams,
+    type MenuItem,
 } from 'electron'
+import Logger from '@main/modules/logger'
 
 import {
     MenuCategory,
@@ -15,19 +21,18 @@ import {
     type MenuBlock,
 } from '@src/types'
 
+import Shortcut from '@main/modules/store/shortcut'
 import Bookmarks from '@main/modules/store/bookmarks'
 import Anchors from '@main/modules/store/anchors'
-import Shortcut from '@main/modules/store/shortcut'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { CentreView } from '@src/main/modules/view/centre'
 
 /**
  * All starts with here
  */
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser: BrowserView
-    protected centre: CentreView
+    protected centre: WebContentsView
     protected current: Scenes = SceneBrowser.BROWSER
 
     /**
@@ -67,13 +72,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     private addMenuCallbacks(menu: MenuBlock) {
         menu[MenuCategory.EDIT][E_Menu.ADD_BOOKMARK].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
-                this.browser.addBookmark()
+                this.addBookmark()
             }
         }
 
         menu[MenuCategory.EDIT][E_Menu.ADD_ANCHOR].click = () => {
             if (this.current === SceneBrowser.BROWSER) {
-                this.browser.addAnchor()
+                this.addAnchor()
             }
         }
 
@@ -121,10 +126,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
-            if (this.current === SceneBrowser.BROWSER) {
-                this.title = 'Reloading...'
-                this.browser.reload()
-            }
+            this.reloadBrowser()
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.STOP].click = () => {
@@ -134,6 +136,168 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         }
 
         return menu
+    }
+
+    protected async showContextMenu(_: unknown, params: ContextMenuParams) {
+        const menu: Array<MenuItemConstructorOptions | MenuItem> = [
+            (() =>
+                params.editFlags.canCut
+                    ? {
+                          label: 'Cut',
+                          role: 'cut',
+                      }
+                    : {
+                          label: 'Cut',
+                          enabled: false,
+                      })(),
+            (() =>
+                params.editFlags.canCopy
+                    ? {
+                          label: 'Copy',
+                          role: 'copy',
+                      }
+                    : {
+                          label: 'Copy',
+                          enabled: false,
+                      })(),
+            (() =>
+                params.editFlags.canPaste
+                    ? {
+                          label: 'Paste',
+                          role: 'paste',
+                      }
+                    : {
+                          label: 'Paste',
+                          enabled: false,
+                      })(),
+            { type: 'separator' },
+            {
+                label: 'Add Bookmark',
+                click: () => this.addBookmark(),
+            },
+            {
+                label: 'Add Anchor',
+                click: () => this.addAnchor(),
+            },
+            {
+                label: 'Control Centre',
+                click: () => this.switch(PageType.HOME),
+            },
+            { type: 'separator' },
+            {
+                label: 'Back',
+                click: () =>
+                    this.browser.webContents.navigationHistory.goBack(),
+                enabled: this.browser.webContents.navigationHistory.canGoBack(),
+            },
+            {
+                label: 'Forward',
+                click: () =>
+                    this.browser.webContents.navigationHistory.goForward(),
+                enabled:
+                    this.browser.webContents.navigationHistory.canGoForward(),
+            },
+            {
+                label: 'Reload',
+                click: () => this.reloadBrowser(),
+            },
+        ]
+
+        // only show the context menu if the element is editable
+        if (params.hasImageContents) {
+            Menu.buildFromTemplate([
+                {
+                    label: 'Copy Image',
+                    click: () => this.copyImageToClipboard(params.srcURL),
+                },
+                {
+                    label: 'Copy Image Address',
+                    click: () => clipboard.writeText(params.srcURL),
+                },
+                { type: 'separator' },
+                ...menu,
+            ]).popup()
+            return
+        }
+
+        if (params.linkURL) {
+            Menu.buildFromTemplate([
+                {
+                    label: 'Copy Link URL',
+                    click: () => clipboard.writeText(params.linkURL),
+                },
+                { type: 'separator' },
+                ...menu,
+            ]).popup()
+            return
+        }
+
+        Menu.buildFromTemplate([...menu]).popup()
+    }
+
+    private reloadBrowser() {
+        if (this.current !== SceneBrowser.BROWSER) {
+            return
+        }
+        this.title = 'Reloading...'
+        this.browser.webContents.reload()
+    }
+
+    private addBookmark() {
+        const added = Bookmarks.getInstance().push({
+            url: this.browser.webContents.getURL(),
+            title: this.browser.webContents.getTitle(),
+        })
+        if (!added) {
+            return
+        }
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        })
+        notification.addListener('click', () => {
+            this.switch(PageType.BOOKMARK)
+        })
+        notification.show()
+    }
+
+    private addAnchor() {
+        const added = Anchors.getInstance().push({
+            url: this.browser.webContents.getURL(),
+            title: this.browser.webContents.getTitle(),
+        })
+
+        if (!added) {
+            return
+        }
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Anchor Added',
+            silent: true,
+        })
+        notification.addListener('click', () => {
+            this.switch(PageType.ANCHOR)
+        })
+        notification.show()
+    }
+
+    private async copyImageToClipboard(imageUrl: string) {
+        try {
+            await fetch(imageUrl).then(async (response) => {
+                const blob = await (await response.blob()).arrayBuffer()
+                const buffer = Buffer.from(blob)
+                const image = nativeImage.createFromBuffer(buffer)
+                clipboard.writeImage(image)
+            })
+        } catch (error) {
+            Logger.getInstance().error(
+                'Error fetching or processing image:',
+                error,
+            )
+        }
     }
 
     abstract switch(scene: Scenes): void

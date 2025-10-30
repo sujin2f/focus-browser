@@ -11,6 +11,11 @@ import { Channel, PageType, RequestHandler } from '@src/types'
 export class Setting extends A_Page {
     public page = PageType.SETTING
 
+    constructor() {
+        super()
+        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
+    }
+
     refresh() {
         this.root.innerHTML = ''
         const wrapper = new Element('section', {
@@ -61,6 +66,36 @@ export class Setting extends A_Page {
             label: 'Use Ad-Blocker',
         })
 
+        const adBlockerStatus = new Element(
+            'div',
+            {
+                onClick: () => {
+                    if (
+                        Controller.getInstance().setting.adBlockerStatus !==
+                        null
+                    ) {
+                        return
+                    }
+                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                        adBlockerStatus: true,
+                    })
+                },
+                className: ['cursor-pointer'],
+            },
+            `Ad-Blocker Status: ${(() => {
+                if (Controller.getInstance().setting.adBlockerStatus === null) {
+                    return 'Failed to load. Click here to retry.'
+                }
+                if (
+                    Controller.getInstance().setting.adBlockerStatus === false
+                ) {
+                    return 'Disabled'
+                }
+
+                return 'Working!'
+            })()}`,
+        )
+
         let cacheSize = Controller.getInstance().setting.cache
         let cacheText = ''
         const mb = 1024 * 1024
@@ -87,6 +122,13 @@ export class Setting extends A_Page {
         )
 
         this.root.append(wrapper.element)
-        wrapper.append(title, helpText, maxHistory, adBlocker, cache)
+        wrapper.append(
+            title,
+            helpText,
+            maxHistory,
+            adBlocker,
+            adBlockerStatus,
+            cache,
+        )
     }
 }

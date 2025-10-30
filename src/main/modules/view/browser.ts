@@ -22,7 +22,7 @@ export class BrowserView extends WebContentsView {
         }
     }
 
-    private _blocker?: ElectronBlocker | false
+    private _blocker?: ElectronBlocker | false = null
     public get blocker() {
         return this._blocker
     }
@@ -37,7 +37,6 @@ export class BrowserView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
 
-        this.setAdBlocker()
         this.setPopupBlocker()
 
         const url = this.restoreHistory() || this.DEFAULT_URL
@@ -52,9 +51,9 @@ export class BrowserView extends WebContentsView {
      * Load a URL in the browser view
      * @param url URL to load
      */
-    public loadURL(url: string) {
+    public async loadURL(url: string) {
         this.webContents.stop()
-        this.setAdBlocker()
+        await this.setAdBlocker()
         let _url = url
 
         // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
@@ -101,18 +100,26 @@ export class BrowserView extends WebContentsView {
         return ''
     }
 
-    private async setAdBlocker() {
-        if (this._blocker || this.blocker === false) {
+    public async setAdBlocker() {
+        const enabled = Status.getInstance().get('adBlocker')
+
+        // Enabled and Set
+        if (enabled && this._blocker) {
             return
         }
-
-        if (!Status.getInstance().get('adBlocker')) {
+        // Disabled and UnSet
+        if (!enabled && !this._blocker) {
             this._blocker = false
-            Logger.getInstance().log('Ad-Blocker is disabled.')
             return
         }
-
-        ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+        // Disabled and Set : remove blocker
+        if (!enabled && this._blocker) {
+            this._blocker.disableBlockingInSession(this.webContents.session)
+            this._blocker = false
+            return
+        }
+        // Enabled and UnSet : Init
+        await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
             .then((blocker) => {
                 blocker.enableBlockingInSession(this.webContents.session)
                 this._blocker = blocker
@@ -149,6 +156,7 @@ export class BrowserView extends WebContentsView {
                 // )
             })
             .catch((e: any) => {
+                this._blocker = null
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
                 Logger.getInstance().error(
                     'Ad-Blocker is failed to load: ',

@@ -23,6 +23,7 @@ export type Info = Partial<
         cache: number
         title: string
         url: string
+        adBlockerStatus: boolean | null
     }
 >
 

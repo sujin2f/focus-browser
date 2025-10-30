@@ -37,7 +37,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
     }
 
-    private onInfo(
+    private async onInfo(
         _: IpcMainEvent,
         handler: RequestHandler,
         data: Partial<Info>,
@@ -53,7 +53,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
+            // Reset adBlocker
+            if (data.hasOwnProperty('adBlockerStatus')) {
+                await this.browser.setAdBlocker()
+                this.sendInfo()
+                return
+            }
+
             Status.getInstance().merge(data)
+
+            // If adBlocker setting changed, reset.
+            if (data.hasOwnProperty('adBlocker')) {
+                this.browser.setAdBlocker()
+                this.sendInfo()
+            }
             return
         }
 
@@ -191,6 +204,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
             shortcuts: Shortcut.getInstance().get('shortcuts'),
             cache: await this.browser.webContents.session.getCacheSize(),
+            adBlockerStatus: this.browser.blocker && true,
             ...Status.getInstance().data,
         })
     }

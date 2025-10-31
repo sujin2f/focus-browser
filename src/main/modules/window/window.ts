@@ -21,26 +21,25 @@ import { AbsWindowIPC } from './abs-window-ipc'
  * All starts with here
  */
 export class BrowserWindow extends AbsWindowIPC {
+    // Singleton for calling switch() from views
     static instance: BrowserWindow
     static getInstance(options?: BaseWindowConstructorOptions): BrowserWindow {
         if (!BrowserWindow.instance) {
             BrowserWindow.instance = new BrowserWindow(options)
+            BrowserWindow.instance.init()
         }
         return BrowserWindow.instance
     }
 
     constructor(options?: BaseWindowConstructorOptions) {
-        Logger.getInstance().log('BrowserWindow::constructor')
         super(options)
 
         const bounds = Status.getInstance().getBounds(this.getBounds())
         this.setBounds(bounds)
-
-        // This makes initialization bit slower, but separating constructor and init may be safer from conflict
-        this.once('show', this.init.bind(this))
     }
 
-    private init() {
+    public init() {
+        Logger.getInstance().log('BrowserWindow::init()')
         this.initBrowser()
         this.initCentre()
 

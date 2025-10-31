@@ -1,8 +1,6 @@
 import {
-    Menu,
     session,
     WebContentsView,
-    webFrame,
     type BaseWindowConstructorOptions,
 } from 'electron'
 
@@ -32,21 +30,22 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     constructor(options?: BaseWindowConstructorOptions) {
+        Logger.getInstance().log('BrowserWindow::constructor')
         super(options)
 
-        Logger.getInstance().log('BrowserWindow::constructor')
+        const bounds = Status.getInstance().getBounds(this.getBounds())
+        this.setBounds(bounds)
 
+        // This makes initialization bit slower, but separating constructor and init may be safer from conflict
+        this.once('show', this.init.bind(this))
+    }
+
+    private init() {
         this.initBrowser()
         this.initCentre()
 
-        /**
-         * Restore status
-         */
-        const status = Status.getInstance()
-
-        // Restore window size
-        const bounds = status.getBounds(this.getBounds())
-        this.setBounds(bounds)
+        // Close action
+        this.addListener('close', () => this.saveStatus())
     }
 
     private initBrowser() {
@@ -56,32 +55,10 @@ export class BrowserWindow extends AbsWindowIPC {
                 partition: 'persist:my-partition',
             },
         })
-        this.title = 'Loading...'
-        // Events
-        this.browser.webContents
-            // Web Title to App Title
-            .on('did-finish-load', () => {
-                this.title = this.browser.webContents.getTitle()
-            })
-            .on('page-title-updated', (_, title) => {
-                this.title = title
-            })
-            .on('will-navigate', () => (this.title = 'Loading...'))
-            // Context Menu
-            .on('context-menu', (_, params) => {
-                const menu = this.getContextMenu(params)
-                Menu.buildFromTemplate(menu).popup({
-                    x: params.x,
-                    y: params.y,
-                })
-            })
-
         this.contentView = this.browser
     }
 
     private initCentre() {
-        const status = Status.getInstance()
-
         this.centre = new WebContentsView({
             webPreferences: {
                 preload,
@@ -90,6 +67,7 @@ export class BrowserWindow extends AbsWindowIPC {
         this.centre.webContents
             .loadURL(resolveHtmlPath('index.html'))
             .then(() => {
+                const status = Status.getInstance()
                 if (status.get('welcome')) {
                     this.title = 'Welcome to Focus!'
                     this.switch(PageType.WELCOME)
@@ -102,16 +80,13 @@ export class BrowserWindow extends AbsWindowIPC {
                     JSON.stringify(e),
                 ),
             )
-
-        // Close action
-        this.addListener('close', () => this.saveStatus())
     }
 
     /**
      * View controls
      */
     public switch(scene: Scenes) {
-        this.current = scene
+        this._current = scene
         if (scene === SceneBrowser.BROWSER) {
             this.contentView = this.browser
             if (this.browser.failedUrl) {
@@ -178,18 +153,15 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     reload() {
-        if (this.current !== SceneBrowser.BROWSER) {
+        if (!this.isBrowser) {
+            super.reload()
             return
         }
         this.browser.reload()
     }
 
     show() {
-        if (this.current === SceneBrowser.BROWSER) {
-            this.browser.webContents.focus()
-        } else {
-            this.centre.webContents.focus()
-        }
+        this.current.webContents.focus()
         super.show()
     }
 }

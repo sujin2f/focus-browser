@@ -1,4 +1,4 @@
-import { app, Menu, webFrame } from 'electron'
+import { app, Menu } from 'electron'
 import { BrowserWindow } from '@main/modules/window/window'
 import { Logger } from '@main/modules/logger'
 import { icon } from '@main/util'

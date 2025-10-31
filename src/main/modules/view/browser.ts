@@ -37,9 +37,30 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        Logger.getInstance().log('BrowserView::constructor()')
+        BrowserWindow.getInstance().title = 'Loading...'
 
         this.setPopupBlocker()
+        // Events
+        this.webContents
+            // Web Title to App Title
+            .on('did-finish-load', () => {
+                BrowserWindow.getInstance().title = this.webContents.getTitle()
+            })
+            .on('page-title-updated', (_, title) => {
+                BrowserWindow.getInstance().title = title
+            })
+            .on(
+                'will-navigate',
+                () => (BrowserWindow.getInstance().title = 'Loading...'),
+            )
+            // Context Menu
+            .on('context-menu', (_, params) => {
+                const menu = BrowserWindow.getInstance().getContextMenu(params)
+                Menu.buildFromTemplate(menu).popup({
+                    x: params.x,
+                    y: params.y,
+                })
+            })
 
         // Enable pinch zoom
         this.webContents.setVisualZoomLevelLimits(1, 3)
@@ -55,6 +76,7 @@ export class BrowserView extends WebContentsView {
      * @param url URL to load
      */
     public async loadURL(url: string) {
+        this.webContents.stop()
         await this.setAdBlocker()
         let _url = url
 
@@ -127,7 +149,7 @@ export class BrowserView extends WebContentsView {
                 this._blocker = blocker
                 Logger.getInstance().log('Ad-Blocker is enabled.')
 
-                // For debug
+                // For debug or future usage
                 // blocker.on('request-blocked', (request) => {
                 //     console.log('blocked', request.tabId, request.url)
                 // })

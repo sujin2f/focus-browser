@@ -1,7 +1,6 @@
 import {
     WebContentsView,
     Notification,
-    Menu,
     type WebContentsViewConstructorOptions,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
@@ -55,11 +54,7 @@ export class BrowserView extends WebContentsView {
             )
             // Context Menu
             .on('context-menu', (_, params) => {
-                const menu = BrowserWindow.getInstance().getContextMenu(params)
-                Menu.buildFromTemplate(menu).popup({
-                    x: params.x,
-                    y: params.y,
-                })
+                BrowserWindow.getInstance().showContextMenu(params)
             })
 
         // Enable pinch zoom
@@ -150,34 +145,36 @@ export class BrowserView extends WebContentsView {
                 Logger.getInstance().log('Ad-Blocker is enabled.')
 
                 // For debug or future usage
-                // blocker.on('request-blocked', (request) => {
-                //     console.log('blocked', request.tabId, request.url)
-                // })
+                /*
+                blocker.on('request-blocked', (request) => {
+                    console.log('blocked', request.tabId, request.url)
+                })
 
-                // blocker.on('request-redirected', (request) => {
-                //     console.log('redirected', request.tabId, request.url)
-                // })
+                blocker.on('request-redirected', (request) => {
+                    console.log('redirected', request.tabId, request.url)
+                })
 
-                // blocker.on('request-whitelisted', (request) => {
-                //     console.log('whitelisted', request.tabId, request.url)
-                // })
+                blocker.on('request-whitelisted', (request) => {
+                    console.log('whitelisted', request.tabId, request.url)
+                })
 
-                // blocker.on('csp-injected', (request, csps) => {
-                //     console.log('csp', request.url, csps)
-                // })
+                blocker.on('csp-injected', (request, csps) => {
+                    console.log('csp', request.url, csps)
+                })
 
-                // blocker.on('script-injected', (script: string, url: string) => {
-                //     console.log('script', script.length, url)
-                // })
+                blocker.on('script-injected', (script: string, url: string) => {
+                    console.log('script', script.length, url)
+                })
 
-                // blocker.on('style-injected', (style: string, url: string) => {
-                //     console.log('style', style.length, url)
-                // })
+                blocker.on('style-injected', (style: string, url: string) => {
+                    console.log('style', style.length, url)
+                })
 
-                // blocker.on(
-                //     'filter-matched',
-                //     console.log.bind(console, 'filter-matched'),
-                // )
+                blocker.on(
+                    'filter-matched',
+                    console.log.bind(console, 'filter-matched'),
+                )
+                */
             })
             .catch((e: any) => {
                 this._blocker = null

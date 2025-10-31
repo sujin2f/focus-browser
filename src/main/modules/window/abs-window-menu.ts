@@ -148,12 +148,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * Compose a context menu based on provided ContextMenuParams from Electron.
      *
      * @param {ContextMenuParams} params Comes from webContents.on('context-menu')
-     * @returns {MenuItemConstructorOptions[]}
      */
-    public getContextMenu(
-        params: ContextMenuParams,
-    ): MenuItemConstructorOptions[] {
-        const menu: MenuItemConstructorOptions[] = [
+    public showContextMenu(params: ContextMenuParams) {
+        let menu: MenuItemConstructorOptions[] = [
             (() =>
                 params.editFlags.canCut
                     ? {
@@ -219,7 +216,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         // If the clicked element has image contents, prepend image actions
         if (params.hasImageContents) {
-            return [
+            menu = [
                 {
                     label: 'Copy Image',
                     click: () => this.copyImageToClipboard(params.srcURL),
@@ -235,7 +232,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         // If the clicked element is a link, provide a copy-link entry
         if (params.linkURL) {
-            return [
+            menu = [
                 {
                     label: 'Copy Link URL',
                     click: () => clipboard.writeText(params.linkURL),
@@ -245,8 +242,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             ]
         }
 
-        // Default context menu
-        return menu
+        Menu.buildFromTemplate(menu).popup({
+            x: params.x,
+            y: params.y,
+        })
     }
 
     /**

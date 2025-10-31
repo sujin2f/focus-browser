@@ -16,4 +16,3 @@ export const adBlockerPreload = path.join(
     '..',
     'adblocker-preload.js',
 )
-export const icon = path.join(__dirname, '..', 'icon.png')

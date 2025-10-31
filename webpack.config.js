@@ -1,6 +1,5 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
 
 const commonConfig = {
     mode: process.env.NODE_ENV || 'development',
@@ -80,22 +79,6 @@ const mainConfig = {
         filename: '[name].js',
         chunkFilename: '[name].chunk.js',
     },
-    plugins: [
-        new CopyPlugin({
-            patterns: [
-                {
-                    from: 'build/icon.png',
-                    to: path.resolve(
-                        __dirname,
-                        'release',
-                        'app',
-                        'dist',
-                        'icon.png',
-                    ),
-                },
-            ],
-        }),
-    ],
 }
 
 const rendererConfig = {

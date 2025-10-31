@@ -10,7 +10,6 @@
         "paths": {
             "@src/*": ["./src/*"],
             "@main/*": ["./src/main/*"],
-            "@controllers/*": ["./src/main/controllers/*"],
             "@home/*": ["./src/renderer/*"]
         },
         "isolatedModules": true

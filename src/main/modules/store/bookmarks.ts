@@ -1,6 +1,6 @@
 import { Bookmark } from '@src/types'
-import Store from './store'
-import Logger from '../logger'
+import Store from '@main/modules/store/store'
+import { Logger } from '@main/modules/logger'
 
 export default class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     static instance: Bookmarks

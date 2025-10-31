@@ -3,7 +3,7 @@ import {
     type BaseWindowConstructorOptions,
     type IpcMainEvent,
 } from 'electron'
-import Logger from '@main/modules/logger'
+import { Logger } from '@main/modules/logger'
 
 import {
     Channel,

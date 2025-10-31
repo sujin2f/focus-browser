@@ -1,5 +1,5 @@
 import type { NavigationEntry } from 'electron'
-import Store from './store'
+import Store from '@main/modules/store/store'
 
 export default class History extends Store<{
     index: number

@@ -1,5 +1,5 @@
 import { type Rectangle } from 'electron'
-import Store from './store'
+import Store from '@main/modules/store/store'
 import type { Info, StatusProps } from '@src/types'
 
 export default class Status extends Store<StatusProps> {

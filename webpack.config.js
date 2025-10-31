@@ -60,12 +60,6 @@ const commonConfig = {
         alias: {
             '@main': path.resolve(__dirname, 'src', 'main'),
             '@src': path.resolve(__dirname, 'src'),
-            '@controllers': path.resolve(
-                __dirname,
-                'src',
-                'main',
-                'controllers',
-            ),
             '@home': path.resolve(__dirname, 'src', 'renderer'),
         },
     },

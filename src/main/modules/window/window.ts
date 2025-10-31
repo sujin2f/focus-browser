@@ -1,6 +1,8 @@
 import {
+    Menu,
     session,
     WebContentsView,
+    webFrame,
     type BaseWindowConstructorOptions,
 } from 'electron'
 
@@ -14,7 +16,7 @@ import PopupBlocker from '@main/modules/store/popup'
 import Anchors from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import Logger from '@main/modules/logger'
+import { Logger } from '@main/modules/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
 /**
@@ -31,6 +33,8 @@ export class BrowserWindow extends AbsWindowIPC {
 
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
+
+        Logger.getInstance().log('BrowserWindow::constructor')
 
         this.initBrowser()
         this.initCentre()
@@ -52,8 +56,10 @@ export class BrowserWindow extends AbsWindowIPC {
                 partition: 'persist:my-partition',
             },
         })
-        // Web Title to App Title
+        this.title = 'Loading...'
+        // Events
         this.browser.webContents
+            // Web Title to App Title
             .on('did-finish-load', () => {
                 this.title = this.browser.webContents.getTitle()
             })
@@ -61,7 +67,14 @@ export class BrowserWindow extends AbsWindowIPC {
                 this.title = title
             })
             .on('will-navigate', () => (this.title = 'Loading...'))
-            .on('context-menu', this.showContextMenu.bind(this))
+            // Context Menu
+            .on('context-menu', (_, params) => {
+                const menu = this.getContextMenu(params)
+                Menu.buildFromTemplate(menu).popup({
+                    x: params.x,
+                    y: params.y,
+                })
+            })
 
         this.contentView = this.browser
     }
@@ -78,11 +91,17 @@ export class BrowserWindow extends AbsWindowIPC {
             .loadURL(resolveHtmlPath('index.html'))
             .then(() => {
                 if (status.get('welcome')) {
+                    this.title = 'Welcome to Focus!'
                     this.switch(PageType.WELCOME)
                     status.set('welcome', false)
                 }
             })
-            .catch((e) => Logger.getInstance().error(e))
+            .catch((e) =>
+                Logger.getInstance().error(
+                    'Centre init failed',
+                    JSON.stringify(e),
+                ),
+            )
 
         // Close action
         this.addListener('close', () => this.saveStatus())
@@ -120,7 +139,7 @@ export class BrowserWindow extends AbsWindowIPC {
         status.save()
 
         // Save history
-        if (this.browser.webContents) {
+        if (this.browser && this.browser.webContents) {
             // Remove duplication
             let prevUrl = ''
             const entries = [
@@ -156,6 +175,13 @@ export class BrowserWindow extends AbsWindowIPC {
         // Save Bookmark
         Bookmarks.getInstance().save()
         Anchors.getInstance().save()
+    }
+
+    reload() {
+        if (this.current !== SceneBrowser.BROWSER) {
+            return
+        }
+        this.browser.reload()
     }
 
     show() {

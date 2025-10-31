@@ -1,13 +1,14 @@
 import {
     WebContentsView,
     Notification,
+    Menu,
     type WebContentsViewConstructorOptions,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
 import { Bookmark, PageType } from '@src/types'
-import Logger from '@main/modules/logger'
+import { Logger } from '@main/modules/logger'
 
 import PopupBlocker from '@main/modules/store/popup'
 import History from '@main/modules/store/history'
@@ -36,15 +37,17 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
+        Logger.getInstance().log('BrowserView::constructor()')
 
         this.setPopupBlocker()
-
-        const url = this.restoreHistory() || this.DEFAULT_URL
-        this.loadURL(url)
 
         // Enable pinch zoom
         this.webContents.setVisualZoomLevelLimits(1, 3)
         this.webContents.setZoomFactor(1)
+
+        const url = this.restoreHistory() || this.DEFAULT_URL
+        Logger.getInstance().log('BrowserView::constructor()', url)
+        this.loadURL(url)
     }
 
     /**
@@ -52,7 +55,6 @@ export class BrowserView extends WebContentsView {
      * @param url URL to load
      */
     public async loadURL(url: string) {
-        this.webContents.stop()
         await this.setAdBlocker()
         let _url = url
 
@@ -61,7 +63,7 @@ export class BrowserView extends WebContentsView {
 
         // If the schema is missing, prepend 'http://' to allow the URL constructor
         // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
-        Logger.getInstance().error('Try to load URL: ', _url, hasSchema)
+        Logger.getInstance().log('Try to load URL: ', _url, hasSchema)
         try {
             _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
         } catch {}
@@ -191,6 +193,7 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
+        BrowserWindow.getInstance().title = 'Reloading...'
         if (this.failedUrl) {
             this.loadURL(this.failedUrl)
             return

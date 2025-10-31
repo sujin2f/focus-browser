@@ -1,7 +1,7 @@
-import { app, Menu } from 'electron'
+import { app, Menu, webFrame } from 'electron'
 import { BrowserWindow } from '@main/modules/window/window'
-import Logger from './modules/logger'
-import { icon } from './util'
+import { Logger } from '@main/modules/logger'
+import { icon } from '@main/util'
 
 /**
  * Add event listeners...
@@ -17,12 +17,12 @@ app.on('window-all-closed', () => {
 app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
+        Logger.getInstance().log(icon)
         const window = BrowserWindow.getInstance({
             icon,
         })
         window.setAutoHideMenuBar(true)
 
-        // Main.getInstance()
         app.on('activate', () => {
             Logger.getInstance().log('activate, focused?: ', window.isFocused())
             // On macOS it's common to re-create a window in the app when the
@@ -30,4 +30,9 @@ app.whenReady()
             window.show()
         })
     })
-    .catch(console.log)
+    .catch((e) => {
+        Logger.getInstance().error(
+            'Error Electron app to start',
+            JSON.stringify(e),
+        )
+    })

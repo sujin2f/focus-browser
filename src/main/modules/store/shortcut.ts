@@ -1,4 +1,4 @@
-import Store from './store'
+import Store from '@main/modules/store/store'
 import { SHORTCUTS } from '@main/settings/shortcut'
 import { ShortcutStore } from '@src/types'
 

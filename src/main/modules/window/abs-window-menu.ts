@@ -8,9 +8,8 @@ import {
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
-    type MenuItem,
 } from 'electron'
-import Logger from '@main/modules/logger'
+import { Logger } from '@main/modules/logger'
 
 import {
     MenuCategory,
@@ -126,7 +125,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.RELOAD].click = () => {
-            this.reloadBrowser()
+            this.reload()
         }
 
         menu[MenuCategory.NAVIGATE][E_Menu.STOP].click = () => {
@@ -138,8 +137,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         return menu
     }
 
-    protected async showContextMenu(_: unknown, params: ContextMenuParams) {
-        const menu: Array<MenuItemConstructorOptions | MenuItem> = [
+    protected getContextMenu(
+        params: ContextMenuParams,
+    ): MenuItemConstructorOptions[] {
+        const menu: MenuItemConstructorOptions[] = [
             (() =>
                 params.editFlags.canCut
                     ? {
@@ -199,13 +200,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             },
             {
                 label: 'Reload',
-                click: () => this.reloadBrowser(),
+                click: () => this.reload(),
             },
         ]
 
         // only show the context menu if the element is editable
         if (params.hasImageContents) {
-            Menu.buildFromTemplate([
+            return [
                 {
                     label: 'Copy Image',
                     click: () => this.copyImageToClipboard(params.srcURL),
@@ -216,31 +217,21 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 },
                 { type: 'separator' },
                 ...menu,
-            ]).popup()
-            return
+            ]
         }
 
         if (params.linkURL) {
-            Menu.buildFromTemplate([
+            return [
                 {
                     label: 'Copy Link URL',
                     click: () => clipboard.writeText(params.linkURL),
                 },
                 { type: 'separator' },
                 ...menu,
-            ]).popup()
-            return
+            ]
         }
 
-        Menu.buildFromTemplate([...menu]).popup()
-    }
-
-    private reloadBrowser() {
-        if (this.current !== SceneBrowser.BROWSER) {
-            return
-        }
-        this.title = 'Reloading...'
-        this.browser.webContents.reload()
+        return menu
     }
 
     private addBookmark() {
@@ -292,10 +283,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 const image = nativeImage.createFromBuffer(buffer)
                 clipboard.writeImage(image)
             })
-        } catch (error) {
+        } catch (e) {
             Logger.getInstance().error(
                 'Error fetching or processing image:',
-                error,
+                JSON.stringify(e),
             )
         }
     }

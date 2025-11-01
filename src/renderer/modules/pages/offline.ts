@@ -5,7 +5,7 @@ import { Heading } from '@home/modules/fragments/heading'
 import { Button } from '@home/modules/fragments/button'
 
 import { ipcRenderer } from '@home/util'
-import { Channel, PageType, SceneBrowser } from '@src/types'
+import { Channel, PageType, BROWSER } from '@src/constants'
 
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
@@ -20,11 +20,7 @@ export class Offline extends A_Page {
         const reload = new Button(
             {
                 onClick: () => {
-                    ipcRenderer.send(
-                        Channel.SWITCH,
-                        SceneBrowser.BROWSER,
-                        'reload',
-                    )
+                    ipcRenderer.send(Channel.SWITCH, BROWSER, 'reload')
                 },
             },
             'Refresh',

@@ -6,7 +6,8 @@ import {
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
-import { Bookmark, PageType } from '@src/types'
+import type { Bookmark } from '@src/types'
+import { PageType } from '@src/constants'
 import { Logger } from '@main/modules/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'

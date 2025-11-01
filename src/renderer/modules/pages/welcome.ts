@@ -5,7 +5,7 @@ import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Button } from '@home/modules/fragments/button'
 import { Heading } from '@home/modules/fragments/heading'
 
-import { PageType } from '@src/types'
+import { PageType } from '@src/constants'
 import { isMac, navigate } from '@home/util'
 
 export class Welcome extends A_Page {

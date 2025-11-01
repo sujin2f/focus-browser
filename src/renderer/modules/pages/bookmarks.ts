@@ -11,14 +11,14 @@ import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
+import type { Bookmark } from '@src/types'
 import {
     Channel,
     PageMode,
-    PageType,
     RequestHandler,
     TableAction,
-    type Bookmark,
-} from '@src/types'
+    PageType,
+} from '@src/constants'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
     order: 'ASC' | 'DESC' = 'ASC'

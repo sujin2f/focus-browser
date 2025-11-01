@@ -1,6 +1,6 @@
-import type { ElementProps } from '@src/types'
 import { Element } from '@home/modules/fragments'
 import type { Button } from '@home/modules/fragments/button'
+import type { ElementProps } from '@src/types'
 
 export class ButtonGroup extends Element<HTMLElement> {
     constructor(props: Partial<ElementProps> = {}, ...children: Button[]) {

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Element } from '@home/modules/fragments'
-import { PageType, TableAction } from '@src/types'
+import { PageType, TableAction } from '@src/constants'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { A_PageWithTable } from './abs_with_table'
 import { isMac } from '@home/util'

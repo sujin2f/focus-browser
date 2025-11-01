@@ -6,13 +6,8 @@ import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { ipcRenderer } from '@home/util'
-import {
-    PageType,
-    TableAction,
-    Channel,
-    RequestHandler,
-    type PopupBlocker as T_PopupBlocker,
-} from '@src/types'
+import type { PopupBlocker as T_PopupBlocker } from '@src/types'
+import { TableAction, Channel, RequestHandler, PageType } from '@src/constants'
 
 export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     order: 'ASC' | 'DESC' = 'DESC'

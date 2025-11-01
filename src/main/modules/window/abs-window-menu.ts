@@ -11,14 +11,13 @@ import {
 } from 'electron'
 import { Logger } from '@main/modules/logger'
 
+import type { Scenes, MenuBlock } from '@src/types'
 import {
     MenuCategory,
     Menu as EnumMenu,
-    SceneBrowser,
     PageType,
-    type Scenes,
-    type MenuBlock,
-} from '@src/types'
+    BROWSER,
+} from '@src/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
 import { Bookmarks } from '@main/modules/store/bookmarks'
@@ -41,9 +40,9 @@ import { BrowserView } from '@src/main/modules/view/browser'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
-    protected _current: Scenes = SceneBrowser.BROWSER
+    protected _current: Scenes = BROWSER
     protected get isBrowser() {
-        return this._current === SceneBrowser.BROWSER
+        return this._current === BROWSER
     }
     // Returns the current WebContentsView
     protected get current() {

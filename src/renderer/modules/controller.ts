@@ -1,10 +1,5 @@
-import {
-    Channel,
-    PageType,
-    RequestHandler,
-    TableAction,
-    type Info,
-} from '@src/types'
+import type { Info } from '@src/types'
+import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
 import { checkElectron, ipcRenderer } from '@home/util'
 
 import { A_Page } from '@src/renderer/modules/pages/abs_page'

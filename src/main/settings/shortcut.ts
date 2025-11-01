@@ -1,4 +1,5 @@
-import { Menu, MenuCategory, SystemType, ShortcutStore } from '@src/types'
+import type { ShortcutStore } from '@src/types'
+import { Menu, MenuCategory, SystemType } from '@src/constants'
 
 export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
     [SystemType.DARWIN]: {

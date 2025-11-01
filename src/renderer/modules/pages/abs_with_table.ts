@@ -9,7 +9,7 @@ import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Heading } from '@home/modules/fragments/heading'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import { PageMode, TableAction } from '@src/types'
+import { PageMode, TableAction } from '@src/constants'
 import { isMac, navigate } from '@home/util'
 
 /**

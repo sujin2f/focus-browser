@@ -1,4 +1,4 @@
-import { PageType, TableAction, PageMode } from '@src/types'
+import { PageType, TableAction, PageMode } from '@src/constants'
 import { navigate } from '@home/util'
 
 export abstract class A_Page {

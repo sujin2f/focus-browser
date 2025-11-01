@@ -34,10 +34,15 @@ jest.doMock('@main/modules/view/browser', browser)
 
 import { WebContentsView } from 'electron'
 import { BrowserView } from '@src/main/modules/view/browser'
-import { PageType, RequestHandler, Channel, SceneBrowser } from '@src/types'
+import {
+    RequestHandler,
+    Channel,
+    PageType,
+    BROWSER,
+    CURRENT_PAGE_INFO,
+} from '@src/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
-import { CURRENT_PAGE_INFO } from '@src/constants'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
@@ -94,14 +99,14 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onSwitch > switch scene', () => {
-        ipc[1][1](null, SceneBrowser.BROWSER, 'test-url')
-        expect(switchFn).toHaveBeenCalledWith(SceneBrowser.BROWSER)
+        ipc[1][1](null, BROWSER, 'test-url')
+        expect(switchFn).toHaveBeenCalledWith(BROWSER)
         expect(loadURL).toHaveBeenCalled()
     })
 
     test('onSwitch > click anchor', () => {
-        ipc[1][1](null, SceneBrowser.BROWSER, 'test-url', RequestHandler.REMOVE)
-        expect(switchFn).toHaveBeenCalledWith(SceneBrowser.BROWSER)
+        ipc[1][1](null, BROWSER, 'test-url', RequestHandler.REMOVE)
+        expect(switchFn).toHaveBeenCalledWith(BROWSER)
         expect(anchorRemove).toHaveBeenCalled()
     })
 
@@ -116,7 +121,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
 
     test('onHistory > move to index', () => {
         ipc[2][1](null, RequestHandler.EXECUTE, 2)
-        expect(switchFn).toHaveBeenCalledWith(SceneBrowser.BROWSER)
+        expect(switchFn).toHaveBeenCalledWith(BROWSER)
         expect(goToIndex).toHaveBeenCalledWith(2)
     })
 

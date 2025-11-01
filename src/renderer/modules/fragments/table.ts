@@ -1,5 +1,5 @@
-import { ElementProps } from '@src/types'
 import { Element } from '.'
+import type { ElementProps } from '@src/types'
 
 export class Table extends Element<HTMLDivElement> {
     private table: Element<HTMLTableElement>

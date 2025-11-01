@@ -7,13 +7,8 @@ import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
-import {
-    Channel,
-    PageType,
-    RequestHandler,
-    TableAction,
-    type Bookmark,
-} from '@src/types'
+import type { Bookmark } from '@src/types'
+import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
     public order: 'ASC' | 'DESC' = 'ASC'

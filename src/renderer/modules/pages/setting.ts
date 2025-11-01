@@ -6,7 +6,8 @@ import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 
 import { ipcRenderer } from '@home/util'
-import { Channel, type Info, PageType, RequestHandler } from '@src/types'
+import type { Info } from '@src/types'
+import { Channel, PageType, RequestHandler } from '@src/constants'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING

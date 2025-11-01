@@ -8,7 +8,7 @@ import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
 
 import { isMac, navigate, shortcutToHtml } from '@home/util'
-import { PageType } from '@src/types'
+import { PageType } from '@src/constants'
 import { Button } from '../fragments/button'
 
 /**

@@ -4,7 +4,8 @@ import { Controller } from '@home/modules/controller'
 import { Button } from '@home/modules/fragments/button'
 
 import { ipcRenderer } from '@home/util'
-import { Channel, ElementProps, RequestHandler, TableAction } from '@src/types'
+import type { ElementProps } from '@src/types'
+import { Channel, RequestHandler, TableAction } from '@src/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button

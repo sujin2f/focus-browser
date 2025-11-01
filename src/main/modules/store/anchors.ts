@@ -1,5 +1,5 @@
-import { Bookmark } from '@src/types'
 import { Store } from '@main/modules/store/store'
+import type { Bookmark } from '@src/types'
 
 type Props = { anchors: Bookmark[] }
 

@@ -1,4 +1,4 @@
-import { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/types'
 
 export class Element<T extends HTMLElement> {
     /**

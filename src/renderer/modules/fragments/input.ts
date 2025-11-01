@@ -7,7 +7,7 @@ type Props = {
     value: string
     checked: boolean
     maxLength: number
-    onChange: (ev: HTMLElementEventMap['change']) => any
+    onChange: (ev: HTMLElementEventMap['change']) => unknown
 }
 
 export class Input extends Element<HTMLLabelElement> {

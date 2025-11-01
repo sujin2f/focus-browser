@@ -1,25 +1,23 @@
 import * as fs from 'fs'
-import Store from '@main/modules/store/store'
+import { Store } from '@main/modules/store/store'
 
 type T_Popup = {
     blocked: Set<string>
     allowed: Set<string>
 }
 
-export default class Popup extends Store<T_Popup> {
-    static instance: Popup
-    static getInstance(): Popup {
-        if (!Popup.instance) {
-            Popup.instance = new Popup('popup-blocker', {
+export class PopupBlocker extends Store<T_Popup> {
+    static instance: PopupBlocker
+    static getInstance(): PopupBlocker {
+        if (!PopupBlocker.instance) {
+            PopupBlocker.instance = new PopupBlocker('popup-blocker', {
                 blocked: new Set<string>(),
                 allowed: new Set<string>(),
             })
-            Popup.instance.parse()
+            PopupBlocker.instance.parse()
         }
-        return Popup.instance
+        return PopupBlocker.instance
     }
-
-    public modified = false
 
     public toggle(host: string) {
         if (this._data.blocked.has(host)) {
@@ -63,7 +61,7 @@ export default class Popup extends Store<T_Popup> {
                 blocked: new Set(parsed.blocked),
                 allowed: new Set(parsed.allowed),
             }
-        } catch (error) {
+        } catch {
             this._data = this.defaults
         }
     }

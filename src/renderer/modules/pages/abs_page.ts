@@ -32,6 +32,7 @@ export abstract class A_Page {
     /**
      * For additional actions
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public action(action: TableAction, ...arg: unknown[]) {
         if (action === TableAction.INFO) {
             this.refresh()

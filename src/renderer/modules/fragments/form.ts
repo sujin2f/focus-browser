@@ -2,7 +2,7 @@ import { ElementProps } from '@src/types'
 import { Element } from '.'
 
 type Props = {
-    onSubmit: (ev: HTMLElementEventMap['submit']) => any
+    onSubmit: (ev: HTMLElementEventMap['submit']) => unknown
 }
 
 export class Form extends Element<HTMLFormElement> {

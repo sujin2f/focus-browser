@@ -12,15 +12,17 @@ import {
     type Scenes,
     type Bookmark,
     type Info,
+    Shortcuts,
 } from '@src/types'
 
-import Status from '@main/modules/store/status'
-import Shortcut from '@main/modules/store/shortcut'
-import Anchors from '@main/modules/store/anchors'
-import Popup from '@main/modules/store/popup'
-import Bookmarks from '@main/modules/store/bookmarks'
+import { Status } from '@main/modules/store/status'
+import { Shortcut } from '@main/modules/store/shortcut'
+import { Anchors } from '@main/modules/store/anchors'
+import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
+import { Bookmarks } from '@main/modules/store/bookmarks'
 
 import { AbsWindowMenu } from './abs-window-menu'
+import { CURRENT_PAGE_INFO } from '@src/constants'
 
 /**
  * All starts with here
@@ -47,31 +49,35 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
          */
         if (handler === RequestHandler.MODIFY) {
             // Clear cache
-            if (data.hasOwnProperty('cache')) {
-                this.browser.webContents.session.clearCache()
-                this.sendInfo()
+            if (
+                Object.prototype.hasOwnProperty.call(data, 'cacheSize') &&
+                isNaN(data.cacheSize)
+            ) {
+                await this.browser.webContents.session.clearCache()
+                await this.sendInfo()
                 return
             }
 
-            // Reset adBlocker
-            if (data.hasOwnProperty('adBlockerStatus')) {
+            // Reset adBlocker in case it fails in some reason
+            if (Object.prototype.hasOwnProperty.call(data, 'adBlockerStatus')) {
                 await this.browser.setAdBlocker()
-                this.sendInfo()
+                await this.sendInfo()
                 return
             }
 
             Status.getInstance().merge(data)
 
             // If adBlocker setting changed, reset.
-            if (data.hasOwnProperty('adBlocker')) {
-                this.browser.setAdBlocker()
-                this.sendInfo()
+            if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
+                await this.browser.setAdBlocker()
+                await this.sendInfo()
             }
             return
         }
 
         if (handler === RequestHandler.REQUEST) {
-            if (data) {
+            // Request current page info
+            if ((data as string) === CURRENT_PAGE_INFO) {
                 this.centre.webContents.send(
                     Channel.INFO,
                     RequestHandler.RESPONSE,
@@ -83,7 +89,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            this.sendInfo()
+            await this.sendInfo()
         }
     }
 
@@ -148,10 +154,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Bookmarks.getInstance().push(bookmark)
                 return
             case RequestHandler.MODIFY:
-                Bookmarks.getInstance().edit(index, bookmark)
+                Bookmarks.getInstance().update(index, bookmark)
                 return
             case RequestHandler.REMOVE:
-                Bookmarks.getInstance().remove(bookmark as unknown as number)
+                Bookmarks.getInstance().remove(index)
                 return
         }
     }
@@ -178,9 +184,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         host: string,
     ) {
         switch (handler) {
-            case RequestHandler.REQUEST:
-                const blocked = Popup.getInstance().get('blocked')
-                const allowed = Popup.getInstance().get('allowed')
+            case RequestHandler.REQUEST: {
+                const blocked = PopupBlocker.getInstance().get('blocked')
+                const allowed = PopupBlocker.getInstance().get('allowed')
                 Logger.getInstance().log(
                     'Popup blocker request: ',
                     blocked,
@@ -193,19 +199,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     Array.from(allowed as string[]),
                 )
                 return
+            }
 
             case RequestHandler.MODIFY:
-                Popup.getInstance().toggle(host)
+                PopupBlocker.getInstance().toggle(host)
                 return
         }
     }
 
     private async sendInfo() {
         this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
-            shortcuts: Shortcut.getInstance().get('shortcuts'),
-            cache: await this.browser.webContents.session.getCacheSize(),
+            shortcuts: Shortcut.getInstance().get('shortcuts') as Shortcuts,
+            cacheSize: await this.browser.webContents.session.getCacheSize(),
             adBlockerStatus: this.browser.blocker && true,
             ...Status.getInstance().data,
-        })
+        } satisfies Info)
     }
 }

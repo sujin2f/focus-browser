@@ -17,6 +17,7 @@ import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
+import { CURRENT_PAGE_INFO } from '@src/constants'
 
 export class Controller {
     static instance: Controller
@@ -46,8 +47,12 @@ export class Controller {
         })
     }
 
-    private requestInfo(isLocation: boolean = false) {
-        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, isLocation)
+    private requestInfo(isCurrentPageInfo: boolean = false) {
+        ipcRenderer.send(
+            Channel.INFO,
+            RequestHandler.REQUEST,
+            isCurrentPageInfo && CURRENT_PAGE_INFO,
+        )
     }
 
     private initIPC() {

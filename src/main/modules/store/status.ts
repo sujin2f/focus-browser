@@ -1,8 +1,9 @@
 import { type Rectangle } from 'electron'
-import Store from '@main/modules/store/store'
+import { Store } from '@main/modules/store/store'
 import type { Info, StatusProps } from '@src/types'
+import { MAX_HISTORY } from '@src/constants'
 
-export default class Status extends Store<StatusProps> {
+export class Status extends Store<StatusProps> {
     static instance: Status
     static getInstance(): Status {
         if (!Status.instance) {
@@ -11,7 +12,7 @@ export default class Status extends Store<StatusProps> {
                 height: 728,
                 x: NaN,
                 y: NaN,
-                maxHistory: 200,
+                maxHistory: MAX_HISTORY,
                 welcome: true,
                 helpText: true,
                 adBlocker: true,
@@ -19,14 +20,6 @@ export default class Status extends Store<StatusProps> {
             Status.instance.parse()
         }
         return Status.instance
-    }
-
-    public getNumber(key: string) {
-        return (super.get(key) || NaN) as number
-    }
-
-    public setNumber(key: string, value: number) {
-        super.set(key, value)
     }
 
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
@@ -45,10 +38,20 @@ export default class Status extends Store<StatusProps> {
     }
 
     public merge(value: Info) {
-        const { shortcuts, ...newValue } = value
+        // Exclude none-StatusProps
+        const {
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            shortcuts,
+            cacheSize,
+            title,
+            url,
+            adBlockerStatus,
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ...updates
+        } = value
         this._data = {
             ...this._data,
-            ...newValue,
+            ...updates,
         }
     }
 }

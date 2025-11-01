@@ -8,6 +8,7 @@
         "sourceMap": true,
         "outDir": "./release/app/dist",
         "paths": {
+            "@test/*": ["./.jest/*"],
             "@src/*": ["./src/*"],
             "@main/*": ["./src/main/*"],
             "@home/*": ["./src/renderer/*"]

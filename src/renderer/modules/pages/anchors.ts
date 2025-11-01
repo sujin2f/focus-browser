@@ -4,8 +4,8 @@ import { Controller } from '@home/modules/controller'
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
 import { Callout } from '@home/modules/fragments/callout'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 import {
     Channel,
@@ -88,9 +88,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
         ]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const bookmark = tr.getData('data') as Bookmark
 
         const title = this.table.createTd(

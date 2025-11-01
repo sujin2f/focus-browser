@@ -9,10 +9,11 @@ import fetch from 'cross-fetch'
 import { Bookmark, PageType } from '@src/types'
 import { Logger } from '@main/modules/logger'
 
-import PopupBlocker from '@main/modules/store/popup'
-import History from '@main/modules/store/history'
-import Status from '@main/modules/store/status'
-import { BrowserWindow } from '../window/window'
+import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
+import { History } from '@main/modules/store/history'
+import { Status } from '@main/modules/store/status'
+
+import { BrowserWindow } from '@main/modules/window/window'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -27,7 +28,10 @@ export class BrowserView extends WebContentsView {
         return this._blocker
     }
 
-    public failedUrl?: string
+    private _failedUrl?: string
+    public get failedUrl() {
+        return this._failedUrl
+    }
 
     /**
      * Constants
@@ -40,6 +44,7 @@ export class BrowserView extends WebContentsView {
 
         this.setPopupBlocker()
         // Events
+
         this.webContents
             // Web Title to App Title
             .on('did-finish-load', () => {
@@ -83,19 +88,21 @@ export class BrowserView extends WebContentsView {
         Logger.getInstance().log('Try to load URL: ', _url, hasSchema)
         try {
             _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
-        } catch {}
+        } catch {
+            /* empty */
+        }
 
         this.webContents.loadURL(_url).catch((e) => {
             // TODO for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
-                this.failedUrl = _url
+                this._failedUrl = _url
                 BrowserWindow.getInstance().switch(PageType.OFFLINE)
                 return
             }
 
             this.webContents.loadURL(`https://duckduckgo.com/?q=${url}`)
-            this.failedUrl = null
+            this._failedUrl = null
         })
     }
 
@@ -176,7 +183,7 @@ export class BrowserView extends WebContentsView {
                 )
                 */
             })
-            .catch((e: any) => {
+            .catch((e: unknown) => {
                 this._blocker = null
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
                 Logger.getInstance().error(
@@ -213,8 +220,8 @@ export class BrowserView extends WebContentsView {
      */
     public reload() {
         BrowserWindow.getInstance().title = 'Reloading...'
-        if (this.failedUrl) {
-            this.loadURL(this.failedUrl)
+        if (this._failedUrl) {
+            this.loadURL(this._failedUrl)
             return
         }
         this.webContents.reload()

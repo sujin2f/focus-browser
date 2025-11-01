@@ -1,7 +1,7 @@
 {
     "name": "focus-browser",
     "version": "0.1.4",
-    "description": "A lightweight browser without tabs, built with Electron.",
+    "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
         "start": "cross-env NODE_ENV=development PORT=1212 concurrently \"npm run start:webpack\" \"npm run start:main\" \"npm run start:electron\"",
@@ -11,11 +11,11 @@
         "build": "npm run clean && concurrently \"npm run build:main\" \"npm run build:webpack\"",
         "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=main",
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=renderer",
-        "lint": "eslint -c .eslintrc --ext .ts ./src",
+        "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
         "package:alpha": "NODE_ALPHA=1 electron-builder build --publish never",
         "package:beta": "electron-builder build --publish never",
-        "test": "jest --no-cache --forceExit --coverage"
+        "test": "NODE_ALPHA=1 jest --no-cache --forceExit --coverage"
     },
     "author": "Sujin Choi",
     "dependencies": {
@@ -27,10 +27,9 @@
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",
+        "@eslint/js": "^9.39.0",
         "@tailwindcss/postcss": "^4.1.12",
         "@types/jest": "^30.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.41.0",
-        "@typescript-eslint/parser": "^8.41.0",
         "autoprefixer": "^10.4.21",
         "babel-jest": "^30.1.2",
         "concurrently": "^9.2.1",
@@ -38,7 +37,7 @@
         "css-loader": "^7.1.2",
         "electron-builder": "^26.0.12",
         "electronmon": "^2.0.3",
-        "eslint": "^9.34.0",
+        "eslint": "^9.39.0",
         "html-loader": "^5.1.0",
         "html-webpack-plugin": "^5.6.4",
         "jest": "^30.1.3",
@@ -54,6 +53,7 @@
         "ts-jest": "^29.4.4",
         "ts-loader": "^9.5.4",
         "typescript": "^5.9.2",
+        "typescript-eslint": "^8.46.2",
         "webpack": "^5.101.3",
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.2"

@@ -12,7 +12,7 @@ type JsonObject = { [key: string]: unknown }
  * macOS: ~/Library/Application Support/[YourAppName]
  * Linux: $XDG_CONFIG_HOME/[YourAppName] or ~/.config/[YourAppName]
  */
-export default class Store<T extends JsonObject> {
+export class Store<T extends JsonObject> {
     protected _data: T = {} as T
     public get data() {
         return this._data
@@ -46,7 +46,8 @@ export default class Store<T extends JsonObject> {
     }
 
     // ...and this will set it
-    save() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    save(..._: unknown[]) {
         // Wait, I thought using the node.js' synchronous APIs was bad form?
         // We're not writing a server so there's not nearly the same IO demand on the process
         // Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,
@@ -64,7 +65,7 @@ export default class Store<T extends JsonObject> {
                 ...this.defaults,
                 ...JSON.parse(fs.readFileSync(this.path, 'utf-8')),
             }
-        } catch (error) {
+        } catch {
             // if there was some kind of error, return the passed in defaults instead.
             this._data = this.defaults
         }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 describe('src/renderer/util', () => {
     beforeEach(() => {
         jest.resetModules()
@@ -13,6 +14,7 @@ describe('src/renderer/util', () => {
     })
 
     test('module loads and exposes helpers and ipcRenderer', () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const util = require('./util')
         expect(util).toBeDefined()
         expect(util.ipcRenderer).toBeDefined()

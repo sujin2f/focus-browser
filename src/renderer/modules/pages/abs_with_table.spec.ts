@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Element } from '@home/modules/fragments'
-import { PageMode, PageType, TableAction } from '@src/types'
-import type { DataListType } from '@home/modules/fragments/data-list'
+import { PageType, TableAction } from '@src/types'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { A_PageWithTable } from './abs_with_table'
 import { isMac } from '@home/util'
 
@@ -26,9 +26,7 @@ class Test extends A_PageWithTable<string> {
         return [this.table.createTh()]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const td = this.table.createTd()
         td.innerHTML = tr.getData('data') as string
         return [td]
@@ -66,11 +64,11 @@ describe('A_PageWithTable', () => {
 
         if (isMac()) {
             document.dispatchEvent(
-                new KeyboardEvent('keydown', { key: 'f', metaKey: true }),
+                new KeyboardEvent('keydown', { code: 'KeyF', metaKey: true }),
             )
         } else {
             document.dispatchEvent(
-                new KeyboardEvent('keydown', { key: 'f', ctrlKey: true }),
+                new KeyboardEvent('keydown', { code: 'KeyF', ctrlKey: true }),
             )
         }
 

@@ -20,9 +20,9 @@ import {
     type MenuBlock,
 } from '@src/types'
 
-import Shortcut from '@main/modules/store/shortcut'
-import Bookmarks from '@main/modules/store/bookmarks'
-import Anchors from '@main/modules/store/anchors'
+import { Shortcut } from '@main/modules/store/shortcut'
+import { Bookmarks } from '@main/modules/store/bookmarks'
+import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 

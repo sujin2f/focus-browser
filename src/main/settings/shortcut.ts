@@ -1,7 +1,4 @@
-import { type MenuItemConstructorOptions } from 'electron'
 import { Menu, MenuCategory, SystemType, ShortcutStore } from '@src/types'
-
-const COMBINATION_KEYS = ['Command', 'Control', 'Option', 'Alt', 'Shift']
 
 export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
     [SystemType.DARWIN]: {

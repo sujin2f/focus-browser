@@ -15,7 +15,8 @@
         "clean": "rimraf ./release/app/dist ./release/build",
         "package:alpha": "NODE_ALPHA=1 electron-builder build --publish never",
         "package:beta": "electron-builder build --publish never",
-        "test": "NODE_ALPHA=1 jest --no-cache --forceExit --coverage"
+        "test": "NODE_ALPHA=1 jest --no-cache --forceExit --coverage",
+        "prepare": "husky"
     },
     "author": "Sujin Choi",
     "dependencies": {
@@ -40,8 +41,10 @@
         "eslint": "^9.39.0",
         "html-loader": "^5.1.0",
         "html-webpack-plugin": "^5.6.4",
+        "husky": "^9.1.7",
         "jest": "^30.1.3",
         "jest-environment-jsdom": "^30.1.2",
+        "pinst": "^3.0.0",
         "postcss": "^8.5.6",
         "postcss-loader": "^8.2.0",
         "prettier": "^3.6.2",

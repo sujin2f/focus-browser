@@ -1,15 +1,18 @@
 import { Element } from '.'
 import type { ElementProps } from '@src/types'
+import { TrLinked } from './tr-linked'
 
-export class Table extends Element<HTMLDivElement> {
+export class DataTable<
+    D extends Record<string, unknown>,
+> extends Element<HTMLDivElement> {
     private table: Element<HTMLTableElement>
     private head?: Element<HTMLTableSectionElement>
     private headRow?: Element<HTMLTableRowElement>
     private body: Element<HTMLTableSectionElement>
-    public children: Element<HTMLTableRowElement>[] = []
+    public children: TrLinked<D>[] = []
 
     constructor() {
-        super('div')
+        super({ tag: 'div' })
 
         this.element.classList.add(
             'w-full',
@@ -18,7 +21,7 @@ export class Table extends Element<HTMLDivElement> {
             'overflow-y-hidden',
             'bg-clip-border',
         )
-        this.table = new Element<HTMLTableElement>('table')
+        this.table = new Element<HTMLTableElement>({ tag: 'table' })
         this.table.classList.add(
             'table-auto',
             'min-w-max',
@@ -26,64 +29,60 @@ export class Table extends Element<HTMLDivElement> {
             'w-full',
         )
         this.element.append(this.table.element)
-        this.body = new Element<HTMLTableSectionElement>('tbody')
+        this.body = new Element<HTMLTableSectionElement>({ tag: 'tbody' })
         this.table.append(this.body)
         this.children = []
     }
 
     public appendHead(...children: Element<HTMLTableCellElement>[]) {
         if (!this.head) {
-            this.headRow = new Element('tr')
-            this.head = new Element('thead', {}, this.headRow)
+            this.headRow = new Element({ tag: 'tr' })
+            this.head = new Element<HTMLTableSectionElement>({
+                tag: 'thead',
+            }).append(this.headRow)
             this.table.prepend(this.head)
         }
         this.headRow.append(...children)
     }
 
     public createTh(
-        { className = [] }: Partial<ElementProps> = {},
+        { className = [] }: Partial<ElementProps<unknown>> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
-        const th = new Element<HTMLTableCellElement>(
-            'th',
-            {
-                className: [
-                    ...className,
-                    'p-2',
-                    'border-b',
-                    'border-blue-gray-100',
-                    'dark:border-blue-gray-500',
-                ],
-            },
-            ...children,
-        )
+        const th = new Element<HTMLTableCellElement>({
+            tag: 'th',
+            className: [
+                ...className,
+                'p-2',
+                'border-b',
+                'border-blue-gray-100',
+                'dark:border-blue-gray-500',
+            ],
+        }).append(...children)
         return th
     }
 
     public createTd(
-        { className = [], onClick }: Partial<ElementProps> = {},
+        { className = [], onClick }: Partial<ElementProps<unknown>> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
-        const td = new Element<HTMLTableCellElement>(
-            'td',
-            {
-                className: [
-                    ...className,
-                    'p-2',
-                    'border-b',
-                    'border-blue-gray-50',
-                    'dark:border-blue-gray-100',
-                ],
-                onClick,
-            },
-            ...children,
-        )
+        const td = new Element<HTMLTableCellElement>({
+            tag: 'td',
+            className: [
+                ...className,
+                'p-2',
+                'border-b',
+                'border-blue-gray-50',
+                'dark:border-blue-gray-100',
+            ],
+            onClick,
+        }).append(...children)
         return td
     }
 
     public createFixedCell(
         type: 'th' | 'td' = 'td',
-        { className = [], onClick }: Partial<ElementProps> = {},
+        { className = [], onClick }: Partial<ElementProps<unknown>> = {},
         ...children: (string | Element<HTMLElement>)[]
     ) {
         const props = {
@@ -104,13 +103,13 @@ export class Table extends Element<HTMLDivElement> {
             : this.createTh(props, ...children)
     }
 
-    public appendBody(...children: Element<HTMLTableRowElement>[]) {
-        this.body.append(...children)
+    public appendBody(...children: TrLinked<D>[]) {
+        this.body.append(...(children as Element<HTMLElement>[]))
         this.children.push(...children)
     }
 
-    public prependBody(...children: Element<HTMLTableRowElement>[]) {
-        this.body.prepend(...children)
+    public prependBody(...children: TrLinked<D>[]) {
+        this.body.prepend(...(children as Element<HTMLElement>[]))
         this.children.unshift(...children)
     }
 

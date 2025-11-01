@@ -1,22 +1,13 @@
 import { type Rectangle } from 'electron'
 import { Store } from '@main/modules/store/store'
 import type { Info, StatusProps } from '@src/types'
-import { MAX_HISTORY } from '@src/constants'
+import { DEFAULT_STATUS } from '@src/constants'
 
 export class Status extends Store<StatusProps> {
     static instance: Status
     static getInstance(): Status {
         if (!Status.instance) {
-            Status.instance = new Status('status', {
-                width: 1024,
-                height: 728,
-                x: NaN,
-                y: NaN,
-                maxHistory: MAX_HISTORY,
-                welcome: true,
-                helpText: true,
-                adBlocker: true,
-            })
+            Status.instance = new Status('status', DEFAULT_STATUS)
             Status.instance.parse()
         }
         return Status.instance

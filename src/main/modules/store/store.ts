@@ -36,13 +36,19 @@ export class Store<T extends JsonObject> {
         this.path = path.join(userDataPath, `${this.configName}.json`)
     }
 
-    // This will just return the property on the `data` object
-    get(key: string) {
+    /**
+     * Get value by key
+     *
+     * @template {K} keyof T
+     * @param {K} key only accepts a key of T
+     * @returns {T[K]} returns the right type from the key
+     */
+    get<K extends keyof T>(key: K): T[K] {
         return this._data[key]
     }
 
-    set(key: string, value: unknown) {
-        ;(this._data[key] as unknown) = value
+    set<K extends keyof T>(key: K, value: T[K]) {
+        this._data[key] = value
     }
 
     // ...and this will set it

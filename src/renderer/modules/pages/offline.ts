@@ -12,34 +12,25 @@ export class Offline extends A_Page {
 
     refresh(): void {
         this.root.innerHTML = ''
-        const title = new Heading(
-            1,
-            { className: ['text-center'] },
+        const title = new Heading(1, { className: ['text-center'] }).append(
             'No internet',
         )
-        const reload = new Button(
-            {
-                onClick: () => {
-                    ipcRenderer.send(Channel.SWITCH, BROWSER, 'reload')
-                },
+        const reload = new Button({
+            onClick: () => {
+                ipcRenderer.send(Channel.SWITCH, BROWSER, 'reload')
             },
-            'Refresh',
-        )
+        }).append('Refresh')
         // Container
-        const container = new Element<HTMLDivElement>(
-            'div',
-            {
-                className: [
-                    'flex',
-                    'flex-col',
-                    'h-dvh',
-                    'justify-center',
-                    'items-center',
-                ],
-            },
-            title,
-            reload,
-        )
+        const container = new Element<HTMLDivElement>({
+            tag: 'div',
+            className: [
+                'flex',
+                'flex-col',
+                'h-dvh',
+                'justify-center',
+                'items-center',
+            ],
+        }).append(title, reload)
         this.root.append(container.element)
     }
 }

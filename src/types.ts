@@ -1,5 +1,11 @@
 import type { MenuItemConstructorOptions } from 'electron'
-import { Menu, MenuCategory, PageType, BROWSER } from '@src/constants'
+import {
+    Menu,
+    MenuCategory,
+    PageType,
+    BROWSER,
+    SearchEngine,
+} from '@src/constants'
 
 /**
  * stores in status.json
@@ -13,6 +19,7 @@ export type StatusProps = {
     welcome: boolean
     helpText: boolean
     adBlocker: boolean
+    searchEngine: keyof typeof SearchEngine
 }
 
 /**
@@ -49,8 +56,12 @@ export type ShortcutStore = {
     shortcuts: Shortcuts
 }
 
-export type ElementProps = {
+export type ElementProps<T> = {
+    tag: string
+    selector: string
     className: string[]
     hide: boolean
+    value: string
+    props: T
     onClick: (ev: HTMLElementEventMap['click']) => unknown
 }

@@ -2,7 +2,8 @@ import { Element } from '.'
 
 export default class CardContainer extends Element<HTMLElement> {
     public constructor() {
-        super('section', {
+        super({
+            tag: 'section',
             className: [
                 'grid',
                 'grid-cols-1',

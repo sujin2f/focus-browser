@@ -21,7 +21,7 @@ describe('History store (module)', () => {
         history.parse()
 
         expect(history.current.url).toBe('1')
-        expect(history.index).toBe(1)
+        expect(history.get('index')).toBe(1)
 
         const navHistory = {
             getEntryAtIndex: () => ({ url: '2' }),

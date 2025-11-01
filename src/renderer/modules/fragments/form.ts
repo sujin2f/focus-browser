@@ -6,18 +6,15 @@ type Props = {
 }
 
 export class Form extends Element<HTMLFormElement> {
-    public constructor(
-        { className = [], ...props }: Partial<ElementProps & Props> = {},
-        ...children: (string | Element<HTMLElement>)[]
-    ) {
-        super(
-            'form',
-            {
-                ...props,
-                className: [...className, 'max-w-2xl', 'm-auto', 'p-3'],
-            },
-            ...children,
-        )
+    public constructor({
+        className = [],
+        ...props
+    }: Partial<ElementProps<null> & Props> = {}) {
+        super({
+            tag: 'form',
+            ...props,
+            className: [...className, 'max-w-2xl', 'm-auto', 'p-3'],
+        })
 
         if (props.onSubmit) {
             this.addEventListener('submit', props.onSubmit)

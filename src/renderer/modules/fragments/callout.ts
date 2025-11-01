@@ -11,11 +11,8 @@ export class Callout extends Element<HTMLDivElement> {
     private button: Button
     private wrapper: Element<HTMLDivElement>
 
-    constructor(
-        props: Partial<ElementProps> = {},
-        ...children: (string | Element<HTMLElement>)[]
-    ) {
-        super('div', props)
+    constructor(props: Partial<ElementProps<null>> = {}) {
+        super({ tag: 'div', ...props })
         this.element.classList.add(
             'p-3',
             'w-full',
@@ -26,44 +23,18 @@ export class Callout extends Element<HTMLDivElement> {
             'text-center',
         )
 
-        this.init(...children)
-    }
-
-    private init(...children: (string | Element<HTMLElement>)[]) {
-        this.button = new Button(
-            {
-                className: ['mt-3', '-mb-3'],
-                onClick: (e) => {
-                    e.preventDefault()
-                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
-                        helpText: false,
-                    })
-                    Controller.getInstance().setting.helpText = false
-                    Controller.getInstance().currentPage.action(
-                        TableAction.INFO,
-                    )
-                },
+        this.button = new Button({
+            className: ['mt-3', '-mb-3'],
+            onClick: (e) => {
+                e.preventDefault()
+                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    helpText: false,
+                })
+                Controller.getInstance().setting.helpText = false
+                Controller.getInstance().currentPage.action(TableAction.INFO)
             },
-            'Hide Tip',
-        )
-        this.wrapper = new Element('div')
-        this.wrapper.append(...children)
-
-        this.element.innerHTML = ''
+        }).append('Hide Tip')
+        this.wrapper = new Element({ tag: 'div' })
         this.element.append(this.wrapper.element, this.button.element)
-    }
-
-    public append(...children: (string | Element<HTMLElement>)[]) {
-        if (!this.wrapper) {
-            this.init()
-        }
-        this.wrapper.append(...children)
-    }
-
-    public prepend(...children: (string | Element<HTMLElement>)[]) {
-        if (!this.wrapper) {
-            this.init()
-        }
-        this.wrapper.prepend(...children)
     }
 }

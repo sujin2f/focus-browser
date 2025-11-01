@@ -1,3 +1,5 @@
+import type { StatusProps } from '@src/types'
+
 export const MAX_HISTORY = 200
 export const CURRENT_PAGE_INFO = 'current-page-info'
 
@@ -105,3 +107,15 @@ export const SearchEngine = {
     BING: 'https://www.bing.com/search?q=',
     YAHOO: 'https://search.yahoo.com/search?p=',
 } as const
+
+export const DEFAULT_STATUS: StatusProps = {
+    width: 1024,
+    height: 728,
+    x: NaN,
+    y: NaN,
+    maxHistory: MAX_HISTORY,
+    welcome: true,
+    helpText: true,
+    adBlocker: true,
+    searchEngine: 'DUCKDUCKGO',
+}

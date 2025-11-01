@@ -26,28 +26,27 @@ export const shortcutToHtml = (shortcut: string) => {
     const keys = shortcut
         .split('+')
         .map((key) => key.trim())
-        .map(
-            (key) =>
-                new Element(
-                    'kbd',
-                    {
-                        className: [
-                            'border',
-                            'bg-gray-400',
-                            'text-gray-800',
-                            'pr-1',
-                            'pl-1',
-                        ],
-                    },
-                    key,
-                ),
+        .map((key) =>
+            new Element({
+                tag: 'kbd',
+                className: [
+                    'border',
+                    'bg-gray-400',
+                    'text-gray-800',
+                    'pr-1',
+                    'pl-1',
+                ],
+            }).append(key),
         )
 
     return []
         .concat(
             ...keys.map((n) => [
                 n,
-                new Element('span', { className: ['text-gray-500'] }, '+'),
+                new Element({
+                    tag: 'span',
+                    className: ['text-gray-500'],
+                }).append('+'),
             ]),
         )
         .slice(0, -1)

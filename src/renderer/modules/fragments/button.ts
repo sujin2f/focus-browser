@@ -10,38 +10,32 @@ export class Button extends Element<HTMLButtonElement> {
         this.element.type = type
     }
 
-    constructor(
-        {
-            className = [],
-            type = 'button',
-            ...props
-        }: Partial<ElementProps & Props> = {},
-        ...children: (string | Element<HTMLElement>)[]
-    ) {
-        super(
-            'button',
-            {
-                hide: props.hide,
-                onClick: props.onClick,
-                className: [
-                    'mb-3',
-                    'p-2',
-                    'rounded-sm',
-                    'text-sm',
-                    'font-medium',
-                    'text-white',
-                    'bg-pink-900',
-                    'hover',
-                    'hover:bg-pink-700',
-                    'focus:outline-none',
-                    'focus:ring-2',
-                    'focus:ring-pink-500',
-                    'cursor-pointer',
-                    ...className,
-                ],
-            },
-            ...children,
-        )
+    constructor({
+        className = [],
+        type = 'button',
+        ...props
+    }: Partial<ElementProps<null> & Props> = {}) {
+        super({
+            tag: 'button',
+            hide: props.hide,
+            onClick: props.onClick,
+            className: [
+                'mb-3',
+                'p-2',
+                'rounded-sm',
+                'text-sm',
+                'font-medium',
+                'text-white',
+                'bg-pink-900',
+                'hover',
+                'hover:bg-pink-700',
+                'focus:outline-none',
+                'focus:ring-2',
+                'focus:ring-pink-500',
+                'cursor-pointer',
+                ...className,
+            ],
+        })
 
         this.element.type = type
     }

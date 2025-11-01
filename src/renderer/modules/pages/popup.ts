@@ -52,7 +52,9 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         ]
     }
 
-    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
+    getRowCells(
+        tr: TrLinked<{ index: number; data: T_PopupBlocker }>,
+    ): Element<HTMLTableCellElement>[] {
         const popup = tr.getData('data') as T_PopupBlocker
         return [
             this.table.createFixedCell(
@@ -63,9 +65,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                         this.action(TableAction.EXECUTE)
                     },
                 },
-                new Element<HTMLSpanElement>(
-                    'span',
-                    {},
+                new Element<HTMLSpanElement>({ tag: 'span' }).append(
                     popup.allowed ? '✅' : '',
                 ),
             ),
@@ -76,7 +76,9 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
                         this.action(TableAction.EXECUTE)
                     },
                 },
-                new Element<HTMLSpanElement>('span', {}, popup.host),
+                new Element<HTMLSpanElement>({ tag: 'span' }).append(
+                    popup.host,
+                ),
             ),
         ]
     }
@@ -113,14 +115,14 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     refresh(): void {
         if (!Controller.getInstance().setting.helpText) {
             this.helpText.destroy()
-            this.helpText = new Element('section')
+            this.helpText = new Element({ tag: 'section' })
             return
         }
-        const callout = new Callout(
-            { className: ['mb-4'] },
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+        const callout = new Callout({ className: ['mb-4'] }).append(
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Click title above or press Esc to go back to switch to browser mode.',
             ),
         )

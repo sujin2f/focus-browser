@@ -192,8 +192,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.centre.webContents.send(
                     Channel.POPUP_BLOCKER,
                     RequestHandler.RESPONSE,
-                    Array.from(blocked as string[]),
-                    Array.from(allowed as string[]),
+                    Array.from(blocked),
+                    Array.from(allowed),
                 )
                 return
             }

@@ -26,7 +26,9 @@ class Test extends A_PageWithTable<string> {
         return [this.table.createTh()]
     }
 
-    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
+    getRowCells(
+        tr: TrLinked<{ data: string }>,
+    ): Element<HTMLTableCellElement>[] {
         const td = this.table.createTd()
         td.innerHTML = tr.getData('data') as string
         return [td]

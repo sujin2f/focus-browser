@@ -65,10 +65,11 @@ export const shortcut = () => ({
 })
 
 export const statusMerge = jest.fn()
+export const statusGet = jest.fn()
 export const status = () => ({
     Status: {
         getInstance: () => ({
-            get: jest.fn(),
+            get: statusGet,
             set: jest.fn(),
             save: jest.fn(),
             parse: jest.fn(),
@@ -82,6 +83,7 @@ export const status = () => ({
 
 class MockHistory {
     parse = jest.fn()
+    get = jest.fn()
     current = {
         url: 'current-url',
     }

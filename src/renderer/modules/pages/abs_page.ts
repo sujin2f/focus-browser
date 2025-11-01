@@ -1,3 +1,4 @@
+// import { Element } from '@home/modules/fragments'
 import { PageType, TableAction, PageMode } from '@src/constants'
 import { navigate } from '@home/util'
 
@@ -6,6 +7,22 @@ export abstract class A_Page {
      * Identifier
      */
     abstract readonly page: PageType
+
+    /**
+     * Page Layout
+     *
+     * <div id="root">
+     *     <section.title>
+     *         <title />
+     *         <button to browser />
+     *     </section.title>
+     *     <section.container />
+     * </div>
+     */
+    protected get root() {
+        return document.getElementById('root')
+    }
+    // protected title = new Element('section')
 
     /**
      * Modes like list, edit, find...
@@ -24,10 +41,6 @@ export abstract class A_Page {
      * Abstracts
      */
     abstract refresh(): void
-
-    protected get root() {
-        return document.getElementById('root')
-    }
 
     /**
      * For additional actions

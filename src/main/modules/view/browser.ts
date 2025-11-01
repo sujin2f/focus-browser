@@ -7,7 +7,7 @@ import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
 import type { Bookmark } from '@src/types'
-import { PageType } from '@src/constants'
+import { PageType, SearchEngine } from '@src/constants'
 import { Logger } from '@main/modules/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
@@ -102,7 +102,8 @@ export class BrowserView extends WebContentsView {
                 return
             }
 
-            this.webContents.loadURL(`https://duckduckgo.com/?q=${url}`)
+            const searchEngine = Status.getInstance().get('searchEngine')
+            this.webContents.loadURL(`${SearchEngine[searchEngine]}${url}`)
             this._failedUrl = null
         })
     }
@@ -114,10 +115,10 @@ export class BrowserView extends WebContentsView {
         const history = new History()
         history.parse()
 
-        if (!isNaN(history.index)) {
+        if (!isNaN(history.get('index'))) {
             this.webContents.navigationHistory.restore({
-                index: history.index,
-                entries: history.entries,
+                index: history.get('index'),
+                entries: history.get('history'),
             })
         }
 

@@ -16,32 +16,27 @@ export class Welcome extends A_Page {
 
         this.root.innerHTML = ''
         // H1
-        const heading = new Heading(
-            1,
-            {},
+        const heading = new Heading(1).append(
             'Single Tab Browser for Fast Navigation',
         )
 
         // P
-        const p = new Element<HTMLParagraphElement>(
-            'p',
-            {
-                className: ['text-xl', 'text-center', 'text-gray-400', 'mb-5'],
-            },
+        const p = new Element<HTMLParagraphElement>({
+            tag: 'p',
+            className: ['text-xl', 'text-center', 'text-gray-400', 'mb-5'],
+        }).append(
             'Focus is a ',
-            new Element<HTMLParagraphElement>(
-                'span',
-                { className: ['dark:text-white'] },
-                'single tab',
-            ),
+            new Element<HTMLParagraphElement>({
+                tag: 'span',
+                className: ['dark:text-white'],
+            }).append('single tab'),
             ' web browser',
-            new Element('br'),
+            new Element({ tag: 'br' }),
             'with a quick ',
-            new Element<HTMLParagraphElement>(
-                'span',
-                { className: ['dark:text-white'] },
-                'keyboard shortcut',
-            ),
+            new Element<HTMLParagraphElement>({
+                tag: 'span',
+                className: ['dark:text-white'],
+            }).append('keyboard shortcut'),
             ' navigation.',
         )
 
@@ -57,35 +52,26 @@ export class Welcome extends A_Page {
             btnCentre.append('Control Center (Ctrl+`)')
         }
 
-        const buttons = new ButtonGroup(
-            {},
+        const buttons = new ButtonGroup().append(
             btnCentre,
-            new Button(
-                {
-                    onClick: () => {
-                        navigate()
-                    },
+            new Button({
+                onClick: () => {
+                    navigate()
                 },
-                'Web Browser (Escape)',
-            ),
+            }).append('Web Browser (Escape)'),
         )
 
         // Container
-        const container = new Element<HTMLDivElement>(
-            'div',
-            {
-                className: [
-                    'flex',
-                    'flex-col',
-                    'h-dvh',
-                    'justify-center',
-                    'items-center',
-                ],
-            },
-            heading,
-            p,
-            buttons,
-        )
+        const container = new Element<HTMLDivElement>({
+            tag: 'div',
+            className: [
+                'flex',
+                'flex-col',
+                'h-dvh',
+                'justify-center',
+                'items-center',
+            ],
+        }).append(heading, p, buttons)
         this.root.appendChild(container.element)
     }
 

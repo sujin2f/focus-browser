@@ -14,7 +14,7 @@ export class Anchors extends Store<Props> {
     }
 
     get() {
-        return this._data.anchors
+        return super.get('anchors')
     }
 
     push(anchor: Bookmark) {

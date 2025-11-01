@@ -24,16 +24,13 @@ export class History extends A_PageWithTable<NavigationEntry> {
         this.title.innerHTML = 'History'
 
         // Empty history
-        const button = new Button(
-            {
-                onClick: () => {
-                    ipcRenderer.send(Channel.HISTORY, RequestHandler.REMOVE)
-                    this.items = []
-                    this.refresh()
-                },
+        const button = new Button({
+            onClick: () => {
+                ipcRenderer.send(Channel.HISTORY, RequestHandler.REMOVE)
+                this.items = []
+                this.refresh()
             },
-            'Empty History',
-        )
+        }).append('Empty History')
         this.buttonGroup.prepend(button)
     }
 
@@ -55,7 +52,9 @@ export class History extends A_PageWithTable<NavigationEntry> {
         return [this.table.createTh({ className: ['text-left'] }, 'Title')]
     }
 
-    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
+    getRowCells(
+        tr: TrLinked<{ index: number; data: NavigationEntry }>,
+    ): Element<HTMLTableCellElement>[] {
         const history = tr.getData('data') as NavigationEntry
         const index = tr.getData('index') as number
         return [
@@ -71,7 +70,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
                         )
                     },
                 },
-                new Element('span', {}, history.title),
+                new Element({ tag: 'span' }).append(history.title),
             ),
         ]
     }
@@ -104,14 +103,14 @@ export class History extends A_PageWithTable<NavigationEntry> {
 
         if (!Controller.getInstance().setting.helpText) {
             this.helpText.destroy()
-            this.helpText = new Element('section')
+            this.helpText = new Element({ tag: 'section' })
             return
         }
-        const callout = new Callout(
-            { className: ['mb-4'] },
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+        const callout = new Callout({ className: ['mb-4'] }).append(
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Click title above or press Esc to go back to switch to browser mode.',
             ),
         )

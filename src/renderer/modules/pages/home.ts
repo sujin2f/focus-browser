@@ -65,11 +65,11 @@ const buttons: Record<string, T_Card> = {
 export class Home extends A_Page {
     public page = PageType.HOME
     protected search: Input
-    private back: Element<HTMLElement> = new Element('section')
-    private location: Element<HTMLElement> = new Element('section')
-    private currentURL: Element<HTMLElement> = new Element('section')
-    private helpText: Element<HTMLElement> = new Element('section')
-    private cards: Element<HTMLElement> = new Element('section')
+    private back: Element<HTMLElement> = new Element({ tag: 'section' })
+    private location: Element<HTMLElement> = new Element({ tag: 'section' })
+    private currentURL: Element<HTMLElement> = new Element({ tag: 'section' })
+    private helpText: Element<HTMLElement> = new Element({ tag: 'section' })
+    private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
     refresh() {
         this.back.reset()
@@ -88,7 +88,7 @@ export class Home extends A_Page {
         )
 
         this.back.append(
-            new Button({ onClick: () => navigate() }, 'Back to Browser'),
+            new Button({ onClick: () => navigate() }).append('Back to Browser'),
         )
 
         // Location Bar
@@ -123,19 +123,19 @@ export class Home extends A_Page {
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout(
-            { className: ['mb-2'] },
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+        const callout = new Callout({ className: ['mb-2'] }).append(
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Press ',
                 ...shortcutToHtml('Escape'),
                 ' key to switch to a browser mode.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
-
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'On the browser mode,',
                 'you can come back here by pressing ',
                 ...shortcutToHtml(`${command}+\``),
@@ -143,9 +143,7 @@ export class Home extends A_Page {
                 ...shortcutToHtml(`${command}+L`),
                 '.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300'] },
+            new Element({ tag: 'p', className: ['text-gray-300'] }).append(
                 'On the browser mode, press ',
                 ...shortcutToHtml(`${command}+[`),
                 ' and ',

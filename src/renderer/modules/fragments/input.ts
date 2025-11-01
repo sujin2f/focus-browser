@@ -40,18 +40,10 @@ export class Input extends Element<HTMLLabelElement> {
             'border-gray-300',
             'dark:border-transparent',
         )
-        this._error = new Element(
-            'p',
-            {
-                className: [
-                    'mt-1',
-                    'pl-3',
-                    'text-pink-900',
-                    'dark:text-pink-600',
-                ],
-            },
-            error,
-        )
+        this._error = new Element<HTMLParagraphElement>({
+            tag: 'p',
+            className: ['mt-1', 'pl-3', 'text-pink-900', 'dark:text-pink-600'],
+        }).append(error)
         this.append(this._error)
     }
 
@@ -60,21 +52,18 @@ export class Input extends Element<HTMLLabelElement> {
             this._label.destroy()
         }
 
-        this._label = new Element<HTMLParagraphElement>(
-            'p',
-            {
-                className: [
-                    'inline-block',
-                    'text-md',
-                    'font-light',
-                    'text-gray-700',
-                    'mb-0.5',
-                    'pl-3',
-                    'dark:text-gray-300',
-                ],
-            },
-            label,
-        )
+        this._label = new Element<HTMLParagraphElement>({
+            tag: 'p',
+            className: [
+                'inline-block',
+                'text-md',
+                'font-light',
+                'text-gray-700',
+                'mb-0.5',
+                'pl-3',
+                'dark:text-gray-300',
+            ],
+        }).append(label)
         this.prepend(this._label)
     }
 
@@ -150,20 +139,17 @@ export class Input extends Element<HTMLLabelElement> {
         this._input.element.blur()
     }
 
-    public constructor(
-        { className = [], ...props }: Partial<ElementProps & Props> = {},
-        ...children: (string | Element<HTMLElement>)[]
-    ) {
-        super(
-            'label',
-            {
-                className: [...className, 'mb-4', 'block'],
-                ...props,
-            },
-            ...children,
-        )
+    public constructor({
+        className = [],
+        ...props
+    }: Partial<ElementProps<null> & Props> = {}) {
+        super({
+            tag: 'label',
+            className: [...className, 'mb-4', 'block'],
+            ...props,
+        })
 
-        this._input = new Element('input')
+        this._input = new Element({ tag: 'input' })
         this.element.append(this._input.element)
 
         if (props.label) {

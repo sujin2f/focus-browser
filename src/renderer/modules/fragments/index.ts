@@ -1,8 +1,15 @@
 import type { ElementProps } from '@src/types'
 
-export class Element<T extends HTMLElement> {
+/**
+ * HTML elements, similar with React, for Tailwind
+ * This project aims lightweight browser. Do not use huge library.
+ */
+export class Element<
+    T extends HTMLElement,
+    D extends Record<string, unknown> = null,
+> {
     /**
-     * Element
+     * Elements: main & children
      */
     private _element: T
     protected set element(element: T) {
@@ -11,34 +18,53 @@ export class Element<T extends HTMLElement> {
     public get element(): T {
         return this._element
     }
-    private _children: (string | Element<HTMLElement>)[] = []
+    private _children: (string | Element<HTMLElement, null>)[] = []
 
-    constructor(
-        private tag: string,
-        private props: Partial<ElementProps> = {},
-        ...children: (string | Element<HTMLElement>)[]
-    ) {
-        this._children = children
-        this.constInit()
+    constructor(private props: Partial<ElementProps<D>> = {}) {
+        this.init()
     }
 
-    private constInit() {
-        const { className, hide, onClick } = this.props
-        this.element = document.createElement(this.tag) as T
-        this.append(...this._children)
+    private init() {
+        const {
+            tag = 'div',
+            className,
+            hide,
+            value,
+            onClick,
+            selector,
+            props,
+        } = this.props
+
+        // query element or create one
+        if (selector) {
+            this.element = document.querySelector(selector) as T
+            if (!this.element) {
+                throw new Error()
+            }
+        } else {
+            this.element = document.createElement(tag) as T
+        }
+
+        // reset
+        this._children = []
+        this.element.innerHTML = ''
+
+        if (value) {
+            this.element.setAttribute('value', value || '')
+        }
 
         if (className) {
-            const clsSet = new Set<string>()
+            const items = new Set<string>()
 
             className.forEach((cls) => {
                 if (cls.startsWith('-')) {
-                    clsSet.delete(cls.slice(1))
+                    items.delete(cls.slice(1))
                     return
                 }
-                clsSet.add(cls)
+                items.add(cls)
             })
 
-            this.classList.add(...clsSet.values())
+            this.classList.add(...items.values())
         }
 
         if (hide) {
@@ -48,16 +74,20 @@ export class Element<T extends HTMLElement> {
         if (onClick) {
             this.addEventListener('click', onClick.bind(this))
         }
+
+        if (props) {
+            this._data = props
+        }
     }
 
     /**
      * Data
      */
-    private _data: Record<string, unknown> = {}
-    public setData<D>(key: string, value: D) {
+    private _data: D = {} as D
+    public setData<K extends keyof D>(key: K, value: D[K]) {
         this._data[key] = value
     }
-    public getData(key: string) {
+    public getData<K extends keyof D>(key: K): D[K] {
         return this._data[key]
     }
 
@@ -109,20 +139,24 @@ export class Element<T extends HTMLElement> {
         )
     }
 
-    public append(...children: (string | Element<HTMLElement>)[]) {
+    public append(...children: (string | Element<HTMLElement>)[]): this {
+        this._children.push(...children)
         this.element.append(
             ...children.map((child) =>
                 typeof child === 'string' ? child : child.element,
             ),
         )
+        return this
     }
 
-    public prepend(...children: (string | Element<HTMLElement>)[]) {
+    public prepend(...children: (string | Element<HTMLElement>)[]): this {
+        this._children.unshift(...children)
         this.element.prepend(
             ...children.map((child) =>
                 typeof child === 'string' ? child : child.element,
             ),
         )
+        return this
     }
 
     public destroy() {
@@ -130,6 +164,6 @@ export class Element<T extends HTMLElement> {
     }
 
     public reset() {
-        this.constInit()
+        this.init()
     }
 }

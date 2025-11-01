@@ -13,7 +13,7 @@ export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     get() {
-        return this._data.bookmarks
+        return super.get('bookmarks')
     }
 
     update(index: number, bookmark: Bookmark) {

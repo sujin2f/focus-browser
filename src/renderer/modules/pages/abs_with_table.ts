@@ -7,7 +7,7 @@ import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Heading } from '@home/modules/fragments/heading'
-import DataList, { type DataListType } from '@home/modules/fragments/data-list'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { PageMode, TableAction } from '@src/types'
 import { isMac, navigate } from '@home/util'
@@ -35,7 +35,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     /**
      * Table Navigation
      */
-    protected _cursor: DataListType<Element<HTMLTableRowElement>> | null = null
+    protected _cursor: TrLinked | null = null
 
     // Table
     protected table: Table = new Table()
@@ -139,30 +139,16 @@ export abstract class A_PageWithTable<T> extends A_Page {
      * Table related methods
      */
     abstract getTHeads(): Element<HTMLTableCellElement>[]
-    abstract getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[]
+    abstract getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[]
     protected renderTable() {
         this.table.reset()
 
-        const ListTr = DataList(Element<HTMLTableRowElement>)
-        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
+        let prev: TrLinked | null = null
 
         this.items.forEach((item, index) => {
-            const tr = new ListTr('tr', {
-                className: [
-                    'hover',
-                    'cursor-pointer',
-                    'text-sm',
-                    'antialiased',
-                    'font-normal',
-                    'leading-normal',
-                    'text-blue-gray-900',
-                    'border-l-5',
-                    'border-transparent',
-                    ...this.STYLE_HOVER,
-                ],
-            }) as unknown as DataListType<Element<HTMLTableRowElement>>
+            const tr = new TrLinked({
+                className: [...this.STYLE_HOVER],
+            })
 
             tr.setData('index', index)
             tr.setData('data', item)
@@ -180,7 +166,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract filterCondition(item: T): boolean
     private filterTable() {
         const rows = this.table.children
-        let prev: DataListType<Element<HTMLTableRowElement>> | null = null
+        let prev: TrLinked | null = null
         this.table.children.forEach((tr, index) => {
             if (!this.searchKeyword) {
                 rows[index].show()
@@ -224,7 +210,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
         if (this._cursor && this._cursor.next) {
             this._cursor = this._cursor.next
         } else if (!this._cursor) {
-            for (let tr of this.table.children) {
+            for (const tr of this.table.children) {
                 if (!tr.hidden) {
                     this._cursor = tr
                     break
@@ -236,10 +222,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
         this.blur()
     }
 
-    private linkTr(
-        prev: DataListType<Element<HTMLTableRowElement>> | null,
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ) {
+    private linkTr(prev: TrLinked | null, tr: TrLinked) {
         if (prev) {
             prev.next = tr
             tr.prev = prev
@@ -279,8 +262,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         this.arrowDown()
                         return true
                     }
+                    break
                 case 'Escape':
                     this.changeMode(PageMode.LIST)
+                    break
             }
         } else {
             switch (e.key) {

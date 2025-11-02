@@ -1,9 +1,9 @@
 import { Bookmark } from '@src/types'
-import Store from './store'
+import { Store } from '@main/modules/store/store'
 
 type Props = { anchors: Bookmark[] }
 
-export default class Anchors extends Store<Props> {
+export class Anchors extends Store<Props> {
     static instance: Anchors
     static getInstance(): Anchors {
         if (!Anchors.instance) {
@@ -29,7 +29,7 @@ export default class Anchors extends Store<Props> {
     }
 
     remove(url: string) {
-        for (let [index, item] of this._data.anchors.entries()) {
+        for (const [index, item] of this._data.anchors.entries()) {
             if (item.url === url) {
                 this._data.anchors.splice(index, 1)
                 return

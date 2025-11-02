@@ -7,10 +7,10 @@ const config: Config = {
     coverageProvider: 'v8',
     testEnvironment: 'jest-environment-jsdom',
     moduleNameMapper: {
-        '^.+\\.(svg)$': '<rootDir>/.jest/svg-mock.js',
+        '^.+\\.(css)$': '<rootDir>/.jest/mock-css.ts',
+        '^@test/(.*)$': '<rootDir>/.jest/$1',
         '^@src/(.*)$': '<rootDir>/src/$1',
         '^@main/(.*)$': '<rootDir>/src/main/$1',
-        '^@controllers/(.*)$': '<rootDir>/src/main/controllers/$1',
         '^@home/(.*)$': '<rootDir>/src/renderer/$1',
     },
     setupFiles: ['<rootDir>/.jest/setup.jest.js'],

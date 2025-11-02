@@ -5,8 +5,8 @@ import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 import { Button } from '@home/modules/fragments/button'
 import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer } from '@home/util'
 import { Channel, PageType, RequestHandler, TableAction } from '@src/types'
 
@@ -55,9 +55,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
         return [this.table.createTh({ className: ['text-left'] }, 'Title')]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const history = tr.getData('data') as NavigationEntry
         const index = tr.getData('index') as number
         return [

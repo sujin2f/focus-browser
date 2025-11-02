@@ -6,10 +6,15 @@ import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 
 import { ipcRenderer } from '@home/util'
-import { Channel, PageType, RequestHandler } from '@src/types'
+import { Channel, type Info, PageType, RequestHandler } from '@src/types'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING
+
+    constructor() {
+        super()
+        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
+    }
 
     refresh() {
         this.root.innerHTML = ''
@@ -25,7 +30,7 @@ export class Setting extends A_Page {
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: helpText.checked,
-                })
+                } satisfies Partial<Info>)
                 Controller.getInstance().setting.helpText = helpText.checked
             },
             label: 'Show Help Text',
@@ -43,7 +48,7 @@ export class Setting extends A_Page {
                 }
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     maxHistory: value,
-                })
+                } satisfies Partial<Info>)
                 Controller.getInstance().setting.maxHistory = value
             },
             label: 'Maximum History',
@@ -55,13 +60,43 @@ export class Setting extends A_Page {
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     adBlocker: adBlocker.checked,
-                })
+                } satisfies Partial<Info>)
                 Controller.getInstance().setting.adBlocker = adBlocker.checked
             },
             label: 'Use Ad-Blocker',
         })
 
-        let cacheSize = Controller.getInstance().setting.cache
+        const adBlockerStatus = new Element(
+            'div',
+            {
+                onClick: () => {
+                    if (
+                        Controller.getInstance().setting.adBlockerStatus !==
+                        null
+                    ) {
+                        return
+                    }
+                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                        adBlockerStatus: true,
+                    } satisfies Partial<Info>)
+                },
+                className: ['cursor-pointer'],
+            },
+            `Ad-Blocker Status: ${(() => {
+                if (Controller.getInstance().setting.adBlockerStatus === null) {
+                    return 'Failed to load. Click here to retry.'
+                }
+                if (
+                    Controller.getInstance().setting.adBlockerStatus === false
+                ) {
+                    return 'Disabled'
+                }
+
+                return 'Working!'
+            })()}`,
+        )
+
+        let cacheSize = Controller.getInstance().setting.cacheSize
         let cacheText = ''
         const mb = 1024 * 1024
         if (cacheSize < mb) {
@@ -76,12 +111,24 @@ export class Setting extends A_Page {
         const cache = new Element(
             'div',
             {
-                onClick: () => {},
+                onClick: () => {
+                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                        cacheSize: NaN,
+                    } satisfies Partial<Info>)
+                },
+                className: ['cursor-pointer'],
             },
-            `Cache size: ${cacheText}`,
+            `Cache size: ${cacheText} (Click to clear)`,
         )
 
         this.root.append(wrapper.element)
-        wrapper.append(title, helpText, maxHistory, cache)
+        wrapper.append(
+            title,
+            helpText,
+            maxHistory,
+            adBlocker,
+            adBlockerStatus,
+            cache,
+        )
     }
 }

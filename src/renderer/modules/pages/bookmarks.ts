@@ -7,7 +7,7 @@ import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Callout } from '@home/modules/fragments/callout'
-import type { DataListType } from '@home/modules/fragments/data-list'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
@@ -92,7 +92,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
                 this.inputTitle.focus()
                 return
 
-            case PageMode.EDIT:
+            case PageMode.EDIT: {
                 if (!this._cursor) {
                     this.changeMode(PageMode.LIST)
                     return
@@ -107,6 +107,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
                 this.form.show()
                 this.inputTitle.focus()
                 return
+            }
         }
     }
 
@@ -175,9 +176,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         ]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const bookmark = tr.getData('data') as Bookmark
         const shortcut = this.table.createFixedCell()
         if (bookmark.shortcut) {
@@ -351,6 +350,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             ipcRenderer.send(
                 Channel.BOOKMARK,
                 RequestHandler.REMOVE,
+                null,
                 this.order === 'ASC' ? index : this.items.length - index - 1,
             )
             this.items.splice(index, 1)

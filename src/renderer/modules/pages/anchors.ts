@@ -4,8 +4,8 @@ import { Controller } from '@home/modules/controller'
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
 import { Callout } from '@home/modules/fragments/callout'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 import {
     Channel,
@@ -88,9 +88,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
         ]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const bookmark = tr.getData('data') as Bookmark
 
         const title = this.table.createTd(
@@ -99,10 +97,8 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                     const tagName = (
                         e.target as HTMLElement
                     ).tagName.toLowerCase()
+
                     if (tagName === 'button') {
-                        this._cursor = tr
-                        this.action(TableAction.DELETE)
-                        this._cursor = null
                         return
                     }
 
@@ -122,7 +118,6 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                     onClick: () => {
                         this._cursor = tr
                         this.action(TableAction.DELETE)
-                        this._cursor = null
                     },
                 },
                 'Remove',
@@ -164,6 +159,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
                 (this._cursor.getData('data') as Bookmark).url,
             )
             this.items.splice(this._cursor.getData('index') as number, 1)
+            this._cursor = null
             this.refresh()
 
             return

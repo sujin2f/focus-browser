@@ -20,9 +20,10 @@ export type StatusProps = {
 export type Info = Partial<
     StatusProps & {
         shortcuts: Shortcuts
-        cache: number
+        cacheSize: number
         title: string
         url: string
+        adBlockerStatus: boolean | null
     }
 >
 
@@ -150,5 +151,5 @@ export enum Menu {
 export type ElementProps = {
     className: string[]
     hide: boolean
-    onClick: (ev: HTMLElementEventMap['click']) => any
+    onClick: (ev: HTMLElementEventMap['click']) => unknown
 }

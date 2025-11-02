@@ -1,13 +1,14 @@
-import type { NavigationEntry } from 'electron'
-import Store from './store'
+import type { NavigationEntry, NavigationHistory } from 'electron'
+import { Store } from '@main/modules/store/store'
+import { MAX_HISTORY } from '@src/constants'
 
-export default class History extends Store<{
+export class History extends Store<{
     index: number
     history: NavigationEntry[]
 }> {
     constructor() {
         super('history', {
-            index: NaN,
+            index: -1,
             history: [],
         })
     }
@@ -28,16 +29,38 @@ export default class History extends Store<{
         return
     }
 
-    public write(
-        _index: number,
-        _history: NavigationEntry[],
-        maxContents = 200,
-    ) {
-        const shift = _history.length - maxContents
-        const index = shift > 0 ? _index - shift : _index
-        const history = _history.slice(shift)
+    /**
+     * Save history from browser history
+     *
+     * @param {NavigationHistory} navHistory
+     * @param {number} maxContents
+     */
+    save(navHistory: NavigationHistory, maxContents: number = MAX_HISTORY) {
+        const current = navHistory.getEntryAtIndex(
+            navHistory.getActiveIndex(),
+        ).url
 
-        this._data = { index, history }
+        const unique: string[] = []
+        const history = navHistory
+            .getAllEntries()
+            .reverse()
+            .filter((v) => {
+                if (unique.indexOf(v.url) === -1) {
+                    unique.unshift(v.url)
+                    return true
+                }
+
+                return false
+            })
+            .slice(0, maxContents)
+            .reverse()
+        const urls = history.map((v) => v.url)
+        const index = urls.indexOf(current)
+
+        this._data = {
+            index: index !== -1 ? index : history.length - 1,
+            history,
+        }
         super.save()
     }
 }

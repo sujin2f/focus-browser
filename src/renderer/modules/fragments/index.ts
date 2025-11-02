@@ -87,7 +87,7 @@ export class Element<T extends HTMLElement> {
      */
     public addEventListener<K extends keyof HTMLElementEventMap>(
         type: K,
-        listener: (this: T, ev: HTMLElementEventMap[K]) => any,
+        listener: (this: T, ev: HTMLElementEventMap[K]) => unknown,
         options?: boolean | AddEventListenerOptions,
     ): void {
         this.element.addEventListener(
@@ -99,7 +99,7 @@ export class Element<T extends HTMLElement> {
 
     public removeEventListener<K extends keyof HTMLElementEventMap>(
         type: K,
-        listener: (this: T, ev: HTMLElementEventMap[K]) => any,
+        listener: (this: T, ev: HTMLElementEventMap[K]) => unknown,
         options?: boolean | AddEventListenerOptions,
     ): void {
         this.element.removeEventListener(

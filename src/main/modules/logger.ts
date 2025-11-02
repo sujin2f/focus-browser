@@ -1,8 +1,8 @@
 interface I_Logger {
-    error(...params: any[]): void
-    warn(...params: any[]): void
-    info(...params: any[]): void
-    log(...params: any[]): void
+    error(...params: unknown[]): void
+    warn(...params: unknown[]): void
+    info(...params: unknown[]): void
+    log(...params: unknown[]): void
     initialize(): void
 }
 
@@ -11,7 +11,7 @@ interface I_Logger {
  * on macOS: ~/Library/Logs/{app name}/main.log
  * on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\main.log
  */
-export default class Logger {
+export class Logger {
     // Singleton instance
     static instance: Logger
     static getInstance(): Logger {
@@ -24,34 +24,37 @@ export default class Logger {
     private logger: I_Logger
 
     constructor() {
-        if (process.env.NODE_PROD !== 'alpha') {
+        if (!process.env.NODE_ALPHA) {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             this.logger = require('electron-log')
             this.logger.initialize()
             return
         }
 
         this.logger = {
-            error: (...params: any[]) => {},
-            warn: (...params: any[]) => {},
-            info: (...params: any[]) => {},
-            log: (...params: any[]) => {},
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            error: (..._: unknown[]) => {},
+            warn: (..._: unknown[]) => {},
+            info: (..._: unknown[]) => {},
+            log: (..._: unknown[]) => {},
+            /* eslint-enable @typescript-eslint/no-unused-vars */
             initialize: () => {},
         }
     }
 
-    error(...params: any[]) {
+    error(...params: unknown[]) {
         this.logger.error(...params)
     }
 
-    warn(...params: any[]) {
+    warn(...params: unknown[]) {
         this.logger.warn(...params)
     }
 
-    log(...params: any[]) {
+    log(...params: unknown[]) {
         this.logger.log(...params)
     }
 
-    info(...params: any[]) {
+    info(...params: unknown[]) {
         this.logger.info(...params)
     }
 }

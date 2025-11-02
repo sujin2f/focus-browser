@@ -8,9 +8,9 @@
         "sourceMap": true,
         "outDir": "./release/app/dist",
         "paths": {
+            "@test/*": ["./.jest/*"],
             "@src/*": ["./src/*"],
             "@main/*": ["./src/main/*"],
-            "@controllers/*": ["./src/main/controllers/*"],
             "@home/*": ["./src/renderer/*"]
         },
         "isolatedModules": true

@@ -3,8 +3,8 @@ import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import type { DataListType } from '@home/modules/fragments/data-list'
 import { ipcRenderer } from '@home/util'
 import {
     PageType,
@@ -57,9 +57,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         ]
     }
 
-    getRowCells(
-        tr: DataListType<Element<HTMLTableRowElement>>,
-    ): Element<HTMLTableCellElement>[] {
+    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
         const popup = tr.getData('data') as T_PopupBlocker
         return [
             this.table.createFixedCell(

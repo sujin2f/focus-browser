@@ -18,14 +18,15 @@ export class Title extends Element<HTMLElement> {
     }: Partial<ElementProps<null> & Props> = {}) {
         super({
             tag: 'section',
-            className: ['flex', 'items-center'],
+            className: ['flex', 'items-center', 'mb-4'],
             ...props,
         })
 
         this.label = label
-        this.button = new Button({ onClick: () => navigate() }).append(
-            'Back to Browser',
-        )
+        this.button = new Button({
+            onClick: () => navigate(),
+            className: ['-mb-3'],
+        }).append('Back to Browser (Escape)')
         this.append(this.button)
     }
 
@@ -40,7 +41,7 @@ export class Title extends Element<HTMLElement> {
         }
         if (label && !this.title) {
             this.title = new Heading(1, {
-                className: ['mr-2'],
+                className: ['mr-2', '-mb-6'],
             }).append(label)
             this.prepend(this.title)
             return

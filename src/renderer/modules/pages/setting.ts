@@ -1,14 +1,15 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { Heading } from '@home/modules/fragments/heading'
 import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
+import { Title } from '@home/modules/fragments/title'
 
-import { ipcRenderer, navigate } from '@home/util'
+import { ipcRenderer } from '@home/util'
 import type { Info } from '@src/types'
 import { Channel, PageType, RequestHandler, SearchEngine } from '@src/constants'
 import { Select } from '../fragments/select'
+import { Button } from '../fragments/button'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING
@@ -19,7 +20,7 @@ export class Setting extends A_Page {
     }
 
     private get title() {
-        return new Heading(1, { onClick: () => navigate() }).append('Setting')
+        return new Title({ label: 'Setting' })
     }
 
     private get helpText() {
@@ -76,28 +77,54 @@ export class Setting extends A_Page {
     private get adBlockerStatus() {
         return new Element({
             tag: 'div',
-            onClick: () => {
-                if (Controller.getInstance().setting.adBlockerStatus !== null) {
-                    return
-                }
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
-                    adBlockerStatus: true,
-                } satisfies Partial<Info>)
-            },
-            className: ['cursor-pointer'],
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
         }).append(
-            `Ad-Blocker Status: ${(() => {
-                if (Controller.getInstance().setting.adBlockerStatus === null) {
-                    return 'Failed to load. Click here to retry.'
-                }
-                if (
-                    Controller.getInstance().setting.adBlockerStatus === false
-                ) {
-                    return 'Disabled'
-                }
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Ad-Blocker Status'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(
+                (() => {
+                    if (
+                        Controller.getInstance().setting.adBlockerStatus ===
+                        null
+                    ) {
+                        return 'Failed to load. Click here to retry.'
+                    }
+                    if (
+                        Controller.getInstance().setting.adBlockerStatus ===
+                        false
+                    ) {
+                        return 'Disabled'
+                    }
 
-                return 'Working!'
-            })()}`,
+                    return 'Working!'
+                })(),
+            ),
+            Controller.getInstance().setting.adBlockerStatus === null
+                ? new Button({
+                      className: ['-mb-3'],
+                      onClick: () => {
+                          ipcRenderer.send(
+                              Channel.INFO,
+                              RequestHandler.MODIFY,
+                              {
+                                  adBlockerStatus: true,
+                              } satisfies Partial<Info>,
+                          )
+                      },
+                  }).append('Reset')
+                : '',
         )
     }
 
@@ -114,15 +141,35 @@ export class Setting extends A_Page {
             cacheSize = cacheSize / (mb * 1024)
             cacheText = `${cacheSize.toFixed(2)} Gb`
         }
+
         return new Element({
             tag: 'div',
-            onClick: () => {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
-                    cacheSize: NaN,
-                } satisfies Partial<Info>)
-            },
-            className: ['cursor-pointer'],
-        }).append(`Cache size: ${cacheText} (Click to clear)`)
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
+        }).append(
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Cache size'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(cacheText),
+            new Button({
+                className: ['-mb-3'],
+                onClick: () => {
+                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                        cacheSize: NaN,
+                    } satisfies Partial<Info>)
+                },
+            }).append('Clear Cache'),
+        )
     }
 
     private get searchEngine() {

@@ -21,7 +21,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
 
     protected init() {
         super.init()
-        this.title.innerHTML = 'History'
+        this.title.label = 'History'
 
         // Empty history
         const button = new Button({

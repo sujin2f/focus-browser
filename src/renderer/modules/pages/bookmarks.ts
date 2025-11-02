@@ -45,7 +45,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     protected init() {
         super.init()
-        this.title.innerHTML = 'Bookmark'
+        this.title.label = 'Bookmark'
 
         const buttonAdd: Button = new Button({
             onClick: this.onSwitchAdd.bind(this),

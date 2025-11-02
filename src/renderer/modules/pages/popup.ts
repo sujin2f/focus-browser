@@ -20,7 +20,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
     protected init() {
         super.init()
-        this.title.innerHTML = 'Popup Blocker'
+        this.title.label = 'Popup Blocker'
     }
 
     request(): void {

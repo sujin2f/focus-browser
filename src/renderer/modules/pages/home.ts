@@ -6,10 +6,10 @@ import { Input } from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
+import { Title } from '@home/modules/fragments/title'
 
 import { isMac, navigate, shortcutToHtml } from '@home/util'
 import { PageType } from '@src/constants'
-import { Button } from '../fragments/button'
 
 /**
  * For creating cards
@@ -65,14 +65,13 @@ const buttons: Record<string, T_Card> = {
 export class Home extends A_Page {
     public page = PageType.HOME
     protected search: Input
-    private back: Element<HTMLElement> = new Element({ tag: 'section' })
+    private title: Title = new Title()
     private location: Element<HTMLElement> = new Element({ tag: 'section' })
     private currentURL: Element<HTMLElement> = new Element({ tag: 'section' })
     private helpText: Element<HTMLElement> = new Element({ tag: 'section' })
     private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
     refresh() {
-        this.back.reset()
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()
@@ -80,15 +79,11 @@ export class Home extends A_Page {
 
         this.root.innerHTML = ''
         this.root.append(
-            this.back.element,
+            this.title.element,
             this.location.element,
             this.currentURL.element,
             this.helpText.element,
             this.cards.element,
-        )
-
-        this.back.append(
-            new Button({ onClick: () => navigate() }).append('Back to Browser'),
         )
 
         // Location Bar

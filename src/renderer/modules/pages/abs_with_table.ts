@@ -1,13 +1,13 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { DataTable } from '@home/modules/fragments/table'
+import { DataTable } from '@src/renderer/modules/fragments/data-table'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
-import { Heading } from '@home/modules/fragments/heading'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { Title } from '@home/modules/fragments/title'
 
 import { PageMode, TableAction } from '@src/constants'
 import { isMac, navigate } from '@home/util'
@@ -26,7 +26,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract order: 'ASC' | 'DESC'
 
     // HTML Layout
-    protected title: Heading = new Heading(1, { onClick: () => navigate() })
+    protected title: Title = new Title()
     protected buttonGroup: ButtonGroup = new ButtonGroup()
     protected forms: Element<HTMLElement> = new Element({ tag: 'section' })
     protected helpText: Element<HTMLElement> = new Element({ tag: 'section' })

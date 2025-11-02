@@ -33,6 +33,7 @@ export class Button extends Element<HTMLButtonElement> {
                 'focus:ring-2',
                 'focus:ring-pink-500',
                 'cursor-pointer',
+                'h-fit',
                 ...className,
             ],
         })

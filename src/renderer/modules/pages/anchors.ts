@@ -22,7 +22,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     protected init() {
         super.init()
-        this.title.innerHTML = 'Anchor'
+        this.title.label = 'Anchor'
     }
 
     request(): void {

@@ -192,6 +192,16 @@ export class BrowserView extends WebContentsView {
                     'Ad-Blocker is failed to load: ',
                     JSON.stringify(e),
                 )
+
+                const notification = new Notification({
+                    title: 'Focus',
+                    body: 'Ad Blocker failed to load',
+                    silent: true,
+                })
+                notification.addListener('click', () => {
+                    this.setAdBlocker()
+                })
+                notification.show()
             })
     }
 

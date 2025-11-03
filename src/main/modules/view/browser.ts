@@ -62,11 +62,6 @@ export class BrowserView extends WebContentsView {
             .on('context-menu', (_, params) => {
                 BrowserWindow.getInstance().showContextMenu(params)
             })
-            .on('found-in-page', (_, result) => {
-                if (result.activeMatchOrdinal === 1) {
-                    // this.webContents.scrollToTop()
-                }
-            })
 
         // Enable pinch zoom
         this.webContents.setVisualZoomLevelLimits(1, 3)

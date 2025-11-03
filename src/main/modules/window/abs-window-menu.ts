@@ -4,12 +4,10 @@ import {
     Menu,
     Notification,
     clipboard,
-    nativeImage,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
 } from 'electron'
-import { Logger } from '@main/modules/logger'
 
 import type { Scenes, MenuBlock } from '@src/types'
 import {
@@ -241,6 +239,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 label: 'Reload',
                 click: () => this.reload(),
             },
+            { type: 'separator' },
+            {
+                label: 'Inspect Element',
+                click: () =>
+                    this.browser.webContents.inspectElement(params.x, params.y),
+            },
         ]
 
         // If the clicked element has image contents, prepend image actions
@@ -248,7 +252,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             menu = [
                 {
                     label: 'Copy Image',
-                    click: () => this.copyImageToClipboard(params.srcURL),
+                    click: () =>
+                        this.browser.webContents.copyImageAt(
+                            params.x,
+                            params.y,
+                        ),
                 },
                 {
                     label: 'Copy Image Address',
@@ -326,32 +334,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.switch(PageType.ANCHOR)
         })
         notification.show()
-    }
-
-    /**
-     * Fetch an image by URL, convert to a Buffer, create an Electron nativeImage
-     * and write it to the system clipboard. Errors are logged via Logger.
-     *
-     * TODO: this method performs network I/O and uses Buffer/nativeImage.
-     * Tests should mock fetch, nativeImage.createFromBuffer, and clipboard.
-     *
-     * @param {string} imageUrl
-     */
-    private async copyImageToClipboard(imageUrl: string) {
-        try {
-            await fetch(imageUrl).then(async (response) => {
-                const blob = await (await response.blob()).arrayBuffer()
-                const buffer = Buffer.from(blob)
-                const image = nativeImage.createFromBuffer(buffer)
-                clipboard.writeImage(image)
-            })
-        } catch (e) {
-            // Log fetch/processing errors for diagnostics
-            Logger.getInstance().error(
-                'Error fetching or processing image:',
-                JSON.stringify(e),
-            )
-        }
     }
 
     abstract switch(scene: Scenes): void

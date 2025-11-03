@@ -12,6 +12,7 @@ import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
+import { Find } from '@home/modules/pages/find'
 import { CURRENT_PAGE_INFO } from '@src/constants'
 
 export class Controller {
@@ -100,6 +101,9 @@ export class Controller {
                 break
             case PageType.OFFLINE:
                 this._currentPage = new Offline()
+                break
+            case PageType.FIND:
+                this._currentPage = new Find()
                 break
         }
     }

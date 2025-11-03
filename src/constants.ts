@@ -16,6 +16,7 @@ export enum PageType {
     POPUP_BLOCKER,
     SETTING,
     OFFLINE,
+    FIND,
 }
 
 export const BROWSER = 'scene-browser'
@@ -27,6 +28,7 @@ export enum Channel {
     HISTORY = 'HISTORY',
     ANCHOR = 'ANCHOR',
     POPUP_BLOCKER = 'POPUP_BLOCKER',
+    FIND = 'FIND',
 }
 
 export enum RequestHandler {
@@ -95,6 +97,9 @@ export enum Menu {
     MINIMIZE = 'Minimize',
     CLOSE = 'Close',
     BRING_TO_FRONT = 'Bring to Front',
+    FIND = 'Find',
+    FIND_NEXT = 'Find Next',
+    FIND_PREV = 'Find Previous',
     s0001 = 's0001',
     s0002 = 's0002',
     s0003 = 's0003',

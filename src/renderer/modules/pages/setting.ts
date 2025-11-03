@@ -4,12 +4,12 @@ import { Element } from '@home/modules/fragments'
 import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 import { Title } from '@home/modules/fragments/title'
+import { Select } from '@home/modules/fragments/select'
+import { Button } from '@home/modules/fragments/button'
 
 import { ipcRenderer } from '@home/util'
 import type { Info } from '@src/types'
 import { Channel, PageType, RequestHandler, SearchEngine } from '@src/constants'
-import { Select } from '../fragments/select'
-import { Button } from '../fragments/button'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING

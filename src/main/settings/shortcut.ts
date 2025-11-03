@@ -53,6 +53,19 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     role: 'selectAll',
                 },
                 [Menu.s0002]: {},
+                [Menu.FIND]: {
+                    accelerator: 'Command+F',
+                },
+                [Menu.FIND_NEXT]: {
+                    accelerator: 'Command+G',
+                },
+                [Menu.FIND_PREV]: {
+                    accelerator: 'Shift+Command+G',
+                },
+                [Menu.STOP]: {
+                    accelerator: 'Escape',
+                },
+                [Menu.s0003]: {},
                 [Menu.ADD_BOOKMARK]: {
                     accelerator: 'Command+D',
                 },
@@ -143,6 +156,9 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Command+R': Menu.RELOAD,
             'Command+M': Menu.MINIMIZE,
             'Command+W': Menu.CLOSE,
+            'Command+F': Menu.FIND,
+            'Command+G': Menu.FIND_NEXT,
+            'Shift+Command+G': Menu.FIND_PREV,
         },
     },
     [SystemType.DEFAULT]: {
@@ -180,6 +196,19 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     role: 'selectAll',
                 },
                 [Menu.s0002]: {},
+                [Menu.FIND]: {
+                    accelerator: 'Control+F',
+                },
+                [Menu.FIND_NEXT]: {
+                    accelerator: 'Control+G',
+                },
+                [Menu.FIND_PREV]: {
+                    accelerator: 'Shift+Control+G',
+                },
+                [Menu.STOP]: {
+                    accelerator: 'Escape',
+                },
+                [Menu.s0003]: {},
                 [Menu.ADD_BOOKMARK]: {
                     label: 'Add Bookmark',
                     accelerator: 'Control+D',
@@ -253,6 +282,9 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Control+]': Menu.FORWARD,
             Escape: Menu.STOP,
             'Control+R': Menu.RELOAD,
+            'Control+F': Menu.FIND,
+            'Control+G': Menu.FIND_NEXT,
+            'Shift+Control+G': Menu.FIND_PREV,
         },
     },
 }

@@ -34,6 +34,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
         ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
+        ipcMain.on(Channel.FIND, this.onFind.bind(this))
+    }
+
+    private onFind(_: IpcMainEvent, handler: RequestHandler, text: string) {
+        if (handler !== RequestHandler.REQUEST) {
+            return
+        }
+
+        this.findText = text
+        if (this.findText) {
+            this.browser.webContents.findInPage(this.findText, {
+                findNext: true,
+            })
+        }
     }
 
     private async onInfo(
@@ -81,6 +95,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     {
                         title: this.browser.webContents.getTitle(),
                         url: this.browser.webContents.getURL(),
+                        findText: this.findText,
                     },
                 )
                 return
@@ -209,6 +224,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             shortcuts: Shortcut.getInstance().get('shortcuts') as Shortcuts,
             cacheSize: await this.browser.webContents.session.getCacheSize(),
             adBlockerStatus: this.browser.blocker && true,
+            findText: this.findText,
             ...Status.getInstance().data,
         } satisfies Info)
     }

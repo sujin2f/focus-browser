@@ -48,6 +48,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected get current() {
         return this.isBrowser ? this.browser : this.centre
     }
+    protected findText = ''
 
     /**
      * Constructor
@@ -108,6 +109,34 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             }
         }
 
+        menu[MenuCategory.EDIT][EnumMenu.FIND].click = () => {
+            this.switch(PageType.FIND)
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.FIND_NEXT].click = () => {
+            if (!this.findText) {
+                return
+            }
+            this.browser.webContents.findInPage(this.findText, {
+                findNext: true,
+            })
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.FIND_PREV].click = () => {
+            if (!this.findText) {
+                return
+            }
+            this.browser.webContents.findInPage(this.findText, {
+                forward: false,
+                findNext: true,
+            })
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.STOP].click = () => {
+            this.current.webContents.stop()
+            this.browser.webContents.stopFindInPage('clearSelection')
+        }
+
         menu[MenuCategory.VIEW][EnumMenu.FULL_SCREEN].click = () => {
             this.setFullScreen(!this.fullScreen)
         }
@@ -138,6 +167,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         menu[MenuCategory.NAVIGATE][EnumMenu.STOP].click = () => {
             this.current.webContents.stop()
+            this.browser.webContents.stopFindInPage('clearSelection')
         }
 
         return menu

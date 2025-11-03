@@ -32,6 +32,7 @@ export type Info = Partial<
         title: string
         url: string
         adBlockerStatus: boolean | null
+        findText: string
     }
 >
 

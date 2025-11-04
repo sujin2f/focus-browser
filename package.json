@@ -114,6 +114,7 @@
         "asar": true,
         "files": [
             "dist",
+            "build",
             "node_modules",
             "package.json"
         ],
@@ -161,7 +162,8 @@
         },
         "directories": {
             "app": "release/app",
-            "output": "release/build"
+            "output": "release/build",
+            "buildResources": "release/app/build"
         }
     }
 }

@@ -77,6 +77,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.FULL_SCREEN]: {
                     accelerator: 'Command+Control+F',
                 },
+                [Menu.FIT_TO_SCREEN]: {
+                    accelerator: 'Command+Escape',
+                },
+                [Menu.s0001]: {},
                 [Menu.RESET_ZOOM]: {
                     accelerator: 'Command+0',
                     role: 'resetZoom',
@@ -89,7 +93,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     accelerator: 'Command+-',
                     role: 'zoomOut',
                 },
-                [Menu.s0001]: {},
+                [Menu.s0002]: {},
                 [Menu.DEVTOOLS]: {
                     accelerator: 'Command+Option+I',
                 },
@@ -159,6 +163,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Command+F': Menu.FIND,
             'Command+G': Menu.FIND_NEXT,
             'Shift+Command+G': Menu.FIND_PREV,
+            'Command+Escape': Menu.FIT_TO_SCREEN,
         },
     },
     [SystemType.DEFAULT]: {
@@ -221,6 +226,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.FULL_SCREEN]: {
                     accelerator: 'F11',
                 },
+                [Menu.FIT_TO_SCREEN]: {
+                    accelerator: 'Control+Escape',
+                },
+                [Menu.s0001]: {},
                 [Menu.RESET_ZOOM]: {
                     accelerator: 'Control+0',
                     role: 'resetZoom',
@@ -233,7 +242,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     accelerator: 'Control+-',
                     role: 'zoomOut',
                 },
-                [Menu.s0001]: {},
+                [Menu.s0002]: {},
                 [Menu.DEVTOOLS]: {
                     accelerator: 'Control+Shift+I',
                 },
@@ -285,6 +294,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Control+F': Menu.FIND,
             'Control+G': Menu.FIND_NEXT,
             'Shift+Control+G': Menu.FIND_PREV,
+            'Control+Escape': Menu.FIT_TO_SCREEN,
         },
     },
 }

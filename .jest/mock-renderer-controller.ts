@@ -1,5 +1,7 @@
-class MockController {}
-
 export const controller = () => ({
-    Controller: MockController,
+    Controller: {
+        getInstance: () => ({
+            setting: { frame: false },
+        }),
+    },
 })

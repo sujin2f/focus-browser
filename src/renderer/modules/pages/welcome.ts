@@ -1,9 +1,11 @@
 import { A_Page } from '@home/modules/pages/abs_page'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Button } from '@home/modules/fragments/button'
 import { Heading } from '@home/modules/fragments/heading'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { PageType } from '@src/constants'
 import { isMac, navigate } from '@home/util'
@@ -15,6 +17,11 @@ export class Welcome extends A_Page {
         super()
 
         this.root.innerHTML = ''
+
+        if (!Controller.getInstance().setting.frame) {
+            new TitleBar(this.root)
+        }
+
         // H1
         const heading = new Heading(1).append(
             'Single Tab Browser for Fast Navigation',

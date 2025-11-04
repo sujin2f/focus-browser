@@ -59,6 +59,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
             [MenuCategory.VIEW]: {
                 [EnumMenu.FULL_SCREEN]: {},
                 [EnumMenu.DEVTOOLS]: {},
+                [EnumMenu.FIT_TO_SCREEN]: {},
             },
             [MenuCategory.NAVIGATE]: {
                 [EnumMenu.ADDRESS]: {},

@@ -20,6 +20,7 @@ export type StatusProps = {
     helpText: boolean
     adBlocker: boolean
     searchEngine: keyof typeof SearchEngine
+    frame: boolean
 }
 
 /**
@@ -33,6 +34,7 @@ export type Info = Partial<
         url: string
         adBlockerStatus: boolean | null
         findText: string
+        maximize: boolean
     }
 >
 

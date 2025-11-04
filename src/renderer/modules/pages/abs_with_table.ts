@@ -1,4 +1,5 @@
 import { A_Page } from '@home/modules/pages/abs_page'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { DataTable } from '@src/renderer/modules/fragments/data-table'
@@ -8,6 +9,7 @@ import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { Title } from '@home/modules/fragments/title'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { PageMode, TableAction } from '@src/constants'
 import { isMac, navigate } from '@home/util'
@@ -86,6 +88,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
     protected init() {
         this.root.innerHTML = ''
+
+        if (!Controller.getInstance().setting.frame) {
+            new TitleBar(this.root)
+        }
 
         this.buttonGroup.append(this.buttonFind)
         this.forms.append(this.formFind)

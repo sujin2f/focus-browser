@@ -100,6 +100,7 @@ export enum Menu {
     FIND = 'Find',
     FIND_NEXT = 'Find Next',
     FIND_PREV = 'Find Previous',
+    FIT_TO_SCREEN = 'Toggle Fit to Screen',
     s0001 = 's0001',
     s0002 = 's0002',
     s0003 = 's0003',
@@ -123,4 +124,5 @@ export const DEFAULT_STATUS: StatusProps = {
     helpText: true,
     adBlocker: true,
     searchEngine: 'DUCKDUCKGO',
+    frame: true,
 }

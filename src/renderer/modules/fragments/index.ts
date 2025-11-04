@@ -119,24 +119,35 @@ export class Element<
         type: K,
         listener: (this: T, ev: HTMLElementEventMap[K]) => unknown,
         options?: boolean | AddEventListenerOptions,
-    ): void {
+    ): this {
         this.element.addEventListener(
             type,
             listener as EventListenerOrEventListenerObject,
             options,
         )
+        return this
     }
 
     public removeEventListener<K extends keyof HTMLElementEventMap>(
         type: K,
         listener: (this: T, ev: HTMLElementEventMap[K]) => unknown,
         options?: boolean | AddEventListenerOptions,
-    ): void {
+    ): this {
         this.element.removeEventListener(
             type,
             listener as EventListenerOrEventListenerObject,
             options,
         )
+        return this
+    }
+
+    public setAttribute(qualifiedName: string, value: string): this {
+        this.element.setAttribute(qualifiedName, value)
+        return this
+    }
+
+    public getAttribute(qualifiedName: string): string {
+        return this.element.getAttribute(qualifiedName)
     }
 
     public append(...children: (string | Element<HTMLElement>)[]): this {

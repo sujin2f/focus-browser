@@ -1,12 +1,13 @@
 import { A_Page } from '@home/modules/pages/abs_page'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
-import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
 import { Title } from '@home/modules/fragments/title'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { isMac, navigate, shortcutToHtml } from '@home/util'
 import { PageType } from '@src/constants'
@@ -78,6 +79,11 @@ export class Home extends A_Page {
         this.cards.reset()
 
         this.root.innerHTML = ''
+
+        if (!Controller.getInstance().setting.frame) {
+            new TitleBar(this.root)
+        }
+
         this.root.append(
             this.title.element,
             this.location.element,

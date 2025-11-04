@@ -1,13 +1,14 @@
 import { A_Page } from '@home/modules/pages/abs_page'
+import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
-import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 import { Title } from '@home/modules/fragments/title'
 import { Select } from '@home/modules/fragments/select'
 import { Button } from '@home/modules/fragments/button'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { ipcRenderer } from '@home/util'
+import { ipcRenderer, isMac } from '@home/util'
 import type { Info } from '@src/types'
 import { Channel, PageType, RequestHandler, SearchEngine } from '@src/constants'
 
@@ -45,7 +46,7 @@ export class Setting extends A_Page {
             onChange: () => {
                 maxHistory.error = ''
                 const value = parseInt(maxHistory.value)
-                if (value < 10) {
+                if (!value || value < 10) {
                     maxHistory.error = 'This value must be bigger than 9.'
                     return
                 }
@@ -185,8 +186,30 @@ export class Setting extends A_Page {
         return searchEngine
     }
 
+    private get frame() {
+        const shortcut = isMac() ? '⌘' : 'Ctrl+'
+        const frame = new Input({
+            type: 'checkbox',
+            checked: Controller.getInstance().setting.frame,
+            onChange: () => {
+                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    frame: frame.checked,
+                } satisfies Partial<Info>)
+                Controller.getInstance().setting.frame = frame.checked
+            },
+            label: 'Show Native Frame',
+            helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${shortcut}Escape.`,
+        })
+        return frame
+    }
+
     refresh() {
         this.root.innerHTML = ''
+
+        if (!Controller.getInstance().setting.frame) {
+            new TitleBar(this.root)
+        }
+
         const wrapper = new Element({
             tag: 'section',
             className: ['w-4/6', 'mx-auto'],
@@ -195,6 +218,7 @@ export class Setting extends A_Page {
         this.root.append(wrapper.element)
         wrapper.append(
             this.title,
+            this.frame,
             this.helpText,
             this.maxHistory,
             this.adBlocker,

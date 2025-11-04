@@ -139,6 +139,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.setFullScreen(!this.fullScreen)
         }
 
+        menu[MenuCategory.VIEW][EnumMenu.FIT_TO_SCREEN].click = () => {
+            this.toggleMaximize()
+        }
+
         menu[MenuCategory.VIEW][EnumMenu.DEVTOOLS].click = () => {
             this.current.webContents.toggleDevTools()
         }
@@ -169,6 +173,14 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         }
 
         return menu
+    }
+
+    protected toggleMaximize() {
+        if (this.isMaximized()) {
+            this.unmaximize()
+            return
+        }
+        this.maximize()
     }
 
     /**

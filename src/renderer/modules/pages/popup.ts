@@ -1,3 +1,8 @@
+import { controller } from '@test/mock-renderer-controller'
+
+jest.resetModules()
+jest.doMock('@home/modules/controller', controller)
+
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 import { Controller } from '@home/modules/controller'
 

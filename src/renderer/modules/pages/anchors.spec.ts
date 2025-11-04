@@ -1,3 +1,8 @@
+import { controller } from '@test/mock-renderer-controller'
+
+jest.resetModules()
+jest.doMock('@home/modules/controller', controller)
+
 describe('src/renderer/modules/pages/anchors', () => {
     test('exports something', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports

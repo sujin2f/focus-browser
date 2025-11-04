@@ -76,6 +76,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
+            // Toggle Maximize
+            if (Object.prototype.hasOwnProperty.call(data, 'maximize')) {
+                this.toggleMaximize()
+                return
+            }
+
             Status.getInstance().merge(data)
 
             // If adBlocker setting changed, reset.

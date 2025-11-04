@@ -207,6 +207,9 @@ export class BrowserView extends WebContentsView {
 
     private setPopupBlocker() {
         this.webContents.setWindowOpenHandler((data) => {
+            if (data.url.startsWith('file:')) {
+                return { action: 'allow' }
+            }
             const url = new URL(data.url)
             if (PopupBlocker.getInstance().isAllowed(url.host)) {
                 this.loadURL(url.toString())

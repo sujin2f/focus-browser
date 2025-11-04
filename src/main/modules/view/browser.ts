@@ -50,6 +50,8 @@ export class BrowserView extends WebContentsView {
             // Web Title to App Title
             .on('did-finish-load', () => {
                 BrowserWindow.getInstance().title = this.webContents.getTitle()
+                // Enable pinch zoom
+                this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
                 BrowserWindow.getInstance().title = title
@@ -63,8 +65,6 @@ export class BrowserView extends WebContentsView {
                 BrowserWindow.getInstance().showContextMenu(params)
             })
 
-        // Enable pinch zoom
-        this.webContents.setVisualZoomLevelLimits(1, 3)
         this.webContents.setZoomFactor(1)
 
         const url = this.restoreHistory() || this.DEFAULT_URL

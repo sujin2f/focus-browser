@@ -13,8 +13,7 @@ import { Logger } from '@main/modules/logger'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
-
-import { BrowserWindow } from '@main/modules/window/window'
+import { getWindow } from '@src/main/util'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -41,7 +40,7 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        BrowserWindow.getInstance().title = 'Loading...'
+        getWindow().title = 'Loading...'
 
         this.setPopupBlocker()
         // Events
@@ -49,20 +48,17 @@ export class BrowserView extends WebContentsView {
         this.webContents
             // Web Title to App Title
             .on('did-finish-load', () => {
-                BrowserWindow.getInstance().title = this.webContents.getTitle()
+                getWindow().title = this.webContents.getTitle()
                 // Enable pinch zoom
                 this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
-                BrowserWindow.getInstance().title = title
+                getWindow().title = title
             })
-            .on(
-                'will-navigate',
-                () => (BrowserWindow.getInstance().title = 'Loading...'),
-            )
+            .on('will-navigate', () => (getWindow().title = 'Loading...'))
             // Context Menu
             .on('context-menu', (_, params) => {
-                BrowserWindow.getInstance().showContextMenu(params)
+                getWindow().showContextMenu(params)
             })
 
         this.webContents.setZoomFactor(1)
@@ -98,7 +94,7 @@ export class BrowserView extends WebContentsView {
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = _url
-                BrowserWindow.getInstance().switch(PageType.OFFLINE)
+                getWindow().switch(PageType.OFFLINE)
                 return
             }
 
@@ -223,7 +219,7 @@ export class BrowserView extends WebContentsView {
                 silent: true,
             })
             notification.addListener('click', () => {
-                BrowserWindow.getInstance().switch(PageType.POPUP_BLOCKER)
+                getWindow().switch(PageType.POPUP_BLOCKER)
             })
             notification.show()
             return { action: 'deny' }
@@ -234,7 +230,7 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
-        BrowserWindow.getInstance().title = 'Reloading...'
+        getWindow().title = 'Reloading...'
         if (this._failedUrl) {
             this.loadURL(this._failedUrl)
             return

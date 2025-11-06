@@ -6,9 +6,9 @@ import {
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
-import type { Bookmark } from '@src/types'
-import { PageType, SearchEngine } from '@src/constants'
-import { Logger } from '@main/modules/logger'
+import type { Bookmark } from '@src/common/types'
+import { PageType, SearchEngine } from '@src/common/constants'
+import { Logger } from '@src/common/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'

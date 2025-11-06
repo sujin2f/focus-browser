@@ -1,5 +1,5 @@
 import { SHORTCUTS } from '@main/settings/shortcut'
-import { SystemType } from '@src/constants'
+import { SystemType } from '@src/common/constants'
 
 export const anchorPush = jest.fn(() => true)
 export const anchorRemove = jest.fn(() => true)

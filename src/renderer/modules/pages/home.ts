@@ -8,8 +8,8 @@ import { Callout } from '@home/modules/fragments/callout'
 import { Title } from '@home/modules/fragments/title'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { isMac, navigate, shortcutToHtml } from '@home/util'
-import { PageType } from '@src/constants'
+import { isMac, navigate, shortcutToHtml } from '@home/utils'
+import { PageType } from '@src/common/constants'
 
 /**
  * For creating cards
@@ -72,23 +72,22 @@ export class Home extends A_Page {
     private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
     refresh() {
+        this.root.reset()
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()
         this.cards.reset()
-
-        this.root.innerHTML = ''
 
         if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 
         this.root.append(
-            this.title.element,
-            this.location.element,
-            this.currentURL.element,
-            this.helpText.element,
-            this.cards.element,
+            this.title,
+            this.location,
+            this.currentURL,
+            this.helpText,
+            this.cards,
         )
 
         // Location Bar

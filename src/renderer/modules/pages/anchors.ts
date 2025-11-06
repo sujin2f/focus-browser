@@ -5,9 +5,14 @@ import { Button } from '@home/modules/fragments/button'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
-import type { Bookmark } from '@src/types'
-import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
+import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/utils'
+import type { Bookmark } from '@src/common/types'
+import {
+    Channel,
+    RequestHandler,
+    TableAction,
+    PageType,
+} from '@src/common/constants'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
     public order: 'ASC' | 'DESC' = 'ASC'

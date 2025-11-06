@@ -1,6 +1,6 @@
 import { Store } from '@main/modules/store/store'
-import { Logger } from '@main/modules/logger'
-import type { Bookmark } from '@src/types'
+import { Logger } from '@src/common/logger'
+import type { Bookmark } from '@src/common/types'
 
 export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     static instance: Bookmarks

@@ -1,8 +1,13 @@
-import type { Info } from '@src/types'
-import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
-import { checkElectron, ipcRenderer } from '@home/util'
+import type { Info } from '@src/common/types'
+import {
+    Channel,
+    RequestHandler,
+    TableAction,
+    PageType,
+} from '@src/common/constants'
+import { checkElectron, ipcRenderer } from '@home/utils'
 
-import { A_Page } from '@src/renderer/modules/pages/abs_page'
+import { A_Page } from '@home/modules/pages/abs_page'
 import { Home } from '@home/modules/pages/home'
 import { Bookmarks } from '@home/modules/pages/bookmarks'
 import { History } from '@home/modules/pages/history'
@@ -13,7 +18,7 @@ import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
 import { Find } from '@home/modules/pages/find'
-import { CURRENT_PAGE_INFO } from '@src/constants'
+import { CURRENT_PAGE_INFO } from '@src/common/constants'
 
 export class Controller {
     public setting: Info = {}

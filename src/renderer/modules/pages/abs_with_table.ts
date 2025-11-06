@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { DataTable } from '@src/renderer/modules/fragments/data-table'
+import { DataTable } from '@home/modules/fragments/data-table'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
@@ -10,8 +10,8 @@ import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { Title } from '@home/modules/fragments/title'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { PageMode, TableAction } from '@src/constants'
-import { isMac, navigate } from '@home/util'
+import { PageMode, TableAction } from '@src/common/constants'
+import { isMac, navigate } from '@home/utils'
 
 /**
  * Page with Table
@@ -98,11 +98,11 @@ export abstract class A_PageWithTable<T> extends A_Page {
         this.renderFindForm()
 
         this.root.append(
-            this.title.element,
-            this.buttonGroup.element,
-            this.forms.element,
-            this.helpText.element,
-            this.tableWrapper.element,
+            this.title,
+            this.buttonGroup,
+            this.forms,
+            this.helpText,
+            this.tableWrapper,
         )
 
         if (isMac()) {

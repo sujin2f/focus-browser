@@ -1,6 +1,6 @@
 import { Home } from '@home/modules/pages/home'
 
-import { PageType } from '@src/constants'
+import { PageType } from '@src/common/constants'
 
 export class Address extends Home {
     public readonly page = PageType.ADDRESS

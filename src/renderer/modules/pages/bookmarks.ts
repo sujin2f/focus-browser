@@ -8,16 +8,16 @@ import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
+import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/utils'
 
-import type { Bookmark } from '@src/types'
+import type { Bookmark } from '@src/common/types'
 import {
     Channel,
     PageMode,
     RequestHandler,
     TableAction,
     PageType,
-} from '@src/constants'
+} from '@src/common/constants'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
     order: 'ASC' | 'DESC' = 'ASC'

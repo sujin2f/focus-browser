@@ -11,8 +11,8 @@ import {
     Request,
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
-import { adBlockerPreload } from '@src/main/util'
-import { Logger } from '@main/modules/logger'
+import { adBlockerPreload } from '@src/main/utils'
+import { Logger } from '@src/common/logger'
 
 const { ipcMain } = electron
 

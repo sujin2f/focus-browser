@@ -1,6 +1,6 @@
 import { Element } from '.'
 import { Heading } from './heading'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 export default class Card extends Element<HTMLAnchorElement> {
     public set title(title: string) {

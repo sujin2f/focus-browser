@@ -5,14 +5,14 @@ import { Heading } from '@home/modules/fragments/heading'
 import { Button } from '@home/modules/fragments/button'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { ipcRenderer } from '@home/util'
-import { Channel, PageType, BROWSER } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import { Channel, PageType, BROWSER } from '@src/common/constants'
 
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
 
     refresh(): void {
-        this.root.innerHTML = ''
+        this.root.reset()
 
         if (!window.controller.setting.frame) {
             new TitleBar(this.root)
@@ -37,6 +37,6 @@ export class Offline extends A_Page {
                 'items-center',
             ],
         }).append(title, reload)
-        this.root.append(container.element)
+        this.root.append(container)
     }
 }

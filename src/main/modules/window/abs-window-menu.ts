@@ -9,20 +9,20 @@ import {
     type ContextMenuParams,
 } from 'electron'
 
-import type { Scenes, MenuBlock } from '@src/types'
+import type { Scenes, MenuBlock } from '@src/common/types'
 import {
     MenuCategory,
     Menu as EnumMenu,
     PageType,
     BROWSER,
-} from '@src/constants'
+} from '@src/common/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { Logger } from '@main/modules/logger'
+import { Logger } from '@src/common/logger'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu

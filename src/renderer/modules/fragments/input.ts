@@ -1,5 +1,5 @@
 import { Element } from '.'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 type Props = {
     label: string

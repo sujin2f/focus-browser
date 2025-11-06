@@ -1,5 +1,5 @@
 import { Element } from '.'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 import { TrLinked } from './tr-linked'
 
 export class DataTable<

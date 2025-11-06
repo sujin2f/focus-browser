@@ -1,4 +1,9 @@
-import { Channel, RequestHandler, BROWSER, PageType } from '@src/constants'
+import {
+    Channel,
+    RequestHandler,
+    BROWSER,
+    PageType,
+} from '@src/common/constants'
 import { Element } from '@home/modules/fragments'
 
 export const checkElectron = () => {

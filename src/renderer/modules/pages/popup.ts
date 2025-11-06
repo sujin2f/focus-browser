@@ -4,9 +4,14 @@ import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import { ipcRenderer } from '@home/util'
-import type { PopupBlocker as T_PopupBlocker } from '@src/types'
-import { TableAction, Channel, RequestHandler, PageType } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import type { PopupBlocker as T_PopupBlocker } from '@src/common/types'
+import {
+    TableAction,
+    Channel,
+    RequestHandler,
+    PageType,
+} from '@src/common/constants'
 
 export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     order: 'ASC' | 'DESC' = 'DESC'

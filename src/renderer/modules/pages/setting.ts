@@ -7,9 +7,14 @@ import { Select } from '@home/modules/fragments/select'
 import { Button } from '@home/modules/fragments/button'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { ipcRenderer, isMac } from '@home/util'
-import type { Info } from '@src/types'
-import { Channel, PageType, RequestHandler, SearchEngine } from '@src/constants'
+import { ipcRenderer, isMac } from '@home/utils'
+import type { Info } from '@src/common/types'
+import {
+    Channel,
+    PageType,
+    RequestHandler,
+    SearchEngine,
+} from '@src/common/constants'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING
@@ -215,12 +220,12 @@ export class Setting extends A_Page {
             new Element({
                 tag: 'div',
                 className: ['mr-3'],
-            }).append(window.controller.setting.version),
+            }).append(version),
         )
     }
 
     refresh() {
-        this.root.innerHTML = ''
+        this.root.reset()
 
         if (!window.controller.setting.frame) {
             new TitleBar(this.root)
@@ -231,7 +236,7 @@ export class Setting extends A_Page {
             className: ['w-4/6', 'mx-auto'],
         })
 
-        this.root.append(wrapper.element)
+        this.root.append(wrapper)
         wrapper.append(
             this.title,
             this.version,

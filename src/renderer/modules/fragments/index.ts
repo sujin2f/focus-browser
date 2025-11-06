@@ -1,4 +1,4 @@
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 /**
  * HTML elements, similar with React, for Tailwind

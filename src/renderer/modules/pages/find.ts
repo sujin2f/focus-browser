@@ -4,8 +4,8 @@ import { Element } from '@home/modules/fragments'
 import { Input } from '@home/modules/fragments/input'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { Channel, PageType, RequestHandler } from '@src/constants'
-import { ipcRenderer, navigate } from '@home/util'
+import { Channel, PageType, RequestHandler } from '@src/common/constants'
+import { ipcRenderer, navigate } from '@home/utils'
 
 export class Find extends A_Page {
     public page = PageType.FIND
@@ -31,7 +31,7 @@ export class Find extends A_Page {
     }
 
     refresh(): void {
-        this.root.innerHTML = ''
+        this.root.reset()
 
         if (!window.controller.setting.frame) {
             new TitleBar(this.root)
@@ -39,7 +39,7 @@ export class Find extends A_Page {
 
         const field = this.field
         const container = this.container.append(field)
-        this.root.append(container.element)
+        this.root.append(container)
         field.input.element.select()
 
         field.addEventListener('keydown', (e) => {

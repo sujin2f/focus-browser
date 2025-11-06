@@ -6,8 +6,8 @@ import { Button } from '@home/modules/fragments/button'
 import { Heading } from '@home/modules/fragments/heading'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { PageType } from '@src/constants'
-import { isMac, navigate } from '@home/util'
+import { PageType } from '@src/common/constants'
+import { isMac, navigate } from '@home/utils'
 
 export class Welcome extends A_Page {
     public readonly page = PageType.WELCOME
@@ -15,7 +15,7 @@ export class Welcome extends A_Page {
     constructor() {
         super()
 
-        this.root.innerHTML = ''
+        this.root.reset()
 
         if (!window.controller.setting.frame) {
             new TitleBar(this.root)
@@ -78,7 +78,7 @@ export class Welcome extends A_Page {
                 'items-center',
             ],
         }).append(heading, p, buttons)
-        this.root.appendChild(container.element)
+        this.root.append(container)
     }
 
     refresh(): void {}

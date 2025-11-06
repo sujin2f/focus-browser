@@ -2,9 +2,9 @@ import { Element } from '@home/modules/fragments'
 
 import { Button } from '@home/modules/fragments/button'
 
-import { ipcRenderer } from '@home/util'
-import type { ElementProps } from '@src/types'
-import { Channel, RequestHandler, TableAction } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import type { ElementProps } from '@src/common/types'
+import { Channel, RequestHandler, TableAction } from '@src/common/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button

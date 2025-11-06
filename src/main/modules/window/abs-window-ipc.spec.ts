@@ -40,7 +40,7 @@ import {
     PageType,
     BROWSER,
     CURRENT_PAGE_INFO,
-} from '@src/constants'
+} from '@src/common/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
 

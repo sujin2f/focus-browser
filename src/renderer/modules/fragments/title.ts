@@ -1,7 +1,7 @@
 import { Element } from '.'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 import { Heading } from '@home/modules/fragments/heading'
-import { navigate } from '@home/util'
+import { navigate } from '@home/utils'
 import { Button } from './button'
 
 type Props = {

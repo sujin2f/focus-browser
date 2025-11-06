@@ -1,6 +1,6 @@
-// import { Element } from '@home/modules/fragments'
-import { PageType, TableAction, PageMode } from '@src/constants'
-import { navigate } from '@home/util'
+import { Element } from '@home/modules/fragments'
+import { PageType, TableAction, PageMode } from '@src/common/constants'
+import { navigate } from '@home/utils'
 
 export abstract class A_Page {
     /**
@@ -19,8 +19,17 @@ export abstract class A_Page {
      *     <section.container />
      * </div>
      */
-    protected get root() {
-        return document.getElementById('root')
+    private _root: Element<HTMLElement>
+    protected get root(): Element<HTMLElement> {
+        if (!this._root) {
+            this._root = new Element({
+                selector: '#root',
+                className: ['container', 'mx-auto'],
+            })
+            document.body.innerHTML = ''
+            document.body.append(this._root.element)
+        }
+        return this._root
     }
     // protected title = new Element('section')
 

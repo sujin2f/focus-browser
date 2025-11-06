@@ -1,4 +1,5 @@
 const EnvironmentPlugin = require('webpack').EnvironmentPlugin
+const DefinePlugin = require('webpack').DefinePlugin
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
@@ -102,6 +103,11 @@ const rendererConfig = {
         new HtmlWebpackPlugin({
             template: './src/renderer/templates/index.html', // Your HTML template for the renderer
             filename: 'index.html',
+        }),
+        // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
+        new DefinePlugin({
+            version: '"' + require('./package.json').version + '"',
+            isBeta: require('./package.json').version.includes('beta'),
         }),
     ],
 }

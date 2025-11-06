@@ -1,11 +1,11 @@
 import { Element } from '.'
-import { ipcRenderer } from '@home/util'
-import { Channel, RequestHandler } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import { Channel, RequestHandler } from '@src/common/constants'
 
-import type { Info } from '@src/types'
+import type { Info } from '@src/common/types'
 
 export class TitleBar extends Element<HTMLFormElement> {
-    public constructor(root: HTMLElement) {
+    public constructor(root: Element<HTMLElement>) {
         super({
             tag: 'div',
             className: [
@@ -41,7 +41,7 @@ export class TitleBar extends Element<HTMLFormElement> {
             .setAttribute('style', '-webkit-app-region:drag')
         this.append(maximize, separator, drag)
 
-        root.append(this.element)
+        root.append(this)
         root.classList.add('pt-5')
     }
 }

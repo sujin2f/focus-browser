@@ -6,8 +6,13 @@ import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 
-import { ipcRenderer } from '@home/util'
-import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import {
+    Channel,
+    RequestHandler,
+    TableAction,
+    PageType,
+} from '@src/common/constants'
 
 export class History extends A_PageWithTable<NavigationEntry> {
     order: 'ASC' | 'DESC' = 'DESC'

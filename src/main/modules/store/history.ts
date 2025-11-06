@@ -1,6 +1,6 @@
 import type { NavigationEntry, NavigationHistory } from 'electron'
 import { Store } from '@main/modules/store/store'
-import { MAX_HISTORY } from '@src/constants'
+import { MAX_HISTORY } from '@src/common/constants'
 
 export class History extends Store<{
     index: number

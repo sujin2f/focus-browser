@@ -1,8 +1,4 @@
-import { app } from 'electron'
 import * as path from 'path'
-
-import { BrowserWindow } from '@main/modules/window/window'
-import { Logger } from '@main/modules/logger'
 
 export function resolveHtmlPath(htmlFileName: string) {
     if (process.env.NODE_ENV === 'development') {
@@ -20,18 +16,3 @@ export const adBlockerPreload = path.join(
     '..',
     'adblocker-preload.js',
 )
-
-export const getWindow = (): BrowserWindow => {
-    for (const window of BrowserWindow.getAllWindows()) {
-        if (window instanceof BrowserWindow) {
-            return window
-        }
-    }
-
-    // I cannot expect this case because getWindow is always from BrowserView
-    Logger.getInstance().error(
-        'Cannot find BrowserWindow from available windows.',
-    )
-    app.relaunch()
-    app.exit()
-}

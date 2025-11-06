@@ -19,7 +19,7 @@ app.on('window-all-closed', () => {
 app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
-        const window = new BrowserWindow({
+        const window = BrowserWindow.getInstance({
             frame: Status.getInstance().get('frame'),
         })
         window.setAutoHideMenuBar(true)

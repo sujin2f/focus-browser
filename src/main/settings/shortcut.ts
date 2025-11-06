@@ -127,7 +127,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 },
                 [Menu.CLOSE]: {
                     accelerator: 'Command+W',
-                    role: 'quit',
+                    role: 'close',
                 },
                 [Menu.s0001]: {},
                 [Menu.BRING_TO_FRONT]: {

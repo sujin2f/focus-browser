@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Input } from '@home/modules/fragments/input'
@@ -27,12 +26,12 @@ export class Setting extends A_Page {
     private get helpText() {
         const helpText = new Input({
             type: 'checkbox',
-            checked: Controller.getInstance().setting.helpText,
+            checked: window.controller.setting.helpText,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: helpText.checked,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.helpText = helpText.checked
+                window.controller.setting.helpText = helpText.checked
             },
             label: 'Show Help Text',
         })
@@ -42,7 +41,7 @@ export class Setting extends A_Page {
     private get maxHistory() {
         const maxHistory = new Input({
             type: 'number',
-            value: Controller.getInstance().setting.maxHistory.toString(),
+            value: window.controller.setting.maxHistory.toString(),
             onChange: () => {
                 maxHistory.error = ''
                 const value = parseInt(maxHistory.value)
@@ -53,7 +52,7 @@ export class Setting extends A_Page {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     maxHistory: value,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.maxHistory = value
+                window.controller.setting.maxHistory = value
             },
             label: 'Maximum History',
         })
@@ -63,12 +62,12 @@ export class Setting extends A_Page {
     private get adBlocker() {
         const adBlocker = new Input({
             type: 'checkbox',
-            checked: Controller.getInstance().setting.adBlocker,
+            checked: window.controller.setting.adBlocker,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     adBlocker: adBlocker.checked,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.adBlocker = adBlocker.checked
+                window.controller.setting.adBlocker = adBlocker.checked
             },
             label: 'Use Ad-Blocker',
         })
@@ -96,23 +95,17 @@ export class Setting extends A_Page {
                 className: ['mr-3'],
             }).append(
                 (() => {
-                    if (
-                        Controller.getInstance().setting.adBlockerStatus ===
-                        null
-                    ) {
+                    if (window.controller.setting.adBlockerStatus === null) {
                         return 'Failed to load. Click here to retry.'
                     }
-                    if (
-                        Controller.getInstance().setting.adBlockerStatus ===
-                        false
-                    ) {
+                    if (window.controller.setting.adBlockerStatus === false) {
                         return 'Disabled'
                     }
 
                     return 'Working!'
                 })(),
             ),
-            Controller.getInstance().setting.adBlockerStatus === null
+            window.controller.setting.adBlockerStatus === null
                 ? new Button({
                       className: ['-mb-3'],
                       onClick: () => {
@@ -130,7 +123,7 @@ export class Setting extends A_Page {
     }
 
     private get cacheSize() {
-        let cacheSize = Controller.getInstance().setting.cacheSize
+        let cacheSize = window.controller.setting.cacheSize
         let cacheText = ''
         const mb = 1024 * 1024
         if (cacheSize < mb) {
@@ -190,12 +183,12 @@ export class Setting extends A_Page {
         const shortcut = isMac() ? '⌘' : 'Ctrl+'
         const frame = new Input({
             type: 'checkbox',
-            checked: Controller.getInstance().setting.frame,
+            checked: window.controller.setting.frame,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     frame: frame.checked,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.frame = frame.checked
+                window.controller.setting.frame = frame.checked
             },
             label: 'Show Native Frame',
             helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${shortcut}Escape.`,
@@ -203,10 +196,33 @@ export class Setting extends A_Page {
         return frame
     }
 
+    private get version() {
+        return new Element({
+            tag: 'div',
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
+        }).append(
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Version'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(window.controller.setting.version),
+        )
+    }
+
     refresh() {
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 
@@ -218,6 +234,7 @@ export class Setting extends A_Page {
         this.root.append(wrapper.element)
         wrapper.append(
             this.title,
+            this.version,
             this.frame,
             this.helpText,
             this.maxHistory,

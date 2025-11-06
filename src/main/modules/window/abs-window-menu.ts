@@ -22,6 +22,7 @@ import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
+import { Logger } from '@main/modules/logger'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -302,10 +303,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * only when the push succeeds. Notification click switches to bookmark page.
      */
     private addBookmark() {
+        Logger.getInstance().log('addBookmark')
         const added = Bookmarks.getInstance().push({
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
+        Logger.getInstance().log('addBookmark', added)
+
         if (!added) {
             return
         }
@@ -320,6 +324,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.switch(PageType.BOOKMARK)
         })
         notification.show()
+        Logger.getInstance().log('addBookmark >> notification should be shown.')
     }
 
     /**

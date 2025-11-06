@@ -226,11 +226,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private async sendInfo() {
+        // This comes from package.json via webpack.EnvironmentPlugin
+        if (!process.env.VERSION) {
+            Logger.getInstance().error('Error loading process.env.VERSION!')
+        }
         this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
             shortcuts: Shortcut.getInstance().get('shortcuts') as Shortcuts,
             cacheSize: await this.browser.webContents.session.getCacheSize(),
             adBlockerStatus: this.browser.blocker && true,
             findText: this.findText,
+            version: process.env.VERSION || '0.0.0',
             ...Status.getInstance().data,
         } satisfies Info)
     }

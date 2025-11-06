@@ -1,5 +1,4 @@
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
@@ -113,7 +112,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     refresh(): void {
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.destroy()
             this.helpText = new Element({ tag: 'section' })
             return

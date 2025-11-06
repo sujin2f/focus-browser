@@ -13,9 +13,8 @@
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.cjs --config-name=renderer",
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package:alpha": "NODE_ALPHA=1 electron-builder build --publish never",
-        "package:beta": "electron-builder build --publish never",
-        "test": "NODE_ALPHA=1 jest --no-cache --forceExit --coverage",
+        "package": "electron-builder build --publish never",
+        "test": "jest --no-cache --forceExit --coverage",
         "prepare": "husky"
     },
     "author": "Sujin Choi",

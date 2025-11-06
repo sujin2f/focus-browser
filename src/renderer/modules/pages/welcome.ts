@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
@@ -18,7 +17,7 @@ export class Welcome extends A_Page {
 
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 

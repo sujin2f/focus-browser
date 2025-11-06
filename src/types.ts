@@ -35,6 +35,7 @@ export type Info = Partial<
         adBlockerStatus: boolean | null
         findText: string
         maximize: boolean
+        version: string
     }
 >
 

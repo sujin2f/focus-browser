@@ -1,5 +1,4 @@
 import type { NavigationEntry } from 'electron'
-import { Controller } from '@home/modules/controller'
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 
 import { Button } from '@home/modules/fragments/button'
@@ -101,7 +100,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
         this._cursor = null
         this.renderTable()
 
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.destroy()
             this.helpText = new Element({ tag: 'section' })
             return

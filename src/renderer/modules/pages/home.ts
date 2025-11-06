@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Input } from '@home/modules/fragments/input'
@@ -80,7 +79,7 @@ export class Home extends A_Page {
 
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 
@@ -108,7 +107,7 @@ export class Home extends A_Page {
             card.title = info.title
             card.description = info.description
             card.addEventListener('click', () => {
-                Controller.getInstance().switch(info.destination)
+                window.controller.switch(info.destination)
             })
 
             cardContainer.append(card)
@@ -119,7 +118,7 @@ export class Home extends A_Page {
     }
 
     private renderHelpText() {
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.reset()
             return
         }
@@ -156,7 +155,7 @@ export class Home extends A_Page {
     }
 
     protected focus() {
-        this.search.value = Controller.getInstance().setting.url
+        this.search.value = window.controller.setting.url
         this.search.input.element.select()
     }
 
@@ -175,16 +174,16 @@ export class Home extends A_Page {
         ) {
             switch (e.code) {
                 case 'KeyB':
-                    Controller.getInstance().switch(PageType.BOOKMARK)
+                    window.controller.switch(PageType.BOOKMARK)
                     return
                 case 'KeyH':
-                    Controller.getInstance().switch(PageType.HISTORY)
+                    window.controller.switch(PageType.HISTORY)
                     return
                 case 'KeyA':
-                    Controller.getInstance().switch(PageType.ANCHOR)
+                    window.controller.switch(PageType.ANCHOR)
                     return
                 case 'KeyP':
-                    Controller.getInstance().switch(PageType.POPUP_BLOCKER)
+                    window.controller.switch(PageType.POPUP_BLOCKER)
                     return
             }
         } else {

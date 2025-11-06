@@ -16,14 +16,6 @@ import { Find } from '@home/modules/pages/find'
 import { CURRENT_PAGE_INFO } from '@src/constants'
 
 export class Controller {
-    static instance: Controller
-    static getInstance(): Controller {
-        if (!Controller.instance) {
-            Controller.instance = new Controller()
-        }
-        return Controller.instance
-    }
-
     public setting: Info = {}
     private _currentPage: A_Page
     public get currentPage() {

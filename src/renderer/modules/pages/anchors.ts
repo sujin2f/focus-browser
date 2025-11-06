@@ -1,5 +1,4 @@
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
@@ -43,7 +42,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
         this._cursor = null
         this.renderTable()
 
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.destroy()
             this.helpText = new Element({ tag: 'section' })
             return

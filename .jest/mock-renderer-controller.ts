@@ -1,7 +1,3 @@
-export const controller = () => ({
-    Controller: {
-        getInstance: () => ({
-            setting: { frame: false },
-        }),
-    },
-})
+export class Controller {
+    setting: { frame: false }
+}

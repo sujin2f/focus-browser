@@ -1,5 +1,4 @@
 import { Element } from '@home/modules/fragments'
-import { Controller } from '@home/modules/controller'
 
 import { Button } from '@home/modules/fragments/button'
 
@@ -30,8 +29,8 @@ export class Callout extends Element<HTMLDivElement> {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: false,
                 })
-                Controller.getInstance().setting.helpText = false
-                Controller.getInstance().currentPage.action(TableAction.INFO)
+                window.controller.setting.helpText = false
+                window.controller.currentPage.action(TableAction.INFO)
             },
         }).append('Hide Tip')
         this.wrapper = new Element({ tag: 'div' })

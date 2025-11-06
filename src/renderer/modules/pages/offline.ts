@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Heading } from '@home/modules/fragments/heading'
@@ -15,7 +14,7 @@ export class Offline extends A_Page {
     refresh(): void {
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 

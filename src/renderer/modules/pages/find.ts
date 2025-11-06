@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Input } from '@home/modules/fragments/input'
@@ -26,7 +25,7 @@ export class Find extends A_Page {
 
     private get field() {
         return new Input({
-            value: Controller.getInstance().setting.findText || '',
+            value: window.controller.setting.findText || '',
             label: 'Find in Page',
         })
     }
@@ -34,7 +33,7 @@ export class Find extends A_Page {
     refresh(): void {
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 

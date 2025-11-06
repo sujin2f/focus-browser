@@ -1,5 +1,4 @@
 import { A_Page } from '@home/modules/pages/abs_page'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { DataTable } from '@src/renderer/modules/fragments/data-table'
@@ -89,7 +88,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     protected init() {
         this.root.innerHTML = ''
 
-        if (!Controller.getInstance().setting.frame) {
+        if (!window.controller.setting.frame) {
             new TitleBar(this.root)
         }
 

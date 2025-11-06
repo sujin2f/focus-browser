@@ -1,8 +1,3 @@
-import { controller } from '@test/mock-renderer-controller'
-
-jest.resetModules()
-jest.doMock('@home/modules/controller', controller)
-
 import * as fs from 'fs'
 import * as path from 'path'
 import { Element } from '@home/modules/fragments'

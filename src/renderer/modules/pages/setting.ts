@@ -1,12 +1,15 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { Heading } from '@home/modules/fragments/heading'
-import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
+import { Title } from '@home/modules/fragments/title'
+import { Select } from '@home/modules/fragments/select'
+import { Button } from '@home/modules/fragments/button'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { ipcRenderer } from '@home/util'
-import { Channel, type Info, PageType, RequestHandler } from '@src/types'
+import { ipcRenderer, isMac } from '@home/util'
+import type { Info } from '@src/types'
+import { Channel, PageType, RequestHandler, SearchEngine } from '@src/constants'
 
 export class Setting extends A_Page {
     public page = PageType.SETTING
@@ -16,87 +19,111 @@ export class Setting extends A_Page {
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
     }
 
-    refresh() {
-        this.root.innerHTML = ''
-        const wrapper = new Element('section', {
-            className: ['w-4/6', 'mx-auto'],
-        })
+    private get title() {
+        return new Title({ label: 'Setting' })
+    }
 
-        const title: Heading = new Heading(1, {}, 'Setting')
-
+    private get helpText() {
         const helpText = new Input({
             type: 'checkbox',
-            checked: Controller.getInstance().setting.helpText,
+            checked: window.controller.setting.helpText,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: helpText.checked,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.helpText = helpText.checked
+                window.controller.setting.helpText = helpText.checked
             },
             label: 'Show Help Text',
         })
+        return helpText
+    }
 
+    private get maxHistory() {
         const maxHistory = new Input({
             type: 'number',
-            value: Controller.getInstance().setting.maxHistory.toString(),
+            value: window.controller.setting.maxHistory.toString(),
             onChange: () => {
                 maxHistory.error = ''
                 const value = parseInt(maxHistory.value)
-                if (value < 10) {
+                if (!value || value < 10) {
                     maxHistory.error = 'This value must be bigger than 9.'
                     return
                 }
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     maxHistory: value,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.maxHistory = value
+                window.controller.setting.maxHistory = value
             },
             label: 'Maximum History',
         })
+        return maxHistory
+    }
 
+    private get adBlocker() {
         const adBlocker = new Input({
             type: 'checkbox',
-            checked: Controller.getInstance().setting.adBlocker,
+            checked: window.controller.setting.adBlocker,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     adBlocker: adBlocker.checked,
                 } satisfies Partial<Info>)
-                Controller.getInstance().setting.adBlocker = adBlocker.checked
+                window.controller.setting.adBlocker = adBlocker.checked
             },
             label: 'Use Ad-Blocker',
         })
+        return adBlocker
+    }
 
-        const adBlockerStatus = new Element(
-            'div',
-            {
-                onClick: () => {
-                    if (
-                        Controller.getInstance().setting.adBlockerStatus !==
-                        null
-                    ) {
-                        return
+    private get adBlockerStatus() {
+        return new Element({
+            tag: 'div',
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
+        }).append(
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Ad-Blocker Status'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(
+                (() => {
+                    if (window.controller.setting.adBlockerStatus === null) {
+                        return 'Failed to load. Click here to retry.'
                     }
-                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
-                        adBlockerStatus: true,
-                    } satisfies Partial<Info>)
-                },
-                className: ['cursor-pointer'],
-            },
-            `Ad-Blocker Status: ${(() => {
-                if (Controller.getInstance().setting.adBlockerStatus === null) {
-                    return 'Failed to load. Click here to retry.'
-                }
-                if (
-                    Controller.getInstance().setting.adBlockerStatus === false
-                ) {
-                    return 'Disabled'
-                }
+                    if (window.controller.setting.adBlockerStatus === false) {
+                        return 'Disabled'
+                    }
 
-                return 'Working!'
-            })()}`,
+                    return 'Working!'
+                })(),
+            ),
+            window.controller.setting.adBlockerStatus === null
+                ? new Button({
+                      className: ['-mb-3'],
+                      onClick: () => {
+                          ipcRenderer.send(
+                              Channel.INFO,
+                              RequestHandler.MODIFY,
+                              {
+                                  adBlockerStatus: true,
+                              } satisfies Partial<Info>,
+                          )
+                      },
+                  }).append('Reset')
+                : '',
         )
+    }
 
-        let cacheSize = Controller.getInstance().setting.cacheSize
+    private get cacheSize() {
+        let cacheSize = window.controller.setting.cacheSize
         let cacheText = ''
         const mb = 1024 * 1024
         if (cacheSize < mb) {
@@ -108,27 +135,113 @@ export class Setting extends A_Page {
             cacheSize = cacheSize / (mb * 1024)
             cacheText = `${cacheSize.toFixed(2)} Gb`
         }
-        const cache = new Element(
-            'div',
-            {
+
+        return new Element({
+            tag: 'div',
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
+        }).append(
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Cache size'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(cacheText),
+            new Button({
+                className: ['-mb-3'],
                 onClick: () => {
                     ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                         cacheSize: NaN,
                     } satisfies Partial<Info>)
                 },
-                className: ['cursor-pointer'],
-            },
-            `Cache size: ${cacheText} (Click to clear)`,
+            }).append('Clear Cache'),
         )
+    }
+
+    private get searchEngine() {
+        const searchEngine = new Select({
+            label: 'Search Engine',
+            onChange: () => {
+                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    searchEngine: searchEngine.value,
+                } satisfies Partial<Info>)
+            },
+            options: SearchEngine,
+        })
+        return searchEngine
+    }
+
+    private get frame() {
+        const shortcut = isMac() ? '⌘' : 'Ctrl+'
+        const frame = new Input({
+            type: 'checkbox',
+            checked: window.controller.setting.frame,
+            onChange: () => {
+                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    frame: frame.checked,
+                } satisfies Partial<Info>)
+                window.controller.setting.frame = frame.checked
+            },
+            label: 'Show Native Frame',
+            helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${shortcut}Escape.`,
+        })
+        return frame
+    }
+
+    private get version() {
+        return new Element({
+            tag: 'div',
+            className: [
+                'pl-3',
+                'mb-4',
+                'text-md',
+                'font-light',
+                'flex',
+                'items-center',
+            ],
+        }).append(
+            new Element({
+                tag: 'div',
+                className: ['text-gray-700', 'dark:text-gray-300', 'mr-3'],
+            }).append('Version'),
+            new Element({
+                tag: 'div',
+                className: ['mr-3'],
+            }).append(window.controller.setting.version),
+        )
+    }
+
+    refresh() {
+        this.root.innerHTML = ''
+
+        if (!window.controller.setting.frame) {
+            new TitleBar(this.root)
+        }
+
+        const wrapper = new Element({
+            tag: 'section',
+            className: ['w-4/6', 'mx-auto'],
+        })
 
         this.root.append(wrapper.element)
         wrapper.append(
-            title,
-            helpText,
-            maxHistory,
-            adBlocker,
-            adBlockerStatus,
-            cache,
+            this.title,
+            this.version,
+            this.frame,
+            this.helpText,
+            this.maxHistory,
+            this.adBlocker,
+            this.adBlockerStatus,
+            this.searchEngine,
+            this.cacheSize,
         )
     }
 }

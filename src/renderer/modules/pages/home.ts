@@ -1,15 +1,15 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { Controller } from '@home/modules/controller'
 import { Input } from '@home/modules/fragments/input'
 import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
+import { Title } from '@home/modules/fragments/title'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { isMac, navigate, shortcutToHtml } from '@home/util'
-import { PageType } from '@src/types'
-import { Button } from '../fragments/button'
+import { PageType } from '@src/constants'
 
 /**
  * For creating cards
@@ -65,30 +65,30 @@ const buttons: Record<string, T_Card> = {
 export class Home extends A_Page {
     public page = PageType.HOME
     protected search: Input
-    private back: Element<HTMLElement> = new Element('section')
-    private location: Element<HTMLElement> = new Element('section')
-    private currentURL: Element<HTMLElement> = new Element('section')
-    private helpText: Element<HTMLElement> = new Element('section')
-    private cards: Element<HTMLElement> = new Element('section')
+    private title: Title = new Title()
+    private location: Element<HTMLElement> = new Element({ tag: 'section' })
+    private currentURL: Element<HTMLElement> = new Element({ tag: 'section' })
+    private helpText: Element<HTMLElement> = new Element({ tag: 'section' })
+    private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
     refresh() {
-        this.back.reset()
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()
         this.cards.reset()
 
         this.root.innerHTML = ''
+
+        if (!window.controller.setting.frame) {
+            new TitleBar(this.root)
+        }
+
         this.root.append(
-            this.back.element,
+            this.title.element,
             this.location.element,
             this.currentURL.element,
             this.helpText.element,
             this.cards.element,
-        )
-
-        this.back.append(
-            new Button({ onClick: () => navigate() }, 'Back to Browser'),
         )
 
         // Location Bar
@@ -107,7 +107,7 @@ export class Home extends A_Page {
             card.title = info.title
             card.description = info.description
             card.addEventListener('click', () => {
-                Controller.getInstance().switch(info.destination)
+                window.controller.switch(info.destination)
             })
 
             cardContainer.append(card)
@@ -118,24 +118,24 @@ export class Home extends A_Page {
     }
 
     private renderHelpText() {
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.reset()
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout(
-            { className: ['mb-2'] },
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+        const callout = new Callout({ className: ['mb-2'] }).append(
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Press ',
                 ...shortcutToHtml('Escape'),
                 ' key to switch to a browser mode.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
-
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'On the browser mode,',
                 'you can come back here by pressing ',
                 ...shortcutToHtml(`${command}+\``),
@@ -143,9 +143,7 @@ export class Home extends A_Page {
                 ...shortcutToHtml(`${command}+L`),
                 '.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300'] },
+            new Element({ tag: 'p', className: ['text-gray-300'] }).append(
                 'On the browser mode, press ',
                 ...shortcutToHtml(`${command}+[`),
                 ' and ',
@@ -157,7 +155,7 @@ export class Home extends A_Page {
     }
 
     protected focus() {
-        this.search.value = Controller.getInstance().setting.url
+        this.search.value = window.controller.setting.url
         this.search.input.element.select()
     }
 
@@ -176,16 +174,16 @@ export class Home extends A_Page {
         ) {
             switch (e.code) {
                 case 'KeyB':
-                    Controller.getInstance().switch(PageType.BOOKMARK)
+                    window.controller.switch(PageType.BOOKMARK)
                     return
                 case 'KeyH':
-                    Controller.getInstance().switch(PageType.HISTORY)
+                    window.controller.switch(PageType.HISTORY)
                     return
                 case 'KeyA':
-                    Controller.getInstance().switch(PageType.ANCHOR)
+                    window.controller.switch(PageType.ANCHOR)
                     return
                 case 'KeyP':
-                    Controller.getInstance().switch(PageType.POPUP_BLOCKER)
+                    window.controller.switch(PageType.POPUP_BLOCKER)
                     return
             }
         } else {

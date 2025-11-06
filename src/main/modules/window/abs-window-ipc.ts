@@ -5,15 +5,13 @@ import {
 } from 'electron'
 import { Logger } from '@main/modules/logger'
 
+import type { Scenes, Bookmark, Info, Shortcuts } from '@src/types'
 import {
     Channel,
     RequestHandler,
-    SceneBrowser,
-    type Scenes,
-    type Bookmark,
-    type Info,
-    Shortcuts,
-} from '@src/types'
+    BROWSER,
+    CURRENT_PAGE_INFO,
+} from '@src/constants'
 
 import { Status } from '@main/modules/store/status'
 import { Shortcut } from '@main/modules/store/shortcut'
@@ -21,8 +19,7 @@ import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 
-import { AbsWindowMenu } from './abs-window-menu'
-import { CURRENT_PAGE_INFO } from '@src/constants'
+import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 
 /**
  * All starts with here
@@ -37,6 +34,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
         ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
+        ipcMain.on(Channel.FIND, this.onFind.bind(this))
+    }
+
+    private onFind(_: IpcMainEvent, handler: RequestHandler, text: string) {
+        if (handler !== RequestHandler.REQUEST) {
+            return
+        }
+
+        this.findText = text
+        if (this.findText) {
+            this.browser.webContents.findInPage(this.findText, {
+                findNext: true,
+            })
+        }
     }
 
     private async onInfo(
@@ -65,6 +76,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
+            // Toggle Maximize
+            if (Object.prototype.hasOwnProperty.call(data, 'maximize')) {
+                this.toggleMaximize()
+                return
+            }
+
             Status.getInstance().merge(data)
 
             // If adBlocker setting changed, reset.
@@ -84,6 +101,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     {
                         title: this.browser.webContents.getTitle(),
                         url: this.browser.webContents.getURL(),
+                        findText: this.findText,
                     },
                 )
                 return
@@ -101,7 +119,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     ) {
         this.switch(scene)
 
-        if (scene === SceneBrowser.BROWSER && address) {
+        if (this.isBrowser && address) {
             this.title = 'Loading...'
             if (address === 'reload') {
                 this.browser.reload()
@@ -126,7 +144,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
 
             case RequestHandler.EXECUTE:
-                this.switch(SceneBrowser.BROWSER)
+                this.switch(BROWSER)
                 this.browser.webContents.navigationHistory.goToIndex(index)
                 return
 
@@ -195,8 +213,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.centre.webContents.send(
                     Channel.POPUP_BLOCKER,
                     RequestHandler.RESPONSE,
-                    Array.from(blocked as string[]),
-                    Array.from(allowed as string[]),
+                    Array.from(blocked),
+                    Array.from(allowed),
                 )
                 return
             }
@@ -208,10 +226,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private async sendInfo() {
+        // This comes from package.json via webpack.EnvironmentPlugin
+        if (!process.env.VERSION) {
+            Logger.getInstance().error('Error loading process.env.VERSION!')
+        }
         this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
             shortcuts: Shortcut.getInstance().get('shortcuts') as Shortcuts,
             cacheSize: await this.browser.webContents.session.getCacheSize(),
             adBlockerStatus: this.browser.blocker && true,
+            findText: this.findText,
+            version: process.env.VERSION || '0.0.0',
             ...Status.getInstance().data,
         } satisfies Info)
     }

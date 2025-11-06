@@ -6,7 +6,8 @@ import {
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
-import { Bookmark, PageType } from '@src/types'
+import type { Bookmark } from '@src/types'
+import { PageType, SearchEngine } from '@src/constants'
 import { Logger } from '@main/modules/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
@@ -49,6 +50,8 @@ export class BrowserView extends WebContentsView {
             // Web Title to App Title
             .on('did-finish-load', () => {
                 BrowserWindow.getInstance().title = this.webContents.getTitle()
+                // Enable pinch zoom
+                this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
                 BrowserWindow.getInstance().title = title
@@ -62,8 +65,6 @@ export class BrowserView extends WebContentsView {
                 BrowserWindow.getInstance().showContextMenu(params)
             })
 
-        // Enable pinch zoom
-        this.webContents.setVisualZoomLevelLimits(1, 3)
         this.webContents.setZoomFactor(1)
 
         const url = this.restoreHistory() || this.DEFAULT_URL
@@ -101,7 +102,8 @@ export class BrowserView extends WebContentsView {
                 return
             }
 
-            this.webContents.loadURL(`https://duckduckgo.com/?q=${url}`)
+            const searchEngine = Status.getInstance().get('searchEngine')
+            this.webContents.loadURL(`${SearchEngine[searchEngine]}${url}`)
             this._failedUrl = null
         })
     }
@@ -113,10 +115,10 @@ export class BrowserView extends WebContentsView {
         const history = new History()
         history.parse()
 
-        if (!isNaN(history.index)) {
+        if (!isNaN(history.get('index'))) {
             this.webContents.navigationHistory.restore({
-                index: history.index,
-                entries: history.entries,
+                index: history.get('index'),
+                entries: history.get('history'),
             })
         }
 
@@ -190,11 +192,24 @@ export class BrowserView extends WebContentsView {
                     'Ad-Blocker is failed to load: ',
                     JSON.stringify(e),
                 )
+
+                const notification = new Notification({
+                    title: 'Focus',
+                    body: 'Ad Blocker failed to load',
+                    silent: true,
+                })
+                notification.addListener('click', () => {
+                    this.setAdBlocker()
+                })
+                notification.show()
             })
     }
 
     private setPopupBlocker() {
         this.webContents.setWindowOpenHandler((data) => {
+            if (data.url.startsWith('file:')) {
+                return { action: 'allow' }
+            }
             const url = new URL(data.url)
             if (PopupBlocker.getInstance().isAllowed(url.host)) {
                 this.loadURL(url.toString())

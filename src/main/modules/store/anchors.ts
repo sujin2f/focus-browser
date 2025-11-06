@@ -1,5 +1,5 @@
-import { Bookmark } from '@src/types'
 import { Store } from '@main/modules/store/store'
+import type { Bookmark } from '@src/types'
 
 type Props = { anchors: Bookmark[] }
 
@@ -14,7 +14,7 @@ export class Anchors extends Store<Props> {
     }
 
     get() {
-        return this._data.anchors
+        return super.get('anchors')
     }
 
     push(anchor: Bookmark) {

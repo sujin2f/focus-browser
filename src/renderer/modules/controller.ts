@@ -1,10 +1,5 @@
-import {
-    Channel,
-    PageType,
-    RequestHandler,
-    TableAction,
-    type Info,
-} from '@src/types'
+import type { Info } from '@src/types'
+import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
 import { checkElectron, ipcRenderer } from '@home/util'
 
 import { A_Page } from '@src/renderer/modules/pages/abs_page'
@@ -17,17 +12,10 @@ import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
+import { Find } from '@home/modules/pages/find'
 import { CURRENT_PAGE_INFO } from '@src/constants'
 
 export class Controller {
-    static instance: Controller
-    static getInstance(): Controller {
-        if (!Controller.instance) {
-            Controller.instance = new Controller()
-        }
-        return Controller.instance
-    }
-
     public setting: Info = {}
     private _currentPage: A_Page
     public get currentPage() {
@@ -105,6 +93,9 @@ export class Controller {
                 break
             case PageType.OFFLINE:
                 this._currentPage = new Offline()
+                break
+            case PageType.FIND:
+                this._currentPage = new Find()
                 break
         }
     }

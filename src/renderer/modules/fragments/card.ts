@@ -1,6 +1,6 @@
-import { ElementProps } from '@src/types'
 import { Element } from '.'
 import { Heading } from './heading'
+import type { ElementProps } from '@src/types'
 
 export default class Card extends Element<HTMLAnchorElement> {
     public set title(title: string) {
@@ -12,10 +12,10 @@ export default class Card extends Element<HTMLAnchorElement> {
     }
 
     private h2: Heading = new Heading(2)
-    private p: Element<HTMLParagraphElement> = new Element('p')
+    private p: Element<HTMLParagraphElement> = new Element({ tag: 'p' })
 
-    public constructor(props: Partial<ElementProps> = {}) {
-        super('a', props)
+    public constructor(props: Partial<ElementProps<null>> = {}) {
+        super({ tag: 'a', ...props })
         this.element.classList.add(
             'p-3',
             'm-3',

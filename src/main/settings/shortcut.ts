@@ -1,4 +1,5 @@
-import { Menu, MenuCategory, SystemType, ShortcutStore } from '@src/types'
+import type { ShortcutStore } from '@src/types'
+import { Menu, MenuCategory, SystemType } from '@src/constants'
 
 export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
     [SystemType.DARWIN]: {
@@ -52,6 +53,19 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     role: 'selectAll',
                 },
                 [Menu.s0002]: {},
+                [Menu.FIND]: {
+                    accelerator: 'Command+F',
+                },
+                [Menu.FIND_NEXT]: {
+                    accelerator: 'Command+G',
+                },
+                [Menu.FIND_PREV]: {
+                    accelerator: 'Shift+Command+G',
+                },
+                [Menu.STOP]: {
+                    accelerator: 'Escape',
+                },
+                [Menu.s0003]: {},
                 [Menu.ADD_BOOKMARK]: {
                     accelerator: 'Command+D',
                 },
@@ -63,6 +77,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.FULL_SCREEN]: {
                     accelerator: 'Command+Control+F',
                 },
+                [Menu.FIT_TO_SCREEN]: {
+                    accelerator: 'Command+Escape',
+                },
+                [Menu.s0001]: {},
                 [Menu.RESET_ZOOM]: {
                     accelerator: 'Command+0',
                     role: 'resetZoom',
@@ -75,7 +93,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     accelerator: 'Command+-',
                     role: 'zoomOut',
                 },
-                [Menu.s0001]: {},
+                [Menu.s0002]: {},
                 [Menu.DEVTOOLS]: {
                     accelerator: 'Command+Option+I',
                 },
@@ -142,6 +160,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Command+R': Menu.RELOAD,
             'Command+M': Menu.MINIMIZE,
             'Command+W': Menu.CLOSE,
+            'Command+F': Menu.FIND,
+            'Command+G': Menu.FIND_NEXT,
+            'Shift+Command+G': Menu.FIND_PREV,
+            'Command+Escape': Menu.FIT_TO_SCREEN,
         },
     },
     [SystemType.DEFAULT]: {
@@ -179,6 +201,19 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     role: 'selectAll',
                 },
                 [Menu.s0002]: {},
+                [Menu.FIND]: {
+                    accelerator: 'Control+F',
+                },
+                [Menu.FIND_NEXT]: {
+                    accelerator: 'Control+G',
+                },
+                [Menu.FIND_PREV]: {
+                    accelerator: 'Shift+Control+G',
+                },
+                [Menu.STOP]: {
+                    accelerator: 'Escape',
+                },
+                [Menu.s0003]: {},
                 [Menu.ADD_BOOKMARK]: {
                     label: 'Add Bookmark',
                     accelerator: 'Control+D',
@@ -191,6 +226,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.FULL_SCREEN]: {
                     accelerator: 'F11',
                 },
+                [Menu.FIT_TO_SCREEN]: {
+                    accelerator: 'Control+Escape',
+                },
+                [Menu.s0001]: {},
                 [Menu.RESET_ZOOM]: {
                     accelerator: 'Control+0',
                     role: 'resetZoom',
@@ -203,7 +242,7 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                     accelerator: 'Control+-',
                     role: 'zoomOut',
                 },
-                [Menu.s0001]: {},
+                [Menu.s0002]: {},
                 [Menu.DEVTOOLS]: {
                     accelerator: 'Control+Shift+I',
                 },
@@ -252,6 +291,10 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
             'Control+]': Menu.FORWARD,
             Escape: Menu.STOP,
             'Control+R': Menu.RELOAD,
+            'Control+F': Menu.FIND,
+            'Control+G': Menu.FIND_NEXT,
+            'Shift+Control+G': Menu.FIND_PREV,
+            'Control+Escape': Menu.FIT_TO_SCREEN,
         },
     },
 }

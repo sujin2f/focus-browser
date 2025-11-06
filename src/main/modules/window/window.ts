@@ -5,7 +5,8 @@ import {
 } from 'electron'
 
 import { preload, resolveHtmlPath } from '@main/util'
-import { Channel, SceneBrowser, PageType, type Scenes } from '@src/types'
+import type { Scenes } from '@src/types'
+import { PageType, Channel } from '@src/constants'
 
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
@@ -52,6 +53,7 @@ export class BrowserWindow extends AbsWindowIPC {
             webPreferences: {
                 session: session.fromPartition('persist:my-partition'),
                 partition: 'persist:my-partition',
+                navigateOnDragDrop: true,
             },
         })
         this.contentView = this.browser
@@ -86,7 +88,7 @@ export class BrowserWindow extends AbsWindowIPC {
      */
     public switch(scene: Scenes) {
         this._current = scene
-        if (scene === SceneBrowser.BROWSER) {
+        if (this.isBrowser) {
             this.contentView = this.browser
             if (this.browser.failedUrl) {
                 this.browser.reload()

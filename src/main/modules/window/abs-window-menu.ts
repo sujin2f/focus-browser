@@ -4,27 +4,25 @@ import {
     Menu,
     Notification,
     clipboard,
-    nativeImage,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
 } from 'electron'
-import { Logger } from '@main/modules/logger'
 
+import type { Scenes, MenuBlock } from '@src/types'
 import {
     MenuCategory,
     Menu as EnumMenu,
-    SceneBrowser,
     PageType,
-    type Scenes,
-    type MenuBlock,
-} from '@src/types'
+    BROWSER,
+} from '@src/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
+import { Logger } from '@main/modules/logger'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -41,14 +39,15 @@ import { BrowserView } from '@src/main/modules/view/browser'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser: BrowserView
     protected centre: WebContentsView
-    protected _current: Scenes = SceneBrowser.BROWSER
+    protected _current: Scenes = BROWSER
     protected get isBrowser() {
-        return this._current === SceneBrowser.BROWSER
+        return this._current === BROWSER
     }
     // Returns the current WebContentsView
     protected get current() {
         return this.isBrowser ? this.browser : this.centre
     }
+    protected findText = ''
 
     /**
      * Constructor
@@ -109,8 +108,40 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             }
         }
 
+        menu[MenuCategory.EDIT][EnumMenu.FIND].click = () => {
+            this.switch(PageType.FIND)
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.FIND_NEXT].click = () => {
+            if (!this.findText) {
+                return
+            }
+            this.browser.webContents.findInPage(this.findText, {
+                findNext: true,
+            })
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.FIND_PREV].click = () => {
+            if (!this.findText) {
+                return
+            }
+            this.browser.webContents.findInPage(this.findText, {
+                forward: false,
+                findNext: true,
+            })
+        }
+
+        menu[MenuCategory.EDIT][EnumMenu.STOP].click = () => {
+            this.current.webContents.stop()
+            this.browser.webContents.stopFindInPage('clearSelection')
+        }
+
         menu[MenuCategory.VIEW][EnumMenu.FULL_SCREEN].click = () => {
             this.setFullScreen(!this.fullScreen)
+        }
+
+        menu[MenuCategory.VIEW][EnumMenu.FIT_TO_SCREEN].click = () => {
+            this.toggleMaximize()
         }
 
         menu[MenuCategory.VIEW][EnumMenu.DEVTOOLS].click = () => {
@@ -139,9 +170,18 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         menu[MenuCategory.NAVIGATE][EnumMenu.STOP].click = () => {
             this.current.webContents.stop()
+            this.browser.webContents.stopFindInPage('clearSelection')
         }
 
         return menu
+    }
+
+    protected toggleMaximize() {
+        if (this.isMaximized()) {
+            this.unmaximize()
+            return
+        }
+        this.maximize()
     }
 
     /**
@@ -212,6 +252,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 label: 'Reload',
                 click: () => this.reload(),
             },
+            { type: 'separator' },
+            {
+                label: 'Inspect Element',
+                click: () =>
+                    this.browser.webContents.inspectElement(params.x, params.y),
+            },
         ]
 
         // If the clicked element has image contents, prepend image actions
@@ -219,7 +265,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             menu = [
                 {
                     label: 'Copy Image',
-                    click: () => this.copyImageToClipboard(params.srcURL),
+                    click: () =>
+                        this.browser.webContents.copyImageAt(
+                            params.x,
+                            params.y,
+                        ),
                 },
                 {
                     label: 'Copy Image Address',
@@ -253,10 +303,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * only when the push succeeds. Notification click switches to bookmark page.
      */
     private addBookmark() {
+        Logger.getInstance().log('addBookmark')
         const added = Bookmarks.getInstance().push({
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
+        Logger.getInstance().log('addBookmark', added)
+
         if (!added) {
             return
         }
@@ -271,6 +324,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.switch(PageType.BOOKMARK)
         })
         notification.show()
+        Logger.getInstance().log('addBookmark >> notification should be shown.')
     }
 
     /**
@@ -297,32 +351,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.switch(PageType.ANCHOR)
         })
         notification.show()
-    }
-
-    /**
-     * Fetch an image by URL, convert to a Buffer, create an Electron nativeImage
-     * and write it to the system clipboard. Errors are logged via Logger.
-     *
-     * TODO: this method performs network I/O and uses Buffer/nativeImage.
-     * Tests should mock fetch, nativeImage.createFromBuffer, and clipboard.
-     *
-     * @param {string} imageUrl
-     */
-    private async copyImageToClipboard(imageUrl: string) {
-        try {
-            await fetch(imageUrl).then(async (response) => {
-                const blob = await (await response.blob()).arrayBuffer()
-                const buffer = Buffer.from(blob)
-                const image = nativeImage.createFromBuffer(buffer)
-                clipboard.writeImage(image)
-            })
-        } catch (e) {
-            // Log fetch/processing errors for diagnostics
-            Logger.getInstance().error(
-                'Error fetching or processing image:',
-                JSON.stringify(e),
-            )
-        }
     }
 
     abstract switch(scene: Scenes): void

@@ -8,6 +8,8 @@ import {
     stop,
     toggleDevTools,
     winReload,
+    stopFindInPage,
+    findInPage,
 } from '@test/mock-electron'
 import { browser } from '@test/mock-browser'
 import {
@@ -27,13 +29,14 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { MenuCategory, Menu as EnumMenu, PageType } from '@src/types'
+import { PageType, MenuCategory, Menu as EnumMenu } from '@src/constants'
 
 import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
 
 const switchFn = jest.fn()
 class Menu extends AbsWindowMenu {
     switch = switchFn
+    protected findText: string = 'search'
     constructor() {
         super()
         this.browser = new BrowserView({})
@@ -48,10 +51,15 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
             [MenuCategory.EDIT]: {
                 [EnumMenu.ADD_BOOKMARK]: {},
                 [EnumMenu.ADD_ANCHOR]: {},
+                [EnumMenu.FIND]: {},
+                [EnumMenu.FIND_NEXT]: {},
+                [EnumMenu.FIND_PREV]: {},
+                [EnumMenu.STOP]: {},
             },
             [MenuCategory.VIEW]: {
                 [EnumMenu.FULL_SCREEN]: {},
                 [EnumMenu.DEVTOOLS]: {},
+                [EnumMenu.FIT_TO_SCREEN]: {},
             },
             [MenuCategory.NAVIGATE]: {
                 [EnumMenu.ADDRESS]: {},
@@ -79,6 +87,32 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         menu[0].submenu[1].click()
         expect(anchorPush).toHaveBeenCalled()
         expect(MockNotification).toHaveBeenCalled()
+    })
+
+    test('find > switch', async () => {
+        menu[0].submenu[2].click()
+        expect(switchFn).toHaveBeenCalledWith(PageType.FIND)
+    })
+
+    test('find next', async () => {
+        menu[0].submenu[3].click()
+        expect(findInPage).toHaveBeenCalledWith('search', {
+            findNext: true,
+        })
+    })
+
+    test('find prev', async () => {
+        menu[0].submenu[4].click()
+        expect(findInPage).toHaveBeenCalledWith('search', {
+            forward: false,
+            findNext: true,
+        })
+    })
+
+    test('stop', async () => {
+        menu[0].submenu[5].click()
+        expect(stopFindInPage).toHaveBeenCalled()
+        expect(stop).toHaveBeenCalled()
     })
 
     test('full screen', async () => {
@@ -113,6 +147,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
 
     test('stop', async () => {
         menu[2].submenu[4].click()
+        expect(stopFindInPage).toHaveBeenCalled()
         expect(stop).toHaveBeenCalled()
     })
 

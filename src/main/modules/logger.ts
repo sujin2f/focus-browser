@@ -24,7 +24,10 @@ export class Logger {
     private logger: I_Logger
 
     constructor() {
-        if (!process.env.NODE_ALPHA) {
+        // IS_BETA comes from package.json version (0.0.0-beta) via webpack.EnvironmentPlugin
+        const activation =
+            process.env.NODE_ENV !== 'test' && process.env.IS_BETA
+        if (activation) {
             // eslint-disable-next-line @typescript-eslint/no-require-imports
             this.logger = require('electron-log')
             this.logger.initialize()

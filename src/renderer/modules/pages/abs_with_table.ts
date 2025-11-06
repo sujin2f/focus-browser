@@ -1,15 +1,16 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { Table } from '@home/modules/fragments/table'
+import { DataTable } from '@src/renderer/modules/fragments/data-table'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
-import { Heading } from '@home/modules/fragments/heading'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { Title } from '@home/modules/fragments/title'
+import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { PageMode, TableAction } from '@src/types'
+import { PageMode, TableAction } from '@src/constants'
 import { isMac, navigate } from '@home/util'
 
 /**
@@ -26,19 +27,21 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract order: 'ASC' | 'DESC'
 
     // HTML Layout
-    protected title: Heading = new Heading(1, { onClick: () => navigate() }, '')
+    protected title: Title = new Title()
     protected buttonGroup: ButtonGroup = new ButtonGroup()
-    protected forms: Element<HTMLElement> = new Element('section')
-    protected helpText: Element<HTMLElement> = new Element('section')
-    protected tableWrapper: Element<HTMLElement> = new Element('section')
+    protected forms: Element<HTMLElement> = new Element({ tag: 'section' })
+    protected helpText: Element<HTMLElement> = new Element({ tag: 'section' })
+    protected tableWrapper: Element<HTMLElement> = new Element({
+        tag: 'section',
+    })
 
     /**
      * Table Navigation
      */
-    protected _cursor: TrLinked | null = null
+    protected _cursor: TrLinked<{ index: number; data: T }> | null = null
 
     // Table
-    protected table: Table = new Table()
+    protected table: DataTable<{ index: number; data: T }> = new DataTable()
 
     // Find Form
     protected formFind: Form = new Form()
@@ -84,6 +87,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
     protected init() {
         this.root.innerHTML = ''
+
+        if (!window.controller.setting.frame) {
+            new TitleBar(this.root)
+        }
 
         this.buttonGroup.append(this.buttonFind)
         this.forms.append(this.formFind)
@@ -139,14 +146,16 @@ export abstract class A_PageWithTable<T> extends A_Page {
      * Table related methods
      */
     abstract getTHeads(): Element<HTMLTableCellElement>[]
-    abstract getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[]
+    abstract getRowCells(
+        tr: TrLinked<{ index: number; data: T }>,
+    ): Element<HTMLTableCellElement>[]
     protected renderTable() {
         this.table.reset()
 
-        let prev: TrLinked | null = null
+        let prev: TrLinked<{ index: number; data: T }> | null = null
 
         this.items.forEach((item, index) => {
-            const tr = new TrLinked({
+            const tr = new TrLinked<{ index: number; data: T }>({
                 className: [...this.STYLE_HOVER],
             })
 
@@ -166,7 +175,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     abstract filterCondition(item: T): boolean
     private filterTable() {
         const rows = this.table.children
-        let prev: TrLinked | null = null
+        let prev: TrLinked<{ index: number; data: T }> | null = null
         this.table.children.forEach((tr, index) => {
             if (!this.searchKeyword) {
                 rows[index].show()
@@ -222,7 +231,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
         this.blur()
     }
 
-    private linkTr(prev: TrLinked | null, tr: TrLinked) {
+    private linkTr(
+        prev: TrLinked<{ index: number; data: T }> | null,
+        tr: TrLinked<{ index: number; data: T }>,
+    ) {
         if (prev) {
             prev.next = tr
             tr.prev = prev

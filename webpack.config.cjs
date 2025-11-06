@@ -1,3 +1,4 @@
+const EnvironmentPlugin = require('webpack').EnvironmentPlugin
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
@@ -79,6 +80,12 @@ const mainConfig = {
         filename: '[name].js',
         chunkFilename: '[name].chunk.js',
     },
+    plugins: [
+        new EnvironmentPlugin({
+            VERSION: require('./package.json').version,
+            IS_BETA: require('./package.json').version.includes('beta'),
+        }),
+    ],
 }
 
 const rendererConfig = {

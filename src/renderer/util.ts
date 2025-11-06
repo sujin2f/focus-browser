@@ -1,4 +1,4 @@
-import { Channel, RequestHandler, SceneBrowser } from '@src/types'
+import { Channel, RequestHandler, BROWSER } from '@src/constants'
 import { Element } from '@home/modules/fragments'
 
 export const checkElectron = () => {
@@ -15,39 +15,38 @@ export const ipcRenderer = {
 
 export const navigate = (url?: string, handler?: RequestHandler) => {
     if (url) {
-        ipcRenderer.send(Channel.SWITCH, SceneBrowser.BROWSER, url, handler)
+        ipcRenderer.send(Channel.SWITCH, BROWSER, url, handler)
         return
     }
 
-    ipcRenderer.send(Channel.SWITCH, SceneBrowser.BROWSER)
+    ipcRenderer.send(Channel.SWITCH, BROWSER)
 }
 
 export const shortcutToHtml = (shortcut: string) => {
     const keys = shortcut
         .split('+')
         .map((key) => key.trim())
-        .map(
-            (key) =>
-                new Element(
-                    'kbd',
-                    {
-                        className: [
-                            'border',
-                            'bg-gray-400',
-                            'text-gray-800',
-                            'pr-1',
-                            'pl-1',
-                        ],
-                    },
-                    key,
-                ),
+        .map((key) =>
+            new Element({
+                tag: 'kbd',
+                className: [
+                    'border',
+                    'bg-gray-400',
+                    'text-gray-800',
+                    'pr-1',
+                    'pl-1',
+                ],
+            }).append(key),
         )
 
     return []
         .concat(
             ...keys.map((n) => [
                 n,
-                new Element('span', { className: ['text-gray-500'] }, '+'),
+                new Element({
+                    tag: 'span',
+                    className: ['text-gray-500'],
+                }).append('+'),
             ]),
         )
         .slice(0, -1)

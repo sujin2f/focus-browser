@@ -21,8 +21,10 @@ export const getCacheSize = jest.fn(() => Promise.resolve())
 export const clearCache = jest.fn(() => Promise.resolve())
 export const goToIndex = jest.fn()
 export const historyClear = jest.fn()
+export const findInPage = jest.fn()
+export const stopFindInPage = jest.fn()
 export class MockWebContentsView {
-    webContents: any
+    webContents: unknown
     constructor() {
         this.webContents = {
             session: {
@@ -44,6 +46,8 @@ export class MockWebContentsView {
             stop,
             setWindowOpenHandler: jest.fn(),
             reload: jest.fn(),
+            stopFindInPage,
+            findInPage,
             navigationHistory: {
                 restore: jest.fn(),
                 goBack,
@@ -56,7 +60,7 @@ export class MockWebContentsView {
     }
 }
 
-export const MockNotification = jest.fn().mockImplementation((param) => ({
+export const MockNotification = jest.fn().mockImplementation(() => ({
     show: jest.fn(),
     addListener: jest.fn(),
 }))

@@ -13,14 +13,6 @@ export class History extends Store<{
         })
     }
 
-    public get index() {
-        return this.get('index') as number
-    }
-
-    public get entries() {
-        return this.get('history') as NavigationEntry[]
-    }
-
     public get current() {
         if (this._data.history.length) {
             return this._data.history.at(this._data.index)

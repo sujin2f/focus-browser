@@ -1,5 +1,4 @@
 import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
-import { Controller } from '@home/modules/controller'
 
 import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
@@ -11,14 +10,14 @@ import { TrLinked } from '@home/modules/fragments/tr-linked'
 
 import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/util'
 
+import type { Bookmark } from '@src/types'
 import {
     Channel,
     PageMode,
-    PageType,
     RequestHandler,
     TableAction,
-    type Bookmark,
-} from '@src/types'
+    PageType,
+} from '@src/constants'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
     order: 'ASC' | 'DESC' = 'ASC'
@@ -45,7 +44,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     protected init() {
         super.init()
-        this.title.innerHTML = 'Bookmark'
+        this.title.label = 'Bookmark'
 
         const buttonAdd: Button = new Button({
             onClick: this.onSwitchAdd.bind(this),
@@ -83,9 +82,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         switch (mode) {
             case PageMode.NEW:
                 this._cursor = null
-                this.inputTitle.value =
-                    Controller.getInstance().setting.title || ''
-                this.inputUrl.value = Controller.getInstance().setting.url || ''
+                this.inputTitle.value = window.controller.setting.title || ''
+                this.inputUrl.value = window.controller.setting.url || ''
                 this.inputShortcut.value = ''
 
                 this.form.show()
@@ -130,41 +128,43 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         this._cursor = null
         this.renderTable()
 
-        if (!Controller.getInstance().setting.helpText) {
+        if (!window.controller.setting.helpText) {
             this.helpText.destroy()
-            this.helpText = new Element('section')
+            this.helpText = new Element({ tag: 'section' })
             return
         }
         const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout(
-            { className: ['mb-4'] },
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+        const callout = new Callout({ className: ['mb-4'] }).append(
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Click title above or press Esc to go back to switch to browser mode.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300', 'mb-2'] },
+            new Element({
+                tag: 'p',
+                className: ['text-gray-300', 'mb-2'],
+            }).append(
                 'Press ',
                 ...shortcutToHtml(`${command}+D`),
                 ' to add a current page to the bookmark.',
             ),
-            new Element(
-                'p',
-                { className: ['text-gray-300'] },
-                'Once you register a shortcut to a bookmark, you can access there quickly',
-                new Element('br'),
-                'For example, if you set ',
-                ...shortcutToHtml('A'),
-                ', ',
-                'press ',
-                ...shortcutToHtml(`${command}+\``),
-                ', ',
-                ...shortcutToHtml('B'),
-                ', and ',
-                ...shortcutToHtml('A'),
-            ),
+            new Element({ tag: 'p', className: ['text-gray-300'] })
+                .append(
+                    'Once you register a shortcut to a bookmark, you can access there quickly',
+                    new Element({ tag: 'br' }),
+                )
+                .append(
+                    'For example, if you set ',
+                    ...shortcutToHtml('A'),
+                    ', ',
+                    'press ',
+                    ...shortcutToHtml(`${command}+\``),
+                    ', ',
+                    ...shortcutToHtml('B'),
+                    ', and ',
+                    ...shortcutToHtml('A'),
+                ),
         )
         this.helpText.append(callout)
     }
@@ -176,20 +176,19 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         ]
     }
 
-    getRowCells(tr: TrLinked): Element<HTMLTableCellElement>[] {
+    getRowCells(
+        tr: TrLinked<{ index: number; data: Bookmark }>,
+    ): Element<HTMLTableCellElement>[] {
         const bookmark = tr.getData('data') as Bookmark
         const shortcut = this.table.createFixedCell()
         if (bookmark.shortcut) {
             this.shortcuts[bookmark.shortcut.toLowerCase()] = bookmark.url
-            const btnShortcut = new Button(
-                {
-                    className: ['pr-1', 'pl-1', '-mb-3', '-p-2'],
-                    onClick: () => {
-                        navigate(bookmark.url)
-                    },
+            const btnShortcut = new Button({
+                className: ['pr-1', 'pl-1', '-mb-3', '-p-2'],
+                onClick: () => {
+                    navigate(bookmark.url)
                 },
-                bookmark.shortcut.toUpperCase(),
-            )
+            }).append(bookmark.shortcut.toUpperCase())
             shortcut.append(btnShortcut)
         }
 
@@ -197,7 +196,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             shortcut,
             this.table.createTd(
                 {
-                    onClick: (e) => {
+                    onClick: (e: PointerEvent) => {
                         const tagName = (
                             e.target as HTMLElement
                         ).tagName.toLowerCase()
@@ -211,18 +210,15 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
                         navigate(bookmark.url)
                     },
                 },
-                new Button(
-                    {
-                        className: ['mr-2', 'cursor-pointer', '-mb-3', '-p-2'],
-                        onClick: () => {
-                            this._cursor = tr
-                            this.focusTable()
-                            this.changeMode(PageMode.EDIT)
-                        },
+                new Button({
+                    className: ['mr-2', 'cursor-pointer', '-mb-3', '-p-2'],
+                    onClick: () => {
+                        this._cursor = tr
+                        this.focusTable()
+                        this.changeMode(PageMode.EDIT)
                     },
-                    '⚙️',
-                ),
-                new Element('span', {}, bookmark.title),
+                }).append('⚙️'),
+                new Element({ tag: 'span' }).append(bookmark.title),
             ),
         ]
     }
@@ -232,31 +228,22 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         this.inputUrl = new Input({ label: 'URL' })
         this.inputShortcut = new Input({ maxLength: 2, label: 'Shortcut' })
 
-        const buttonOk = new Button({ type: 'submit' }, 'OK (Enter)')
-        const buttonCancel = new Button(
-            {
-                onClick: () => {
-                    this.changeMode(PageMode.LIST)
-                },
-                type: 'reset',
+        const buttonOk = new Button({ type: 'submit' }).append('OK (Enter)')
+        const buttonCancel = new Button({
+            onClick: () => {
+                this.changeMode(PageMode.LIST)
             },
-            'Cancel (Esc)',
-        )
+            type: 'reset',
+        }).append('Cancel (Esc)')
 
-        const buttons = new ButtonGroup({}, buttonCancel, buttonOk)
+        const buttons = new ButtonGroup({}).append(buttonCancel, buttonOk)
 
-        this.form = new Form(
-            {
-                onSubmit: (e) => {
-                    e.preventDefault()
-                    this.onEditSubmit()
-                },
+        this.form = new Form({
+            onSubmit: (e) => {
+                e.preventDefault()
+                this.onEditSubmit()
             },
-            this.inputTitle,
-            this.inputUrl,
-            this.inputShortcut,
-            buttons,
-        )
+        }).append(this.inputTitle, this.inputUrl, this.inputShortcut, buttons)
     }
 
     filterCondition(item: Bookmark): boolean {

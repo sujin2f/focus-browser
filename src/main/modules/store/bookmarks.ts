@@ -1,6 +1,6 @@
-import { Bookmark } from '@src/types'
 import { Store } from '@main/modules/store/store'
 import { Logger } from '@main/modules/logger'
+import type { Bookmark } from '@src/types'
 
 export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     static instance: Bookmarks
@@ -13,7 +13,7 @@ export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
     }
 
     get() {
-        return this._data.bookmarks
+        return super.get('bookmarks')
     }
 
     update(index: number, bookmark: Bookmark) {

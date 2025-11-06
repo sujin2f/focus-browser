@@ -1,21 +1,20 @@
 {
     "name": "focus-browser",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
         "start": "cross-env NODE_ENV=development PORT=1212 concurrently \"npm run start:webpack\" \"npm run start:main\" \"npm run start:electron\"",
-        "start:main": "webpack --watch --config webpack.config.js --config-name=main",
-        "start:webpack": "webpack serve --config webpack.config.js --config-name=renderer",
+        "start:main": "webpack --watch --config webpack.config.cjs --config-name=main",
+        "start:webpack": "webpack serve --config webpack.config.cjs --config-name=renderer",
         "start:electron": "electronmon ./release/app/dist/main/index.js",
         "build": "npm run clean && concurrently \"npm run build:main\" \"npm run build:webpack\"",
-        "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=main",
-        "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.js --config-name=renderer",
+        "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.cjs --config-name=main",
+        "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.cjs --config-name=renderer",
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package:alpha": "NODE_ALPHA=1 electron-builder build --publish never",
-        "package:beta": "electron-builder build --publish never",
-        "test": "NODE_ALPHA=1 jest --no-cache --forceExit --coverage",
+        "package": "electron-builder build --publish never",
+        "test": "jest --no-cache --forceExit --coverage",
         "prepare": "husky"
     },
     "author": "Sujin Choi",
@@ -61,12 +60,60 @@
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.2"
     },
+    "jest": {
+        "clearMocks": true,
+        "collectCoverage": true,
+        "coverageDirectory": "coverage",
+        "coverageProvider": "v8",
+        "testEnvironment": "jest-environment-jsdom",
+        "moduleNameMapper": {
+            "^.+\\.(css)$": "<rootDir>/.jest/mock-css.ts",
+            "^@test/(.*)$": "<rootDir>/.jest/$1",
+            "^@src/(.*)$": "<rootDir>/src/$1",
+            "^@main/(.*)$": "<rootDir>/src/main/$1",
+            "^@home/(.*)$": "<rootDir>/src/renderer/$1"
+        },
+        "setupFiles": [
+            "<rootDir>/.jest/setup.jest.cjs"
+        ],
+        "testMatch": [
+            "<rootDir>/src/**/?(*.)+(spec|test).[tj]s?(x)",
+            "<rootDir>/.jest/**/?(*.)+(spec|test).[tj]s?(x)"
+        ],
+        "extensionsToTreatAsEsm": [
+            ".ts"
+        ],
+        "preset": "ts-jest",
+        "transform": {
+            "^.+\\.(ts|tsx)?$": "ts-jest",
+            "^.+\\.(js|jsx)$": "babel-jest"
+        }
+    },
+    "prettier": {
+        "arrowParens": "always",
+        "bracketSpacing": true,
+        "endOfLine": "lf",
+        "printWidth": 80,
+        "proseWrap": "preserve",
+        "quoteProps": "as-needed",
+        "semi": false,
+        "singleQuote": true,
+        "tabWidth": 4,
+        "trailingComma": "all",
+        "useTabs": false
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-env"
+        ]
+    },
     "build": {
         "productName": "Focus",
         "appId": "com.sujinc.focus",
         "asar": true,
         "files": [
             "dist",
+            "build",
             "node_modules",
             "package.json"
         ],
@@ -114,7 +161,8 @@
         },
         "directories": {
             "app": "release/app",
-            "output": "release/build"
+            "output": "release/build",
+            "buildResources": "release/app/build"
         }
     }
 }

@@ -1,7 +1,7 @@
 import { electron, loadURL } from '@test/mock-electron'
 import { adBlocker } from '@test/mock-ad-blocker'
 import { window } from '@test/mock-window'
-import { history, popupBlocker, status } from '@test/mock-store'
+import { history, popupBlocker, status, statusGet } from '@test/mock-store'
 
 jest.resetModules()
 jest.doMock('electron', electron)
@@ -33,10 +33,11 @@ describe('Web Browser View (browser.ts)', () => {
 
         // set failure case
         loadURL.mockRejectedValueOnce({})
+        statusGet.mockReturnValue('GOOGLE')
         await view.loadURL('hey')
         // should call search
         expect(loadURL).toHaveBeenLastCalledWith(
-            'https://duckduckgo.com/?q=hey',
+            'https://www.google.com/search?q=hey',
         )
     })
 

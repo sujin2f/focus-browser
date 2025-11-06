@@ -81,6 +81,7 @@ const mainConfig = {
         chunkFilename: '[name].chunk.js',
     },
     plugins: [
+        // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new EnvironmentPlugin({
             VERSION: require('./package.json').version,
             IS_BETA: require('./package.json').version.includes('beta'),

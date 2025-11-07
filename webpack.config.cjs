@@ -106,8 +106,8 @@ const rendererConfig = {
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new DefinePlugin({
-            version: '"' + require('./package.json').version + '"',
-            isBeta: require('./package.json').version.includes('beta'),
+            envVersion: '"' + require('./package.json').version + '"',
+            envBeta: require('./package.json').version.includes('beta'),
         }),
     ],
 }

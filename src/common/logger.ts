@@ -1,4 +1,5 @@
 import { Channel, LogTypes } from '@src/common/constants'
+import { isBeta, isTest } from './utils'
 
 interface I_Logger {
     error(...params: unknown[]): void
@@ -37,25 +38,18 @@ export class Logger {
     constructor() {
         this.isMain = typeof window !== 'object'
 
-        // the Main Process
-        if (this.isMain) {
-            // IS_BETA comes from package.json version (0.0.0-beta) via webpack.EnvironmentPlugin
-            if (process.env.NODE_ENV !== 'test' && process.env.IS_BETA) {
+        if (isBeta() && !isTest()) {
+            // the Main Process
+            if (this.isMain) {
                 // eslint-disable-next-line @typescript-eslint/no-require-imports
                 this.logger = require('electron-log')
                 ;(this.logger as I_Logger).initialize()
                 this.isActive = true
+                return
             }
-            return
-        }
 
-        // the Renderer Process
-        if (typeof isBeta !== 'undefined' && isBeta) {
-            // IS_BETA comes from package.json version (0.0.0-beta) via webpack.EnvironmentPlugin
-            if (isBeta) {
-                this.logger = console
-                this.isActive = true
-            }
+            this.logger = console
+            this.isActive = true
         }
     }
 

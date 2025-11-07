@@ -21,6 +21,7 @@ import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
+import { isBeta, isTest } from '@src/common/utils'
 
 /**
  * All starts with here
@@ -37,7 +38,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
         ipcMain.on(Channel.FIND, this.onFind.bind(this))
 
-        if (process.env.NODE_ENV !== 'test' && process.env.IS_BETA) {
+        if (isBeta() && !isTest()) {
             ipcMain.on(Channel.LOG, this.onLog.bind(this))
         }
     }

@@ -218,7 +218,7 @@ export class Setting extends A_Page {
             new Element({
                 tag: 'div',
                 className: ['mr-3'],
-            }).append(version),
+            }).append(envVersion),
         )
     }
 

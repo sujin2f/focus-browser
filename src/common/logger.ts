@@ -1,3 +1,5 @@
+import { Channel, LogTypes } from '@src/common/constants'
+
 interface I_Logger {
     error(...params: unknown[]): void
     warn(...params: unknown[]): void
@@ -29,15 +31,20 @@ export class Logger {
         initialize: () => {},
     }
 
+    private isMain: boolean
+    private isActive: boolean = false
+
     constructor() {
+        this.isMain = typeof window !== 'object'
+
         // the Main Process
-        if (typeof window !== 'object') {
+        if (this.isMain) {
             // IS_BETA comes from package.json version (0.0.0-beta) via webpack.EnvironmentPlugin
             if (process.env.NODE_ENV !== 'test' && process.env.IS_BETA) {
                 // eslint-disable-next-line @typescript-eslint/no-require-imports
                 this.logger = require('electron-log')
                 ;(this.logger as I_Logger).initialize()
-                return
+                this.isActive = true
             }
             return
         }
@@ -47,24 +54,38 @@ export class Logger {
             // IS_BETA comes from package.json version (0.0.0-beta) via webpack.EnvironmentPlugin
             if (isBeta) {
                 this.logger = console
-                return
+                this.isActive = true
             }
         }
     }
 
     error(...params: unknown[]) {
         this.logger.error(...params)
+        this.sendToMain(LogTypes.ERROR, ...params)
     }
 
     warn(...params: unknown[]) {
         this.logger.warn(...params)
+        this.sendToMain(LogTypes.WARN, ...params)
     }
 
     log(...params: unknown[]) {
         this.logger.log(...params)
+        this.sendToMain(LogTypes.LOG, ...params)
     }
 
     info(...params: unknown[]) {
         this.logger.info(...params)
+        this.sendToMain(LogTypes.INFO, ...params)
+    }
+
+    sendToMain(type: LogTypes, ...params: unknown[]) {
+        if (!this.isMain && this.isActive) {
+            window.electron.ipcRenderer.sendMessage(
+                Channel.LOG,
+                type,
+                ...params,
+            )
+        }
     }
 }

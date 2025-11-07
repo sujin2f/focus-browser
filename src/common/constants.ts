@@ -29,6 +29,7 @@ export enum Channel {
     ANCHOR = 'ANCHOR',
     POPUP_BLOCKER = 'POPUP_BLOCKER',
     FIND = 'FIND',
+    LOG = 'LOG',
 }
 
 export enum RequestHandler {
@@ -128,3 +129,10 @@ export const DEFAULT_STATUS: StatusProps = {
 }
 
 export const CTRL = 'ControlOrCommand'
+
+export enum LogTypes {
+    ERROR,
+    WARN,
+    LOG,
+    INFO,
+}

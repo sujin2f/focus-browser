@@ -11,6 +11,7 @@ import {
     RequestHandler,
     BROWSER,
     CURRENT_PAGE_INFO,
+    LogTypes,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -35,6 +36,27 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
         ipcMain.on(Channel.FIND, this.onFind.bind(this))
+
+        if (process.env.NODE_ENV !== 'test' && process.env.IS_BETA) {
+            ipcMain.on(Channel.LOG, this.onLog.bind(this))
+        }
+    }
+
+    private onLog(_: IpcMainEvent, type: LogTypes, ...params: unknown[]) {
+        switch (type) {
+            case LogTypes.ERROR:
+                Logger.getInstance().error(...params)
+                break
+            case LogTypes.INFO:
+                Logger.getInstance().info(...params)
+                break
+            case LogTypes.LOG:
+                Logger.getInstance().log(...params)
+                break
+            case LogTypes.WARN:
+                Logger.getInstance().warn(...params)
+                break
+        }
     }
 
     private onFind(_: IpcMainEvent, handler: RequestHandler, text: string) {

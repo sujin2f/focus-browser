@@ -2,6 +2,7 @@ import {
     ipcMain,
     type BaseWindowConstructorOptions,
     type IpcMainEvent,
+    type ContextMenuParams,
 } from 'electron'
 import { Logger } from '@src/common/logger'
 
@@ -11,6 +12,8 @@ import {
     RequestHandler,
     BROWSER,
     LogTypes,
+    MainEventTypes,
+    PageType,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -35,9 +38,33 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
         ipcMain.on(Channel.FIND, this.onFind.bind(this))
+        ipcMain.on(Channel.MAIN_PROCESS, this.onMainProcess.bind(this))
 
         if (isBeta() && !isTest()) {
             ipcMain.on(Channel.LOG, this.onLog.bind(this))
+        }
+    }
+
+    private onMainProcess(
+        _: IpcMainEvent,
+        type: MainEventTypes,
+        ...params: unknown[]
+    ) {
+        Logger.getInstance().log(
+            `Main Process : ${type} ${JSON.stringify(params)}`,
+        )
+        switch (type) {
+            case MainEventTypes.CONTEXT_MENU:
+                this.showContextMenu(params[0] as ContextMenuParams)
+                return
+
+            case MainEventTypes.SWITCH:
+                this.switch(params[0] as PageType)
+                return
+
+            case MainEventTypes.TITLE:
+                this.title = params[0] as string
+                return
         }
     }
 

@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.1.6-beta.5",
+    "version": "0.1.6-beta.6",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {

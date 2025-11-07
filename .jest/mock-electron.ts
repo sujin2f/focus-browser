@@ -70,7 +70,7 @@ export const ipcMainOn = jest.fn()
 export const electron = () => ({
     session: { fromPartition: jest.fn() },
     app: { getPath: () => '/tmp/focus-test' },
-    ipcMain: { on: ipcMainOn },
+    ipcMain: { on: ipcMainOn, emit: jest.fn() },
     BrowserWindow: MockBrowserWindow,
     WebContentsView: MockWebContentsView,
     Menu: {

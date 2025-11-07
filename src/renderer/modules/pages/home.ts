@@ -10,7 +10,6 @@ import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
 import { ctrlOrComm, isMac, navigate, SwitchEvent } from '@home/utils'
 import { CTRL, PageType } from '@src/common/constants'
-import { Info } from '@src/common/types'
 
 /**
  * For creating cards
@@ -74,7 +73,7 @@ export class Home extends A_Page {
 
     constructor() {
         super()
-        this.requestInfo('helpText', 'frame')
+        this.requestInfo('helpText', 'frame', 'url')
     }
 
     refresh() {
@@ -140,17 +139,8 @@ export class Home extends A_Page {
     }
 
     protected focus() {
-        document.dispatchEvent(
-            new CustomEvent<(setting: Info) => void>('call-options', {
-                detail: (setting) => {
-                    this.search.value = setting.url
-                    this.search.input.element.select()
-                },
-            }),
-        )
-
-        // this.search.value = window.controller.setting.url
-        // this.search.input.element.select()
+        this.search.value = this.settings.url
+        this.search.input.element.select()
     }
 
     doShortcut(e: KeyboardEvent): boolean {

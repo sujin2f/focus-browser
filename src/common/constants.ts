@@ -31,6 +31,7 @@ export enum Channel {
     POPUP_BLOCKER = 'POPUP_BLOCKER',
     FIND = 'FIND',
     LOG = 'LOG',
+    MAIN_PROCESS = 'MAIN_PROCESS',
 }
 
 export enum RequestHandler {
@@ -137,6 +138,12 @@ export enum LogTypes {
     WARN,
     LOG,
     INFO,
+}
+
+export enum MainEventTypes {
+    TITLE = 'TITLE',
+    SWITCH = 'SWITCH',
+    CONTEXT_MENU = 'CONTEXT_MENU',
 }
 
 export enum CustomEvents {

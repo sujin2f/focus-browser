@@ -2,19 +2,23 @@ import {
     WebContentsView,
     Notification,
     type WebContentsViewConstructorOptions,
+    ipcMain,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
 import type { Bookmark } from '@src/common/types'
-import { PageType, SearchEngine } from '@src/common/constants'
+import {
+    Channel,
+    MainEventTypes,
+    PageType,
+    SearchEngine,
+} from '@src/common/constants'
 import { Logger } from '@src/common/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
-
-import { BrowserWindow } from '@main/modules/window/window'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -41,28 +45,52 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        BrowserWindow.getInstance().title = 'Loading...'
+
+        ipcMain.emit(
+            Channel.MAIN_PROCESS,
+            null,
+            MainEventTypes.TITLE,
+            'Loading...',
+        )
 
         this.setPopupBlocker()
-        // Events
 
+        // Events
         this.webContents
             // Web Title to App Title
             .on('did-finish-load', () => {
-                BrowserWindow.getInstance().title = this.webContents.getTitle()
-                // Enable pinch zoom
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    this.webContents.getTitle(),
+                )
                 this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
-                BrowserWindow.getInstance().title = title
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    title,
+                )
             })
-            .on(
-                'will-navigate',
-                () => (BrowserWindow.getInstance().title = 'Loading...'),
+            .on('will-navigate', () =>
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    'Loading...',
+                ),
             )
             // Context Menu
             .on('context-menu', (_, params) => {
-                BrowserWindow.getInstance().showContextMenu(params)
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.CONTEXT_MENU,
+                    params,
+                )
             })
 
         this.webContents.setZoomFactor(1)
@@ -108,7 +136,12 @@ export class BrowserView extends WebContentsView {
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = url.toString()
-                BrowserWindow.getInstance().switch(PageType.OFFLINE)
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.SWITCH,
+                    PageType.OFFLINE,
+                )
                 return
             }
 
@@ -237,7 +270,12 @@ export class BrowserView extends WebContentsView {
                 silent: true,
             })
             notification.addListener('click', () => {
-                BrowserWindow.getInstance().switch(PageType.POPUP_BLOCKER)
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.SWITCH,
+                    PageType.POPUP_BLOCKER,
+                )
             })
             notification.show()
             return { action: 'deny' }
@@ -248,7 +286,12 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
-        BrowserWindow.getInstance().title = 'Reloading...'
+        ipcMain.emit(
+            Channel.MAIN_PROCESS,
+            null,
+            MainEventTypes.TITLE,
+            'Reloading...',
+        )
         if (this._failedUrl) {
             this.loadURL(this._failedUrl)
             return

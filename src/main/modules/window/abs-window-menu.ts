@@ -16,6 +16,7 @@ import {
     Menu as EnumMenu,
     PageType,
     BROWSER,
+    Channel,
 } from '@src/common/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
@@ -184,11 +185,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     Logger.getInstance().info(
                         '==== Test Code Block Start =====',
                     )
-                    ipcMain.eventNames().forEach((e) => {
-                        Logger.getInstance().log(`Event: ${e.toString()}`)
-                        Logger.getInstance().log(ipcMain.rawListeners(e))
-                    })
-
+                    ipcMain.emit(
+                        Channel.MAIN_PROCESS,
+                        'test1',
+                        'test2',
+                        'test3',
+                    )
                     Logger.getInstance().info(
                         '==== Test Code Block End =======',
                     )

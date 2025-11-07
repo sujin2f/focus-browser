@@ -4,6 +4,7 @@
 - Pressing any key to activate Find mode
 - Add/Edit/Delete/Find
 - Keyboard navigation: Up/Down & Enter/Space
+- Notification: Add Bookmark/Anchor
 
 # Versioning Rule
 

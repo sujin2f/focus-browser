@@ -7,6 +7,7 @@ export const CURRENT_PAGE_INFO = 'current-page-info'
  * Control centre pages
  */
 export enum PageType {
+    RELOAD,
     WELCOME,
     HOME,
     ADDRESS,
@@ -105,6 +106,7 @@ export enum Menu {
     s0001 = 's0001',
     s0002 = 's0002',
     s0003 = 's0003',
+    TEST = 'Run Test Block',
 }
 
 export const SearchEngine = {
@@ -135,4 +137,9 @@ export enum LogTypes {
     WARN,
     LOG,
     INFO,
+}
+
+export enum CustomEvents {
+    SWITCH = 'switch',
+    UPDATE_SETTINGS = 'update-settings',
 }

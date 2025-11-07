@@ -68,3 +68,6 @@ export type ElementProps<T> = {
     props: T
     onClick: (ev: HTMLElementEventMap['click']) => unknown
 }
+
+export type EventSwitch = CustomEvent<PageType>
+export type EventModifyOption = CustomEvent<Partial<Info>>

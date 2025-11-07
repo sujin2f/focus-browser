@@ -87,7 +87,15 @@ export class BrowserView extends WebContentsView {
 
         // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
         const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
-        const url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
+
+        let url: URL
+        try {
+            url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
+        } catch {
+            // Not URL
+            this.searchKeyword(trimmed)
+            return
+        }
 
         // Search Keyword
         if (!url.hostname.includes('.')) {
@@ -95,7 +103,7 @@ export class BrowserView extends WebContentsView {
             return
         }
 
-        this.webContents.loadURL(url.toString()).catch((e) => {
+        await this.webContents.loadURL(url.toString()).catch((e) => {
             // TODO for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {

@@ -7,6 +7,7 @@ import {
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
+    ipcMain,
 } from 'electron'
 
 import type { Scenes, MenuBlock } from '@src/common/types'
@@ -23,6 +24,7 @@ import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import { Logger } from '@src/common/logger'
+import { isBeta, isTest } from '@src/common/utils'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -171,6 +173,27 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         menu[MenuCategory.NAVIGATE][EnumMenu.STOP].click = () => {
             this.current.webContents.stop()
             this.browser.webContents.stopFindInPage('clearSelection')
+        }
+
+        // For Development purpose
+        if (isBeta() && !isTest()) {
+            menu[MenuCategory.EDIT][EnumMenu.TEST] = {
+                label: 'Run Test Block',
+                accelerator: 'CommandOrControl+W',
+                click: () => {
+                    Logger.getInstance().info(
+                        '==== Test Code Block Start =====',
+                    )
+                    ipcMain.eventNames().forEach((e) => {
+                        Logger.getInstance().log(`Event: ${e.toString()}`)
+                        Logger.getInstance().log(ipcMain.rawListeners(e))
+                    })
+
+                    Logger.getInstance().info(
+                        '==== Test Code Block End =======',
+                    )
+                },
+            }
         }
 
         return menu

@@ -20,7 +20,16 @@ export class Setting extends A_Page {
 
     constructor() {
         super()
-        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST)
+
+        this.requestInfo(
+            'helpText',
+            'maxHistory',
+            'adBlocker',
+            'adBlockerStatus',
+            'cacheSize',
+            'searchEngine',
+            'frame',
+        )
     }
 
     private get title() {
@@ -30,12 +39,11 @@ export class Setting extends A_Page {
     private get helpText() {
         const helpText = new Input({
             type: 'checkbox',
-            checked: window.controller.setting.helpText,
+            checked: this.settings.helpText,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: helpText.checked,
                 } satisfies Partial<Info>)
-                window.controller.setting.helpText = helpText.checked
             },
             label: 'Show Help Text',
         })
@@ -45,7 +53,7 @@ export class Setting extends A_Page {
     private get maxHistory() {
         const maxHistory = new Input({
             type: 'number',
-            value: window.controller.setting.maxHistory.toString(),
+            value: this.settings.maxHistory.toString(),
             onChange: () => {
                 maxHistory.error = ''
                 const value = parseInt(maxHistory.value)
@@ -56,7 +64,6 @@ export class Setting extends A_Page {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     maxHistory: value,
                 } satisfies Partial<Info>)
-                window.controller.setting.maxHistory = value
             },
             label: 'Maximum History',
         })
@@ -66,12 +73,11 @@ export class Setting extends A_Page {
     private get adBlocker() {
         const adBlocker = new Input({
             type: 'checkbox',
-            checked: window.controller.setting.adBlocker,
+            checked: this.settings.adBlocker,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     adBlocker: adBlocker.checked,
                 } satisfies Partial<Info>)
-                window.controller.setting.adBlocker = adBlocker.checked
             },
             label: 'Use Ad-Blocker',
         })
@@ -99,17 +105,17 @@ export class Setting extends A_Page {
                 className: ['mr-3'],
             }).append(
                 (() => {
-                    if (window.controller.setting.adBlockerStatus === null) {
+                    if (this.settings.adBlockerStatus === null) {
                         return 'Failed to load. Click here to retry.'
                     }
-                    if (window.controller.setting.adBlockerStatus === false) {
+                    if (this.settings.adBlockerStatus === false) {
                         return 'Disabled'
                     }
 
                     return 'Working!'
                 })(),
             ),
-            window.controller.setting.adBlockerStatus === null
+            this.settings.adBlockerStatus === null
                 ? new Button({
                       className: ['-mb-3'],
                       onClick: () => {
@@ -127,7 +133,7 @@ export class Setting extends A_Page {
     }
 
     private get cacheSize() {
-        let cacheSize = window.controller.setting.cacheSize
+        let cacheSize = this.settings.cacheSize
         let cacheText = ''
         const mb = 1024 * 1024
         if (cacheSize < mb) {
@@ -186,12 +192,11 @@ export class Setting extends A_Page {
     private get frame() {
         const frame = new Input({
             type: 'checkbox',
-            checked: window.controller.setting.frame,
+            checked: this.settings.frame,
             onChange: () => {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     frame: frame.checked,
                 } satisfies Partial<Info>)
-                window.controller.setting.frame = frame.checked
             },
             label: 'Show Native Frame',
             helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${ctrlOrComm()}Esc.`,
@@ -223,7 +228,7 @@ export class Setting extends A_Page {
     }
 
     refresh() {
-        this.root.reset()
+        this.root.reset(this.settings.frame)
 
         const wrapper = new Element({
             tag: 'section',

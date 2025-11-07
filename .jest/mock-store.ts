@@ -77,6 +77,7 @@ export const status = () => ({
             push: jest.fn(() => true),
             getBounds: jest.fn(),
             merge: statusMerge,
+            data: {},
         }),
     },
 })

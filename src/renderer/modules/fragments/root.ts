@@ -12,12 +12,12 @@ export class Root extends Element<HTMLSpanElement> {
         document.body.append(this.element)
     }
 
-    reset() {
+    reset(frame: boolean) {
         super.reset()
         document.body.innerHTML = ''
         document.body.append(this.element)
 
-        if (!window.controller.setting.frame) {
+        if (!frame) {
             new TitleBar(this)
         }
 

@@ -5,17 +5,15 @@ import {
 } from 'electron'
 import { Logger } from '@src/common/logger'
 
-import type { Scenes, Bookmark, Info, Shortcuts } from '@src/common/types'
+import type { Scenes, Bookmark, Info } from '@src/common/types'
 import {
     Channel,
     RequestHandler,
     BROWSER,
-    CURRENT_PAGE_INFO,
     LogTypes,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
-import { Shortcut } from '@main/modules/store/shortcut'
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
@@ -77,6 +75,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         _: IpcMainEvent,
         handler: RequestHandler,
         data: Partial<Info>,
+        ...requestKeys: (keyof Info)[]
     ) {
         /**
          * Modifying status
@@ -88,14 +87,14 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 isNaN(data.cacheSize)
             ) {
                 await this.browser.webContents.session.clearCache()
-                await this.sendInfo()
+                await this.sendInfo('cacheSize')
                 return
             }
 
             // Reset adBlocker in case it fails in some reason
             if (Object.prototype.hasOwnProperty.call(data, 'adBlockerStatus')) {
                 await this.browser.setAdBlocker()
-                await this.sendInfo()
+                await this.sendInfo('adBlockerStatus')
                 return
             }
 
@@ -110,27 +109,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             // If adBlocker setting changed, reset.
             if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
                 await this.browser.setAdBlocker()
-                await this.sendInfo()
+                await this.sendInfo('adBlocker')
             }
             return
         }
 
         if (handler === RequestHandler.REQUEST) {
-            // Request current page info
-            if ((data as string) === CURRENT_PAGE_INFO) {
-                this.centre.webContents.send(
-                    Channel.INFO,
-                    RequestHandler.RESPONSE,
-                    {
-                        title: this.browser.webContents.getTitle(),
-                        url: this.browser.webContents.getURL(),
-                        findText: this.findText,
-                    },
-                )
-                return
-            }
-
-            await this.sendInfo()
+            await this.sendInfo(data as string as keyof Info, ...requestKeys)
         }
     }
 
@@ -248,13 +233,53 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async sendInfo() {
-        this.centre.webContents.send(Channel.INFO, RequestHandler.RESPONSE, {
-            shortcuts: Shortcut.getInstance().get('shortcuts') as Shortcuts,
-            cacheSize: await this.browser.webContents.session.getCacheSize(),
-            adBlockerStatus: this.browser.blocker && true,
-            findText: this.findText,
-            ...Status.getInstance().data,
-        } satisfies Info)
+    private async sendInfo(...requests: (keyof Info)[]) {
+        const info: Partial<Info> = {}
+        const status = Status.getInstance().data
+
+        if (requests.includes('helpText')) {
+            info.helpText = status.helpText
+        }
+
+        if (requests.includes('maxHistory')) {
+            info.maxHistory = status.maxHistory
+        }
+
+        if (requests.includes('adBlocker')) {
+            info.adBlocker = status.adBlocker
+        }
+
+        if (requests.includes('adBlockerStatus')) {
+            info.adBlockerStatus = this.browser.blocker && true
+        }
+
+        if (requests.includes('cacheSize')) {
+            info.cacheSize =
+                await this.browser.webContents.session.getCacheSize()
+        }
+
+        if (requests.includes('frame')) {
+            info.frame = status.frame
+        }
+
+        if (requests.includes('title')) {
+            info.title = this.browser.webContents.getTitle()
+        }
+
+        if (requests.includes('url')) {
+            info.url = this.browser.webContents.getURL()
+        }
+
+        if (requests.includes('searchEngine')) {
+            info.searchEngine = status.searchEngine
+        }
+
+        Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)
+
+        this.centre.webContents.send(
+            Channel.INFO,
+            RequestHandler.RESPONSE,
+            info,
+        )
     }
 }

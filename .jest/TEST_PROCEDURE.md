@@ -1,10 +1,13 @@
 # Test list in Production
 
 - Home shortcuts
+- Control Centre / Location shortcuts
 - Pressing any key to activate Find mode
 - Add/Edit/Delete/Find
 - Keyboard navigation: Up/Down & Enter/Space
 - Notification: Add Bookmark/Anchor
+- Load URL: type `google.com`
+- Load URL: type `search text`
 
 # Versioning Rule
 

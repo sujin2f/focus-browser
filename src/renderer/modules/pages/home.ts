@@ -8,8 +8,9 @@ import { Callout } from '@home/modules/fragments/callout'
 import { Title } from '@home/modules/fragments/title'
 import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { ctrlOrComm, isMac, navigate } from '@home/utils'
+import { ctrlOrComm, isMac, navigate, SwitchEvent } from '@home/utils'
 import { CTRL, PageType } from '@src/common/constants'
+import { Info } from '@src/common/types'
 
 /**
  * For creating cards
@@ -71,8 +72,13 @@ export class Home extends A_Page {
     private helpText: Element<HTMLElement> = new Element({ tag: 'section' })
     private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
+    constructor() {
+        super()
+        this.requestInfo('helpText', 'frame')
+    }
+
     refresh() {
-        this.root.reset()
+        this.root.reset(this.settings.frame)
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()
@@ -101,7 +107,7 @@ export class Home extends A_Page {
             card.title = info.title
             card.description = info.description
             card.addEventListener('click', () => {
-                window.controller.switch(info.destination)
+                document.dispatchEvent(new SwitchEvent(info.destination))
             })
 
             cardContainer.append(card)
@@ -113,7 +119,7 @@ export class Home extends A_Page {
 
     private renderHelpText() {
         this.helpText.innerHTML = ''
-        if (!window.controller.setting.helpText) {
+        if (!this.settings.helpText) {
             return
         }
 
@@ -134,8 +140,17 @@ export class Home extends A_Page {
     }
 
     protected focus() {
-        this.search.value = window.controller.setting.url
-        this.search.input.element.select()
+        document.dispatchEvent(
+            new CustomEvent<(setting: Info) => void>('call-options', {
+                detail: (setting) => {
+                    this.search.value = setting.url
+                    this.search.input.element.select()
+                },
+            }),
+        )
+
+        // this.search.value = window.controller.setting.url
+        // this.search.input.element.select()
     }
 
     doShortcut(e: KeyboardEvent): boolean {
@@ -153,16 +168,18 @@ export class Home extends A_Page {
         ) {
             switch (e.code) {
                 case 'KeyB':
-                    window.controller.switch(PageType.BOOKMARK)
+                    document.dispatchEvent(new SwitchEvent(PageType.BOOKMARK))
                     return
                 case 'KeyH':
-                    window.controller.switch(PageType.HISTORY)
+                    document.dispatchEvent(new SwitchEvent(PageType.HISTORY))
                     return
                 case 'KeyA':
-                    window.controller.switch(PageType.ANCHOR)
+                    document.dispatchEvent(new SwitchEvent(PageType.ANCHOR))
                     return
                 case 'KeyP':
-                    window.controller.switch(PageType.POPUP_BLOCKER)
+                    document.dispatchEvent(
+                        new SwitchEvent(PageType.POPUP_BLOCKER),
+                    )
                     return
             }
         } else {

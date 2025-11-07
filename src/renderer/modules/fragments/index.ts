@@ -186,7 +186,7 @@ export class Element<
         this.element.remove()
     }
 
-    public reset(): this {
+    public reset(..._: unknown[]): this {
         this.init()
         return this
     }

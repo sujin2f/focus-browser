@@ -22,6 +22,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
 
     constructor() {
         super()
+        this.requestInfo('helpText')
         this.init()
     }
 
@@ -108,7 +109,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
         this.renderTable()
 
         this.helpText.innerHTML = ''
-        if (!window.controller.setting.helpText) {
+        if (!this.settings.helpText) {
             return
         }
 

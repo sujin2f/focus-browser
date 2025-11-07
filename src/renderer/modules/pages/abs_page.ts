@@ -1,7 +1,15 @@
 import { Element } from '@home/modules/fragments'
-import { PageType, TableAction, PageMode } from '@src/common/constants'
-import { navigate } from '@home/utils'
+import {
+    PageType,
+    TableAction,
+    PageMode,
+    Channel,
+    RequestHandler,
+} from '@src/common/constants'
+import { ipcRenderer, navigate } from '@home/utils'
 import { Root } from '../fragments/root'
+import { Logger } from '@src/common/logger'
+import { Info } from '@src/common/types'
 
 export abstract class A_Page {
     /**
@@ -40,6 +48,7 @@ export abstract class A_Page {
      */
     public action(action: TableAction, ..._: unknown[]) {
         if (action === TableAction.INFO) {
+            Logger.getInstance().log('Table action INFO is triggered')
             this.refresh()
         }
     }
@@ -71,5 +80,26 @@ export abstract class A_Page {
 
     protected blur() {
         ;(document.activeElement as HTMLElement).blur()
+    }
+
+    protected settings: Partial<Info> = {}
+    protected requestInfo(...keys: (keyof Info)[]) {
+        Logger.getInstance().log(
+            `[Renderer] requestInfo ${JSON.stringify(keys)}`,
+        )
+        ipcRenderer.once(
+            Channel.INFO,
+            (handler: RequestHandler, setting: Info) => {
+                if (handler !== RequestHandler.RESPONSE) {
+                    return
+                }
+                Logger.getInstance().info(
+                    `[Renderer] Get Info ${JSON.stringify(setting)}`,
+                )
+                this.settings = { ...this.settings, ...setting }
+                this.action(TableAction.INFO)
+            },
+        )
+        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, ...keys)
     }
 }

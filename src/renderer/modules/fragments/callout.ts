@@ -2,9 +2,9 @@ import { Element } from '@home/modules/fragments'
 
 import { Button } from '@home/modules/fragments/button'
 
-import { ipcRenderer } from '@home/utils'
+import { ipcRenderer, SwitchEvent } from '@home/utils'
 import type { ElementProps } from '@src/common/types'
-import { Channel, RequestHandler, TableAction } from '@src/common/constants'
+import { Channel, PageType, RequestHandler } from '@src/common/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button
@@ -33,8 +33,7 @@ export class Callout extends Element<HTMLDivElement> {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: false,
                 })
-                window.controller.setting.helpText = false
-                window.controller.currentPage.action(TableAction.INFO)
+                document.dispatchEvent(new SwitchEvent(PageType.RELOAD))
             },
         }).append('Hide Tip')
         this.wrapper = new Element({ tag: 'div' })

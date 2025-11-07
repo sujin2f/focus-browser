@@ -9,6 +9,11 @@ import { ipcRenderer, navigate } from '@home/utils'
 export class Find extends A_Page {
     public page = PageType.FIND
 
+    constructor() {
+        super()
+        this.requestInfo('findText', 'frame')
+    }
+
     private get container() {
         return new Element<HTMLDivElement>({
             tag: 'div',
@@ -24,13 +29,13 @@ export class Find extends A_Page {
 
     private get field() {
         return new Input({
-            value: window.controller.setting.findText || '',
+            value: this.settings.findText || '',
             label: 'Find in Page',
         })
     }
 
     refresh(): void {
-        this.root.reset()
+        this.root.reset(this.settings.frame)
 
         const field = this.field
         const container = this.container.append(field)

@@ -23,6 +23,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     constructor() {
         super()
+        this.requestInfo('helpText')
         this.init()
     }
 
@@ -50,7 +51,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
         this.renderTable()
 
         this.helpText.innerHTML = ''
-        if (!window.controller.setting.helpText) {
+        if (!this.settings.helpText) {
             return
         }
 

@@ -21,6 +21,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
     constructor() {
         super()
+        this.requestInfo('helpText')
         this.init()
     }
 
@@ -123,7 +124,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         this.renderTable()
 
         this.helpText.innerHTML = ''
-        if (!window.controller.setting.helpText) {
+        if (!this.settings.helpText) {
             return
         }
 

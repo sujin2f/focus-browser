@@ -41,6 +41,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     constructor() {
         super()
+        this.requestInfo('helpText', 'title', 'url')
         this.init()
     }
 
@@ -80,8 +81,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         switch (mode) {
             case PageMode.NEW:
                 this._cursor = null
-                this.inputTitle.value = window.controller.setting.title || ''
-                this.inputUrl.value = window.controller.setting.url || ''
+                this.inputTitle.value = this.settings.title || ''
+                this.inputUrl.value = this.settings.url || ''
                 this.inputShortcut.value = ''
 
                 this.form.show()
@@ -127,7 +128,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         this.renderTable()
 
         this.helpText.innerHTML = ''
-        if (!window.controller.setting.helpText) {
+        if (!this.settings.helpText) {
             return
         }
 

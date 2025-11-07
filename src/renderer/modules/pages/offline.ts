@@ -10,8 +10,13 @@ import { Channel, PageType, BROWSER } from '@src/common/constants'
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
 
+    constructor() {
+        super()
+        this.requestInfo('frame')
+    }
+
     refresh(): void {
-        this.root.reset()
+        this.root.reset(this.settings.frame)
 
         const title = new Heading(1, { className: ['text-center'] }).append(
             'No internet',

@@ -88,7 +88,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     protected init() {
         this.root.innerHTML = ''
 
-        if (!window.controller.setting.frame) {
+        if (!this.settings.frame) {
             new TitleBar(this.root)
         }
 

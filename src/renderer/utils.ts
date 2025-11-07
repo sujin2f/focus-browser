@@ -4,6 +4,7 @@ import {
     BROWSER,
     PageType,
     CTRL,
+    CustomEvents,
 } from '@src/common/constants'
 import { Element } from '@home/modules/fragments'
 import { Keyboard } from './modules/fragments/keyboard'
@@ -21,7 +22,7 @@ export const ipcRenderer = {
 }
 
 export const navigate = (url?: string, handler?: RequestHandler) => {
-    window.controller.switch(PageType.HOME)
+    document.dispatchEvent(new SwitchEvent(PageType.HOME))
     if (url) {
         ipcRenderer.send(Channel.SWITCH, BROWSER, url, handler)
         return
@@ -51,3 +52,9 @@ export const shortcutToHtml = (shortcut: string): Element<HTMLElement>[] => {
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
 
 export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl')
+
+export class SwitchEvent extends CustomEvent<PageType> {
+    constructor(detail: PageType) {
+        super(CustomEvents.SWITCH, { detail })
+    }
+}

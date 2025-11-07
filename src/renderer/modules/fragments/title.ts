@@ -26,7 +26,7 @@ export class Title extends Element<HTMLElement> {
         this.button = new Button({
             onClick: () => navigate(),
             className: ['-mb-3'],
-        }).append('Back to Browser (Escape)')
+        }).append('Back to Browser (Esc)')
         this.append(this.button)
     }
 

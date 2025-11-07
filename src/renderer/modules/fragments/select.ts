@@ -24,21 +24,20 @@ export class Select<
         }
 
         if (!error) {
-            this._select.classList.remove(
-                'border-pink-900',
-                'dark:border-pink-600',
-            )
-            this._select.classList.add(
+            this._select.className(
+                '-border-pink-900',
+                '-dark:border-pink-600',
                 'border-gray-300',
                 'dark:border-transparent',
             )
             return
         }
 
-        this._select.classList.add('border-pink-900', 'dark:border-pink-600')
-        this._select.classList.remove(
-            'border-gray-300',
-            'dark:border-transparent',
+        this._select.className(
+            'border-pink-900',
+            'dark:border-pink-600',
+            '-border-gray-300',
+            '-dark:border-transparent',
         )
         this._error = new Element<HTMLParagraphElement>({
             tag: 'p',

@@ -6,10 +6,10 @@ import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
 import { Title } from '@home/modules/fragments/title'
-import { TitleBar } from '@home/modules/fragments/title-bar'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { isMac, navigate, shortcutToHtml } from '@home/utils'
-import { PageType } from '@src/common/constants'
+import { ctrlOrComm, isMac, navigate } from '@home/utils'
+import { CTRL, PageType } from '@src/common/constants'
 
 /**
  * For creating cards
@@ -78,10 +78,6 @@ export class Home extends A_Page {
         this.helpText.reset()
         this.cards.reset()
 
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
-
         this.root.append(
             this.title,
             this.location,
@@ -91,9 +87,8 @@ export class Home extends A_Page {
         )
 
         // Location Bar
-        const command = isMac() ? '⌘' : 'Ctrl+'
         this.search = new Input({
-            label: `Enter search keyword or address (${command}L)`,
+            label: `Enter search keyword or address (${ctrlOrComm()}L)`,
         })
         this.location.append(this.search)
 
@@ -121,34 +116,19 @@ export class Home extends A_Page {
             this.helpText.reset()
             return
         }
-        const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout({ className: ['mb-2'] }).append(
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Press ',
-                ...shortcutToHtml('Escape'),
-                ' key to switch to a browser mode.',
-            ),
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'On the browser mode,',
-                'you can come back here by pressing ',
-                ...shortcutToHtml(`${command}+\``),
-                ' or ',
-                ...shortcutToHtml(`${command}+L`),
-                '.',
-            ),
-            new Element({ tag: 'p', className: ['text-gray-300'] }).append(
-                'On the browser mode, press ',
-                ...shortcutToHtml(`${command}+[`),
-                ' and ',
-                ...shortcutToHtml(`${command}+]`),
-                ' to navigate back and forward.',
-            ),
+
+        const callout = new Callout({
+            className: ['mb-2', 'max-w-2xl'],
+        }).append(
+            new ShortcodeTable({
+                Esc: 'Switch to Browser Mode',
+                [`${CTRL}+L`]: 'Input URL to navigate or search text',
+                [`${CTRL}+\``]: 'Show Control Centre',
+                B: 'Show Bookmarks',
+                A: 'Show Anchors',
+                H: 'Show History',
+                P: 'Show Blocked or Allowed Popups',
+            }),
         )
         this.helpText.append(callout)
     }

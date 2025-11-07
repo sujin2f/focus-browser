@@ -126,3 +126,5 @@ export const DEFAULT_STATUS: StatusProps = {
     searchEngine: 'DUCKDUCKGO',
     frame: true,
 }
+
+export const CTRL = 'ControlOrCommand'

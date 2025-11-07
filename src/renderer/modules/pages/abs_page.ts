@@ -1,6 +1,7 @@
 import { Element } from '@home/modules/fragments'
 import { PageType, TableAction, PageMode } from '@src/common/constants'
 import { navigate } from '@home/utils'
+import { Root } from '../fragments/root'
 
 export abstract class A_Page {
     /**
@@ -8,30 +9,13 @@ export abstract class A_Page {
      */
     abstract readonly page: PageType
 
-    /**
-     * Page Layout
-     *
-     * <div id="root">
-     *     <section.title>
-     *         <title />
-     *         <button to browser />
-     *     </section.title>
-     *     <section.container />
-     * </div>
-     */
     private _root: Element<HTMLElement>
     protected get root(): Element<HTMLElement> {
         if (!this._root) {
-            this._root = new Element({
-                selector: '#root',
-                className: ['container', 'mx-auto'],
-            })
-            document.body.innerHTML = ''
-            document.body.append(this._root.element)
+            this._root = new Root()
         }
         return this._root
     }
-    // protected title = new Element('section')
 
     /**
      * Modes like list, edit, find...
@@ -54,8 +38,7 @@ export abstract class A_Page {
     /**
      * For additional actions
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public action(action: TableAction, ...arg: unknown[]) {
+    public action(action: TableAction, ..._: unknown[]) {
         if (action === TableAction.INFO) {
             this.refresh()
         }
@@ -64,7 +47,7 @@ export abstract class A_Page {
     /**
      * Shortcut
      */
-    public doShortcut(e: KeyboardEvent): boolean {
+    public doShortcut(e: KeyboardEvent): boolean | 'findMode' {
         if (e.key === 'Escape') {
             // unFocus input
             if (document.activeElement.tagName.toLowerCase() === 'input') {

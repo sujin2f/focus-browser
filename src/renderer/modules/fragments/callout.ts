@@ -12,18 +12,22 @@ export class Callout extends Element<HTMLDivElement> {
 
     constructor(props: Partial<ElementProps<null>> = {}) {
         super({ tag: 'div', ...props })
-        this.element.classList.add(
+        this.className(
             'p-3',
             'w-full',
             'border',
             'border-transparent',
-            'bg-zinc-800',
+            'bg-zinc-100',
+            'dark:bg-zinc-800',
             'rounded-md',
-            'text-center',
+            'flex',
+            'flex-col',
+            'mr-auto',
+            'ml-auto',
         )
 
         this.button = new Button({
-            className: ['mt-3', '-mb-3'],
+            className: ['mb-3'],
             onClick: (e) => {
                 e.preventDefault()
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {

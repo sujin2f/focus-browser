@@ -3,7 +3,6 @@ import { A_Page } from '@home/modules/pages/abs_page'
 import { Element } from '@home/modules/fragments'
 import { Heading } from '@home/modules/fragments/heading'
 import { Button } from '@home/modules/fragments/button'
-import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { ipcRenderer } from '@home/utils'
 import { Channel, PageType, BROWSER } from '@src/common/constants'
@@ -13,10 +12,6 @@ export class Offline extends A_Page {
 
     refresh(): void {
         this.root.reset()
-
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
 
         const title = new Heading(1, { className: ['text-center'] }).append(
             'No internet',

@@ -5,6 +5,7 @@ import { Button } from '@home/modules/fragments/button'
 import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
 import { ipcRenderer } from '@home/utils'
 import {
@@ -12,6 +13,7 @@ import {
     RequestHandler,
     TableAction,
     PageType,
+    CTRL,
 } from '@src/common/constants'
 
 export class History extends A_PageWithTable<NavigationEntry> {
@@ -110,14 +112,21 @@ export class History extends A_PageWithTable<NavigationEntry> {
             this.helpText = new Element({ tag: 'section' })
             return
         }
-        const callout = new Callout({ className: ['mb-4'] }).append(
+
+        const callout = new Callout({
+            className: ['mb-4', 'max-w-2xl'],
+        }).append(
+            new ShortcodeTable({
+                [`${CTRL}+F`]: 'Find from History',
+                ['⬇︎']: 'Select History',
+                Enter: 'Go to the selected History',
+            }),
             new Element({
                 tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Click title above or press Esc to go back to switch to browser mode.',
-            ),
+                className: ['dark:text-gray-300', 'mb-2'],
+            }).append('Press any key to find History.'),
         )
+
         this.helpText.append(callout)
     }
 }

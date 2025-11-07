@@ -61,10 +61,13 @@ export class Element<
                     items.delete(cls.slice(1))
                     return
                 }
+                if (!cls) {
+                    return
+                }
                 items.add(cls)
             })
 
-            this.classList.add(...items.values())
+            this.className(...items.values())
         }
 
         if (hide) {
@@ -91,10 +94,6 @@ export class Element<
         return this._data[key]
     }
 
-    public get classList() {
-        return this.element.classList
-    }
-
     public set innerHTML(html: string) {
         this.element.innerHTML = html
     }
@@ -103,10 +102,10 @@ export class Element<
      * Show/Hide
      */
     public show() {
-        this.element.classList.remove('hidden')
+        this.className('-hidden')
     }
     public hide() {
-        this.element.classList.add('hidden')
+        this.className('hidden')
     }
     public get hidden() {
         return this.element.classList.contains('hidden')
@@ -170,11 +169,25 @@ export class Element<
         return this
     }
 
+    public className(...className: string[]) {
+        className.forEach((cls) => {
+            if (cls.startsWith('-')) {
+                this.element.classList.remove(cls.slice(1))
+                return
+            }
+            if (!cls) {
+                return
+            }
+            this.element.classList.add(cls)
+        })
+    }
+
     public destroy() {
         this.element.remove()
     }
 
-    public reset() {
+    public reset(): this {
         this.init()
+        return this
     }
 }

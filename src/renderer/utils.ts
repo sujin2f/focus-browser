@@ -3,8 +3,10 @@ import {
     RequestHandler,
     BROWSER,
     PageType,
+    CTRL,
 } from '@src/common/constants'
 import { Element } from '@home/modules/fragments'
+import { Keyboard } from './modules/fragments/keyboard'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -27,22 +29,11 @@ export const navigate = (url?: string, handler?: RequestHandler) => {
     ipcRenderer.send(Channel.SWITCH, BROWSER)
 }
 
-export const shortcutToHtml = (shortcut: string) => {
+export const shortcutToHtml = (shortcut: string): Element<HTMLElement>[] => {
     const keys = shortcut
         .split('+')
         .map((key) => key.trim())
-        .map((key) =>
-            new Element({
-                tag: 'kbd',
-                className: [
-                    'border',
-                    'bg-gray-400',
-                    'text-gray-800',
-                    'pr-1',
-                    'pl-1',
-                ],
-            }).append(key),
-        )
+        .map((key) => new Keyboard().append(key === CTRL ? ctrlOrComm() : key))
 
     return []
         .concat(
@@ -58,3 +49,5 @@ export const shortcutToHtml = (shortcut: string) => {
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
+
+export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl')

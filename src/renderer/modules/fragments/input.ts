@@ -102,43 +102,42 @@ export class Input extends Element<HTMLLabelElement> {
 
     public set label(label: string) {
         if (!label) {
-            this._label.classList.add('hidden')
+            this._label.className('hidden')
             return
         }
-        this._label.classList.remove('hidden')
+        this._label.className('-hidden')
         this._label.innerHTML = label
     }
 
     public set helpText(helpText: string) {
         if (!helpText) {
-            this._helpText.classList.add('hidden')
+            this._helpText.className('hidden')
             return
         }
-        this._helpText.classList.remove('hidden')
+        this._helpText.className('-hidden')
         this._helpText.innerHTML = helpText
     }
 
     public set error(error: string) {
         if (!error) {
-            this._error.classList.add('hidden')
+            this._error.className('hidden')
 
-            this._input.classList.remove(
-                'border-pink-900',
-                'dark:border-pink-600',
-            )
-            this._input.classList.add(
+            this._input.className(
+                '-border-pink-900',
+                '-dark:border-pink-600',
                 'border-gray-300',
                 'dark:border-transparent',
             )
             return
         }
 
-        this._error.classList.remove('hidden')
+        this._error.className('-hidden')
         this._error.innerHTML = error
-        this._input.classList.add('border-pink-900', 'dark:border-pink-600')
-        this._input.classList.remove(
-            'border-gray-300',
-            'dark:border-transparent',
+        this._input.className(
+            'border-pink-900',
+            'dark:border-pink-600',
+            '-border-gray-300',
+            '-dark:border-transparent',
         )
     }
 
@@ -146,7 +145,7 @@ export class Input extends Element<HTMLLabelElement> {
         this._input.element.type = type
 
         if (type !== 'checkbox' && type !== 'radio') {
-            this._input.classList.add(
+            this._input.className(
                 'w-full',
                 'text-lg',
                 'p-3',
@@ -161,7 +160,7 @@ export class Input extends Element<HTMLLabelElement> {
                 'focus:ring-pink-500',
             )
         } else {
-            this._input.classList.add('ml-4')
+            this._input.className('ml-4')
         }
     }
 

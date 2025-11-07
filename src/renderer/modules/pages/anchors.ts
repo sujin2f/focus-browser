@@ -4,14 +4,16 @@ import { Element } from '@home/modules/fragments'
 import { Button } from '@home/modules/fragments/button'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/utils'
+import { ipcRenderer, navigate } from '@home/utils'
 import type { Bookmark } from '@src/common/types'
 import {
     Channel,
     RequestHandler,
     TableAction,
     PageType,
+    CTRL,
 } from '@src/common/constants'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
@@ -52,29 +54,28 @@ export class Anchors extends A_PageWithTable<Bookmark> {
             this.helpText = new Element({ tag: 'section' })
             return
         }
-        const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout({ className: ['mb-4'] }).append(
+
+        const callout = new Callout({
+            className: ['mb-4', 'max-w-2xl'],
+        }).append(
             new Element({
                 tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Click title above or press Esc to go back to switch to browser mode.',
-            ),
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Press ',
-                ...shortcutToHtml(`${command}+/`),
-                ' to add a current page to the anchor.',
-            ),
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300'],
+                className: ['dark:text-gray-300', 'mb-4'],
             }).append(
                 'Anchor is a temporary bookmark that is automatically deleted once you visited.',
             ),
+            new ShortcodeTable({
+                [`${CTRL}+F`]: 'Find from Anchors',
+                ['⬇︎']: 'Select Anchor',
+                Enter: 'Go to the selected Anchor',
+                Del: 'Delete the selected Anchor',
+            }),
+            new Element({
+                tag: 'p',
+                className: ['dark:text-gray-300', 'mb-2'],
+            }).append('Press any key to find Anchor.'),
         )
+
         this.helpText.append(callout)
     }
 

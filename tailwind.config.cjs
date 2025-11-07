@@ -6,5 +6,6 @@ module.exports = {
     safelist: [
         // Safelist specific class names
         'text-4xl',
+        'text-3xl',
     ],
 }

@@ -7,8 +7,9 @@ import { Form } from '@home/modules/fragments/form'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { ipcRenderer, isMac, navigate, shortcutToHtml } from '@home/utils'
+import { ctrlOrComm, ipcRenderer, isMac, navigate } from '@home/utils'
 
 import type { Bookmark } from '@src/common/types'
 import {
@@ -17,6 +18,7 @@ import {
     RequestHandler,
     TableAction,
     PageType,
+    CTRL,
 } from '@src/common/constants'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
@@ -50,11 +52,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             onClick: this.onSwitchAdd.bind(this),
         })
 
-        if (isMac()) {
-            buttonAdd.append('Add Bookmark (⌘D)')
-        } else {
-            buttonAdd.append('Add Bookmark (Ctrl+D)')
-        }
+        buttonAdd.append(`Add Bookmark (${ctrlOrComm()}D)`)
 
         this.buttonGroup.prepend(buttonAdd)
 
@@ -133,38 +131,23 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             this.helpText = new Element({ tag: 'section' })
             return
         }
-        const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout({ className: ['mb-4'] }).append(
+
+        const callout = new Callout({
+            className: ['mb-4', 'max-w-2xl'],
+        }).append(
+            new ShortcodeTable({
+                [`${CTRL}+D`]: 'Add a current page to the Bookmark',
+                [`${CTRL}+F`]: 'Find from Bookmarks',
+                ['⬇︎']: 'Select Bookmark',
+                Enter: 'Go to the selected Bookmark',
+                Del: 'Delete the selected Bookmark',
+            }),
             new Element({
                 tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
+                className: ['dark:text-gray-300', 'mb-2'],
             }).append(
-                'Click title above or press Esc to go back to switch to browser mode.',
+                'Press any key to find Bookmark or navigate to Bookmark shortcut.',
             ),
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Press ',
-                ...shortcutToHtml(`${command}+D`),
-                ' to add a current page to the bookmark.',
-            ),
-            new Element({ tag: 'p', className: ['text-gray-300'] })
-                .append(
-                    'Once you register a shortcut to a bookmark, you can access there quickly',
-                    new Element({ tag: 'br' }),
-                )
-                .append(
-                    'For example, if you set ',
-                    ...shortcutToHtml('A'),
-                    ', ',
-                    'press ',
-                    ...shortcutToHtml(`${command}+\``),
-                    ', ',
-                    ...shortcutToHtml('B'),
-                    ', and ',
-                    ...shortcutToHtml('A'),
-                ),
         )
         this.helpText.append(callout)
     }
@@ -379,17 +362,9 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             }
         }
 
-        if (super.doShortcut(e)) {
-            return
-        }
-
-        // User input Shortcut or find
-        if (
-            document.activeElement.tagName.toLowerCase() !== 'input' &&
-            e.location === e.DOM_KEY_LOCATION_STANDARD
-        ) {
+        if (super.doShortcut(e) === 'findMode') {
             this.shortcutKeyIn = ''
-            this.changeMode(PageMode.FIND)
+            return
         }
     }
 

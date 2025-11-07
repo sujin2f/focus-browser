@@ -22,12 +22,10 @@ export class Logger {
     }
 
     private logger: I_Logger | Console = {
-        /* eslint-disable @typescript-eslint/no-unused-vars */
         error: (..._: unknown[]) => {},
         warn: (..._: unknown[]) => {},
         info: (..._: unknown[]) => {},
         log: (..._: unknown[]) => {},
-        /* eslint-enable @typescript-eslint/no-unused-vars */
         initialize: () => {},
     }
 

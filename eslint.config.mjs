@@ -7,5 +7,13 @@ export default defineConfig(
     tseslint.configs.recommended,
     {
         ignores: ['**/*.cjs'],
+        rules: {
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    argsIgnorePattern: '_',
+                },
+            ],
+        },
     },
 )

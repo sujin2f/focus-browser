@@ -189,7 +189,6 @@ export class ElectronBlocker extends FiltersEngine {
     // ----------------------------------------------------------------------- //
 
     public onIsMutationObserverEnabled = async (
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _: Electron.IpcMainInvokeEvent,
     ): Promise<boolean> => {
         return this.config.enableMutationObserver

@@ -2,7 +2,6 @@ import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
 import { Input } from '@home/modules/fragments/input'
-import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { Channel, PageType, RequestHandler } from '@src/common/constants'
 import { ipcRenderer, navigate } from '@home/utils'
@@ -32,10 +31,6 @@ export class Find extends A_Page {
 
     refresh(): void {
         this.root.reset()
-
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
 
         const field = this.field
         const container = this.container.append(field)

@@ -5,9 +5,8 @@ import { Input } from '@home/modules/fragments/input'
 import { Title } from '@home/modules/fragments/title'
 import { Select } from '@home/modules/fragments/select'
 import { Button } from '@home/modules/fragments/button'
-import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { ipcRenderer, isMac } from '@home/utils'
+import { ipcRenderer, ctrlOrComm } from '@home/utils'
 import type { Info } from '@src/common/types'
 import {
     Channel,
@@ -185,7 +184,6 @@ export class Setting extends A_Page {
     }
 
     private get frame() {
-        const shortcut = isMac() ? '⌘' : 'Ctrl+'
         const frame = new Input({
             type: 'checkbox',
             checked: window.controller.setting.frame,
@@ -196,7 +194,7 @@ export class Setting extends A_Page {
                 window.controller.setting.frame = frame.checked
             },
             label: 'Show Native Frame',
-            helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${shortcut}Escape.`,
+            helpText: `Note: This requires restarting the application. You can toggle window fit to screen by pressing ${ctrlOrComm()}Esc.`,
         })
         return frame
     }
@@ -226,10 +224,6 @@ export class Setting extends A_Page {
 
     refresh() {
         this.root.reset()
-
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
 
         const wrapper = new Element({
             tag: 'section',

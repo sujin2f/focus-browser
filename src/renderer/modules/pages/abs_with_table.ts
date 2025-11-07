@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { DataTable } from '@home/modules/fragments/data-table'
+import { DataTable } from '@src/renderer/modules/fragments/table-data'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
@@ -11,7 +11,7 @@ import { Title } from '@home/modules/fragments/title'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
 import { PageMode, TableAction } from '@src/common/constants'
-import { isMac, navigate } from '@home/utils'
+import { ctrlOrComm, isMac, navigate } from '@home/utils'
 
 /**
  * Page with Table
@@ -105,11 +105,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
             this.tableWrapper,
         )
 
-        if (isMac()) {
-            this.buttonFind.append('Find (⌘F)')
-        } else {
-            this.buttonFind.append('Find (Ctrl+F)')
-        }
+        this.buttonFind.append(`Find (${ctrlOrComm()}F)`)
 
         // Heads
         this.table.appendHead(...this.getTHeads())
@@ -200,10 +196,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
     protected focusTable() {
         this.table.children.forEach((row) => {
             if (row === this._cursor) {
-                row.classList.add(...this.STYLE_FOCUSED)
+                row.className(...this.STYLE_FOCUSED)
                 return
             }
-            row.classList.remove(...this.STYLE_FOCUSED)
+            row.className(...this.STYLE_FOCUSED.map((v) => `-${v}`))
         })
     }
 
@@ -258,7 +254,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
         }
     }
 
-    public doShortcut(e: KeyboardEvent): boolean {
+    public doShortcut(e: KeyboardEvent): boolean | 'findMode' {
         // Find Key ⌘F
         if (e.code === 'KeyF') {
             if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
@@ -323,6 +319,15 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     this.action(TableAction.DELETE)
                     return true
             }
+        }
+
+        // User input Shortcut or find
+        if (
+            document.activeElement.tagName.toLowerCase() !== 'input' &&
+            e.location === e.DOM_KEY_LOCATION_STANDARD
+        ) {
+            this.changeMode(PageMode.FIND)
+            return 'findMode'
         }
 
         return super.doShortcut(e)

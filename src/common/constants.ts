@@ -141,5 +141,4 @@ export enum LogTypes {
 
 export enum CustomEvents {
     SWITCH = 'switch',
-    UPDATE_SETTINGS = 'update-settings',
 }

@@ -70,4 +70,3 @@ export type ElementProps<T> = {
 }
 
 export type EventSwitch = CustomEvent<PageType>
-export type EventModifyOption = CustomEvent<Partial<Info>>

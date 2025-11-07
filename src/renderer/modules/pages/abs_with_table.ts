@@ -259,6 +259,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
         if (e.code === 'KeyF') {
             if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                 this.changeMode(PageMode.FIND)
+                e.preventDefault()
                 return true
             }
         }
@@ -268,11 +269,13 @@ export abstract class A_PageWithTable<T> extends A_Page {
                 case 'ArrowDown':
                     if (!e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
                         this.arrowDown()
+                        e.preventDefault()
                         return true
                     }
                     break
                 case 'Escape':
                     this.changeMode(PageMode.LIST)
+                    e.preventDefault()
                     break
             }
         } else {
@@ -282,16 +285,20 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         this.searchKeyword = ''
                         this.filterTable()
                         this.changeMode(PageMode.LIST)
+                        e.preventDefault()
                         return true
                     }
                     navigate()
+                    e.preventDefault()
                     return true
                 case 'ArrowUp':
                     this.arrowUp()
+                    e.preventDefault()
                     return true
 
                 case 'ArrowDown':
                     this.arrowDown()
+                    e.preventDefault()
                     return true
 
                 case 'Enter':
@@ -300,9 +307,11 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     }
                     if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                         this.action(TableAction.EDIT)
+                        e.preventDefault()
                         return true
                     }
                     this.action(TableAction.EXECUTE)
+                    e.preventDefault()
                     return true
 
                 case ' ':
@@ -310,6 +319,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         return
                     }
                     this.action(TableAction.EXECUTE)
+                    e.preventDefault()
                     return true
 
                 case 'Delete':
@@ -317,6 +327,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         return
                     }
                     this.action(TableAction.DELETE)
+                    e.preventDefault()
                     return true
             }
         }
@@ -327,6 +338,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
             e.location === e.DOM_KEY_LOCATION_STANDARD
         ) {
             this.changeMode(PageMode.FIND)
+            e.preventDefault()
             return 'findMode'
         }
 

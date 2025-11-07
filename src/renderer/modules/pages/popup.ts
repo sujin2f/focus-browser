@@ -119,9 +119,11 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     refresh(): void {
+        this._cursor = null
+        this.renderTable()
+
+        this.helpText.innerHTML = ''
         if (!window.controller.setting.helpText) {
-            this.helpText.destroy()
-            this.helpText = new Element({ tag: 'section' })
             return
         }
 

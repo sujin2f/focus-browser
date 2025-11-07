@@ -126,9 +126,8 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
         this._cursor = null
         this.renderTable()
 
+        this.helpText.innerHTML = ''
         if (!window.controller.setting.helpText) {
-            this.helpText.destroy()
-            this.helpText = new Element({ tag: 'section' })
             return
         }
 

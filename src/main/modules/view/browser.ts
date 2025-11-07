@@ -74,38 +74,44 @@ export class BrowserView extends WebContentsView {
 
     /**
      * Load a URL in the browser view
-     * @param url URL to load
+     * @param keyword URL to load or search string
      */
-    public async loadURL(url: string) {
-        this.webContents.stop()
-        await this.setAdBlocker()
-        let _url = url
-
-        // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
-        const hasSchema = /^[a-z]+:\/\//i.test(_url)
-
-        // If the schema is missing, prepend 'http://' to allow the URL constructor
-        // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
-        Logger.getInstance().log('Try to load URL: ', _url, hasSchema)
-        try {
-            _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
-        } catch {
-            /* empty */
+    public async loadURL(keyword: string) {
+        const trimmed = keyword.trim()
+        if (!keyword || !trimmed) {
+            return
         }
 
-        this.webContents.loadURL(_url).catch((e) => {
+        this.webContents.stop()
+        await this.setAdBlocker()
+
+        // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
+        const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
+        const url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
+
+        // Search Keyword
+        if (!url.hostname.includes('.')) {
+            this.searchKeyword(trimmed)
+            return
+        }
+
+        this.webContents.loadURL(url.toString()).catch((e) => {
             // TODO for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
-                this._failedUrl = _url
+                this._failedUrl = url.toString()
                 BrowserWindow.getInstance().switch(PageType.OFFLINE)
                 return
             }
 
-            const searchEngine = Status.getInstance().get('searchEngine')
-            this.webContents.loadURL(`${SearchEngine[searchEngine]}${url}`)
-            this._failedUrl = null
+            this.searchKeyword(trimmed)
         })
+    }
+
+    private searchKeyword(keyword: string) {
+        const searchEngine = Status.getInstance().get('searchEngine')
+        this._failedUrl = null
+        this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
     }
 
     /**

@@ -85,7 +85,7 @@ class MockHistory {
     parse = jest.fn()
     get = jest.fn()
     current = {
-        url: 'current-url',
+        url: 'http://example.com',
     }
 }
 

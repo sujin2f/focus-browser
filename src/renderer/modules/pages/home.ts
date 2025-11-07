@@ -112,8 +112,8 @@ export class Home extends A_Page {
     }
 
     private renderHelpText() {
+        this.helpText.innerHTML = ''
         if (!window.controller.setting.helpText) {
-            this.helpText.reset()
             return
         }
 
@@ -167,11 +167,11 @@ export class Home extends A_Page {
             }
         } else {
             if (e.key === 'Enter') {
-                if (!this.search.value) {
+                if (!this.search.value || !this.search.value.trim()) {
                     return
                 }
 
-                navigate(this.search.value)
+                navigate(this.search.value.trim())
                 this.search.value = ''
                 return
             }

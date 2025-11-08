@@ -274,6 +274,8 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     }
                     break
                 case 'Escape':
+                    this.searchKeyword = ''
+                    this.filterTable()
                     this.changeMode(PageMode.LIST)
                     e.preventDefault()
                     break

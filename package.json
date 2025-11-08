@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.1.8",
+    "version": "0.1.7-beta.1",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
@@ -13,7 +13,11 @@
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.cjs --config-name=renderer",
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package": "electron-builder build --publish never",
+        "package": "npm run package:mac --ignore && npm run package:linux --ignore && npm run package:win --ignore && npm run rename",
+        "package:mac": "electron-builder build --publish never --mac && npm run rename",
+        "package:linux": "electron-builder build --publish never --linux && npm run rename",
+        "package:win": "electron-builder build --publish never --win && npm run rename",
+        "rename": "node ./release/rename-packages.mjs",
         "test": "jest --no-cache --forceExit --coverage",
         "prepare": "husky"
     },

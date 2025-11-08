@@ -109,8 +109,18 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.BACK]: {
                     accelerator: 'Command+[',
                 },
+                [Menu.BACK_HIDDEN]: {
+                    accelerator: 'Command+Left',
+                    visible: false,
+                    acceleratorWorksWhenHidden: true,
+                },
                 [Menu.FORWARD]: {
                     accelerator: 'Command+]',
+                },
+                [Menu.FORWARD_HIDDEN]: {
+                    accelerator: 'Command+Right',
+                    visible: false,
+                    acceleratorWorksWhenHidden: true,
                 },
                 [Menu.s0002]: {},
                 [Menu.STOP]: {
@@ -258,8 +268,18 @@ export const SHORTCUTS: Record<SystemType, ShortcutStore> = {
                 [Menu.BACK]: {
                     accelerator: 'Control+[',
                 },
+                [Menu.BACK_HIDDEN]: {
+                    accelerator: 'Control+Left',
+                    visible: false,
+                    acceleratorWorksWhenHidden: true,
+                },
                 [Menu.FORWARD]: {
                     accelerator: 'Control+]',
+                },
+                [Menu.FORWARD_HIDDEN]: {
+                    accelerator: 'Control+Right',
+                    visible: false,
+                    acceleratorWorksWhenHidden: true,
                 },
                 [Menu.s0002]: {},
                 [Menu.STOP]: {

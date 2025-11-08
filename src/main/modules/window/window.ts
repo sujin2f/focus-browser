@@ -42,6 +42,7 @@ export class BrowserWindow extends AbsWindowIPC {
                 session: session.fromPartition('persist:my-partition'),
                 partition: 'persist:my-partition',
                 navigateOnDragDrop: true,
+                contextIsolation: false,
             },
         })
         this.contentView = this.browser

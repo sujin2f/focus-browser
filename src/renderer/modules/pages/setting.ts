@@ -185,6 +185,7 @@ export class Setting extends A_Page {
                 } satisfies Partial<Info>)
             },
             options: SearchEngine,
+            value: this.settings.searchEngine,
         })
         return searchEngine
     }

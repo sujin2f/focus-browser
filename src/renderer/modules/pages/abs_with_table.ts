@@ -338,7 +338,6 @@ export abstract class A_PageWithTable<T> extends A_Page {
             e.location === e.DOM_KEY_LOCATION_STANDARD
         ) {
             this.changeMode(PageMode.FIND)
-            e.preventDefault()
             return 'findMode'
         }
 

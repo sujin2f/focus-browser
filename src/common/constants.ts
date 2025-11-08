@@ -1,4 +1,4 @@
-import type { StatusProps } from '@src/types'
+import type { StatusProps } from '@src/common/types'
 
 export const MAX_HISTORY = 200
 export const CURRENT_PAGE_INFO = 'current-page-info'
@@ -7,6 +7,7 @@ export const CURRENT_PAGE_INFO = 'current-page-info'
  * Control centre pages
  */
 export enum PageType {
+    RELOAD,
     WELCOME,
     HOME,
     ADDRESS,
@@ -29,6 +30,8 @@ export enum Channel {
     ANCHOR = 'ANCHOR',
     POPUP_BLOCKER = 'POPUP_BLOCKER',
     FIND = 'FIND',
+    LOG = 'LOG',
+    MAIN_PROCESS = 'MAIN_PROCESS',
 }
 
 export enum RequestHandler {
@@ -104,6 +107,7 @@ export enum Menu {
     s0001 = 's0001',
     s0002 = 's0002',
     s0003 = 's0003',
+    TEST = 'Run Test Block',
 }
 
 export const SearchEngine = {
@@ -125,4 +129,23 @@ export const DEFAULT_STATUS: StatusProps = {
     adBlocker: true,
     searchEngine: 'DUCKDUCKGO',
     frame: true,
+}
+
+export const CTRL = 'ControlOrCommand'
+
+export enum LogTypes {
+    ERROR,
+    WARN,
+    LOG,
+    INFO,
+}
+
+export enum MainEventTypes {
+    TITLE = 'TITLE',
+    SWITCH = 'SWITCH',
+    CONTEXT_MENU = 'CONTEXT_MENU',
+}
+
+export enum CustomEvents {
+    SWITCH = 'switch',
 }

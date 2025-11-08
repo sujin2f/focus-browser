@@ -1,7 +1,7 @@
 import { A_Page } from '@home/modules/pages/abs_page'
 
 import { Element } from '@home/modules/fragments'
-import { DataTable } from '@src/renderer/modules/fragments/data-table'
+import { DataTable } from '@src/renderer/modules/fragments/table-data'
 import { Button } from '@home/modules/fragments/button'
 import { Input } from '@home/modules/fragments/input'
 import { Form } from '@home/modules/fragments/form'
@@ -10,8 +10,8 @@ import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { Title } from '@home/modules/fragments/title'
 import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { PageMode, TableAction } from '@src/constants'
-import { isMac, navigate } from '@home/util'
+import { PageMode, TableAction } from '@src/common/constants'
+import { ctrlOrComm, isMac, navigate } from '@home/utils'
 
 /**
  * Page with Table
@@ -88,7 +88,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
     protected init() {
         this.root.innerHTML = ''
 
-        if (!window.controller.setting.frame) {
+        if (!this.settings.frame) {
             new TitleBar(this.root)
         }
 
@@ -98,18 +98,14 @@ export abstract class A_PageWithTable<T> extends A_Page {
         this.renderFindForm()
 
         this.root.append(
-            this.title.element,
-            this.buttonGroup.element,
-            this.forms.element,
-            this.helpText.element,
-            this.tableWrapper.element,
+            this.title,
+            this.buttonGroup,
+            this.forms,
+            this.helpText,
+            this.tableWrapper,
         )
 
-        if (isMac()) {
-            this.buttonFind.append('Find (⌘F)')
-        } else {
-            this.buttonFind.append('Find (Ctrl+F)')
-        }
+        this.buttonFind.append(`Find (${ctrlOrComm()}F)`)
 
         // Heads
         this.table.appendHead(...this.getTHeads())
@@ -200,10 +196,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
     protected focusTable() {
         this.table.children.forEach((row) => {
             if (row === this._cursor) {
-                row.classList.add(...this.STYLE_FOCUSED)
+                row.className(...this.STYLE_FOCUSED)
                 return
             }
-            row.classList.remove(...this.STYLE_FOCUSED)
+            row.className(...this.STYLE_FOCUSED.map((v) => `-${v}`))
         })
     }
 
@@ -258,11 +254,12 @@ export abstract class A_PageWithTable<T> extends A_Page {
         }
     }
 
-    public doShortcut(e: KeyboardEvent): boolean {
+    public doShortcut(e: KeyboardEvent): boolean | 'findMode' {
         // Find Key ⌘F
         if (e.code === 'KeyF') {
             if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                 this.changeMode(PageMode.FIND)
+                e.preventDefault()
                 return true
             }
         }
@@ -272,11 +269,15 @@ export abstract class A_PageWithTable<T> extends A_Page {
                 case 'ArrowDown':
                     if (!e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
                         this.arrowDown()
+                        e.preventDefault()
                         return true
                     }
                     break
                 case 'Escape':
+                    this.searchKeyword = ''
+                    this.filterTable()
                     this.changeMode(PageMode.LIST)
+                    e.preventDefault()
                     break
             }
         } else {
@@ -286,16 +287,20 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         this.searchKeyword = ''
                         this.filterTable()
                         this.changeMode(PageMode.LIST)
+                        e.preventDefault()
                         return true
                     }
                     navigate()
+                    e.preventDefault()
                     return true
                 case 'ArrowUp':
                     this.arrowUp()
+                    e.preventDefault()
                     return true
 
                 case 'ArrowDown':
                     this.arrowDown()
+                    e.preventDefault()
                     return true
 
                 case 'Enter':
@@ -304,9 +309,11 @@ export abstract class A_PageWithTable<T> extends A_Page {
                     }
                     if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                         this.action(TableAction.EDIT)
+                        e.preventDefault()
                         return true
                     }
                     this.action(TableAction.EXECUTE)
+                    e.preventDefault()
                     return true
 
                 case ' ':
@@ -314,6 +321,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         return
                     }
                     this.action(TableAction.EXECUTE)
+                    e.preventDefault()
                     return true
 
                 case 'Delete':
@@ -321,8 +329,18 @@ export abstract class A_PageWithTable<T> extends A_Page {
                         return
                     }
                     this.action(TableAction.DELETE)
+                    e.preventDefault()
                     return true
             }
+        }
+
+        // User input Shortcut or find
+        if (
+            document.activeElement.tagName.toLowerCase() !== 'input' &&
+            e.location === e.DOM_KEY_LOCATION_STANDARD
+        ) {
+            this.changeMode(PageMode.FIND)
+            return 'findMode'
         }
 
         return super.doShortcut(e)

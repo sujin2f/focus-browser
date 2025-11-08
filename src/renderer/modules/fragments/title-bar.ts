@@ -1,11 +1,11 @@
 import { Element } from '.'
-import { ipcRenderer } from '@home/util'
-import { Channel, RequestHandler } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import { Channel, RequestHandler } from '@src/common/constants'
 
-import type { Info } from '@src/types'
+import type { Info } from '@src/common/types'
 
 export class TitleBar extends Element<HTMLFormElement> {
-    public constructor(root: HTMLElement) {
+    public constructor(root: Element<HTMLElement>) {
         super({
             tag: 'div',
             className: [
@@ -17,31 +17,31 @@ export class TitleBar extends Element<HTMLFormElement> {
                 'left-0',
                 'pt-2',
                 'pb-2',
-                'flex',
-                'justify-center',
+                'grid',
+                'grid-cols-2',
             ],
         })
 
         const maximize = new Element({
             tag: 'div',
-            className: ['cursor-pointer'],
+            className: ['cursor-pointer', 'text-right'],
         })
-            .append('Double Click to Maximize')
+            .append('Double Click to Maximize |')
             .addEventListener('dblclick', function () {
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     maximize: true,
                 } satisfies Partial<Info>)
             })
-        const separator = new Element({
+        const drag = new Element({
             tag: 'div',
-            className: ['ml-3', 'mr-3'],
-        }).append('|')
-        const drag = new Element({ tag: 'div', className: ['cursor-pointer'] })
+            className: ['cursor-pointer', 'pl-1'],
+        })
             .append('Move Window')
             .setAttribute('style', '-webkit-app-region:drag')
-        this.append(maximize, separator, drag)
 
-        root.append(this.element)
-        root.classList.add('pt-5')
+        this.append(maximize, drag)
+
+        root.append(this)
+        root.className('pt-5')
     }
 }

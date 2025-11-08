@@ -11,8 +11,8 @@ import {
     Request,
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
-import { adBlockerPreload } from '@src/main/util'
-import { Logger } from '@main/modules/logger'
+import { adBlockerPreload } from '@src/main/utils'
+import { Logger } from '@src/common/logger'
 
 const { ipcMain } = electron
 
@@ -189,7 +189,6 @@ export class ElectronBlocker extends FiltersEngine {
     // ----------------------------------------------------------------------- //
 
     public onIsMutationObserverEnabled = async (
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _: Electron.IpcMainInvokeEvent,
     ): Promise<boolean> => {
         return this.config.enableMutationObserver

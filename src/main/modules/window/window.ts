@@ -4,9 +4,9 @@ import {
     type BaseWindowConstructorOptions,
 } from 'electron'
 
-import { preload, resolveHtmlPath } from '@main/util'
-import type { Scenes } from '@src/types'
-import { PageType, Channel } from '@src/constants'
+import { preload, resolveHtmlPath } from '@src/main/utils'
+import type { Scenes } from '@src/common/types'
+import { PageType, Channel } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
@@ -15,32 +15,20 @@ import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { Logger } from '@main/modules/logger'
+import { Logger } from '@src/common/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
 /**
  * All starts with here
  */
 export class BrowserWindow extends AbsWindowIPC {
-    // Singleton for calling switch() from views
-    static instance: BrowserWindow
-    static getInstance(options?: BaseWindowConstructorOptions): BrowserWindow {
-        if (!BrowserWindow.instance) {
-            BrowserWindow.instance = new BrowserWindow(options)
-            BrowserWindow.instance.init()
-        }
-        return BrowserWindow.instance
-    }
-
     constructor(options?: BaseWindowConstructorOptions) {
+        Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
         const bounds = Status.getInstance().getBounds(this.getBounds())
         this.setBounds(bounds)
-    }
 
-    public init() {
-        Logger.getInstance().log('BrowserWindow::init()')
         this.initBrowser()
         this.initCentre()
 

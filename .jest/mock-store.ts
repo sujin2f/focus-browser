@@ -1,5 +1,5 @@
 import { SHORTCUTS } from '@main/settings/shortcut'
-import { SystemType } from '@src/constants'
+import { SystemType } from '@src/common/constants'
 
 export const anchorPush = jest.fn(() => true)
 export const anchorRemove = jest.fn(() => true)
@@ -77,6 +77,7 @@ export const status = () => ({
             push: jest.fn(() => true),
             getBounds: jest.fn(),
             merge: statusMerge,
+            data: {},
         }),
     },
 })
@@ -85,7 +86,7 @@ class MockHistory {
     parse = jest.fn()
     get = jest.fn()
     current = {
-        url: 'current-url',
+        url: 'http://example.com',
     }
 }
 

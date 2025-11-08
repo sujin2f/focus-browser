@@ -5,7 +5,7 @@ import {
     PageType,
     BROWSER,
     SearchEngine,
-} from '@src/constants'
+} from '@src/common/constants'
 
 /**
  * stores in status.json
@@ -35,7 +35,6 @@ export type Info = Partial<
         adBlockerStatus: boolean | null
         findText: string
         maximize: boolean
-        version: string
     }
 >
 
@@ -69,3 +68,5 @@ export type ElementProps<T> = {
     props: T
     onClick: (ev: HTMLElementEventMap['click']) => unknown
 }
+
+export type EventSwitch = CustomEvent<PageType>

@@ -5,8 +5,3 @@ global.window.electron = {
         once: jest.fn(),
     },
 }
-
-class Controller {
-    setting = { frame: false }
-}
-global.window.controller = new Controller()

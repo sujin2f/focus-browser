@@ -7,22 +7,25 @@ import {
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
+    ipcMain,
 } from 'electron'
 
-import type { Scenes, MenuBlock } from '@src/types'
+import type { Scenes, MenuBlock } from '@src/common/types'
 import {
     MenuCategory,
     Menu as EnumMenu,
     PageType,
     BROWSER,
-} from '@src/constants'
+    Channel,
+} from '@src/common/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { Logger } from '@main/modules/logger'
+import { Logger } from '@src/common/logger'
+import { isBeta, isTest } from '@src/common/utils'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -171,6 +174,28 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         menu[MenuCategory.NAVIGATE][EnumMenu.STOP].click = () => {
             this.current.webContents.stop()
             this.browser.webContents.stopFindInPage('clearSelection')
+        }
+
+        // For Development purpose
+        if (isBeta() && !isTest()) {
+            menu[MenuCategory.EDIT][EnumMenu.TEST] = {
+                label: 'Run Test Block',
+                accelerator: 'CommandOrControl+W',
+                click: () => {
+                    Logger.getInstance().info(
+                        '==== Test Code Block Start =====',
+                    )
+                    ipcMain.emit(
+                        Channel.MAIN_PROCESS,
+                        'test1',
+                        'test2',
+                        'test3',
+                    )
+                    Logger.getInstance().info(
+                        '==== Test Code Block End =======',
+                    )
+                },
+            }
         }
 
         return menu

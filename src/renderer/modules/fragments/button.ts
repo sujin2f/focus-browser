@@ -1,5 +1,5 @@
 import { Element } from '@home/modules/fragments'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 type ButtonTypes = 'submit' | 'reset' | 'button'
 type Props = {

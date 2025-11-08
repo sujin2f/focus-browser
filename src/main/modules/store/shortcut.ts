@@ -1,6 +1,6 @@
 import { Store } from '@main/modules/store/store'
 import { SHORTCUTS } from '@main/settings/shortcut'
-import type { ShortcutStore } from '@src/types'
+import type { ShortcutStore } from '@src/common/types'
 
 export class Shortcut extends Store<ShortcutStore> {
     static instance: Shortcut

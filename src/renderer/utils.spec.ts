@@ -15,7 +15,7 @@ describe('src/renderer/util', () => {
 
     test('module loads and exposes helpers and ipcRenderer', () => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const util = require('./util')
+        const util = require('./utils')
         expect(util).toBeDefined()
         expect(util.ipcRenderer).toBeDefined()
         expect(typeof util.ipcRenderer.send).toBe('function')

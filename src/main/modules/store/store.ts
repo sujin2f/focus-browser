@@ -52,7 +52,6 @@ export class Store<T extends JsonObject> {
     }
 
     // ...and this will set it
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     save(..._: unknown[]) {
         // Wait, I thought using the node.js' synchronous APIs was bad form?
         // We're not writing a server so there's not nearly the same IO demand on the process

@@ -4,30 +4,20 @@ import { Element } from '@home/modules/fragments'
 import { ButtonGroup } from '@home/modules/fragments/button-group'
 import { Button } from '@home/modules/fragments/button'
 import { Heading } from '@home/modules/fragments/heading'
-import { TitleBar } from '@home/modules/fragments/title-bar'
 
-import { PageType } from '@src/constants'
-import { isMac, navigate } from '@home/util'
+import { CTRL, PageType } from '@src/common/constants'
+import { ctrlOrComm, navigate } from '@home/utils'
+import { ShortcodeTable } from '../fragments/table-shortcode'
 
 export class Welcome extends A_Page {
     public readonly page = PageType.WELCOME
 
-    constructor() {
-        super()
+    private get welcome() {
+        return new Heading(1).append('Single Tab Browser for Fast Navigation')
+    }
 
-        this.root.innerHTML = ''
-
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
-
-        // H1
-        const heading = new Heading(1).append(
-            'Single Tab Browser for Fast Navigation',
-        )
-
-        // P
-        const p = new Element<HTMLParagraphElement>({
+    private get paragraph() {
+        return new Element<HTMLParagraphElement>({
             tag: 'p',
             className: ['text-xl', 'text-center', 'text-gray-400', 'mb-5'],
         }).append(
@@ -45,30 +35,28 @@ export class Welcome extends A_Page {
             }).append('keyboard shortcut'),
             ' navigation.',
         )
+    }
 
-        // Buttons
+    private get buttons() {
         const btnCentre = new Button({
             onClick: () => {
                 location.href = 'index.html'
             },
         })
-        if (isMac()) {
-            btnCentre.append('Control Center (⌘`)')
-        } else {
-            btnCentre.append('Control Center (Ctrl+`)')
-        }
+        btnCentre.append(`Control Center (${ctrlOrComm()}\`)`)
 
-        const buttons = new ButtonGroup().append(
+        return new ButtonGroup().append(
             btnCentre,
             new Button({
                 onClick: () => {
                     navigate()
                 },
-            }).append('Web Browser (Escape)'),
+            }).append('Web Browser (Esc)'),
         )
+    }
 
-        // Container
-        const container = new Element<HTMLDivElement>({
+    private get container() {
+        return new Element<HTMLDivElement>({
             tag: 'div',
             className: [
                 'flex',
@@ -76,9 +64,33 @@ export class Welcome extends A_Page {
                 'h-dvh',
                 'justify-center',
                 'items-center',
+                'max-w-4xl',
+                'm-auto',
             ],
-        }).append(heading, p, buttons)
-        this.root.appendChild(container.element)
+        })
+    }
+
+    constructor() {
+        super()
+
+        const table = new ShortcodeTable({
+            Esc: 'Switch to browser mode',
+            [`${CTRL}+L`]: 'Input URL to navigate or search text',
+            [`${CTRL}+\``]: 'Show Control Centre',
+            [`${CTRL}+D`]: '[Browser Mode] Add Bookmark',
+            [`${CTRL}+/`]: '[Browser Mode] Add Anchor(Instant bookmark)',
+        })
+
+        this.root
+            .reset()
+            .append(
+                this.container.append(
+                    this.welcome,
+                    this.paragraph,
+                    this.buttons,
+                    table,
+                ),
+            )
     }
 
     refresh(): void {}

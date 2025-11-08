@@ -1,8 +1,8 @@
-import type { Info } from '@src/types'
-import { Channel, RequestHandler, TableAction, PageType } from '@src/constants'
-import { checkElectron, ipcRenderer } from '@home/util'
+import type { EventSwitch } from '@src/common/types'
+import { PageType, CustomEvents, Channel } from '@src/common/constants'
+import { checkElectron, ipcRenderer } from '@home/utils'
 
-import { A_Page } from '@src/renderer/modules/pages/abs_page'
+import { A_Page } from '@home/modules/pages/abs_page'
 import { Home } from '@home/modules/pages/home'
 import { Bookmarks } from '@home/modules/pages/bookmarks'
 import { History } from '@home/modules/pages/history'
@@ -13,10 +13,9 @@ import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Offline } from '@home/modules/pages/offline'
 import { Find } from '@home/modules/pages/find'
-import { CURRENT_PAGE_INFO } from '@src/constants'
+import { Logger } from '@src/common/logger'
 
 export class Controller {
-    public setting: Info = {}
     private _currentPage: A_Page
     public get currentPage() {
         return this._currentPage
@@ -30,37 +29,28 @@ export class Controller {
                 this.currentPage.doShortcut(e),
             )
 
+            document.addEventListener(CustomEvents.SWITCH, (e: EventSwitch) => {
+                Logger.getInstance().log(`[Renderer] Switch to ${e.detail}`)
+                this.switch(e.detail)
+            })
+
             this.initIPC()
             this.switch(PageType.HOME)
         })
-    }
-
-    private requestInfo(isCurrentPageInfo: boolean = false) {
-        ipcRenderer.send(
-            Channel.INFO,
-            RequestHandler.REQUEST,
-            isCurrentPageInfo && CURRENT_PAGE_INFO,
-        )
     }
 
     private initIPC() {
         ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
             this.switch(scene)
         })
-        ipcRenderer.on(
-            Channel.INFO,
-            (handler: RequestHandler, setting: Info) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
-                this.setting = { ...this.setting, ...setting }
-                this._currentPage.action(TableAction.INFO)
-            },
-        )
     }
 
-    switch(page: PageType) {
-        this.requestInfo(!!this.setting.maxHistory)
+    private switch(page: PageType) {
+        if (page === PageType.RELOAD) {
+            // reload
+            this._currentPage.refresh()
+            return
+        }
 
         if (this._currentPage && this._currentPage.page === page) {
             return

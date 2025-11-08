@@ -3,10 +3,17 @@ import { A_PageWithTable } from '@home/modules/pages/abs_with_table'
 import { Element } from '@home/modules/fragments'
 import { Callout } from '@home/modules/fragments/callout'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { ipcRenderer } from '@home/util'
-import type { PopupBlocker as T_PopupBlocker } from '@src/types'
-import { TableAction, Channel, RequestHandler, PageType } from '@src/constants'
+import { ipcRenderer } from '@home/utils'
+import type { PopupBlocker as T_PopupBlocker } from '@src/common/types'
+import {
+    TableAction,
+    Channel,
+    RequestHandler,
+    PageType,
+    CTRL,
+} from '@src/common/constants'
 
 export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     order: 'ASC' | 'DESC' = 'DESC'
@@ -14,6 +21,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
     constructor() {
         super()
+        this.requestInfo('helpText')
         this.init()
     }
 
@@ -112,18 +120,26 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     refresh(): void {
-        if (!window.controller.setting.helpText) {
-            this.helpText.destroy()
-            this.helpText = new Element({ tag: 'section' })
+        this._cursor = null
+        this.renderTable()
+
+        this.helpText.innerHTML = ''
+        if (!this.settings.helpText) {
             return
         }
-        const callout = new Callout({ className: ['mb-4'] }).append(
+
+        const callout = new Callout({
+            className: ['mb-4', 'max-w-2xl'],
+        }).append(
+            new ShortcodeTable({
+                [`${CTRL}+F`]: 'Find from Popup Blocker',
+                ['⬇︎']: 'Select Popup Blocker',
+                Enter: 'Toggle Popup Blocker allowance',
+            }),
             new Element({
                 tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Click title above or press Esc to go back to switch to browser mode.',
-            ),
+                className: ['dark:text-gray-300', 'mb-2'],
+            }).append('Press any key to find Popup Blocker.'),
         )
         this.helpText.append(callout)
     }

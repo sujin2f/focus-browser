@@ -2,19 +2,23 @@ import {
     WebContentsView,
     Notification,
     type WebContentsViewConstructorOptions,
+    ipcMain,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
 
-import type { Bookmark } from '@src/types'
-import { PageType, SearchEngine } from '@src/constants'
-import { Logger } from '@main/modules/logger'
+import type { Bookmark } from '@src/common/types'
+import {
+    Channel,
+    MainEventTypes,
+    PageType,
+    SearchEngine,
+} from '@src/common/constants'
+import { Logger } from '@src/common/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
-
-import { BrowserWindow } from '@main/modules/window/window'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -41,28 +45,52 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        BrowserWindow.getInstance().title = 'Loading...'
+
+        ipcMain.emit(
+            Channel.MAIN_PROCESS,
+            null,
+            MainEventTypes.TITLE,
+            'Loading...',
+        )
 
         this.setPopupBlocker()
-        // Events
 
+        // Events
         this.webContents
             // Web Title to App Title
             .on('did-finish-load', () => {
-                BrowserWindow.getInstance().title = this.webContents.getTitle()
-                // Enable pinch zoom
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    this.webContents.getTitle(),
+                )
                 this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
-                BrowserWindow.getInstance().title = title
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    title,
+                )
             })
-            .on(
-                'will-navigate',
-                () => (BrowserWindow.getInstance().title = 'Loading...'),
+            .on('will-navigate', () =>
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.TITLE,
+                    'Loading...',
+                ),
             )
             // Context Menu
             .on('context-menu', (_, params) => {
-                BrowserWindow.getInstance().showContextMenu(params)
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.CONTEXT_MENU,
+                    params,
+                )
             })
 
         this.webContents.setZoomFactor(1)
@@ -74,38 +102,57 @@ export class BrowserView extends WebContentsView {
 
     /**
      * Load a URL in the browser view
-     * @param url URL to load
+     * @param keyword URL to load or search string
      */
-    public async loadURL(url: string) {
-        this.webContents.stop()
-        await this.setAdBlocker()
-        let _url = url
-
-        // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
-        const hasSchema = /^[a-z]+:\/\//i.test(_url)
-
-        // If the schema is missing, prepend 'http://' to allow the URL constructor
-        // to correctly parse it. This handles cases like 'www.google.com' or 'google.com'.
-        Logger.getInstance().log('Try to load URL: ', _url, hasSchema)
-        try {
-            _url = !hasSchema ? new URL(`http://${_url}`).toString() : _url
-        } catch {
-            /* empty */
+    public async loadURL(keyword: string) {
+        const trimmed = keyword.trim()
+        if (!keyword || !trimmed) {
+            return
         }
 
-        this.webContents.loadURL(_url).catch((e) => {
+        this.webContents.stop()
+        await this.setAdBlocker()
+
+        // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
+        const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
+
+        let url: URL
+        try {
+            url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
+        } catch {
+            // Not URL
+            this.searchKeyword(trimmed)
+            return
+        }
+
+        // Search Keyword
+        if (!url.hostname.includes('.')) {
+            this.searchKeyword(trimmed)
+            return
+        }
+
+        await this.webContents.loadURL(url.toString()).catch((e) => {
             // TODO for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
-                this._failedUrl = _url
-                BrowserWindow.getInstance().switch(PageType.OFFLINE)
+                this._failedUrl = url.toString()
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.SWITCH,
+                    PageType.OFFLINE,
+                )
                 return
             }
 
-            const searchEngine = Status.getInstance().get('searchEngine')
-            this.webContents.loadURL(`${SearchEngine[searchEngine]}${url}`)
-            this._failedUrl = null
+            this.searchKeyword(trimmed)
         })
+    }
+
+    private searchKeyword(keyword: string) {
+        const searchEngine = Status.getInstance().get('searchEngine')
+        this._failedUrl = null
+        this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
     }
 
     /**
@@ -223,7 +270,12 @@ export class BrowserView extends WebContentsView {
                 silent: true,
             })
             notification.addListener('click', () => {
-                BrowserWindow.getInstance().switch(PageType.POPUP_BLOCKER)
+                ipcMain.emit(
+                    Channel.MAIN_PROCESS,
+                    null,
+                    MainEventTypes.SWITCH,
+                    PageType.POPUP_BLOCKER,
+                )
             })
             notification.show()
             return { action: 'deny' }
@@ -234,7 +286,12 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
-        BrowserWindow.getInstance().title = 'Reloading...'
+        ipcMain.emit(
+            Channel.MAIN_PROCESS,
+            null,
+            MainEventTypes.TITLE,
+            'Reloading...',
+        )
         if (this._failedUrl) {
             this.loadURL(this._failedUrl)
             return

@@ -1,7 +1,7 @@
 import { Element } from '.'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 import { Heading } from '@home/modules/fragments/heading'
-import { navigate } from '@home/util'
+import { navigate } from '@home/utils'
 import { Button } from './button'
 
 type Props = {
@@ -26,7 +26,7 @@ export class Title extends Element<HTMLElement> {
         this.button = new Button({
             onClick: () => navigate(),
             className: ['-mb-3'],
-        }).append('Back to Browser (Escape)')
+        }).append('Back to Browser (Esc)')
         this.append(this.button)
     }
 

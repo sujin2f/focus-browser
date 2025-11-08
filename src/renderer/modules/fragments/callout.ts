@@ -2,9 +2,9 @@ import { Element } from '@home/modules/fragments'
 
 import { Button } from '@home/modules/fragments/button'
 
-import { ipcRenderer } from '@home/util'
-import type { ElementProps } from '@src/types'
-import { Channel, RequestHandler, TableAction } from '@src/constants'
+import { ipcRenderer, SwitchEvent } from '@home/utils'
+import type { ElementProps } from '@src/common/types'
+import { Channel, PageType, RequestHandler } from '@src/common/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button
@@ -12,25 +12,28 @@ export class Callout extends Element<HTMLDivElement> {
 
     constructor(props: Partial<ElementProps<null>> = {}) {
         super({ tag: 'div', ...props })
-        this.element.classList.add(
+        this.className(
             'p-3',
             'w-full',
             'border',
             'border-transparent',
-            'bg-zinc-800',
+            'bg-zinc-100',
+            'dark:bg-zinc-800',
             'rounded-md',
-            'text-center',
+            'flex',
+            'flex-col',
+            'mr-auto',
+            'ml-auto',
         )
 
         this.button = new Button({
-            className: ['mt-3', '-mb-3'],
+            className: ['mb-3'],
             onClick: (e) => {
                 e.preventDefault()
                 ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
                     helpText: false,
                 })
-                window.controller.setting.helpText = false
-                window.controller.currentPage.action(TableAction.INFO)
+                document.dispatchEvent(new SwitchEvent(PageType.RELOAD))
             },
         }).append('Hide Tip')
         this.wrapper = new Element({ tag: 'div' })

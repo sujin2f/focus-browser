@@ -1,7 +1,7 @@
 import { type Rectangle } from 'electron'
 import { Store } from '@main/modules/store/store'
-import type { Info, StatusProps } from '@src/types'
-import { DEFAULT_STATUS } from '@src/constants'
+import type { Info, StatusProps } from '@src/common/types'
+import { DEFAULT_STATUS } from '@src/common/constants'
 
 export class Status extends Store<StatusProps> {
     static instance: Status

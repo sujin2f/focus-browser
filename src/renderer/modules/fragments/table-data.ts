@@ -1,6 +1,7 @@
-import { Element } from '.'
-import type { ElementProps } from '@src/types'
-import { TrLinked } from './tr-linked'
+import { Element } from '@home/modules/fragments'
+import { TrLinked } from '@home/modules/fragments/tr-linked'
+
+import type { ElementProps } from '@src/common/types'
 
 export class DataTable<
     D extends Record<string, unknown>,
@@ -14,20 +15,17 @@ export class DataTable<
     constructor() {
         super({ tag: 'div' })
 
-        this.element.classList.add(
+        this.className(
             'w-full',
             'h-full',
             'overflow-x-auto',
             'overflow-y-hidden',
             'bg-clip-border',
         )
-        this.table = new Element<HTMLTableElement>({ tag: 'table' })
-        this.table.classList.add(
-            'table-auto',
-            'min-w-max',
-            'border-collapse',
-            'w-full',
-        )
+        this.table = new Element<HTMLTableElement>({
+            tag: 'table',
+            className: ['table-auto', 'min-w-max', 'border-collapse', 'w-full'],
+        })
         this.element.append(this.table.element)
         this.body = new Element<HTMLTableSectionElement>({ tag: 'tbody' })
         this.table.append(this.body)
@@ -116,5 +114,6 @@ export class DataTable<
     public reset() {
         this.children.forEach((row) => row.element.remove())
         this.children = []
+        return this
     }
 }

@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Element } from '@home/modules/fragments'
-import { PageType, TableAction } from '@src/constants'
+import { PageType, TableAction } from '@src/common/constants'
 import { TrLinked } from '@home/modules/fragments/tr-linked'
 import { A_PageWithTable } from './abs_with_table'
-import { isMac } from '@home/util'
+import { isMac } from '@home/utils'
 
 class Test extends A_PageWithTable<string> {
     order: 'ASC' | 'DESC' = 'ASC'

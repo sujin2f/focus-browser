@@ -29,7 +29,7 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { PageType, MenuCategory, Menu as EnumMenu } from '@src/constants'
+import { PageType, MenuCategory, Menu as EnumMenu } from '@src/common/constants'
 
 import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
 

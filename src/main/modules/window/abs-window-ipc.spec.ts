@@ -40,7 +40,7 @@ import {
     PageType,
     BROWSER,
     CURRENT_PAGE_INFO,
-} from '@src/constants'
+} from '@src/common/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
 
@@ -69,11 +69,17 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onInfo > request > current page info', async () => {
-        ipc[0][1](null, RequestHandler.REQUEST, CURRENT_PAGE_INFO)
+        ipc[0][1](
+            null,
+            RequestHandler.REQUEST,
+            CURRENT_PAGE_INFO,
+            'title',
+            'url',
+        )
         expect(send).toHaveBeenCalledWith(
             Channel.INFO,
             RequestHandler.RESPONSE,
-            { title: 'test title', url: 'test url', findText: '' },
+            { title: 'test title', url: 'test url' },
         )
     })
 

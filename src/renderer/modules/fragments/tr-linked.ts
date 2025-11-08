@@ -1,5 +1,5 @@
 import { Element } from '.'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 export class TrLinked<D extends Record<string, unknown>> extends Element<
     HTMLTableRowElement,

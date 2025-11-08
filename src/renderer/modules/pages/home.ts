@@ -6,10 +6,10 @@ import Card from '@home/modules/fragments/card'
 import CardContainer from '@home/modules/fragments/card-container'
 import { Callout } from '@home/modules/fragments/callout'
 import { Title } from '@home/modules/fragments/title'
-import { TitleBar } from '@home/modules/fragments/title-bar'
+import { ShortcodeTable } from '@home/modules/fragments/table-shortcode'
 
-import { isMac, navigate, shortcutToHtml } from '@home/util'
-import { PageType } from '@src/constants'
+import { ctrlOrComm, isMac, navigate, SwitchEvent } from '@home/utils'
+import { CTRL, PageType } from '@src/common/constants'
 
 /**
  * For creating cards
@@ -71,30 +71,29 @@ export class Home extends A_Page {
     private helpText: Element<HTMLElement> = new Element({ tag: 'section' })
     private cards: Element<HTMLElement> = new Element({ tag: 'section' })
 
+    constructor() {
+        super()
+        this.requestInfo('helpText', 'frame', 'url')
+    }
+
     refresh() {
+        this.root.reset(this.settings.frame)
         this.location.reset()
         this.currentURL.reset()
         this.helpText.reset()
         this.cards.reset()
 
-        this.root.innerHTML = ''
-
-        if (!window.controller.setting.frame) {
-            new TitleBar(this.root)
-        }
-
         this.root.append(
-            this.title.element,
-            this.location.element,
-            this.currentURL.element,
-            this.helpText.element,
-            this.cards.element,
+            this.title,
+            this.location,
+            this.currentURL,
+            this.helpText,
+            this.cards,
         )
 
         // Location Bar
-        const command = isMac() ? '⌘' : 'Ctrl+'
         this.search = new Input({
-            label: `Enter search keyword or address (${command}L)`,
+            label: `Enter search keyword or address (${ctrlOrComm()}L)`,
         })
         this.location.append(this.search)
 
@@ -107,7 +106,7 @@ export class Home extends A_Page {
             card.title = info.title
             card.description = info.description
             card.addEventListener('click', () => {
-                window.controller.switch(info.destination)
+                document.dispatchEvent(new SwitchEvent(info.destination))
             })
 
             cardContainer.append(card)
@@ -118,44 +117,29 @@ export class Home extends A_Page {
     }
 
     private renderHelpText() {
-        if (!window.controller.setting.helpText) {
-            this.helpText.reset()
+        this.helpText.innerHTML = ''
+        if (!this.settings.helpText) {
             return
         }
-        const command = isMac() ? '⌘' : 'Ctrl+'
-        const callout = new Callout({ className: ['mb-2'] }).append(
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'Press ',
-                ...shortcutToHtml('Escape'),
-                ' key to switch to a browser mode.',
-            ),
-            new Element({
-                tag: 'p',
-                className: ['text-gray-300', 'mb-2'],
-            }).append(
-                'On the browser mode,',
-                'you can come back here by pressing ',
-                ...shortcutToHtml(`${command}+\``),
-                ' or ',
-                ...shortcutToHtml(`${command}+L`),
-                '.',
-            ),
-            new Element({ tag: 'p', className: ['text-gray-300'] }).append(
-                'On the browser mode, press ',
-                ...shortcutToHtml(`${command}+[`),
-                ' and ',
-                ...shortcutToHtml(`${command}+]`),
-                ' to navigate back and forward.',
-            ),
+
+        const callout = new Callout({
+            className: ['mb-2', 'max-w-2xl'],
+        }).append(
+            new ShortcodeTable({
+                Esc: 'Switch to Browser Mode',
+                [`${CTRL}+L`]: 'Input URL to navigate or search text',
+                [`${CTRL}+\``]: 'Show Control Centre',
+                B: 'Show Bookmarks',
+                A: 'Show Anchors',
+                H: 'Show History',
+                P: 'Show Blocked or Allowed Popups',
+            }),
         )
         this.helpText.append(callout)
     }
 
     protected focus() {
-        this.search.value = window.controller.setting.url
+        this.search.value = this.settings.url
         this.search.input.element.select()
     }
 
@@ -174,25 +158,27 @@ export class Home extends A_Page {
         ) {
             switch (e.code) {
                 case 'KeyB':
-                    window.controller.switch(PageType.BOOKMARK)
+                    document.dispatchEvent(new SwitchEvent(PageType.BOOKMARK))
                     return
                 case 'KeyH':
-                    window.controller.switch(PageType.HISTORY)
+                    document.dispatchEvent(new SwitchEvent(PageType.HISTORY))
                     return
                 case 'KeyA':
-                    window.controller.switch(PageType.ANCHOR)
+                    document.dispatchEvent(new SwitchEvent(PageType.ANCHOR))
                     return
                 case 'KeyP':
-                    window.controller.switch(PageType.POPUP_BLOCKER)
+                    document.dispatchEvent(
+                        new SwitchEvent(PageType.POPUP_BLOCKER),
+                    )
                     return
             }
         } else {
             if (e.key === 'Enter') {
-                if (!this.search.value) {
+                if (!this.search.value || !this.search.value.trim()) {
                     return
                 }
 
-                navigate(this.search.value)
+                navigate(this.search.value.trim())
                 this.search.value = ''
                 return
             }

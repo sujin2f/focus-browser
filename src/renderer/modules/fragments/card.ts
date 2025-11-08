@@ -1,6 +1,6 @@
 import { Element } from '.'
 import { Heading } from './heading'
-import type { ElementProps } from '@src/types'
+import type { ElementProps } from '@src/common/types'
 
 export default class Card extends Element<HTMLAnchorElement> {
     public set title(title: string) {
@@ -16,7 +16,7 @@ export default class Card extends Element<HTMLAnchorElement> {
 
     public constructor(props: Partial<ElementProps<null>> = {}) {
         super({ tag: 'a', ...props })
-        this.element.classList.add(
+        this.className(
             'p-3',
             'm-3',
             'border',
@@ -32,7 +32,7 @@ export default class Card extends Element<HTMLAnchorElement> {
         )
         this.element.role = 'button'
 
-        this.h2.classList.add(
+        this.h2.className(
             'pb-1',
             'mb-1',
             'text-lg',
@@ -40,7 +40,7 @@ export default class Card extends Element<HTMLAnchorElement> {
             'text-gray-600',
             'dark:text-gray-200',
         )
-        this.p.classList.add('text-gray-500', 'dark:text-gray-400')
+        this.p.className('text-gray-500', 'dark:text-gray-400')
 
         this.append(this.h2)
         this.append(this.p)

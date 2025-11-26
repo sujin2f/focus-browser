@@ -8,7 +8,7 @@ export class History extends Store<{
 }> {
     constructor() {
         super('history', {
-            index: -1,
+            index: NaN,
             history: [],
         })
     }

@@ -7,7 +7,6 @@ import {
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
-    ipcMain,
 } from 'electron'
 
 import type { Scenes, MenuBlock } from '@src/common/types'
@@ -16,7 +15,6 @@ import {
     Menu as EnumMenu,
     PageType,
     BROWSER,
-    Channel,
 } from '@src/common/constants'
 
 import { Shortcut } from '@main/modules/store/shortcut'
@@ -163,9 +161,46 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.current.webContents.navigationHistory.goBack()
         }
 
+        menu[MenuCategory.NAVIGATE][EnumMenu.BACK_HIDDEN].click = async () => {
+            await this.browser.webContents
+                .executeJavaScript('document.activeElement.tagName')
+                .then((tagName: string) => {
+                    if (
+                        tagName.toLowerCase() !== 'input' &&
+                        tagName.toLowerCase() !== 'textarea'
+                    ) {
+                        this.current.webContents.navigationHistory.goBack()
+                    }
+                })
+                .catch((e) => {
+                    Logger.getInstance().error(
+                        `EnumMenu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                    )
+                })
+        }
+
         menu[MenuCategory.NAVIGATE][EnumMenu.FORWARD].click = () => {
             this.current.webContents.navigationHistory.goForward()
         }
+
+        menu[MenuCategory.NAVIGATE][EnumMenu.FORWARD_HIDDEN].click =
+            async () => {
+                await this.browser.webContents
+                    .executeJavaScript('document.activeElement.tagName')
+                    .then((tagName: string) => {
+                        if (
+                            tagName.toLowerCase() !== 'input' &&
+                            tagName.toLowerCase() !== 'textarea'
+                        ) {
+                            this.current.webContents.navigationHistory.goForward()
+                        }
+                    })
+                    .catch((e) => {
+                        Logger.getInstance().error(
+                            `EnumMenu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                        )
+                    })
+            }
 
         menu[MenuCategory.NAVIGATE][EnumMenu.RELOAD].click = () => {
             this.reload()
@@ -181,16 +216,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             menu[MenuCategory.EDIT][EnumMenu.TEST] = {
                 label: 'Run Test Block',
                 accelerator: 'CommandOrControl+W',
-                click: () => {
+                click: async () => {
                     Logger.getInstance().info(
                         '==== Test Code Block Start =====',
                     )
-                    ipcMain.emit(
-                        Channel.MAIN_PROCESS,
-                        'test1',
-                        'test2',
-                        'test3',
-                    )
+                    await this.execDevBlock()
                     Logger.getInstance().info(
                         '==== Test Code Block End =======',
                     )
@@ -376,6 +406,19 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             this.switch(PageType.ANCHOR)
         })
         notification.show()
+    }
+
+    private async execDevBlock() {
+        return await this.browser.webContents
+            .executeJavaScript(
+                '[document.activeElement.tagName, document.activeElement.isContentEditable]',
+            )
+            .then((focusedElement) => {
+                console.log('Focused Element:', focusedElement)
+            })
+            .catch((error) => {
+                console.error('Error retrieving focused element:', error)
+            })
     }
 
     abstract switch(scene: Scenes): void

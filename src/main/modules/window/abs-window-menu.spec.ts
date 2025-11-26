@@ -68,6 +68,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 [EnumMenu.FORWARD]: {},
                 [EnumMenu.STOP]: {},
                 [EnumMenu.RELOAD]: {},
+                [EnumMenu.BACK_HIDDEN]: {},
+                [EnumMenu.FORWARD_HIDDEN]: {},
             },
         })
 

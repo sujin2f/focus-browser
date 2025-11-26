@@ -82,6 +82,7 @@ export class Select<
 
     public constructor({
         className = [],
+        value,
         ...props
     }: Partial<ElementProps<null> & Props<T>> = {}) {
         super({
@@ -89,6 +90,7 @@ export class Select<
             className: [...className, 'mb-4', 'block'],
             ...props,
         })
+
         this.label = props.label
 
         this._select = new Element({
@@ -108,12 +110,16 @@ export class Select<
                 'focus:ring-pink-500',
             ],
         })
+
         this._options = props.options
         Object.keys(this._options).forEach((key: string) => {
             const option = new Element<HTMLOptionElement>({
                 tag: 'option',
                 value: key,
             }).append(key)
+            if (value === key) {
+                option.element.setAttribute('selected', 'selected')
+            }
             this._select.append(option)
         })
         this.element.append(this._select.element)

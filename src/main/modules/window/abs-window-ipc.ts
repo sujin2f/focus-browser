@@ -131,7 +131,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            Status.getInstance().merge(data)
+            const status = Status.getInstance()
+            status.merge(data)
+            status.save()
 
             // If adBlocker setting changed, reset.
             if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
@@ -165,6 +167,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (handler === RequestHandler.REMOVE) {
             Anchors.getInstance().remove(address)
+            Anchors.getInstance().save()
         }
     }
 
@@ -195,22 +198,26 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         bookmark: Bookmark,
         index: number,
     ) {
+        const bookmarks = Bookmarks.getInstance()
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.centre.webContents.send(
                     Channel.BOOKMARK,
                     RequestHandler.RESPONSE,
-                    Bookmarks.getInstance().get(),
+                    bookmarks.get(),
                 )
                 return
             case RequestHandler.ADD:
-                Bookmarks.getInstance().push(bookmark)
+                bookmarks.push(bookmark)
+                bookmarks.save()
                 return
             case RequestHandler.MODIFY:
-                Bookmarks.getInstance().update(index, bookmark)
+                bookmarks.update(index, bookmark)
+                bookmarks.save()
                 return
             case RequestHandler.REMOVE:
-                Bookmarks.getInstance().remove(index)
+                bookmarks.remove(index)
+                bookmarks.save()
                 return
         }
     }
@@ -227,6 +234,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             case RequestHandler.REMOVE:
                 Anchors.getInstance().remove(url)
+                Anchors.getInstance().save()
                 return
         }
     }
@@ -254,9 +262,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            case RequestHandler.MODIFY:
-                PopupBlocker.getInstance().toggle(host)
+            case RequestHandler.MODIFY: {
+                const popupBlocker = PopupBlocker.getInstance()
+                popupBlocker.toggle(host)
+                popupBlocker.save()
+
                 return
+            }
         }
     }
 

@@ -10,9 +10,6 @@ import { PageType, Channel } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
-import { Bookmarks } from '@main/modules/store/bookmarks'
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import { Logger } from '@src/common/logger'
@@ -109,13 +106,6 @@ export class BrowserWindow extends AbsWindowIPC {
                 status.get('maxHistory') as number,
             )
         }
-
-        // Save Popup Blocker
-        PopupBlocker.getInstance().save()
-
-        // Save Bookmark
-        Bookmarks.getInstance().save()
-        Anchors.getInstance().save()
     }
 
     reload() {

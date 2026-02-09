@@ -43,16 +43,16 @@ export class History extends A_PageWithTable<NavigationEntry> {
 
     request(): void {
         ipcRenderer.send(Channel.HISTORY, RequestHandler.REQUEST)
-        ipcRenderer.once(
-            Channel.HISTORY,
-            (handler: RequestHandler.RESPONSE, history: NavigationEntry[]) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
+        ipcRenderer.once(Channel.HISTORY, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+            const history = args[1] as NavigationEntry[]
 
-                this.action(TableAction.UPDATE, history)
-            },
-        )
+            if (handler !== RequestHandler.RESPONSE) {
+                return
+            }
+
+            this.action(TableAction.UPDATE, history)
+        })
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -94,7 +94,10 @@ export class History extends A_PageWithTable<NavigationEntry> {
     action(action: TableAction, items: NavigationEntry[] = []) {
         super.action(action, items)
 
-        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
+        if (
+            (action === TableAction.EXECUTE || action === TableAction.EDIT) &&
+            this._cursor
+        ) {
             const index = this._cursor.getData('index') as number
             ipcRenderer.send(
                 Channel.HISTORY,

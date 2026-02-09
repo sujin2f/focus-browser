@@ -32,7 +32,7 @@ export class Title extends Element<HTMLElement> {
 
     public set label(label: string) {
         if (!label && this.title) {
-            this.title = null
+            this.title = undefined
             return
         }
         if (label && this.title) {

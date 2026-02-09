@@ -15,7 +15,7 @@ export class Select<
     public get select() {
         return this._select
     }
-    private _label: Element<HTMLParagraphElement>
+    private _label: Element<HTMLParagraphElement> | null = null
 
     private _error?: Element<HTMLParagraphElement>
     public set error(error: string) {
@@ -91,7 +91,7 @@ export class Select<
             ...props,
         })
 
-        this.label = props.label
+        if (props.label) this.label = props.label
 
         this._select = new Element({
             tag: 'select',
@@ -111,7 +111,7 @@ export class Select<
             ],
         })
 
-        this._options = props.options
+        if (props.options) this._options = props.options
         Object.keys(this._options).forEach((key: string) => {
             const option = new Element<HTMLOptionElement>({
                 tag: 'option',

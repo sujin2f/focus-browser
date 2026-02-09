@@ -75,8 +75,8 @@ export class Input extends Element<HTMLLabelElement> {
         this.append(this._error)
 
         this.type = props.type ? props.type : 'text'
-        this.helpText = helpText
-        this.error = null
+        if (helpText) this.helpText = helpText
+        this.error = ''
 
         if (label) {
             this.label = label

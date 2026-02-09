@@ -1,10 +1,9 @@
-import { Element } from '.'
+import { ElementWithData } from '.'
 import type { ElementProps } from '@src/common/types'
 
-export class TrLinked<D extends Record<string, unknown>> extends Element<
-    HTMLTableRowElement,
-    D
-> {
+export class TrLinked<
+    D extends Record<string, unknown>,
+> extends ElementWithData<HTMLTableRowElement, D> {
     prev?: TrLinked<D>
     next?: TrLinked<D>
 

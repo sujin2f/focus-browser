@@ -64,7 +64,7 @@ const buttons: Record<string, T_Card> = {
  */
 export class Home extends A_Page {
     public page = PageType.HOME
-    protected search: Input
+    protected search!: Input
     private title: Title = new Title()
     private location: Element<HTMLElement> = new Element({ tag: 'section' })
     private currentURL: Element<HTMLElement> = new Element({ tag: 'section' })
@@ -139,7 +139,7 @@ export class Home extends A_Page {
     }
 
     protected focus() {
-        this.search.value = this.settings.url
+        this.search.value = this.settings.url || ''
         this.search.input.element.select()
     }
 
@@ -149,41 +149,42 @@ export class Home extends A_Page {
             ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey))
         ) {
             this.focus()
-            return
+            return true
         }
 
         if (
             e.location === e.DOM_KEY_LOCATION_STANDARD &&
+            document.activeElement &&
             document.activeElement.tagName.toLowerCase() !== 'input'
         ) {
             switch (e.code) {
                 case 'KeyB':
                     document.dispatchEvent(new SwitchEvent(PageType.BOOKMARK))
-                    return
+                    return true
                 case 'KeyH':
                     document.dispatchEvent(new SwitchEvent(PageType.HISTORY))
-                    return
+                    return true
                 case 'KeyA':
                     document.dispatchEvent(new SwitchEvent(PageType.ANCHOR))
-                    return
+                    return true
                 case 'KeyP':
                     document.dispatchEvent(
                         new SwitchEvent(PageType.POPUP_BLOCKER),
                     )
-                    return
+                    return true
             }
         } else {
             if (e.key === 'Enter') {
                 if (!this.search.value || !this.search.value.trim()) {
-                    return
+                    return true
                 }
 
                 navigate(this.search.value.trim())
                 this.search.value = ''
-                return
+                return true
             }
         }
 
-        super.doShortcut(e)
+        return super.doShortcut(e) && true
     }
 }

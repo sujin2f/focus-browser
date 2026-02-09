@@ -40,7 +40,7 @@ export class DataTable<
             }).append(this.headRow)
             this.table.prepend(this.head)
         }
-        this.headRow.append(...children)
+        this.headRow!.append(...children)
     }
 
     public createTh(

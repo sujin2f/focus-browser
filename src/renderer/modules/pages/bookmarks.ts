@@ -29,9 +29,9 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     // Add Form
     private form: Form = new Form()
 
-    private inputTitle: Input
-    private inputUrl: Input
-    private inputShortcut: Input
+    private inputTitle!: Input
+    private inputUrl!: Input
+    private inputShortcut!: Input
 
     // Store Shortcut
     private shortcuts: Record<string, string> = {}
@@ -75,7 +75,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
     protected changeMode(mode: PageMode): boolean {
         if (!super.changeMode(mode)) {
-            return
+            return false
         }
 
         switch (mode) {
@@ -87,12 +87,12 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
                 this.form.show()
                 this.inputTitle.focus()
-                return
+                return true
 
             case PageMode.EDIT: {
                 if (!this._cursor) {
                     this.changeMode(PageMode.LIST)
-                    return
+                    return true
                 }
 
                 const current = this._cursor.getData('data') as Bookmark
@@ -103,24 +103,25 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
                 this.form.show()
                 this.inputTitle.focus()
-                return
+                return true
             }
         }
+        return false
     }
 
     request(): void {
         ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REQUEST)
 
-        ipcRenderer.once(
-            Channel.BOOKMARK,
-            (handler: RequestHandler.RESPONSE, bookmarks: Bookmark[]) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
+        ipcRenderer.once(Channel.BOOKMARK, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+            const bookmarks = args[1] as Bookmark[]
 
-                this.action(TableAction.UPDATE, bookmarks)
-            },
-        )
+            if (handler !== RequestHandler.RESPONSE) {
+                return
+            }
+
+            this.action(TableAction.UPDATE, bookmarks)
+        })
     }
 
     refresh() {
@@ -300,7 +301,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     action(action: TableAction, items: Bookmark[] = []) {
         super.action(action, items)
 
-        if (action === TableAction.EXECUTE) {
+        if (action === TableAction.EXECUTE && this._cursor) {
             navigate((this._cursor.getData('data') as Bookmark).url)
             return
         }
@@ -364,8 +365,9 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
 
         if (super.doShortcut(e) === 'findMode') {
             this.shortcutKeyIn = ''
-            return
+            return true
         }
+        return false
     }
 
     private onSwitchAdd() {

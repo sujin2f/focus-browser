@@ -1,6 +1,3 @@
-import { SHORTCUTS } from '@main/settings/shortcut'
-import { SystemType } from '@src/common/constants'
-
 export const anchorPush = jest.fn(() => true)
 export const anchorRemove = jest.fn(() => true)
 export const anchors = () => ({
@@ -49,12 +46,11 @@ export const popupBlocker = () => ({
     },
 })
 
-export const shortcutGet = jest.fn()
-shortcutGet.mockReturnValue(SHORTCUTS[SystemType.DARWIN].menu)
 export const shortcut = () => ({
     Shortcut: {
         getInstance: () => ({
-            get: shortcutGet,
+            get: jest.fn(),
+            getShortcut: () => '',
             set: jest.fn(),
             save: jest.fn(),
             parse: jest.fn(),

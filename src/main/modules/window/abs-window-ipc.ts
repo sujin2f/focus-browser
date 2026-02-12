@@ -111,7 +111,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             // Clear cache
             if (
                 Object.prototype.hasOwnProperty.call(data, 'cacheSize') &&
-                isNaN(data.cacheSize)
+                isNaN(data.cacheSize!)
             ) {
                 await this.browser.webContents.session.clearCache()
                 await this.sendInfo('cacheSize')
@@ -165,7 +165,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             this.browser.loadURL(address)
         }
 
-        if (handler === RequestHandler.REMOVE) {
+        if (handler === RequestHandler.REMOVE && address) {
             Anchors.getInstance().remove(address)
             Anchors.getInstance().save()
         }

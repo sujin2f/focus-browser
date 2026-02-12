@@ -151,3 +151,154 @@ export enum MainEventTypes {
 export enum CustomEvents {
     SWITCH = 'switch',
 }
+
+export const SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
+    [Menu.HIDE]: {
+        [SystemType.DARWIN]: 'Command+H',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.HIDE_OTHERS]: {
+        [SystemType.DARWIN]: 'Command+Shift+H',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.QUIT]: {
+        [SystemType.DARWIN]: 'Command+Q',
+        [SystemType.DEFAULT]: 'Control+Q',
+    },
+    [Menu.UNDO]: {
+        [SystemType.DARWIN]: 'Command+Z',
+        [SystemType.DEFAULT]: 'Control+Z',
+    },
+    [Menu.REDO]: {
+        [SystemType.DARWIN]: 'Command+Shift+Z',
+        [SystemType.DEFAULT]: 'Control+Shift+Z',
+    },
+    [Menu.CUT]: {
+        [SystemType.DARWIN]: 'Command+X',
+        [SystemType.DEFAULT]: 'Control+X',
+    },
+    [Menu.COPY]: {
+        [SystemType.DARWIN]: 'Command+C',
+        [SystemType.DEFAULT]: 'Control+C',
+    },
+    [Menu.PASTE]: {
+        [SystemType.DARWIN]: 'Command+V',
+        [SystemType.DEFAULT]: 'Control+V',
+    },
+    [Menu.SELECT_ALL]: {
+        [SystemType.DARWIN]: 'Command+A',
+        [SystemType.DEFAULT]: 'Control+A',
+    },
+    [Menu.ADD_BOOKMARK]: {
+        [SystemType.DARWIN]: 'Command+D',
+        [SystemType.DEFAULT]: 'Control+D',
+    },
+    [Menu.ADD_ANCHOR]: {
+        [SystemType.DARWIN]: 'Command+/',
+        [SystemType.DEFAULT]: 'Control+/',
+    },
+    [Menu.FULL_SCREEN]: {
+        [SystemType.DARWIN]: 'Command+Control+F',
+        [SystemType.DEFAULT]: 'F11',
+    },
+    [Menu.RESET_ZOOM]: {
+        [SystemType.DARWIN]: 'Command+0',
+        [SystemType.DEFAULT]: 'Control+0',
+    },
+    [Menu.ZOOM_IN]: {
+        [SystemType.DARWIN]: 'Command+=',
+        [SystemType.DEFAULT]: 'Control+=',
+    },
+    [Menu.ZOOM_OUT]: {
+        [SystemType.DARWIN]: 'Command+-',
+        [SystemType.DEFAULT]: 'Control+-',
+    },
+    [Menu.DEVTOOLS]: {
+        [SystemType.DARWIN]: 'Command+Option+I',
+        [SystemType.DEFAULT]: 'Control+Shift+I',
+    },
+    [Menu.ADDRESS]: {
+        [SystemType.DARWIN]: 'Command+L',
+        [SystemType.DEFAULT]: 'Control+L',
+    },
+    [Menu.CENTRE]: {
+        [SystemType.DARWIN]: 'Command+`',
+        [SystemType.DEFAULT]: 'Control+`',
+    },
+    [Menu.BACK]: {
+        [SystemType.DARWIN]: 'Command+[',
+        [SystemType.DEFAULT]: 'Control+[',
+    },
+    [Menu.FORWARD]: {
+        [SystemType.DARWIN]: 'Command+]',
+        [SystemType.DEFAULT]: 'Control+]',
+    },
+    [Menu.RELOAD]: {
+        [SystemType.DARWIN]: 'Command+R',
+        [SystemType.DEFAULT]: 'Control+R',
+    },
+    [Menu.MINIMIZE]: {
+        [SystemType.DARWIN]: 'Command+M',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.CLOSE]: {
+        [SystemType.DARWIN]: 'Command+W',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.FIND]: {
+        [SystemType.DARWIN]: 'Command+F',
+        [SystemType.DEFAULT]: 'Control+F',
+    },
+    [Menu.FIND_NEXT]: {
+        [SystemType.DARWIN]: 'Command+G',
+        [SystemType.DEFAULT]: 'Control+G',
+    },
+    [Menu.FIND_PREV]: {
+        [SystemType.DARWIN]: 'Shift+Command+G',
+        [SystemType.DEFAULT]: 'Shift+Control+G',
+    },
+    [Menu.FIT_TO_SCREEN]: {
+        [SystemType.DARWIN]: 'Command+Escape',
+        [SystemType.DEFAULT]: 'Control+Escape',
+    },
+    [Menu.ABOUT]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.SHOW_ALL]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.BACK_HIDDEN]: {
+        [SystemType.DARWIN]: 'Command+Left',
+        [SystemType.DEFAULT]: 'Control+Left',
+    },
+    [Menu.FORWARD_HIDDEN]: {
+        [SystemType.DARWIN]: 'Command+Right',
+        [SystemType.DEFAULT]: 'Control+Right',
+    },
+    [Menu.STOP]: {
+        [SystemType.DARWIN]: 'Escape',
+        [SystemType.DEFAULT]: 'Escape',
+    },
+    [Menu.BRING_TO_FRONT]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.s0001]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.s0002]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.s0003]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+    [Menu.TEST]: {
+        [SystemType.DARWIN]: '',
+        [SystemType.DEFAULT]: '',
+    },
+}

@@ -28,7 +28,7 @@ export type StatusProps = {
  */
 export type Info = Partial<
     StatusProps & {
-        shortcuts: Shortcuts
+        shortcuts: Record<string, string>
         cacheSize: number
         title: string
         url: string
@@ -52,12 +52,7 @@ export type PopupBlocker = {
 export type Scenes = PageType | typeof BROWSER
 
 type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
-export type Shortcuts = Record<string, Menu>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
-export type ShortcutStore = {
-    menu: MenuBlock
-    shortcuts: Shortcuts
-}
 
 export type ElementProps<T> = {
     tag: string

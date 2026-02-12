@@ -1,7 +1,7 @@
 import {
     BrowserWindow as ElectronBrowserWindow,
     WebContentsView,
-    Menu,
+    Menu as ElectronMenu,
     Notification,
     clipboard,
     type MenuItemConstructorOptions,
@@ -12,18 +12,20 @@ import {
 import type { Scenes, MenuBlock } from '@src/common/types'
 import {
     MenuCategory,
-    Menu as EnumMenu,
+    Menu,
     PageType,
     BROWSER,
+    SystemType,
+    SHORTCUTS,
 } from '@src/common/constants'
 
-import { Shortcut } from '@main/modules/store/shortcut'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import { Logger } from '@src/common/logger'
 import { isBeta, isTest } from '@src/common/utils'
+import { Shortcut } from '../store/shortcut'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -38,8 +40,8 @@ import { isBeta, isTest } from '@src/common/utils'
  * Concrete windows should extend this class and implement `switch(scene)`.
  */
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
-    protected browser: BrowserView
-    protected centre: WebContentsView
+    protected browser!: BrowserView
+    protected centre!: WebContentsView
     protected _current: Scenes = BROWSER
     protected get isBrowser() {
         return this._current === BROWSER
@@ -49,6 +51,679 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         return this.isBrowser ? this.browser : this.centre
     }
     protected findText = ''
+
+    private get menuItems(): MenuBlock {
+        const result: MenuBlock =
+            process.platform === 'darwin'
+                ? {
+                      [MenuCategory.FOCUS]: {
+                          [Menu.ABOUT]: {
+                              role: 'about',
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.HIDE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.HIDE,
+                              ),
+                              role: 'hide',
+                          },
+                          [Menu.HIDE_OTHERS]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.HIDE_OTHERS,
+                              ),
+                              role: 'hideOthers',
+                          },
+                          [Menu.SHOW_ALL]: {
+                              role: 'unhide',
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.QUIT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.QUIT,
+                              ),
+                              role: 'quit',
+                          },
+                      },
+                      [MenuCategory.EDIT]: {
+                          [Menu.UNDO]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.UNDO,
+                              ),
+                              role: 'undo',
+                          },
+                          [Menu.REDO]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.REDO,
+                              ),
+                              role: 'redo',
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.CUT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.CUT,
+                              ),
+                              role: 'cut',
+                          },
+                          [Menu.COPY]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.COPY,
+                              ),
+                              role: 'copy',
+                          },
+                          [Menu.PASTE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.PASTE,
+                              ),
+                              role: 'paste',
+                          },
+                          [Menu.SELECT_ALL]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.SELECT_ALL,
+                              ),
+                              role: 'selectAll',
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.FIND]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FIND,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.FIND)
+                              },
+                          },
+                          [Menu.FIND_NEXT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FIND_NEXT,
+                              ),
+                              click: () => {
+                                  if (!this.findText) {
+                                      return
+                                  }
+                                  this.browser.webContents.findInPage(
+                                      this.findText,
+                                      {
+                                          findNext: true,
+                                      },
+                                  )
+                              },
+                          },
+                          [Menu.FIND_PREV]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FIND_PREV,
+                              ),
+                              click: () => {
+                                  if (!this.findText) {
+                                      return
+                                  }
+                                  this.browser.webContents.findInPage(
+                                      this.findText,
+                                      {
+                                          forward: false,
+                                          findNext: true,
+                                      },
+                                  )
+                              },
+                          },
+                          [Menu.STOP]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.STOP,
+                              ),
+                              click: () => {
+                                  this.browser.webContents.stopFindInPage(
+                                      'clearSelection',
+                                  )
+                              },
+                          },
+                          [Menu.s0003]: {},
+                          [Menu.ADD_BOOKMARK]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.ADD_BOOKMARK,
+                              ),
+                              click: () => {
+                                  if (this.isBrowser) {
+                                      this.addBookmark()
+                                  }
+                              },
+                          },
+                          [Menu.ADD_ANCHOR]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.ADD_ANCHOR,
+                              ),
+                              click: () => {
+                                  if (this.isBrowser) {
+                                      this.addAnchor()
+                                  }
+                              },
+                          },
+                      },
+                      [MenuCategory.VIEW]: {
+                          [Menu.FULL_SCREEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FULL_SCREEN,
+                              ),
+                              click: () => {
+                                  this.setFullScreen(!this.fullScreen)
+                              },
+                          },
+                          [Menu.FIT_TO_SCREEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FIT_TO_SCREEN,
+                              ),
+                              click: () => {
+                                  this.toggleMaximize()
+                              },
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.RESET_ZOOM]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.RESET_ZOOM,
+                              ),
+                              role: 'resetZoom',
+                          },
+                          [Menu.ZOOM_IN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.ZOOM_IN,
+                              ),
+                              role: 'zoomIn',
+                          },
+                          [Menu.ZOOM_OUT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.ZOOM_OUT,
+                              ),
+                              role: 'zoomOut',
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.DEVTOOLS]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.DEVTOOLS,
+                              ),
+                              click: () => {
+                                  this.current.webContents.toggleDevTools()
+                              },
+                          },
+                      },
+                      [MenuCategory.NAVIGATE]: {
+                          [Menu.ADDRESS]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.ADDRESS,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.ADDRESS)
+                              },
+                          },
+                          [Menu.CENTRE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.CENTRE,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.HOME)
+                              },
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.BACK]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.BACK,
+                              ),
+                              click: () => {
+                                  this.current.webContents.navigationHistory.goBack()
+                              },
+                          },
+                          [Menu.BACK_HIDDEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.BACK_HIDDEN,
+                              ),
+                              visible: false,
+                              acceleratorWorksWhenHidden: true,
+                              click: async () => {
+                                  await this.browser.webContents
+                                      .executeJavaScript(
+                                          'document.activeElement.tagName',
+                                      )
+                                      .then((tagName: string) => {
+                                          if (
+                                              tagName.toLowerCase() !==
+                                                  'input' &&
+                                              tagName.toLowerCase() !==
+                                                  'textarea'
+                                          ) {
+                                              this.current.webContents.navigationHistory.goBack()
+                                          }
+                                      })
+                                      .catch((e) => {
+                                          Logger.getInstance().error(
+                                              `Menu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                                          )
+                                      })
+                              },
+                          },
+                          [Menu.FORWARD]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FORWARD,
+                              ),
+                              click: () => {
+                                  this.current.webContents.navigationHistory.goForward()
+                              },
+                          },
+                          [Menu.FORWARD_HIDDEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.FORWARD_HIDDEN,
+                              ),
+                              visible: false,
+                              acceleratorWorksWhenHidden: true,
+                              click: async () => {
+                                  await this.browser.webContents
+                                      .executeJavaScript(
+                                          'document.activeElement.tagName',
+                                      )
+                                      .then((tagName: string) => {
+                                          if (
+                                              tagName.toLowerCase() !==
+                                                  'input' &&
+                                              tagName.toLowerCase() !==
+                                                  'textarea'
+                                          ) {
+                                              this.current.webContents.navigationHistory.goForward()
+                                          }
+                                      })
+                                      .catch((e) => {
+                                          Logger.getInstance().error(
+                                              `Menu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                                          )
+                                      })
+                              },
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.STOP]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.STOP,
+                              ),
+                              click: () => {
+                                  this.current.webContents.stop()
+                              },
+                          },
+                          [Menu.RELOAD]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.RELOAD,
+                              ),
+                              click: () => {
+                                  this.reload()
+                              },
+                          },
+                      },
+                      [MenuCategory.WINDOW]: {
+                          [Menu.MINIMIZE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.MINIMIZE,
+                              ),
+                              role: 'minimize',
+                          },
+                          [Menu.CLOSE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DARWIN,
+                                  Menu.CLOSE,
+                              ),
+                              role: 'close',
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.BRING_TO_FRONT]: {
+                              role: 'front',
+                          },
+                      },
+                  }
+                : {
+                      [MenuCategory.FILE]: {
+                          [Menu.QUIT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.QUIT,
+                              ),
+                              role: 'quit',
+                          },
+                      },
+                      [MenuCategory.EDIT]: {
+                          [Menu.UNDO]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.UNDO,
+                              ),
+                              role: 'undo',
+                          },
+                          [Menu.REDO]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.REDO,
+                              ),
+                              role: 'redo',
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.CUT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.CUT,
+                              ),
+                              role: 'cut',
+                          },
+                          [Menu.COPY]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.COPY,
+                              ),
+                              role: 'copy',
+                          },
+                          [Menu.PASTE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.PASTE,
+                              ),
+                              role: 'paste',
+                          },
+                          [Menu.SELECT_ALL]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.SELECT_ALL,
+                              ),
+                              role: 'selectAll',
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.FIND]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FIND,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.FIND)
+                              },
+                          },
+                          [Menu.FIND_NEXT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FIND_NEXT,
+                              ),
+                              click: () => {
+                                  if (!this.findText) {
+                                      return
+                                  }
+                                  this.browser.webContents.findInPage(
+                                      this.findText,
+                                      {
+                                          findNext: true,
+                                      },
+                                  )
+                              },
+                          },
+                          [Menu.FIND_PREV]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FIND_PREV,
+                              ),
+                              click: () => {
+                                  if (!this.findText) {
+                                      return
+                                  }
+                                  this.browser.webContents.findInPage(
+                                      this.findText,
+                                      {
+                                          forward: false,
+                                          findNext: true,
+                                      },
+                                  )
+                              },
+                          },
+                          [Menu.STOP]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.STOP,
+                              ),
+                              click: () => {
+                                  this.browser.webContents.stopFindInPage(
+                                      'clearSelection',
+                                  )
+                              },
+                          },
+                          [Menu.s0003]: {},
+                          [Menu.ADD_BOOKMARK]: {
+                              label: 'Add Bookmark',
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.ADD_BOOKMARK,
+                              ),
+                              click: () => {
+                                  if (this.isBrowser) {
+                                      this.addBookmark()
+                                  }
+                              },
+                          },
+                          [Menu.ADD_ANCHOR]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.ADD_ANCHOR,
+                              ),
+                              click: () => {
+                                  if (this.isBrowser) {
+                                      this.addAnchor()
+                                  }
+                              },
+                          },
+                      },
+                      [MenuCategory.VIEW]: {
+                          [Menu.FULL_SCREEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FULL_SCREEN,
+                              ),
+                              click: () => {
+                                  this.setFullScreen(!this.fullScreen)
+                              },
+                          },
+                          [Menu.FIT_TO_SCREEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FIT_TO_SCREEN,
+                              ),
+                              click: () => {
+                                  this.toggleMaximize()
+                              },
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.RESET_ZOOM]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.RESET_ZOOM,
+                              ),
+                              role: 'resetZoom',
+                          },
+                          [Menu.ZOOM_IN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.ZOOM_IN,
+                              ),
+                              role: 'zoomIn',
+                          },
+                          [Menu.ZOOM_OUT]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.ZOOM_OUT,
+                              ),
+                              role: 'zoomOut',
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.DEVTOOLS]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.DEVTOOLS,
+                              ),
+                              click: () => {
+                                  this.current.webContents.toggleDevTools()
+                              },
+                          },
+                      },
+                      [MenuCategory.NAVIGATE]: {
+                          [Menu.ADDRESS]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.ADDRESS,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.ADDRESS)
+                              },
+                          },
+                          [Menu.CENTRE]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.CENTRE,
+                              ),
+                              click: () => {
+                                  this.switch(PageType.HOME)
+                              },
+                          },
+                          [Menu.s0001]: {},
+                          [Menu.BACK]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.BACK,
+                              ),
+                              click: () => {
+                                  this.current.webContents.navigationHistory.goBack()
+                              },
+                          },
+                          [Menu.BACK_HIDDEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.BACK_HIDDEN,
+                              ),
+                              visible: false,
+                              acceleratorWorksWhenHidden: true,
+                              click: async () => {
+                                  await this.browser.webContents
+                                      .executeJavaScript(
+                                          'document.activeElement.tagName',
+                                      )
+                                      .then((tagName: string) => {
+                                          if (
+                                              tagName.toLowerCase() !==
+                                                  'input' &&
+                                              tagName.toLowerCase() !==
+                                                  'textarea'
+                                          ) {
+                                              this.current.webContents.navigationHistory.goBack()
+                                          }
+                                      })
+                                      .catch((e) => {
+                                          Logger.getInstance().error(
+                                              `Menu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                                          )
+                                      })
+                              },
+                          },
+                          [Menu.FORWARD]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FORWARD,
+                              ),
+                              click: () => {
+                                  this.current.webContents.navigationHistory.goForward()
+                              },
+                          },
+                          [Menu.FORWARD_HIDDEN]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.FORWARD_HIDDEN,
+                              ),
+                              visible: false,
+                              acceleratorWorksWhenHidden: true,
+                              click: async () => {
+                                  await this.browser.webContents
+                                      .executeJavaScript(
+                                          'document.activeElement.tagName',
+                                      )
+                                      .then((tagName: string) => {
+                                          if (
+                                              tagName.toLowerCase() !==
+                                                  'input' &&
+                                              tagName.toLowerCase() !==
+                                                  'textarea'
+                                          ) {
+                                              this.current.webContents.navigationHistory.goForward()
+                                          }
+                                      })
+                                      .catch((e) => {
+                                          Logger.getInstance().error(
+                                              `Menu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
+                                          )
+                                      })
+                              },
+                          },
+                          [Menu.s0002]: {},
+                          [Menu.STOP]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.STOP,
+                              ),
+                              click: () => {
+                                  this.current.webContents.stop()
+                              },
+                          },
+                          [Menu.RELOAD]: {
+                              accelerator: this.getShortcut(
+                                  SystemType.DEFAULT,
+                                  Menu.RELOAD,
+                              ),
+                              click: () => {
+                                  this.reload()
+                              },
+                          },
+                      },
+                  }
+
+        if (isBeta() && !isTest()) {
+            if (result[MenuCategory.EDIT]) {
+                result[MenuCategory.EDIT][Menu.TEST] = {
+                    label: 'Run Test Block',
+                    accelerator: 'CommandOrControl+W',
+                    click: this.runTest.bind(this),
+                }
+            }
+        }
+
+        return result
+    }
+    private getShortcut(system: SystemType, menu: Menu): string {
+        if (Shortcut.getInstance().getShortcut(menu)) {
+            return Shortcut.getInstance().getShortcut(menu)
+        }
+
+        return SHORTCUTS[menu][system]
+    }
 
     /**
      * Constructor
@@ -60,16 +735,14 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         super(options)
 
         // Retrieve persisted menu config and attach callbacks for actions
-        const data = this.addMenuCallbacks(
-            Shortcut.getInstance().get('menu') as MenuBlock,
-        )
+        const data = this.menuItems
 
         const menu: MenuItemConstructorOptions[] = []
 
         // Convert stored MenuBlock into Electron MenuItemConstructorOptions[]
-        Object.keys(data).forEach((key) => {
+        Object.entries(data).forEach(([key, value]) => {
             const submenu: MenuItemConstructorOptions[] = []
-            Object.keys(data[key as MenuCategory]).forEach((subKey) => {
+            Object.keys(value).forEach((subKey) => {
                 // s0* keys represent separators in the stored config
                 if (subKey.startsWith('s0')) {
                     submenu.push({ type: 'separator' })
@@ -78,7 +751,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
                 submenu.push({
                     label: subKey,
-                    ...data[key as MenuCategory][subKey as EnumMenu],
+                    ...value[subKey as keyof typeof value],
                 } satisfies MenuItemConstructorOptions)
             })
             menu.push({
@@ -88,147 +761,8 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
 
         // Build and set the global application menu
-        const built = Menu.buildFromTemplate(menu)
-        Menu.setApplicationMenu(built)
-    }
-
-    /**
-     * Attach runtime callbacks to the loaded MenuBlock so menu actions
-     * trigger window-specific behavior (add bookmark, navigate, toggle devtools, etc).
-     */
-    private addMenuCallbacks(menu: MenuBlock) {
-        menu[MenuCategory.EDIT][EnumMenu.ADD_BOOKMARK].click = () => {
-            if (this.isBrowser) {
-                this.addBookmark()
-            }
-        }
-
-        menu[MenuCategory.EDIT][EnumMenu.ADD_ANCHOR].click = () => {
-            if (this.isBrowser) {
-                this.addAnchor()
-            }
-        }
-
-        menu[MenuCategory.EDIT][EnumMenu.FIND].click = () => {
-            this.switch(PageType.FIND)
-        }
-
-        menu[MenuCategory.EDIT][EnumMenu.FIND_NEXT].click = () => {
-            if (!this.findText) {
-                return
-            }
-            this.browser.webContents.findInPage(this.findText, {
-                findNext: true,
-            })
-        }
-
-        menu[MenuCategory.EDIT][EnumMenu.FIND_PREV].click = () => {
-            if (!this.findText) {
-                return
-            }
-            this.browser.webContents.findInPage(this.findText, {
-                forward: false,
-                findNext: true,
-            })
-        }
-
-        menu[MenuCategory.EDIT][EnumMenu.STOP].click = () => {
-            this.current.webContents.stop()
-            this.browser.webContents.stopFindInPage('clearSelection')
-        }
-
-        menu[MenuCategory.VIEW][EnumMenu.FULL_SCREEN].click = () => {
-            this.setFullScreen(!this.fullScreen)
-        }
-
-        menu[MenuCategory.VIEW][EnumMenu.FIT_TO_SCREEN].click = () => {
-            this.toggleMaximize()
-        }
-
-        menu[MenuCategory.VIEW][EnumMenu.DEVTOOLS].click = () => {
-            this.current.webContents.toggleDevTools()
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.ADDRESS].click = () => {
-            this.switch(PageType.ADDRESS)
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.CENTRE].click = () => {
-            this.switch(PageType.HOME)
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.BACK].click = () => {
-            this.current.webContents.navigationHistory.goBack()
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.BACK_HIDDEN].click = async () => {
-            await this.browser.webContents
-                .executeJavaScript('document.activeElement.tagName')
-                .then((tagName: string) => {
-                    if (
-                        tagName.toLowerCase() !== 'input' &&
-                        tagName.toLowerCase() !== 'textarea'
-                    ) {
-                        this.current.webContents.navigationHistory.goBack()
-                    }
-                })
-                .catch((e) => {
-                    Logger.getInstance().error(
-                        `EnumMenu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
-                    )
-                })
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.FORWARD].click = () => {
-            this.current.webContents.navigationHistory.goForward()
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.FORWARD_HIDDEN].click =
-            async () => {
-                await this.browser.webContents
-                    .executeJavaScript('document.activeElement.tagName')
-                    .then((tagName: string) => {
-                        if (
-                            tagName.toLowerCase() !== 'input' &&
-                            tagName.toLowerCase() !== 'textarea'
-                        ) {
-                            this.current.webContents.navigationHistory.goForward()
-                        }
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            `EnumMenu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
-                        )
-                    })
-            }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.RELOAD].click = () => {
-            this.reload()
-        }
-
-        menu[MenuCategory.NAVIGATE][EnumMenu.STOP].click = () => {
-            this.current.webContents.stop()
-            this.browser.webContents.stopFindInPage('clearSelection')
-        }
-
-        // For Development purpose
-        if (isBeta() && !isTest()) {
-            menu[MenuCategory.EDIT][EnumMenu.TEST] = {
-                label: 'Run Test Block',
-                accelerator: 'CommandOrControl+W',
-                click: async () => {
-                    Logger.getInstance().info(
-                        '==== Test Code Block Start =====',
-                    )
-                    await this.execDevBlock()
-                    Logger.getInstance().info(
-                        '==== Test Code Block End =======',
-                    )
-                },
-            }
-        }
-
-        return menu
+        const built = ElectronMenu.buildFromTemplate(menu)
+        ElectronMenu.setApplicationMenu(built)
     }
 
     protected toggleMaximize() {
@@ -347,7 +881,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             ]
         }
 
-        Menu.buildFromTemplate(menu).popup({
+        ElectronMenu.buildFromTemplate(menu).popup({
             x: params.x,
             y: params.y,
         })
@@ -411,7 +945,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         notification.show()
     }
 
-    private async execDevBlock() {
+    private async runTest() {
         return await this.browser.webContents
             .executeJavaScript(
                 '[document.activeElement.tagName, document.activeElement.isContentEditable]',

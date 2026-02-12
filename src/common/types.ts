@@ -51,7 +51,7 @@ export type PopupBlocker = {
 
 export type Scenes = PageType | typeof BROWSER
 
-type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
+export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
 
 export type ElementProps<T> = {

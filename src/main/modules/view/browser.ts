@@ -28,7 +28,7 @@ export class BrowserView extends WebContentsView {
         }
     }
 
-    private _blocker?: ElectronBlocker | false = null
+    private _blocker?: ElectronBlocker | false = undefined
     public get blocker() {
         return this._blocker
     }
@@ -151,7 +151,7 @@ export class BrowserView extends WebContentsView {
 
     private searchKeyword(keyword: string) {
         const searchEngine = Status.getInstance().get('searchEngine')
-        this._failedUrl = null
+        this._failedUrl = undefined
         this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
     }
 
@@ -233,7 +233,7 @@ export class BrowserView extends WebContentsView {
                 */
             })
             .catch((e: unknown) => {
-                this._blocker = null
+                this._blocker = undefined
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
                 Logger.getInstance().error(
                     'Ad-Blocker is failed to load: ',

@@ -152,7 +152,7 @@ export enum CustomEvents {
     SWITCH = 'switch',
 }
 
-export const SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
+export const DEFAULT_SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
     [Menu.HIDE]: {
         [SystemType.DARWIN]: 'Command+H',
         [SystemType.DEFAULT]: '',

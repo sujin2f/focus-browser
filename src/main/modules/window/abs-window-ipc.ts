@@ -20,6 +20,7 @@ import { Status } from '@main/modules/store/status'
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
+import { Shortcut } from '@main/modules/store/shortcut'
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
@@ -128,6 +129,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             // Toggle Maximize
             if (Object.prototype.hasOwnProperty.call(data, 'maximize')) {
                 this.toggleMaximize()
+                return
+            }
+
+            // Shortcuts
+            if (Object.prototype.hasOwnProperty.call(data, 'shortcuts')) {
+                Logger.getInstance().log('shortcuts', data.shortcuts)
+                Shortcut.getInstance().update(data.shortcuts!)
+                Shortcut.getInstance().save()
+                this.resetMenu()
+                await this.sendInfo('shortcuts')
                 return
             }
 
@@ -311,6 +322,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (requests.includes('searchEngine')) {
             info.searchEngine = status.searchEngine
+        }
+
+        if (requests.includes('shortcuts')) {
+            info.shortcuts = Shortcut.getInstance().getShortcuts()
         }
 
         Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)

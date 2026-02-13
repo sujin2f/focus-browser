@@ -47,6 +47,11 @@ const buttons: Record<string, T_Card> = {
         description: '',
         destination: PageType.SETTING,
     },
+    shortcuts: {
+        title: 'Shortcuts',
+        description: 'Assign keyboard shortcuts.',
+        destination: PageType.SHORTCUT,
+    },
     welcome: {
         title: 'Visit Welcome Page',
         description: 'Double check the basic features of Focus',

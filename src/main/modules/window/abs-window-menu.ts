@@ -21,11 +21,11 @@ import {
 
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
+import { Shortcut } from '@main/modules/store/shortcut'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import { Logger } from '@src/common/logger'
 import { isBeta, isTest } from '@src/common/utils'
-import { Shortcut } from '../store/shortcut'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -339,7 +339,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      */
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
+        this.resetMenu()
+    }
 
+    protected resetMenu() {
         // Retrieve persisted menu config and attach callbacks for actions
         const data = this.menuItems
 

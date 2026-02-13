@@ -18,6 +18,7 @@ export enum PageType {
     SETTING,
     OFFLINE,
     FIND,
+    SHORTCUT,
 }
 
 export const BROWSER = 'scene-browser'

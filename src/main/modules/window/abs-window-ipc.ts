@@ -135,7 +135,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             // Shortcuts
             if (Object.prototype.hasOwnProperty.call(data, 'shortcuts')) {
-                Logger.getInstance().log('shortcuts', data.shortcuts)
                 Shortcut.getInstance().update(data.shortcuts!)
                 Shortcut.getInstance().save()
                 this.resetMenu()
@@ -145,7 +144,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             // Keystroke
             if (Object.prototype.hasOwnProperty.call(data, 'keystrokes')) {
-                Logger.getInstance().log('keystroke', data.keystrokes)
                 const host = Object.keys(data.keystrokes!)[0]
                 const keystroke = data.keystrokes![host] || ''
                 Keystrokes.getInstance().update(host, keystroke)

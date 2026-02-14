@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import { safeStorage, app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -17,6 +17,7 @@ export class Store<T extends JsonObject> {
     public get data() {
         return this._data
     }
+    protected isSecure = false
 
     protected path: string = ''
 
@@ -57,7 +58,15 @@ export class Store<T extends JsonObject> {
         // We're not writing a server so there's not nearly the same IO demand on the process
         // Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,
         // we might lose that data. Note that in a real app, we would try/catch this.
-        fs.writeFileSync(this.path, JSON.stringify(this._data), {
+        let data = JSON.stringify(this._data)
+
+        // encrypt buffer
+        if (data && this.isSecure) {
+            const encryptedBuffer = safeStorage.encryptString(data)
+            data = encryptedBuffer.toString('base64')
+        }
+
+        fs.writeFileSync(this.path, data, {
             encoding: 'utf-8',
         })
     }
@@ -66,9 +75,17 @@ export class Store<T extends JsonObject> {
         // We'll try/catch it in case the file doesn't exist yet, which will be the case on the first application run.
         // `fs.readFileSync` will return a JSON string which we then parse into a Javascript object
         try {
+            let fileContent = fs.readFileSync(this.path, 'utf-8')
+
+            // Decrypt buffer
+            if (fileContent && this.isSecure) {
+                const encryptedBuffer = Buffer.from(fileContent, 'base64')
+                fileContent = safeStorage.decryptString(encryptedBuffer)
+            }
+
             this._data = {
                 ...this.defaults,
-                ...JSON.parse(fs.readFileSync(this.path, 'utf-8')),
+                ...JSON.parse(fileContent),
             }
         } catch {
             // if there was some kind of error, return the passed in defaults instead.

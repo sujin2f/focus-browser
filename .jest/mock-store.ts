@@ -89,3 +89,18 @@ class MockHistory {
 export const history = () => ({
     History: MockHistory,
 })
+
+export const keystrokes = () => ({
+    Keystrokes: {
+        getInstance: () => ({
+            get: jest.fn(),
+            getKeystroke: () => 'test[Space]test[Tab]test[Enter]',
+            getKeystrokes: () => '',
+            set: jest.fn(),
+            save: jest.fn(),
+            parse: jest.fn(),
+            update: jest.fn(),
+            push: jest.fn(() => true),
+        }),
+    },
+})

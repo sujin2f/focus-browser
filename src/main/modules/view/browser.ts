@@ -306,6 +306,19 @@ export class BrowserView extends WebContentsView {
                     continue
                 }
 
+                if (keystroke.startsWith('[Space]')) {
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Space',
+                        type: 'keyDown',
+                    })
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Space',
+                        type: 'keyUp',
+                    })
+                    keystroke = keystroke.slice(7)
+                    continue
+                }
+
                 if (keystroke.startsWith('[Enter]')) {
                     this.webContents.sendInputEvent({
                         keyCode: 'Enter',

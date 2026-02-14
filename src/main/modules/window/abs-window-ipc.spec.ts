@@ -79,7 +79,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         expect(send).toHaveBeenCalledWith(
             Channel.INFO,
             RequestHandler.RESPONSE,
-            { title: 'test title', url: 'test url' },
+            { title: 'test title', url: 'https://sujinc.com/focus-browser' },
         )
     })
 

@@ -51,7 +51,11 @@ export class Keystrokes extends A_Page {
         const value =
             (this.settings.keystrokes && this.settings.keystrokes[this.host]) ||
             ''
-        this.input = new Input({ label: 'Keystroke', value })
+        this.input = new Input({
+            label: 'Keystroke',
+            value,
+            helpText: 'Type [Tab], [Space], and [Enter] for those keystrokes.',
+        })
         return this.input
     }
 

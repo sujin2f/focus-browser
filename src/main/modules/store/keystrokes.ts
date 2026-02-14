@@ -18,6 +18,8 @@ export class Keystrokes extends Store<KeystrokesStore> {
         return Keystrokes.instance
     }
 
+    protected isSecure = true
+
     parse() {
         super.parse()
 

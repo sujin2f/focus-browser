@@ -21,6 +21,7 @@ import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Shortcut } from '@main/modules/store/shortcut'
+import { Keystrokes } from '@main/modules/store/keystrokes'
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
@@ -139,6 +140,17 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Shortcut.getInstance().save()
                 this.resetMenu()
                 await this.sendInfo('shortcuts')
+                return
+            }
+
+            // Keystroke
+            if (Object.prototype.hasOwnProperty.call(data, 'keystrokes')) {
+                Logger.getInstance().log('keystroke', data.keystrokes)
+                const host = Object.keys(data.keystrokes!)[0]
+                const keystroke = data.keystrokes![host] || ''
+                Keystrokes.getInstance().update(host, keystroke)
+                Keystrokes.getInstance().save()
+                await this.sendInfo('keystrokes')
                 return
             }
 
@@ -326,6 +338,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (requests.includes('shortcuts')) {
             info.shortcuts = Shortcut.getInstance().getShortcuts()
+        }
+
+        if (requests.includes('keystrokes')) {
+            info.keystrokes = Keystrokes.getInstance().getKeystrokes()
         }
 
         Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)

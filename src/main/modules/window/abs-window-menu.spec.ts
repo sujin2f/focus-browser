@@ -56,8 +56,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('addBookmark > Show Notification', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[13]
-                : menu[1].submenu[13]
+                ? menu[1].submenu[14]
+                : menu[1].submenu[14]
 
         menuItem.click()
         expect(bookmarkPush).toHaveBeenCalled()
@@ -67,8 +67,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('addAnchor > Show Notification', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[14]
-                : menu[1].submenu[14]
+                ? menu[1].submenu[15]
+                : menu[1].submenu[15]
 
         menuItem.click()
         expect(anchorPush).toHaveBeenCalled()
@@ -78,8 +78,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('find > switch', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[8]
-                : menu[1].submenu[8]
+                ? menu[1].submenu[9]
+                : menu[1].submenu[9]
 
         menuItem.click()
         expect(switchFn).toHaveBeenCalledWith(PageType.FIND)
@@ -88,8 +88,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('find next', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[9]
-                : menu[1].submenu[9]
+                ? menu[1].submenu[10]
+                : menu[1].submenu[20]
 
         menuItem.click()
         expect(findInPage).toHaveBeenCalledWith('search', {
@@ -100,8 +100,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('find prev', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[10]
-                : menu[1].submenu[10]
+                ? menu[1].submenu[11]
+                : menu[1].submenu[11]
 
         console.log(menuItem)
 
@@ -115,8 +115,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('stop', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[1].submenu[11]
-                : menu[1].submenu[11]
+                ? menu[1].submenu[12]
+                : menu[1].submenu[12]
 
         menuItem.click()
         expect(stopFindInPage).toHaveBeenCalled()

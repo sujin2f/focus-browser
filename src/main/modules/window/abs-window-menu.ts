@@ -109,6 +109,14 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 accelerator: this.getShortcut(Menu.PASTE),
                 role: 'paste',
             },
+            [Menu.PASTE_KEYSTROKE]: {
+                accelerator: this.getShortcut(Menu.PASTE_KEYSTROKE),
+                click: () => {
+                    if (this.isBrowser) {
+                        this.browser.pasteKeystrokes()
+                    }
+                },
+            },
             [Menu.SELECT_ALL]: {
                 accelerator: this.getShortcut(Menu.SELECT_ALL),
                 role: 'selectAll',

@@ -19,6 +19,7 @@ export enum PageType {
     OFFLINE,
     FIND,
     SHORTCUT,
+    KEYSTROKES,
 }
 
 export const BROWSER = 'scene-browser'
@@ -84,6 +85,7 @@ export enum Menu {
     CUT = 'Cut',
     COPY = 'Copy',
     PASTE = 'Paste',
+    PASTE_KEYSTROKE = 'Paste Keystroke',
     SELECT_ALL = 'Select All',
     ADD_BOOKMARK = 'Add Bookmark',
     ADD_ANCHOR = 'Add Anchor',
@@ -197,6 +199,10 @@ export const DEFAULT_SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
     [Menu.ADD_ANCHOR]: {
         [SystemType.DARWIN]: 'Command+/',
         [SystemType.DEFAULT]: 'Control+/',
+    },
+    [Menu.PASTE_KEYSTROKE]: {
+        [SystemType.DARWIN]: 'Command+K',
+        [SystemType.DEFAULT]: 'Control+K',
     },
     [Menu.FULL_SCREEN]: {
         [SystemType.DARWIN]: 'Command+Control+F',

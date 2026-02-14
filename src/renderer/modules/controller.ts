@@ -7,12 +7,14 @@ import { Bookmarks } from '@home/modules/pages/bookmarks'
 import { History } from '@home/modules/pages/history'
 import { Anchors } from '@home/modules/pages/anchors'
 import { PopupBlocker } from '@home/modules/pages/popup'
+import { Keystrokes } from '@home/modules/pages/keystrokes'
 import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
 import { Shortcut } from '@home/modules/pages/shortcut'
 import { Offline } from '@home/modules/pages/offline'
 import { Find } from '@home/modules/pages/find'
+
 import { Logger } from '@src/common/logger'
 
 export class Controller {
@@ -81,6 +83,9 @@ export class Controller {
                 break
             case PageType.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
+                break
+            case PageType.KEYSTROKES:
+                this._currentPage = new Keystrokes()
                 break
             case PageType.WELCOME:
                 this._currentPage = new Welcome()

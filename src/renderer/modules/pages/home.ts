@@ -42,6 +42,11 @@ const buttons: Record<string, T_Card> = {
         description: 'Manage Popup Blocker',
         destination: PageType.POPUP_BLOCKER,
     },
+    keystrokes: {
+        title: 'Keystroke (K)',
+        description: 'Manage Keystrokes',
+        destination: PageType.KEYSTROKES,
+    },
     setting: {
         title: 'Setting',
         description: '',
@@ -171,6 +176,9 @@ export class Home extends A_Page {
                     return true
                 case 'KeyA':
                     document.dispatchEvent(new SwitchEvent(PageType.ANCHOR))
+                    return true
+                case 'KeyK':
+                    document.dispatchEvent(new SwitchEvent(PageType.KEYSTROKES))
                     return true
                 case 'KeyP':
                     document.dispatchEvent(

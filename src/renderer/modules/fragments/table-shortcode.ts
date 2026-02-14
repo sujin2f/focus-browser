@@ -10,7 +10,7 @@ export class ShortcodeTable extends Element<HTMLDivElement> {
         )
     }
 
-    private _tbody: Element<HTMLTableElement>
+    private _tbody!: Element<HTMLTableElement>
     private get tbody() {
         if (!this._tbody) {
             this._tbody = new Element<HTMLTableElement>({

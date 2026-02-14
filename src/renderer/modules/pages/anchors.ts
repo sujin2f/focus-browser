@@ -34,16 +34,16 @@ export class Anchors extends A_PageWithTable<Bookmark> {
 
     request(): void {
         ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
-        ipcRenderer.once(
-            Channel.ANCHOR,
-            (handler: RequestHandler.RESPONSE, anchors: Bookmark[]) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
+        ipcRenderer.once(Channel.ANCHOR, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+            const anchors = args[1] as Bookmark[]
 
-                this.action(TableAction.UPDATE, anchors)
-            },
-        )
+            if (handler !== RequestHandler.RESPONSE) {
+                return
+            }
+
+            this.action(TableAction.UPDATE, anchors)
+        })
     }
 
     refresh(): void {
@@ -142,7 +142,10 @@ export class Anchors extends A_PageWithTable<Bookmark> {
     action(action: TableAction, items: Bookmark[] = []) {
         super.action(action, items)
 
-        if (action === TableAction.EXECUTE || action === TableAction.EDIT) {
+        if (
+            (action === TableAction.EXECUTE || action === TableAction.EDIT) &&
+            this._cursor
+        ) {
             navigate(
                 (this._cursor.getData('data') as Bookmark).url,
                 RequestHandler.REMOVE,

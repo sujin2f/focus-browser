@@ -17,7 +17,7 @@ export abstract class A_Page {
      */
     abstract readonly page: PageType
 
-    private _root: Element<HTMLElement>
+    private _root!: Element<HTMLElement>
     protected get root(): Element<HTMLElement> {
         if (!this._root) {
             this._root = new Root()
@@ -59,7 +59,10 @@ export abstract class A_Page {
     public doShortcut(e: KeyboardEvent): boolean | 'findMode' {
         if (e.key === 'Escape') {
             // unFocus input
-            if (document.activeElement.tagName.toLowerCase() === 'input') {
+            if (
+                document.activeElement &&
+                document.activeElement.tagName.toLowerCase() === 'input'
+            ) {
                 this.blur()
                 return true
             }
@@ -67,7 +70,7 @@ export abstract class A_Page {
             // Back to List mode
             if (this._mode !== PageMode.LIST) {
                 this.changeMode(PageMode.LIST)
-                return
+                return false
             }
 
             // Back to browser mode
@@ -87,19 +90,19 @@ export abstract class A_Page {
         Logger.getInstance().log(
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
-        ipcRenderer.once(
-            Channel.INFO,
-            (handler: RequestHandler, setting: Info) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
-                Logger.getInstance().info(
-                    `[Renderer] Get Info ${JSON.stringify(setting)}`,
-                )
-                this.settings = { ...this.settings, ...setting }
-                this.action(TableAction.INFO)
-            },
-        )
+        ipcRenderer.once(Channel.INFO, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+            const setting = args[1] as Info
+
+            if (handler !== RequestHandler.RESPONSE) {
+                return
+            }
+            Logger.getInstance().info(
+                `[Renderer] Get Info ${JSON.stringify(setting)}`,
+            )
+            this.settings = { ...this.settings, ...setting }
+            this.action(TableAction.INFO)
+        })
         ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, ...keys)
     }
 }

@@ -23,6 +23,7 @@ export const goToIndex = jest.fn()
 export const historyClear = jest.fn()
 export const findInPage = jest.fn()
 export const stopFindInPage = jest.fn()
+export const sendInputEvent = jest.fn()
 export class MockWebContentsView {
     webContents: unknown
     constructor() {
@@ -39,7 +40,7 @@ export class MockWebContentsView {
             openDevTools: jest.fn(),
             closeDevTools: jest.fn(),
             getTitle: jest.fn(() => 'test title'),
-            getURL: jest.fn(() => 'test url'),
+            getURL: jest.fn(() => 'https://sujinc.com/focus-browser'),
             on: () => this.webContents,
             setVisualZoomLevelLimits: jest.fn(),
             setZoomFactor: jest.fn(),
@@ -56,6 +57,7 @@ export class MockWebContentsView {
                 goToIndex,
                 clear: historyClear,
             },
+            sendInputEvent,
         }
     }
 }
@@ -65,6 +67,8 @@ export const MockNotification = jest.fn().mockImplementation(() => ({
     addListener: jest.fn(),
 }))
 
+export const mockEncryptString = jest.fn(() => ({ toString: jest.fn() }))
+export const mockDecryptString = jest.fn()
 export const menuBuilder = jest.fn((v) => v)
 export const ipcMainOn = jest.fn()
 export const electron = () => ({
@@ -78,4 +82,8 @@ export const electron = () => ({
         setApplicationMenu: jest.fn(),
     },
     Notification: MockNotification,
+    safeStorage: {
+        encryptString: mockEncryptString,
+        decryptString: mockDecryptString,
+    },
 })

@@ -32,24 +32,21 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
 
     request(): void {
         ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
-        ipcRenderer.once(
-            Channel.POPUP_BLOCKER,
-            (
-                handler: RequestHandler.RESPONSE,
-                blocked: string[],
-                allowed: string[],
-            ) => {
-                if (handler !== RequestHandler.RESPONSE) {
-                    return
-                }
+        ipcRenderer.once(Channel.POPUP_BLOCKER, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+            const blocked = args[1] as string[]
+            const allowed = args[2] as string[]
 
-                const data = [
-                    ...blocked.map((host) => ({ host, allowed: false })),
-                    ...allowed.map((host) => ({ host, allowed: true })),
-                ]
-                this.action(TableAction.UPDATE, data)
-            },
-        )
+            if (handler !== RequestHandler.RESPONSE) {
+                return
+            }
+
+            const data = [
+                ...blocked.map((host) => ({ host, allowed: false })),
+                ...allowed.map((host) => ({ host, allowed: true })),
+            ]
+            this.action(TableAction.UPDATE, data)
+        })
     }
 
     getTHeads(): Element<HTMLTableCellElement>[] {
@@ -100,9 +97,10 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
         super.action(action, items)
 
         if (
-            action === TableAction.DELETE ||
-            action === TableAction.EXECUTE ||
-            action === TableAction.EDIT
+            (action === TableAction.DELETE ||
+                action === TableAction.EXECUTE ||
+                action === TableAction.EDIT) &&
+            this._cursor
         ) {
             const data = this._cursor.getData('data') as T_PopupBlocker
             const index = this._cursor.getData('index') as number

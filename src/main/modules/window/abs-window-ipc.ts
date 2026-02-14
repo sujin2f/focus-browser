@@ -20,6 +20,8 @@ import { Status } from '@main/modules/store/status'
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { Bookmarks } from '@main/modules/store/bookmarks'
+import { Shortcut } from '@main/modules/store/shortcut'
+import { Keystrokes } from '@main/modules/store/keystrokes'
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
@@ -111,7 +113,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             // Clear cache
             if (
                 Object.prototype.hasOwnProperty.call(data, 'cacheSize') &&
-                isNaN(data.cacheSize)
+                isNaN(data.cacheSize!)
             ) {
                 await this.browser.webContents.session.clearCache()
                 await this.sendInfo('cacheSize')
@@ -131,7 +133,28 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            Status.getInstance().merge(data)
+            // Shortcuts
+            if (Object.prototype.hasOwnProperty.call(data, 'shortcuts')) {
+                Shortcut.getInstance().update(data.shortcuts!)
+                Shortcut.getInstance().save()
+                this.resetMenu()
+                await this.sendInfo('shortcuts')
+                return
+            }
+
+            // Keystroke
+            if (Object.prototype.hasOwnProperty.call(data, 'keystrokes')) {
+                const host = Object.keys(data.keystrokes!)[0]
+                const keystroke = data.keystrokes![host] || ''
+                Keystrokes.getInstance().update(host, keystroke)
+                Keystrokes.getInstance().save()
+                await this.sendInfo('keystrokes')
+                return
+            }
+
+            const status = Status.getInstance()
+            status.merge(data)
+            status.save()
 
             // If adBlocker setting changed, reset.
             if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
@@ -163,8 +186,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             this.browser.loadURL(address)
         }
 
-        if (handler === RequestHandler.REMOVE) {
+        if (handler === RequestHandler.REMOVE && address) {
             Anchors.getInstance().remove(address)
+            Anchors.getInstance().save()
         }
     }
 
@@ -195,22 +219,26 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         bookmark: Bookmark,
         index: number,
     ) {
+        const bookmarks = Bookmarks.getInstance()
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.centre.webContents.send(
                     Channel.BOOKMARK,
                     RequestHandler.RESPONSE,
-                    Bookmarks.getInstance().get(),
+                    bookmarks.get(),
                 )
                 return
             case RequestHandler.ADD:
-                Bookmarks.getInstance().push(bookmark)
+                bookmarks.push(bookmark)
+                bookmarks.save()
                 return
             case RequestHandler.MODIFY:
-                Bookmarks.getInstance().update(index, bookmark)
+                bookmarks.update(index, bookmark)
+                bookmarks.save()
                 return
             case RequestHandler.REMOVE:
-                Bookmarks.getInstance().remove(index)
+                bookmarks.remove(index)
+                bookmarks.save()
                 return
         }
     }
@@ -227,6 +255,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             case RequestHandler.REMOVE:
                 Anchors.getInstance().remove(url)
+                Anchors.getInstance().save()
                 return
         }
     }
@@ -254,9 +283,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
 
-            case RequestHandler.MODIFY:
-                PopupBlocker.getInstance().toggle(host)
+            case RequestHandler.MODIFY: {
+                const popupBlocker = PopupBlocker.getInstance()
+                popupBlocker.toggle(host)
+                popupBlocker.save()
+
                 return
+            }
         }
     }
 
@@ -299,6 +332,14 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (requests.includes('searchEngine')) {
             info.searchEngine = status.searchEngine
+        }
+
+        if (requests.includes('shortcuts')) {
+            info.shortcuts = Shortcut.getInstance().getShortcuts()
+        }
+
+        if (requests.includes('keystrokes')) {
+            info.keystrokes = Keystrokes.getInstance().getKeystrokes()
         }
 
         Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)

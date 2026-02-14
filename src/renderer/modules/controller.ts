@@ -1,4 +1,3 @@
-import type { EventSwitch } from '@src/common/types'
 import { PageType, CustomEvents, Channel } from '@src/common/constants'
 import { checkElectron, ipcRenderer } from '@home/utils'
 
@@ -8,15 +7,18 @@ import { Bookmarks } from '@home/modules/pages/bookmarks'
 import { History } from '@home/modules/pages/history'
 import { Anchors } from '@home/modules/pages/anchors'
 import { PopupBlocker } from '@home/modules/pages/popup'
+import { Keystrokes } from '@home/modules/pages/keystrokes'
 import { Welcome } from '@home/modules/pages/welcome'
 import { Address } from '@home/modules/pages/address'
 import { Setting } from '@home/modules/pages/setting'
+import { Shortcut } from '@home/modules/pages/shortcut'
 import { Offline } from '@home/modules/pages/offline'
 import { Find } from '@home/modules/pages/find'
+
 import { Logger } from '@src/common/logger'
 
 export class Controller {
-    private _currentPage: A_Page
+    private _currentPage: A_Page = new Home()
     public get currentPage() {
         return this._currentPage
     }
@@ -29,10 +31,16 @@ export class Controller {
                 this.currentPage.doShortcut(e),
             )
 
-            document.addEventListener(CustomEvents.SWITCH, (e: EventSwitch) => {
-                Logger.getInstance().log(`[Renderer] Switch to ${e.detail}`)
-                this.switch(e.detail)
-            })
+            document.addEventListener(
+                CustomEvents.SWITCH as string,
+                (e: Event) => {
+                    const customEvent = e as CustomEvent<PageType>
+                    Logger.getInstance().log(
+                        `[Renderer] Switch to ${customEvent.detail}`,
+                    )
+                    this.switch(customEvent.detail)
+                },
+            )
 
             this.initIPC()
             this.switch(PageType.HOME)
@@ -40,7 +48,8 @@ export class Controller {
     }
 
     private initIPC() {
-        ipcRenderer.on(Channel.SWITCH, (scene: PageType) => {
+        ipcRenderer.on(Channel.SWITCH, (...args: unknown[]) => {
+            const scene = args[0] as PageType
             this.switch(scene)
         })
     }
@@ -75,6 +84,9 @@ export class Controller {
             case PageType.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
                 break
+            case PageType.KEYSTROKES:
+                this._currentPage = new Keystrokes()
+                break
             case PageType.WELCOME:
                 this._currentPage = new Welcome()
                 break
@@ -86,6 +98,9 @@ export class Controller {
                 break
             case PageType.FIND:
                 this._currentPage = new Find()
+                break
+            case PageType.SHORTCUT:
+                this._currentPage = new Shortcut()
                 break
         }
     }

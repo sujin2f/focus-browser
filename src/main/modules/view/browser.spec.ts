@@ -1,7 +1,15 @@
-import { electron, loadURL } from '@test/mock-electron'
+// yarn test browser.spec.ts
+
+import { electron, loadURL, sendInputEvent } from '@test/mock-electron'
 import { adBlocker, fromPrebuiltAdsAndTracking } from '@test/mock-ad-blocker'
 import { window } from '@test/mock-window'
-import { history, popupBlocker, status, statusGet } from '@test/mock-store'
+import {
+    history,
+    popupBlocker,
+    status,
+    keystrokes,
+    statusGet,
+} from '@test/mock-store'
 
 jest.resetModules()
 jest.doMock('electron', electron)
@@ -9,6 +17,7 @@ jest.doMock('@main/modules/adblocker-electron', adBlocker)
 jest.doMock('@main/modules/store/popup-blocker', popupBlocker)
 jest.doMock('@main/modules/store/history', history)
 jest.doMock('@main/modules/store/status', status)
+jest.doMock('@main/modules/store/keystrokes', keystrokes)
 jest.doMock('@main/modules/window/window', window)
 statusGet.mockReturnValue('GOOGLE')
 
@@ -63,5 +72,19 @@ describe('Web Browser View (browser.ts)', () => {
 
         // failedUrl should store the URL
         expect(view.failedUrl).toBe('http://hey.com/')
+    })
+
+    test('Keystroke', async () => {
+        const view = new BrowserView({})
+        view.pasteKeystrokes()
+        expect(sendInputEvent).toHaveBeenCalledTimes(18)
+        expect(sendInputEvent).toHaveBeenNthCalledWith(5, {
+            keyCode: 'Space',
+            type: 'keyDown',
+        })
+        expect(sendInputEvent).toHaveBeenNthCalledWith(6, {
+            keyCode: 'Space',
+            type: 'keyUp',
+        })
     })
 })

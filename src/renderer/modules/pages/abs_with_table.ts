@@ -235,7 +235,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
             prev.next = tr
             tr.prev = prev
         } else {
-            tr.prev = null
+            tr.prev = undefined
         }
         return tr
     }
@@ -264,7 +264,10 @@ export abstract class A_PageWithTable<T> extends A_Page {
             }
         }
 
-        if (document.activeElement.tagName.toLowerCase() === 'input') {
+        if (
+            document.activeElement &&
+            document.activeElement.tagName.toLowerCase() === 'input'
+        ) {
             switch (e.key) {
                 case 'ArrowDown':
                     if (!e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
@@ -305,7 +308,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
                 case 'Enter':
                     if (!this._cursor) {
-                        return
+                        return false
                     }
                     if ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) {
                         this.action(TableAction.EDIT)
@@ -318,7 +321,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
                 case ' ':
                     if (!this._cursor) {
-                        return
+                        return false
                     }
                     this.action(TableAction.EXECUTE)
                     e.preventDefault()
@@ -326,7 +329,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
                 case 'Delete':
                     if (!this._cursor) {
-                        return
+                        return false
                     }
                     this.action(TableAction.DELETE)
                     e.preventDefault()
@@ -336,6 +339,7 @@ export abstract class A_PageWithTable<T> extends A_Page {
 
         // User input Shortcut or find
         if (
+            document.activeElement &&
             document.activeElement.tagName.toLowerCase() !== 'input' &&
             e.location === e.DOM_KEY_LOCATION_STANDARD
         ) {

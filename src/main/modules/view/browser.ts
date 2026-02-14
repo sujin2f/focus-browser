@@ -19,6 +19,7 @@ import { Logger } from '@src/common/logger'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
+import { Keystrokes } from '@main/modules/store/keystrokes'
 
 export class BrowserView extends WebContentsView {
     public get url(): Bookmark {
@@ -28,7 +29,7 @@ export class BrowserView extends WebContentsView {
         }
     }
 
-    private _blocker?: ElectronBlocker | false = null
+    private _blocker?: ElectronBlocker | false = undefined
     public get blocker() {
         return this._blocker
     }
@@ -151,7 +152,7 @@ export class BrowserView extends WebContentsView {
 
     private searchKeyword(keyword: string) {
         const searchEngine = Status.getInstance().get('searchEngine')
-        this._failedUrl = null
+        this._failedUrl = undefined
         this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
     }
 
@@ -233,7 +234,7 @@ export class BrowserView extends WebContentsView {
                 */
             })
             .catch((e: unknown) => {
-                this._blocker = null
+                this._blocker = undefined
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
                 Logger.getInstance().error(
                     'Ad-Blocker is failed to load: ',
@@ -280,6 +281,61 @@ export class BrowserView extends WebContentsView {
             notification.show()
             return { action: 'deny' }
         })
+    }
+
+    public pasteKeystrokes() {
+        const host = new URL(this.webContents.getURL()).host
+        let keystroke = Keystrokes.getInstance().getKeystroke(host)
+        if (!keystroke) {
+            return
+        }
+
+        while (keystroke) {
+            const keyCode = keystroke.charAt(0)
+            if (keyCode === '[') {
+                if (keystroke.startsWith('[Tab]')) {
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Tab',
+                        type: 'keyDown',
+                    })
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Tab',
+                        type: 'keyUp',
+                    })
+                    keystroke = keystroke.slice(5)
+                    continue
+                }
+
+                if (keystroke.startsWith('[Space]')) {
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Space',
+                        type: 'keyDown',
+                    })
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Space',
+                        type: 'keyUp',
+                    })
+                    keystroke = keystroke.slice(7)
+                    continue
+                }
+
+                if (keystroke.startsWith('[Enter]')) {
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Enter',
+                        type: 'keyDown',
+                    })
+                    this.webContents.sendInputEvent({
+                        keyCode: 'Enter',
+                        type: 'keyUp',
+                    })
+                    keystroke = keystroke.slice(7)
+                    continue
+                }
+            }
+
+            this.webContents.sendInputEvent({ keyCode, type: 'char' })
+            keystroke = keystroke.slice(1)
+        }
     }
 
     /**

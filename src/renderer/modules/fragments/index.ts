@@ -4,23 +4,20 @@ import type { ElementProps } from '@src/common/types'
  * HTML elements, similar with React, for Tailwind
  * This project aims lightweight browser. Do not use huge library.
  */
-export class Element<
-    T extends HTMLElement,
-    D extends Record<string, unknown> = null,
-> {
+export class Element<T extends HTMLElement> {
     /**
      * Elements: main & children
      */
-    private _element: T
+    private _element!: T // Assigning from init()
     protected set element(element: T) {
         this._element = element
     }
     public get element(): T {
         return this._element
     }
-    private _children: (string | Element<HTMLElement, null>)[] = []
+    private _children: (string | Element<HTMLElement>)[] = []
 
-    constructor(private props: Partial<ElementProps<D>> = {}) {
+    constructor(private props: Partial<ElementProps<null>> = {}) {
         this.init()
     }
 
@@ -32,7 +29,6 @@ export class Element<
             value,
             onClick,
             selector,
-            props,
         } = this.props
 
         // query element or create one
@@ -77,21 +73,6 @@ export class Element<
         if (onClick) {
             this.addEventListener('click', onClick.bind(this))
         }
-
-        if (props) {
-            this._data = props
-        }
-    }
-
-    /**
-     * Data
-     */
-    private _data: D = {} as D
-    public setData<K extends keyof D>(key: K, value: D[K]) {
-        this._data[key] = value
-    }
-    public getData<K extends keyof D>(key: K): D[K] {
-        return this._data[key]
     }
 
     public set innerHTML(html: string) {
@@ -145,7 +126,7 @@ export class Element<
         return this
     }
 
-    public getAttribute(qualifiedName: string): string {
+    public getAttribute(qualifiedName: string): string | null {
         return this.element.getAttribute(qualifiedName)
     }
 
@@ -189,5 +170,37 @@ export class Element<
     public reset(..._: unknown[]): this {
         this.init()
         return this
+    }
+}
+
+/**
+ * HTML elements, similar with React, for Tailwind
+ * This project aims lightweight browser. Do not use huge library.
+ */
+export class ElementWithData<
+    T extends HTMLElement,
+    D extends Record<string, unknown>,
+> extends Element<T> {
+    constructor(private propsWithData: Partial<ElementProps<D>> = {}) {
+        super(propsWithData as unknown as ElementProps<null>)
+
+        if (propsWithData.props) {
+            this._data = propsWithData.props
+        }
+    }
+
+    /**
+     * Data
+     */
+    private _data: D = {} as D
+    public setData<K extends keyof D>(key: K, value: D[K]) {
+        this._data[key] = value
+    }
+    public getData<K extends keyof D>(key: K): D[K] {
+        return this._data[key]
+    }
+
+    public set innerHTML(html: string) {
+        this.element.innerHTML = html
     }
 }

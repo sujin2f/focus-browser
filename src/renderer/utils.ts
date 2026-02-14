@@ -36,16 +36,14 @@ export const shortcutToHtml = (shortcut: string): Element<HTMLElement>[] => {
         .map((key) => key.trim())
         .map((key) => new Keyboard().append(key === CTRL ? ctrlOrComm() : key))
 
-    return []
-        .concat(
-            ...keys.map((n) => [
-                n,
-                new Element({
-                    tag: 'span',
-                    className: ['text-gray-500'],
-                }).append('+'),
-            ]),
-        )
+    return keys
+        .flatMap((n) => [
+            n,
+            new Element({
+                tag: 'span',
+                className: ['text-gray-500'],
+            }).append('+'),
+        ])
         .slice(0, -1)
 }
 

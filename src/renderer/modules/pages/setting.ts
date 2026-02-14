@@ -53,7 +53,7 @@ export class Setting extends A_Page {
     private get maxHistory() {
         const maxHistory = new Input({
             type: 'number',
-            value: this.settings.maxHistory.toString(),
+            value: (this.settings.maxHistory || '0').toString(),
             onChange: () => {
                 maxHistory.error = ''
                 const value = parseInt(maxHistory.value)
@@ -133,7 +133,7 @@ export class Setting extends A_Page {
     }
 
     private get cacheSize() {
-        let cacheSize = this.settings.cacheSize
+        let cacheSize = this.settings.cacheSize || 0
         let cacheText = ''
         const mb = 1024 * 1024
         if (cacheSize < mb) {

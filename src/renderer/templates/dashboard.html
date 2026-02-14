@@ -9,5 +9,18 @@
         />
     </head>
 
-    <%= require('html-loader!./fragments/body.html').default %>
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto">
+            <div
+                id="root"
+                class="flex flex-col h-dvh justify-center items-center max-w-4xl m-auto"
+            >
+                <section class="grid grid-cols-2 mt-2" id="grid"></section>
+            </div>
+        </div>
+        <%= require('html-loader!./fragments/h1.html').default %> <%=
+        require('html-loader!./fragments/card.html').default %>
+    </body>
 </html>

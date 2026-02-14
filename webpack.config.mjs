@@ -82,19 +82,28 @@ const mainConfig = {
     ],
 }
 
-const rendererConfig = {
+const renderer = {
     ...commonConfig,
     target: ['web', 'electron-renderer'],
     name: 'renderer',
-    entry: './src/renderer/index.ts',
+    entry: {
+        'renderer/index': './src/renderer/src/index.ts',
+        'renderer/dashboard': './src/renderer/src/entries/dashboard.ts',
+    },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './src/renderer/templates/index.html', // Your HTML template for the renderer
+            template: './src/renderer/templates/index.html',
             filename: 'index.html',
+            chunks: ['renderer/index'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/dashboard.html',
+            filename: 'dashboard.html',
+            chunks: ['renderer/dashboard'],
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({
@@ -102,16 +111,22 @@ const rendererConfig = {
             envBeta: process.env.npm_package_version.includes('beta'),
         }),
     ],
+    devServer:
+        process.env.NODE_ENV === 'development'
+            ? {
+                  static: {
+                      directory: join(
+                          __dirname,
+                          'release',
+                          'app',
+                          'dist',
+                          'renderer',
+                      ),
+                  },
+                  hot: true,
+                  port: process.env.PORT || 1212, // Port for the dev server
+              }
+            : undefined,
 }
 
-if (process.env.NODE_ENV === 'development') {
-    rendererConfig.devServer = {
-        static: {
-            directory: join(__dirname, 'release', 'app', 'dist', 'renderer'),
-        },
-        hot: true,
-        port: process.env.PORT || 1212, // Port for the dev server
-    }
-}
-
-export default [mainConfig, rendererConfig]
+export default [mainConfig, renderer]

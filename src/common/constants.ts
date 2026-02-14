@@ -3,6 +3,11 @@ import type { StatusProps } from '@src/common/types'
 export const MAX_HISTORY = 200
 export const CURRENT_PAGE_INFO = 'current-page-info'
 
+export enum NAVIGATION {
+    LAST_VISIT = 'Last Visit',
+    SEARCH_ENGINE = 'Search Engine',
+}
+
 /**
  * Control centre pages
  */
@@ -20,6 +25,7 @@ export enum PageType {
     FIND,
     SHORTCUT,
     KEYSTROKES,
+    DASHBOARD,
 }
 
 export const BROWSER = 'scene-browser'

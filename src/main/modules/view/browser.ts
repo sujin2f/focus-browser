@@ -51,7 +51,7 @@ export class BrowserView extends WebContentsView {
             Channel.MAIN_PROCESS,
             null,
             MainEventTypes.TITLE,
-            'Loading...',
+            'Welcome to Focus!',
         )
 
         this.setPopupBlocker()
@@ -95,9 +95,12 @@ export class BrowserView extends WebContentsView {
             })
 
         this.webContents.setZoomFactor(1)
+    }
 
+    public loadLastHistory() {
+        Logger.getInstance().info('loadLastHistory')
         const url = this.restoreHistory() || this.DEFAULT_URL
-        Logger.getInstance().log('BrowserView::constructor()', url)
+        Logger.getInstance().info('url', url)
         this.loadURL(url)
     }
 
@@ -150,7 +153,7 @@ export class BrowserView extends WebContentsView {
         })
     }
 
-    private searchKeyword(keyword: string) {
+    public searchKeyword(keyword: string) {
         const searchEngine = Status.getInstance().get('searchEngine')
         this._failedUrl = undefined
         this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
@@ -160,18 +163,25 @@ export class BrowserView extends WebContentsView {
      * Restore history from storage
      */
     private restoreHistory() {
+        Logger.getInstance().info('restoreHistory')
         const history = new History()
         history.parse()
 
-        if (!isNaN(history.get('index'))) {
+        const index = history.get('index')
+        Logger.getInstance().info('history.get(index)', index)
+
+        if (!isNaN(index) && index !== -1) {
             this.webContents.navigationHistory.restore({
-                index: history.get('index'),
+                index,
                 entries: history.get('history'),
             })
         }
 
-        if (history.current) {
-            return history.current.url
+        const current = history.current
+        Logger.getInstance().info('history.current', current)
+
+        if (current) {
+            return current.url
         }
         return ''
     }

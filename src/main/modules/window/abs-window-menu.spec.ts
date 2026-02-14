@@ -1,3 +1,4 @@
+// yarn test abs-window-menu.spec.ts
 /// <reference types="jest" />
 import {
     electron,
@@ -29,14 +30,16 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { PageType } from '@src/common/constants'
+import { PageType, BROWSER } from '@src/common/constants'
 
 import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
+import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()
 class Menu extends AbsWindowMenu {
     switch = switchFn
     protected findText: string = 'search'
+    protected _current: Scenes = BROWSER
     constructor() {
         super()
         this.browser = new BrowserView({})
@@ -53,12 +56,11 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         menu = menuBuilder.mock.calls[0][0]
     })
 
-    test('addBookmark > Show Notification', async () => {
+    test('Edit > Menu.ADD_BOOKMARK > Show Notification', async () => {
         const menuItem =
             process.platform === 'darwin'
                 ? menu[1].submenu[14]
                 : menu[1].submenu[14]
-
         menuItem.click()
         expect(bookmarkPush).toHaveBeenCalled()
         expect(MockNotification).toHaveBeenCalled()
@@ -102,8 +104,6 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
             process.platform === 'darwin'
                 ? menu[1].submenu[11]
                 : menu[1].submenu[11]
-
-        console.log(menuItem)
 
         menuItem.click()
         expect(findInPage).toHaveBeenCalledWith('search', {
@@ -197,8 +197,6 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
             process.platform === 'darwin'
                 ? menu[3].submenu[8]
                 : menu[3].submenu[8]
-        console.log(menuItem)
-
         menuItem.click()
         expect(stop).toHaveBeenCalled()
     })

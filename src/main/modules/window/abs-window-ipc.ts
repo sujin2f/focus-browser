@@ -14,6 +14,7 @@ import {
     LogTypes,
     MainEventTypes,
     PageType,
+    NAVIGATION,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -183,6 +184,17 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.browser.reload()
                 return
             }
+
+            if (address === NAVIGATION.LAST_VISIT) {
+                this.browser.loadLastHistory()
+                return
+            }
+
+            if (address === NAVIGATION.SEARCH_ENGINE) {
+                this.browser.searchKeyword('')
+                return
+            }
+
             this.browser.loadURL(address)
         }
 

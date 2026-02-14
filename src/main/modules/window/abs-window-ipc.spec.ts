@@ -32,7 +32,6 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 
 jest.doMock('@main/modules/view/browser', browser)
 
-import { WebContentsView } from 'electron'
 import { BrowserView } from '@src/main/modules/view/browser'
 import {
     RequestHandler,
@@ -43,14 +42,17 @@ import {
 } from '@src/common/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
+import { CenterView } from '../view/centre'
+import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
     switch = switchFn
+    protected _current: Scenes = BROWSER
     constructor() {
         super()
         this.browser = new BrowserView({})
-        this.centre = new WebContentsView()
+        this.centre = new CenterView({})
     }
 }
 

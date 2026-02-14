@@ -1,6 +1,5 @@
 import {
     BrowserWindow as ElectronBrowserWindow,
-    WebContentsView,
     Menu as ElectronMenu,
     Notification,
     clipboard,
@@ -24,6 +23,7 @@ import { Anchors } from '@main/modules/store/anchors'
 import { Shortcut } from '@main/modules/store/shortcut'
 
 import { BrowserView } from '@src/main/modules/view/browser'
+import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 import { isBeta, isTest } from '@src/common/utils'
 
@@ -41,8 +41,8 @@ import { isBeta, isTest } from '@src/common/utils'
  */
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
-    protected centre!: WebContentsView
-    protected _current: Scenes = BROWSER
+    protected centre!: CenterView
+    protected _current: Scenes = PageType.DASHBOARD
     protected get isBrowser() {
         return this._current === BROWSER
     }

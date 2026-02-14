@@ -1,17 +1,14 @@
-import {
-    session,
-    WebContentsView,
-    type BaseWindowConstructorOptions,
-} from 'electron'
+import { session, type BaseWindowConstructorOptions } from 'electron'
 
-import { preload, resolveHtmlPath } from '@src/main/utils'
+import { preload } from '@src/main/utils'
 import type { Scenes } from '@src/common/types'
-import { PageType, Channel } from '@src/common/constants'
+import { PageType } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
 
 import { BrowserView } from '@src/main/modules/view/browser'
+import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
@@ -42,31 +39,15 @@ export class BrowserWindow extends AbsWindowIPC {
                 contextIsolation: false,
             },
         })
-        this.contentView = this.browser
     }
 
     private initCentre() {
-        this.centre = new WebContentsView({
+        this.centre = new CenterView({
             webPreferences: {
                 preload,
             },
         })
-        this.centre.webContents
-            .loadURL(resolveHtmlPath('index.html'))
-            .then(() => {
-                const status = Status.getInstance()
-                if (status.get('welcome')) {
-                    this.title = 'Welcome to Focus!'
-                    this.switch(PageType.WELCOME)
-                    status.set('welcome', false)
-                }
-            })
-            .catch((e) =>
-                Logger.getInstance().error(
-                    'Centre init failed',
-                    JSON.stringify(e),
-                ),
-            )
+        this.contentView = this.centre
     }
 
     /**
@@ -83,7 +64,7 @@ export class BrowserWindow extends AbsWindowIPC {
         }
 
         this.contentView = this.centre
-        this.centre.webContents.send(Channel.SWITCH, scene)
+        this.centre.loadScene(PageType.HOME)
         this.centre.webContents.focus()
     }
 

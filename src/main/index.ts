@@ -22,6 +22,7 @@ app.whenReady()
         const window = new BrowserWindow({
             frame: Status.getInstance().get('frame'),
         })
+        // TODO to settings
         window.setAutoHideMenuBar(true)
 
         app.on('activate', () => {

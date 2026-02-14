@@ -89,7 +89,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         const menuItem =
             process.platform === 'darwin'
                 ? menu[1].submenu[10]
-                : menu[1].submenu[20]
+                : menu[1].submenu[10]
 
         menuItem.click()
         expect(findInPage).toHaveBeenCalledWith('search', {

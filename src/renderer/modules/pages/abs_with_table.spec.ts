@@ -45,7 +45,7 @@ class Test extends A_PageWithTable<string> {
 describe('A_PageWithTable', () => {
     beforeAll(async () => {
         const html = fs.readFileSync(
-            path.resolve(__dirname, '../../templates/index.html'),
+            path.resolve(__dirname, '../../templates/fragments/body.html'),
             'utf-8',
         )
         document.documentElement.innerHTML = html.toString()

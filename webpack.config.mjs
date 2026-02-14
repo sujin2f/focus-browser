@@ -1,7 +1,10 @@
-const EnvironmentPlugin = require('webpack').EnvironmentPlugin
-const DefinePlugin = require('webpack').DefinePlugin
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+import { resolve as _resolve, join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import webpack from 'webpack'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const commonConfig = {
     mode: process.env.NODE_ENV || 'development',
@@ -43,25 +46,14 @@ const commonConfig = {
                 ],
                 exclude: /\.module\.s?(c|a)ss$/,
             },
-            {
-                test: /\.html$/,
-                use: [
-                    {
-                        loader: 'html-loader',
-                        options: {
-                            minimize: true, // Minify HTML
-                        },
-                    },
-                ],
-            },
         ],
     },
     resolve: {
         extensions: ['.ts', '.js'], // Resolve .ts and .js extensions
         alias: {
-            '@main': path.resolve(__dirname, 'src', 'main'),
-            '@src': path.resolve(__dirname, 'src'),
-            '@home': path.resolve(__dirname, 'src', 'renderer'),
+            '@main': _resolve(__dirname, 'src', 'main'),
+            '@src': _resolve(__dirname, 'src'),
+            '@home': _resolve(__dirname, 'src', 'renderer'),
         },
     },
 }
@@ -77,15 +69,15 @@ const mainConfig = {
             './node_modules/@ghostery/adblocker-electron-preload/dist/index.cjs',
     },
     output: {
-        path: path.resolve(__dirname, 'release', 'app', 'dist'),
+        path: _resolve(__dirname, 'release', 'app', 'dist'),
         filename: '[name].js',
         chunkFilename: '[name].chunk.js',
     },
     plugins: [
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
-        new EnvironmentPlugin({
-            VERSION: require('./package.json').version,
-            IS_BETA: require('./package.json').version.includes('beta'),
+        new webpack.EnvironmentPlugin({
+            VERSION: process.env.npm_package_version,
+            IS_BETA: process.env.npm_package_version.includes('beta'),
         }),
     ],
 }
@@ -96,7 +88,7 @@ const rendererConfig = {
     name: 'renderer',
     entry: './src/renderer/index.ts',
     output: {
-        path: path.resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
+        path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
     },
     plugins: [
@@ -105,9 +97,9 @@ const rendererConfig = {
             filename: 'index.html',
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
-        new DefinePlugin({
-            envVersion: '"' + require('./package.json').version + '"',
-            envBeta: require('./package.json').version.includes('beta'),
+        new webpack.DefinePlugin({
+            envVersion: '"' + process.env.npm_package_version + '"',
+            envBeta: process.env.npm_package_version.includes('beta'),
         }),
     ],
 }
@@ -115,17 +107,11 @@ const rendererConfig = {
 if (process.env.NODE_ENV === 'development') {
     rendererConfig.devServer = {
         static: {
-            directory: path.join(
-                __dirname,
-                'release',
-                'app',
-                'dist',
-                'renderer',
-            ),
+            directory: join(__dirname, 'release', 'app', 'dist', 'renderer'),
         },
         hot: true,
         port: process.env.PORT || 1212, // Port for the dev server
     }
 }
 
-module.exports = [mainConfig, rendererConfig]
+export default [mainConfig, rendererConfig]

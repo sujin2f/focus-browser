@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Keystrokes</title>
+        <title>Settings</title>
         <meta
             http-equiv="Content-Security-Policy"
             content="script-src 'self'"
@@ -20,7 +20,9 @@
                 <%=require('html-loader!./fragments/back-button.html').default
                 %>
                 <section id="section-title"></section>
+                <section id="section-version"></section>
             </div>
+            <%=require('html-loader!./fragments/checkbox.html').default %>
             <%=require('html-loader!./fragments/select.html').default %>
             <%=require('html-loader!./fragments/input.html').default %>
             <%=require('html-loader!./fragments/button.html').default %>

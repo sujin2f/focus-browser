@@ -39,15 +39,15 @@ const cards: Record<string, T_Card> = {
         description: 'Manage Keystrokes',
         destination: 'keystrokes.html',
     },
-    setting: {
-        title: '⚙️ Setting',
-        description: '',
-        destination: 'setting.html',
-    },
     shortcuts: {
         title: '🏁 Shortcuts',
         description: 'Assign keyboard shortcuts.',
         destination: 'shortcuts.html',
+    },
+    setting: {
+        title: '⚙️ Settings',
+        description: '',
+        destination: 'settings.html',
     },
 }
 

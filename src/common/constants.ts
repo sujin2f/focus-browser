@@ -122,7 +122,7 @@ export enum Menu {
     TEST = 'Run Test Block',
 }
 
-export const SearchEngine = {
+export const SEARCH_ENGINES = {
     DUCKDUCKGO: 'https://duckduckgo.com/?q=',
     GOOGLE: 'https://www.google.com/search?q=',
     GOOGLE_AI: 'https://www.google.com/ai?q=',

@@ -12,7 +12,7 @@ import {
     Channel,
     MainEventTypes,
     PageType,
-    SearchEngine,
+    SEARCH_ENGINES,
 } from '@src/common/constants'
 import { Logger } from '@src/common/logger'
 
@@ -156,7 +156,7 @@ export class BrowserView extends WebContentsView {
     public searchKeyword(keyword: string) {
         const searchEngine = Status.getInstance().get('searchEngine')
         this._failedUrl = undefined
-        this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
+        this.loadURL(`${SEARCH_ENGINES[searchEngine]}${keyword}`)
     }
 
     /**

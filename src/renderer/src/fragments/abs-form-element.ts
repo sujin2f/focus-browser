@@ -42,8 +42,8 @@ export abstract class A_FormElement<
         return this.input.value
     }
 
-    public set value(value: string) {
-        this.input.value = value
+    public set value(value: string | number) {
+        this.input.value = value.toString()
     }
 
     constructor(tagName: string, label: string) {

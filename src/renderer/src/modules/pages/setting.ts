@@ -12,7 +12,7 @@ import {
     Channel,
     PageType,
     RequestHandler,
-    SearchEngine,
+    SEARCH_ENGINES,
 } from '@src/common/constants'
 
 export class Setting extends A_Page {
@@ -184,7 +184,7 @@ export class Setting extends A_Page {
                     searchEngine: searchEngine.value,
                 } satisfies Partial<Info>)
             },
-            options: SearchEngine,
+            options: SEARCH_ENGINES,
             value: this.settings.searchEngine,
         })
         return searchEngine
@@ -242,6 +242,7 @@ export class Setting extends A_Page {
             this.version,
             this.frame,
             this.helpText,
+
             this.maxHistory,
             this.adBlocker,
             this.adBlockerStatus,

@@ -4,7 +4,7 @@ import {
     MenuCategory,
     PageType,
     BROWSER,
-    SearchEngine,
+    SEARCH_ENGINES,
 } from '@src/common/constants'
 
 /**
@@ -19,7 +19,7 @@ export type StatusProps = {
     welcome: boolean
     helpText: boolean
     adBlocker: boolean
-    searchEngine: keyof typeof SearchEngine
+    searchEngine: keyof typeof SEARCH_ENGINES
     frame: boolean
 }
 

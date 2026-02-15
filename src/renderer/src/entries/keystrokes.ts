@@ -72,8 +72,7 @@ class Keystrokes extends A_Entry {
     private renderForm() {
         Object.keys(this.keystrokes).forEach((host, index) => {
             const value = this.keystrokes[host]
-            const option = new Option(host, host, index === 0)
-            option.append(this.select.input)
+            new Option(host, host, index === 0).append(this.select.input)
 
             if (index === 0) {
                 this.input.value = value

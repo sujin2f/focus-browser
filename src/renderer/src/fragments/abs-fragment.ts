@@ -18,7 +18,7 @@ export abstract class A_Fragment<T extends HTMLElement> {
         this.node = template?.content.cloneNode(true) as T
     }
 
-    public append(parent: HTMLElement) {
+    public append(parent: HTMLElement | Element) {
         if (this.node) {
             parent.append(this.node)
             this._element = parent.lastElementChild! as T

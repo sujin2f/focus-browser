@@ -1,12 +1,7 @@
 import { A_Fragment } from './abs-fragment'
 
 export class ListRow extends A_Fragment<HTMLButtonElement> {
-    constructor(
-        title: string,
-        description?: string,
-        prefix?: A_Fragment<HTMLElement>,
-        suffix?: A_Fragment<HTMLElement>,
-    ) {
+    constructor(title: string, description?: string) {
         super('#list-row')
 
         this.node.querySelector('h3')!.textContent = title
@@ -15,17 +10,26 @@ export class ListRow extends A_Fragment<HTMLButtonElement> {
         } else {
             this.node.querySelector('p')!.remove()
         }
-
-        if (prefix) {
-            prefix.append(this.node.querySelector('[data-selector="prefix"]')!)
-        }
-
-        if (suffix) {
-            suffix.append(this.node.querySelector('[data-selector="suffix"]')!)
-        }
     }
 
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
         this.element.addEventListener('click', callback.bind(this))
+        return this
+    }
+
+    public get prefix() {
+        const prefix = this.element.querySelector('[data-selector="prefix"]')
+        if (!prefix) {
+            throw new Error('prefix is not defined')
+        }
+        return prefix
+    }
+
+    public get suffix() {
+        const suffix = this.element.querySelector('[data-selector="suffix"]')
+        if (!suffix) {
+            throw new Error('suffix is not defined')
+        }
+        return suffix
     }
 }

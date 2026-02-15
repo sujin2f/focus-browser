@@ -76,25 +76,21 @@ class Bookmarks extends A_Entry {
     private renderList() {
         this.getSection('section-list').innerHTML = ''
         this.bookmarks.forEach((bookmark) => {
-            const edit = new Button('⚙️', 'button-hollow')
-            const row = new ListRow(
-                bookmark.title,
-                bookmark.url,
-                undefined,
-                edit,
-            ).append(this.getSection('section-list'))
+            const row = new ListRow(bookmark.title, bookmark.url)
+                .append(this.getSection('section-list'))
+                .setOnClick((e: PointerEvent) => {
+                    if (tagNameIs(e.target, 'button')) {
+                        e.preventDefault()
+                        return
+                    }
 
-            row.setOnClick((e: PointerEvent) => {
-                if (tagNameIs(e.target, 'button')) {
-                    e.preventDefault()
-                    return
-                }
-
-                navigate(bookmark.url)
-            })
-            edit.setOnClick(() => {
-                // TODO Edit Action
-            })
+                    navigate(bookmark.url)
+                })
+            new Button('⚙️', 'button-hollow')
+                .append(row.suffix)
+                .setOnClick(() => {
+                    // TODO Edit Action
+                })
         })
     }
 }

@@ -28,7 +28,9 @@ class Keystrokes extends A_Entry {
         )
 
         // Title
-        const h1 = new H1('Settings').prepend(this.getSection('section-title'))
+        const h1 = new H1('Settings ⚙️').prepend(
+            this.getSection('section-title'),
+        )
         new BackButton().prepend(h1.element)
 
         // Version

@@ -9,7 +9,7 @@ import { ipcRenderer } from '@src/renderer/src/utils'
 import type { PopupBlocker as T_PopupBlocker } from '@src/common/types'
 import {
     TableAction,
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
     PageType,
     CTRL,
@@ -31,8 +31,8 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     }
 
     request(): void {
-        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
-        ipcRenderer.once(Channel.POPUP_BLOCKER, (...args: unknown[]) => {
+        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const blocked = args[1] as string[]
             const allowed = args[2] as string[]
@@ -105,7 +105,7 @@ export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
             const data = this._cursor.getData('data') as T_PopupBlocker
             const index = this._cursor.getData('index') as number
             ipcRenderer.send(
-                Channel.POPUP_BLOCKER,
+                IPC_CHANNELS.POPUP_BLOCKER,
                 RequestHandler.MODIFY,
                 data.host,
             )

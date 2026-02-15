@@ -1,6 +1,6 @@
 import { Element } from '.'
 import { ipcRenderer } from '@src/renderer/src/utils'
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 
 import type { Info } from '@src/common/types'
 
@@ -28,7 +28,7 @@ export class TitleBar extends Element<HTMLFormElement> {
         })
             .append('Double Click to Maximize |')
             .addEventListener('dblclick', function () {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     maximize: true,
                 } satisfies Partial<Info>)
             })

@@ -30,7 +30,7 @@ export enum PageType {
 
 export const BROWSER = 'scene-browser'
 
-export enum Channel {
+export enum IPC_CHANNELS {
     INFO = 'INFO',
     SWITCH = 'SWITCH',
     BOOKMARK = 'BOOKMARK',
@@ -41,6 +41,7 @@ export enum Channel {
     LOG = 'LOG',
     MAIN_PROCESS = 'MAIN_PROCESS',
     KEYSTROKES = 'KEYSTROKES',
+    SHORTCUTS = 'SHORTCUTS',
 }
 
 export enum RequestHandler {

@@ -8,7 +8,7 @@ import { Logger } from '@src/common/logger'
 
 import type { Scenes, Bookmark, Info } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
     BROWSER,
     LogTypes,
@@ -34,18 +34,19 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
-        ipcMain.on(Channel.INFO, this.onInfo.bind(this))
-        ipcMain.on(Channel.SWITCH, this.onSwitch.bind(this))
-        ipcMain.on(Channel.HISTORY, this.onHistory.bind(this))
-        ipcMain.on(Channel.BOOKMARK, this.onBookmarks.bind(this))
-        ipcMain.on(Channel.ANCHOR, this.onAnchors.bind(this))
-        ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
-        ipcMain.on(Channel.FIND, this.onFind.bind(this))
-        ipcMain.on(Channel.MAIN_PROCESS, this.onMainProcess.bind(this))
-        ipcMain.on(Channel.KEYSTROKES, this.onKeystrokes.bind(this))
+        ipcMain.on(IPC_CHANNELS.INFO, this.onInfo.bind(this))
+        ipcMain.on(IPC_CHANNELS.SWITCH, this.onSwitch.bind(this))
+        ipcMain.on(IPC_CHANNELS.HISTORY, this.onHistory.bind(this))
+        ipcMain.on(IPC_CHANNELS.BOOKMARK, this.onBookmarks.bind(this))
+        ipcMain.on(IPC_CHANNELS.ANCHOR, this.onAnchors.bind(this))
+        ipcMain.on(IPC_CHANNELS.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
+        ipcMain.on(IPC_CHANNELS.FIND, this.onFind.bind(this))
+        ipcMain.on(IPC_CHANNELS.MAIN_PROCESS, this.onMainProcess.bind(this))
+        ipcMain.on(IPC_CHANNELS.KEYSTROKES, this.onKeystrokes.bind(this))
+        ipcMain.on(IPC_CHANNELS.SHORTCUTS, this.onShortcuts.bind(this))
 
         if (isBeta() && !isTest()) {
-            ipcMain.on(Channel.LOG, this.onLog.bind(this))
+            ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
         }
     }
 
@@ -136,6 +137,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             // Shortcuts
+            // TODO Deprecated
             if (Object.prototype.hasOwnProperty.call(data, 'shortcuts')) {
                 Shortcut.getInstance().update(data.shortcuts!)
                 Shortcut.getInstance().save()
@@ -210,7 +212,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.centre.webContents.send(
-                    Channel.HISTORY,
+                    IPC_CHANNELS.HISTORY,
                     RequestHandler.RESPONSE,
                     this.browser.webContents.navigationHistory.getAllEntries(),
                 )
@@ -237,7 +239,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.centre.webContents.send(
-                    Channel.BOOKMARK,
+                    IPC_CHANNELS.BOOKMARK,
                     RequestHandler.RESPONSE,
                     bookmarks.get(),
                 )
@@ -261,7 +263,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         switch (handler) {
             case RequestHandler.REQUEST:
                 this.centre.webContents.send(
-                    Channel.ANCHOR,
+                    IPC_CHANNELS.ANCHOR,
                     RequestHandler.RESPONSE,
                     Anchors.getInstance().get(),
                 )
@@ -289,7 +291,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     allowed,
                 )
                 this.centre.webContents.send(
-                    Channel.POPUP_BLOCKER,
+                    IPC_CHANNELS.POPUP_BLOCKER,
                     RequestHandler.RESPONSE,
                     Array.from(blocked),
                     Array.from(allowed),
@@ -348,6 +350,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             info.searchEngine = status.searchEngine
         }
 
+        // TODO Deprecated
         if (requests.includes('shortcuts')) {
             info.shortcuts = Shortcut.getInstance().getShortcuts()
         }
@@ -360,7 +363,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)
 
         this.centre.webContents.send(
-            Channel.INFO,
+            IPC_CHANNELS.INFO,
             RequestHandler.RESPONSE,
             info,
         )
@@ -374,7 +377,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         switch (handler) {
             case RequestHandler.REQUEST: {
                 this.centre.webContents.send(
-                    Channel.KEYSTROKES,
+                    IPC_CHANNELS.KEYSTROKES,
                     RequestHandler.RESPONSE,
                     Keystrokes.getInstance().getKeystrokes(),
                 )
@@ -390,6 +393,30 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 const keystroke = Object.values(keystrokes)[0]
                 Keystrokes.getInstance().update(host, keystroke)
                 Keystrokes.getInstance().save()
+                return
+            }
+        }
+    }
+
+    private async onShortcuts(
+        _: IpcMainEvent,
+        handler: RequestHandler,
+        shortcuts: Record<string, string>,
+    ) {
+        switch (handler) {
+            case RequestHandler.REQUEST: {
+                this.centre.webContents.send(
+                    IPC_CHANNELS.SHORTCUTS,
+                    RequestHandler.RESPONSE,
+                    Shortcut.getInstance().getShortcuts(),
+                )
+                return
+            }
+
+            case RequestHandler.MODIFY: {
+                Shortcut.getInstance().update(shortcuts)
+                Shortcut.getInstance().save()
+                this.resetMenu()
                 return
             }
         }

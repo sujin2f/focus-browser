@@ -13,7 +13,7 @@ import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 /* CONSTANTS */
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { Bookmark } from '@src/common/types'
 
@@ -27,7 +27,9 @@ class Bookmarks extends A_Entry {
         this.requestBookmarks()
 
         // Title
-        const h1 = new H1('Bookmarks').prepend(this.getSection('section-title'))
+        const h1 = new H1('Bookmarks 🔖').prepend(
+            this.getSection('section-title'),
+        )
         new BackButton().prepend(h1.element)
 
         // Buttons
@@ -62,9 +64,9 @@ class Bookmarks extends A_Entry {
     }
 
     private requestBookmarks(): void {
-        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
 
-        ipcRenderer.once(Channel.BOOKMARK, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return

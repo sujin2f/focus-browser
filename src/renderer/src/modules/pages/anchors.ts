@@ -9,7 +9,7 @@ import { ShortcodeTable } from '@src/renderer/src/modules/fragments/table-shortc
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 import type { Bookmark } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
     TableAction,
     PageType,
@@ -33,8 +33,8 @@ export class Anchors extends A_PageWithTable<Bookmark> {
     }
 
     request(): void {
-        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
-        ipcRenderer.once(Channel.ANCHOR, (...args: unknown[]) => {
+        ipcRenderer.send(IPC_CHANNELS.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const anchors = args[1] as Bookmark[]
 
@@ -159,7 +159,7 @@ export class Anchors extends A_PageWithTable<Bookmark> {
             }
 
             ipcRenderer.send(
-                Channel.ANCHOR,
+                IPC_CHANNELS.ANCHOR,
                 RequestHandler.REMOVE,
                 (this._cursor.getData('data') as Bookmark).url,
             )

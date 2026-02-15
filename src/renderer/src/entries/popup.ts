@@ -7,7 +7,7 @@ import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 /* CONSTANTS */
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
@@ -21,7 +21,7 @@ class Popup extends A_Entry {
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1('Popup Blocker').prepend(
+        const h1 = new H1('Popup Blocker 👮').prepend(
             this.getSection('section-title'),
         )
         new BackButton().prepend(h1.element)
@@ -53,9 +53,9 @@ class Popup extends A_Entry {
     }
 
     private requestPopupBlockers(): void {
-        ipcRenderer.send(Channel.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, RequestHandler.REQUEST)
 
-        ipcRenderer.once(Channel.POPUP_BLOCKER, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return

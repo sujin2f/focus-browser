@@ -6,7 +6,7 @@ import { Title } from '@src/renderer/src/modules/fragments/title'
 import { Heading } from '@src/renderer/src/modules/fragments/heading'
 import { Button } from '@src/renderer/src/modules/fragments/button'
 
-import { Channel, PageType, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
 import { ipcRenderer } from '@src/renderer/src/utils'
 
 import type { Info } from '@src/common/types'
@@ -60,7 +60,7 @@ export class Shortcut extends A_Page {
                     })
 
                 if (Object.keys(shortcuts).length) {
-                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                         shortcuts,
                     } satisfies Partial<Info>)
                 }

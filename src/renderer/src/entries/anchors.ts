@@ -12,7 +12,7 @@ import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 /* CONSTANTS */
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { Bookmark } from '@src/common/types'
 
@@ -26,7 +26,9 @@ class Anchors extends A_Entry {
         this.requestAnchors()
 
         // Title
-        const h1 = new H1('Anchors').prepend(this.getSection('section-title'))
+        const h1 = new H1('Anchors ⚓️').prepend(
+            this.getSection('section-title'),
+        )
         new BackButton().prepend(h1.element)
 
         // Search
@@ -56,9 +58,9 @@ class Anchors extends A_Entry {
     }
 
     private requestAnchors(): void {
-        ipcRenderer.send(Channel.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.ANCHOR, RequestHandler.REQUEST)
 
-        ipcRenderer.once(Channel.ANCHOR, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return

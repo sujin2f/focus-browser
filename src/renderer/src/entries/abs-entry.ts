@@ -1,7 +1,7 @@
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Logger } from '@src/common/logger'
 import type { Info } from '@src/common/types'
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 
 import '@home/styles/common.css'
 
@@ -39,7 +39,7 @@ export abstract class A_Entry {
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
 
-        ipcRenderer.once(Channel.INFO, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const setting = args[1] as Info
 
@@ -52,7 +52,7 @@ export abstract class A_Entry {
             this.settings = { ...this.settings, ...setting }
         })
 
-        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, ...keys)
+        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.REQUEST, ...keys)
     }
 
     protected callbackUpdateInfo() {}

@@ -3,7 +3,7 @@ import { A_Page } from '@src/renderer/src/modules/pages/abs_page'
 import { Element } from '@src/renderer/src/modules/fragments'
 import { Input } from '@src/renderer/src/modules/fragments/input'
 
-import { Channel, PageType, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 
 export class Find extends A_Page {
@@ -45,7 +45,7 @@ export class Find extends A_Page {
         field.addEventListener('keydown', (e) => {
             if (e.code === 'Enter') {
                 ipcRenderer.send(
-                    Channel.FIND,
+                    IPC_CHANNELS.FIND,
                     RequestHandler.REQUEST,
                     field.value,
                 )

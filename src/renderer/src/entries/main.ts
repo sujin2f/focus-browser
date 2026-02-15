@@ -40,7 +40,7 @@ const cards: Record<string, T_Card> = {
         destination: 'keystrokes.html',
     },
     shortcuts: {
-        title: '🏁 Shortcuts',
+        title: '🏁 Shortcuts (S)',
         description: 'Assign keyboard shortcuts.',
         destination: 'shortcuts.html',
     },
@@ -112,6 +112,9 @@ class Main extends A_Entry {
                     return true
                 case 'KeyP':
                     window.location.href = cards.popup.destination
+                    return true
+                case 'KeyS':
+                    window.location.href = cards.shortcuts.destination
                     return true
             }
         }

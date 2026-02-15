@@ -9,7 +9,7 @@ import fetch from 'cross-fetch'
 
 import type { Bookmark } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     MainEventTypes,
     PageType,
     SEARCH_ENGINES,
@@ -48,7 +48,7 @@ export class BrowserView extends WebContentsView {
         super(options)
 
         ipcMain.emit(
-            Channel.MAIN_PROCESS,
+            IPC_CHANNELS.MAIN_PROCESS,
             null,
             MainEventTypes.TITLE,
             'Welcome to Focus!',
@@ -61,7 +61,7 @@ export class BrowserView extends WebContentsView {
             // Web Title to App Title
             .on('did-finish-load', () => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     this.webContents.getTitle(),
@@ -70,7 +70,7 @@ export class BrowserView extends WebContentsView {
             })
             .on('page-title-updated', (_, title) => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     title,
@@ -78,7 +78,7 @@ export class BrowserView extends WebContentsView {
             })
             .on('will-navigate', () =>
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     'Loading...',
@@ -87,7 +87,7 @@ export class BrowserView extends WebContentsView {
             // Context Menu
             .on('context-menu', (_, params) => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.CONTEXT_MENU,
                     params,
@@ -141,7 +141,7 @@ export class BrowserView extends WebContentsView {
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = url.toString()
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
                     PageType.OFFLINE,
@@ -282,7 +282,7 @@ export class BrowserView extends WebContentsView {
             })
             notification.addListener('click', () => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
                     PageType.POPUP_BLOCKER,
@@ -353,7 +353,7 @@ export class BrowserView extends WebContentsView {
      */
     public reload() {
         ipcMain.emit(
-            Channel.MAIN_PROCESS,
+            IPC_CHANNELS.MAIN_PROCESS,
             null,
             MainEventTypes.TITLE,
             'Reloading...',

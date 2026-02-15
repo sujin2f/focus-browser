@@ -18,7 +18,7 @@ import {
 
 import type { Bookmark } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     PageMode,
     RequestHandler,
     TableAction,
@@ -115,9 +115,9 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
     }
 
     request(): void {
-        ipcRenderer.send(Channel.BOOKMARK, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
 
-        ipcRenderer.once(Channel.BOOKMARK, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const bookmarks = args[1] as Bookmark[]
 
@@ -284,13 +284,17 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
                 return
             }
 
-            ipcRenderer.send(Channel.BOOKMARK, RequestHandler.ADD, bookmark)
+            ipcRenderer.send(
+                IPC_CHANNELS.BOOKMARK,
+                RequestHandler.ADD,
+                bookmark,
+            )
             this.items.unshift(bookmark)
         } else {
             const index = this._cursor.getData('index') as number
 
             ipcRenderer.send(
-                Channel.BOOKMARK,
+                IPC_CHANNELS.BOOKMARK,
                 RequestHandler.MODIFY,
                 bookmark,
                 this.order === 'ASC' ? index : this.items.length - index - 1,
@@ -324,7 +328,7 @@ export class Bookmarks extends A_PageWithTable<Bookmark> {
             const index = this._cursor.getData('index') as number
 
             ipcRenderer.send(
-                Channel.BOOKMARK,
+                IPC_CHANNELS.BOOKMARK,
                 RequestHandler.REMOVE,
                 null,
                 this.order === 'ASC' ? index : this.items.length - index - 1,

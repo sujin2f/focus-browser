@@ -1,4 +1,4 @@
-import { PageType, CustomEvents, Channel } from '@src/common/constants'
+import { PageType, CustomEvents, IPC_CHANNELS } from '@src/common/constants'
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 
 import { A_Page } from '@src/renderer/src/modules/pages/abs_page'
@@ -48,7 +48,7 @@ export class Controller {
     }
 
     private initIPC() {
-        ipcRenderer.on(Channel.SWITCH, (...args: unknown[]) => {
+        ipcRenderer.on(IPC_CHANNELS.SWITCH, (...args: unknown[]) => {
             const scene = args[0] as PageType
             this.switch(scene)
         })

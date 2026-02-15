@@ -3,7 +3,7 @@ import {
     PageType,
     TableAction,
     PageMode,
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
 } from '@src/common/constants'
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
@@ -90,7 +90,7 @@ export abstract class A_Page {
         Logger.getInstance().log(
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
-        ipcRenderer.once(Channel.INFO, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const setting = args[1] as Info
 
@@ -103,6 +103,6 @@ export abstract class A_Page {
             this.settings = { ...this.settings, ...setting }
             this.action(TableAction.INFO)
         })
-        ipcRenderer.send(Channel.INFO, RequestHandler.REQUEST, ...keys)
+        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.REQUEST, ...keys)
     }
 }

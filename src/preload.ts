@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
-import { Channel } from '@src/common/constants'
+import { IPC_CHANNELS } from '@src/common/constants'
 
 const electronHandler = {
     ipcRenderer: {
-        sendMessage(channel: Channel, ...args: unknown[]) {
+        sendMessage(channel: IPC_CHANNELS, ...args: unknown[]) {
             ipcRenderer.send(channel, ...args)
         },
-        on(channel: Channel, func: (...args: unknown[]) => void) {
+        on(channel: IPC_CHANNELS, func: (...args: unknown[]) => void) {
             const subscription = (
                 _event: IpcRendererEvent,
                 ...args: unknown[]
@@ -17,7 +17,7 @@ const electronHandler = {
                 ipcRenderer.removeListener(channel, subscription)
             }
         },
-        once(channel: Channel, func: (...args: unknown[]) => void) {
+        once(channel: IPC_CHANNELS, func: (...args: unknown[]) => void) {
             ipcRenderer.once(channel, (_event, ...args) => func(...args))
         },
     },

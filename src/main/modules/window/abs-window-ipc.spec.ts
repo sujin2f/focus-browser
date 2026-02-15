@@ -35,7 +35,7 @@ jest.doMock('@main/modules/view/browser', browser)
 import { BrowserView } from '@src/main/modules/view/browser'
 import {
     RequestHandler,
-    Channel,
+    IPC_CHANNELS,
     PageType,
     BROWSER,
     CURRENT_PAGE_INFO,
@@ -79,7 +79,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
             'url',
         )
         expect(send).toHaveBeenCalledWith(
-            Channel.INFO,
+            IPC_CHANNELS.INFO,
             RequestHandler.RESPONSE,
             { title: 'test title', url: 'https://sujinc.com/focus-browser' },
         )
@@ -121,7 +121,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onHistory > request', () => {
         ipc[2][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.HISTORY,
+            IPC_CHANNELS.HISTORY,
             RequestHandler.RESPONSE,
             [],
         )
@@ -141,7 +141,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onBookmarks > request', () => {
         ipc[3][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.BOOKMARK,
+            IPC_CHANNELS.BOOKMARK,
             RequestHandler.RESPONSE,
             [],
         )
@@ -165,7 +165,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onAnchors > request', () => {
         ipc[4][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.ANCHOR,
+            IPC_CHANNELS.ANCHOR,
             RequestHandler.RESPONSE,
             [],
         )
@@ -179,7 +179,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onPopupBlocker > request', () => {
         ipc[5][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.POPUP_BLOCKER,
+            IPC_CHANNELS.POPUP_BLOCKER,
             RequestHandler.RESPONSE,
             [],
             [],

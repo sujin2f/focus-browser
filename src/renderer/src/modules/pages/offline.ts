@@ -5,7 +5,7 @@ import { Heading } from '@src/renderer/src/modules/fragments/heading'
 import { Button } from '@src/renderer/src/modules/fragments/button'
 
 import { ipcRenderer } from '@src/renderer/src/utils'
-import { Channel, PageType, BROWSER } from '@src/common/constants'
+import { IPC_CHANNELS, PageType, BROWSER } from '@src/common/constants'
 
 export class Offline extends A_Page {
     public page = PageType.OFFLINE
@@ -23,7 +23,7 @@ export class Offline extends A_Page {
         )
         const reload = new Button({
             onClick: () => {
-                ipcRenderer.send(Channel.SWITCH, BROWSER, 'reload')
+                ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, 'reload')
             },
         }).append('Refresh')
         // Container

@@ -9,7 +9,7 @@ import { Button } from '@src/renderer/src/modules/fragments/button'
 import { ipcRenderer, ctrlOrComm } from '@src/renderer/src/utils'
 import type { Info } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     PageType,
     RequestHandler,
     SEARCH_ENGINES,
@@ -41,7 +41,7 @@ export class Setting extends A_Page {
             type: 'checkbox',
             checked: this.settings.helpText,
             onChange: () => {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     helpText: helpText.checked,
                 } satisfies Partial<Info>)
             },
@@ -61,7 +61,7 @@ export class Setting extends A_Page {
                     maxHistory.error = 'This value must be bigger than 9.'
                     return
                 }
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     maxHistory: value,
                 } satisfies Partial<Info>)
             },
@@ -75,7 +75,7 @@ export class Setting extends A_Page {
             type: 'checkbox',
             checked: this.settings.adBlocker,
             onChange: () => {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     adBlocker: adBlocker.checked,
                 } satisfies Partial<Info>)
             },
@@ -120,7 +120,7 @@ export class Setting extends A_Page {
                       className: ['-mb-3'],
                       onClick: () => {
                           ipcRenderer.send(
-                              Channel.INFO,
+                              IPC_CHANNELS.INFO,
                               RequestHandler.MODIFY,
                               {
                                   adBlockerStatus: true,
@@ -168,7 +168,7 @@ export class Setting extends A_Page {
             new Button({
                 className: ['-mb-3'],
                 onClick: () => {
-                    ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                    ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                         cacheSize: NaN,
                     } satisfies Partial<Info>)
                 },
@@ -180,7 +180,7 @@ export class Setting extends A_Page {
         const searchEngine = new Select({
             label: 'Search Engine',
             onChange: () => {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     searchEngine: searchEngine.value,
                 } satisfies Partial<Info>)
             },
@@ -195,7 +195,7 @@ export class Setting extends A_Page {
             type: 'checkbox',
             checked: this.settings.frame,
             onChange: () => {
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     frame: frame.checked,
                 } satisfies Partial<Info>)
             },

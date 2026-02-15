@@ -1,5 +1,5 @@
 import {
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
     BROWSER,
     PageType,
@@ -24,10 +24,10 @@ export const ipcRenderer = {
 export const navigate = (url?: string, handler?: RequestHandler) => {
     document.dispatchEvent(new SwitchEvent(PageType.HOME))
     if (url) {
-        ipcRenderer.send(Channel.SWITCH, BROWSER, url, handler)
+        ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, url, handler)
         return
     }
-    ipcRenderer.send(Channel.SWITCH, BROWSER)
+    ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER)
 }
 
 export const shortcutToHtml = (shortcut: string): Element<HTMLElement>[] => {

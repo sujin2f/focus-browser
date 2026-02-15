@@ -4,7 +4,7 @@ import { Button } from '@src/renderer/src/modules/fragments/button'
 
 import { ipcRenderer, SwitchEvent } from '@src/renderer/src/utils'
 import type { ElementProps } from '@src/common/types'
-import { Channel, PageType, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button
@@ -30,7 +30,7 @@ export class Callout extends Element<HTMLDivElement> {
             className: ['mb-3'],
             onClick: (e) => {
                 e.preventDefault()
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     helpText: false,
                 })
                 document.dispatchEvent(new SwitchEvent(PageType.RELOAD))

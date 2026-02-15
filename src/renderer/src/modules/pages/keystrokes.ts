@@ -8,7 +8,7 @@ import { Button } from '@src/renderer/src/modules/fragments/button'
 
 import { ipcRenderer } from '@src/renderer/src/utils'
 import type { Info } from '@src/common/types'
-import { Channel, PageType, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
 
 export class Keystrokes extends A_Page {
     public page = PageType.SETTING
@@ -65,7 +65,7 @@ export class Keystrokes extends A_Page {
                 if (!this.host || !this.input || !this.input.value) {
                     return
                 }
-                ipcRenderer.send(Channel.INFO, RequestHandler.MODIFY, {
+                ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     keystrokes: { [this.host]: this.input.value },
                 } satisfies Partial<Info>)
             },

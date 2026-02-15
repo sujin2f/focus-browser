@@ -9,7 +9,7 @@ import { Select } from '@src/renderer/src/fragments/select'
 import { Button } from '@src/renderer/src/fragments/button'
 import { Option } from '@src/renderer/src/fragments/option'
 /* CONSTANTS */
-import { Channel, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 
 class Keystrokes extends A_Entry {
     private keystrokes: Record<string, string> = {}
@@ -23,7 +23,7 @@ class Keystrokes extends A_Entry {
         this.requestKeystrokes()
 
         // Title
-        const h1 = new H1('Keystrokes').prepend(
+        const h1 = new H1('Keystrokes 🎹').prepend(
             this.getSection('section-title'),
         )
         new BackButton().prepend(h1.element)
@@ -46,9 +46,9 @@ class Keystrokes extends A_Entry {
     }
 
     private requestKeystrokes(): void {
-        ipcRenderer.send(Channel.KEYSTROKES, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.REQUEST)
 
-        ipcRenderer.once(Channel.KEYSTROKES, (...args: unknown[]) => {
+        ipcRenderer.once(IPC_CHANNELS.KEYSTROKES, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return
@@ -83,7 +83,7 @@ class Keystrokes extends A_Entry {
     private save() {
         const host = this.select.value
         const value = this.input.value
-        ipcRenderer.send(Channel.KEYSTROKES, RequestHandler.MODIFY, {
+        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.MODIFY, {
             [host]: value,
         })
     }

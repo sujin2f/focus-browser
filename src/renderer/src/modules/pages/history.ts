@@ -9,7 +9,7 @@ import { ShortcodeTable } from '@src/renderer/src/modules/fragments/table-shortc
 
 import { ipcRenderer } from '@src/renderer/src/utils'
 import {
-    Channel,
+    IPC_CHANNELS,
     RequestHandler,
     TableAction,
     PageType,
@@ -33,7 +33,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
         // Empty history
         const button = new Button({
             onClick: () => {
-                ipcRenderer.send(Channel.HISTORY, RequestHandler.REMOVE)
+                ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REMOVE)
                 this.items = []
                 this.refresh()
             },
@@ -42,8 +42,8 @@ export class History extends A_PageWithTable<NavigationEntry> {
     }
 
     request(): void {
-        ipcRenderer.send(Channel.HISTORY, RequestHandler.REQUEST)
-        ipcRenderer.once(Channel.HISTORY, (...args: unknown[]) => {
+        ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             const history = args[1] as NavigationEntry[]
 
@@ -69,7 +69,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
                 {
                     onClick: () => {
                         ipcRenderer.send(
-                            Channel.HISTORY,
+                            IPC_CHANNELS.HISTORY,
                             RequestHandler.EXECUTE,
                             this.order === 'ASC'
                                 ? index
@@ -100,7 +100,7 @@ export class History extends A_PageWithTable<NavigationEntry> {
         ) {
             const index = this._cursor.getData('index') as number
             ipcRenderer.send(
-                Channel.HISTORY,
+                IPC_CHANNELS.HISTORY,
                 RequestHandler.EXECUTE,
                 this.order === 'ASC' ? index : this.items.length - index - 1,
             )

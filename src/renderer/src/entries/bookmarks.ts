@@ -37,10 +37,10 @@ class Bookmarks extends A_Entry {
 
         // Search
         this.search = new Input('Search Bookmark')
-        this.search.append(this.getSection('section-search'))
-        this.search.input.addEventListener('input', () => {
-            // TODO search
-        })
+            .append(this.getSection('section-search'))
+            .setOnInput(() => {
+                // TODO search
+            })
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
@@ -57,8 +57,8 @@ class Bookmarks extends A_Entry {
         }
 
         // Focus Search
-        this.search.input.value = ''
-        this.search.input.focus()
+        this.search.value = ''
+        this.search.focus()
     }
 
     private requestBookmarks(): void {

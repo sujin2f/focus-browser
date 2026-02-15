@@ -42,6 +42,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(Channel.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
         ipcMain.on(Channel.FIND, this.onFind.bind(this))
         ipcMain.on(Channel.MAIN_PROCESS, this.onMainProcess.bind(this))
+        ipcMain.on(Channel.KEYSTROKES, this.onKeystrokes.bind(this))
 
         if (isBeta() && !isTest()) {
             ipcMain.on(Channel.LOG, this.onLog.bind(this))
@@ -144,6 +145,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             // Keystroke
+            // TODO Deprecated
             if (Object.prototype.hasOwnProperty.call(data, 'keystrokes')) {
                 const host = Object.keys(data.keystrokes!)[0]
                 const keystroke = data.keystrokes![host] || ''
@@ -350,6 +352,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             info.shortcuts = Shortcut.getInstance().getShortcuts()
         }
 
+        // TODO Deprecated
         if (requests.includes('keystrokes')) {
             info.keystrokes = Keystrokes.getInstance().getKeystrokes()
         }
@@ -361,5 +364,34 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             RequestHandler.RESPONSE,
             info,
         )
+    }
+
+    private async onKeystrokes(
+        _: IpcMainEvent,
+        handler: RequestHandler,
+        keystrokes: Record<string, string>,
+    ) {
+        switch (handler) {
+            case RequestHandler.REQUEST: {
+                this.centre.webContents.send(
+                    Channel.KEYSTROKES,
+                    RequestHandler.RESPONSE,
+                    Keystrokes.getInstance().getKeystrokes(),
+                )
+
+                return
+            }
+
+            case RequestHandler.MODIFY: {
+                const host = Object.keys(keystrokes)[0]
+                if (!host) {
+                    return
+                }
+                const keystroke = Object.values(keystrokes)[0]
+                Keystrokes.getInstance().update(host, keystroke)
+                Keystrokes.getInstance().save()
+                return
+            }
+        }
     }
 }

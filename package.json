@@ -1,10 +1,10 @@
 {
     "name": "focus-browser",
-    "version": "0.2.0",
+    "version": "0.2.1-beta1",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
-        "dev": "cross-env NODE_ENV=development IS_BETA=1 PORT=1212 concurrently \"yarn run dev:webpack\" \"yarn run dev:main\" \"yarn run dev:electron\"",
+        "dev": "cross-env NODE_ENV=development PORT=1212 concurrently \"yarn run dev:webpack\" \"yarn run dev:main\" \"yarn run dev:electron\"",
         "dev:main": "webpack --watch --config webpack.config.mjs --config-name=main",
         "dev:webpack": "webpack serve --config webpack.config.mjs --config-name=renderer",
         "dev:electron": "electronmon ./release/app/dist/main/index.js",

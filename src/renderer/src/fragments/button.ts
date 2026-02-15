@@ -8,5 +8,6 @@ export class Button extends A_Fragment<HTMLButtonElement> {
 
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
         this.element.addEventListener('click', callback.bind(this))
+        return this
     }
 }

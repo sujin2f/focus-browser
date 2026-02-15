@@ -14,38 +14,38 @@ type T_Card = {
 
 const cards: Record<string, T_Card> = {
     bookmarks: {
-        title: 'Bookmark (B)',
+        title: '🔖 Bookmark (B)',
         description: 'Your Bookmarks',
         destination: 'bookmarks.html',
     },
     anchors: {
-        title: 'Anchor (A)',
+        title: '⚓️ Anchor (A)',
         description:
             'Temporary bookmark that will be deleted once you clicked it.',
         destination: 'anchors.html',
     },
     history: {
-        title: 'History (H)',
+        title: '📝 History (H)',
         description: 'Navigation history',
         destination: 'history.html',
     },
     popup: {
-        title: 'Popup Blocker (P)',
+        title: '👮 Popup Blocker (P)',
         description: 'Manage Popup Blocker',
         destination: 'popup.html',
     },
     keystrokes: {
-        title: 'Keystroke (K)',
+        title: '🎹 Keystroke (K)',
         description: 'Manage Keystrokes',
         destination: 'keystrokes.html',
     },
     setting: {
-        title: 'Setting',
+        title: '⚙️ Setting',
         description: '',
         destination: 'setting.html',
     },
     shortcuts: {
-        title: 'Shortcuts',
+        title: '🏁 Shortcuts',
         description: 'Assign keyboard shortcuts.',
         destination: 'shortcuts.html',
     },

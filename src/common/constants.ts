@@ -40,6 +40,7 @@ export enum Channel {
     FIND = 'FIND',
     LOG = 'LOG',
     MAIN_PROCESS = 'MAIN_PROCESS',
+    KEYSTROKES = 'KEYSTROKES',
 }
 
 export enum RequestHandler {

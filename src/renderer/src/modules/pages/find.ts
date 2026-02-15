@@ -3,11 +3,15 @@ import { A_Page } from '@src/renderer/src/modules/pages/abs_page'
 import { Element } from '@src/renderer/src/modules/fragments'
 import { Input } from '@src/renderer/src/modules/fragments/input'
 
-import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
+import {
+    IPC_CHANNELS,
+    CENTRE_PAGES,
+    RequestHandler,
+} from '@src/common/constants'
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 
 export class Find extends A_Page {
-    public page = PageType.FIND
+    public page = CENTRE_PAGES.FIND
 
     constructor() {
         super()

@@ -11,19 +11,19 @@ export enum NAVIGATION {
 /**
  * Control centre pages
  */
-export enum PageType {
+export enum CENTRE_PAGES {
     RELOAD,
     WELCOME,
     ADDRESS,
-    BOOKMARK,
     HISTORY,
-    ANCHOR,
-    POPUP_BLOCKER,
     SETTING,
     OFFLINE,
     FIND,
     SHORTCUT,
     KEYSTROKES,
+    POPUP_BLOCKER = 'popup.html',
+    ANCHOR = 'anchors.html',
+    BOOKMARK = 'bookmarks.html',
     HOME = 'main.html',
     DASHBOARD = 'dashboard.html',
 }

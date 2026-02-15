@@ -6,13 +6,17 @@ import { Title } from '@src/renderer/src/modules/fragments/title'
 import { Heading } from '@src/renderer/src/modules/fragments/heading'
 import { Button } from '@src/renderer/src/modules/fragments/button'
 
-import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
+import {
+    IPC_CHANNELS,
+    CENTRE_PAGES,
+    RequestHandler,
+} from '@src/common/constants'
 import { ipcRenderer } from '@src/renderer/src/utils'
 
 import type { Info } from '@src/common/types'
 
 export class Shortcut extends A_Page {
-    public page = PageType.SHORTCUT
+    public page = CENTRE_PAGES.SHORTCUT
 
     constructor() {
         super()

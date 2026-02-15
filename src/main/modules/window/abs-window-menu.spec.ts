@@ -30,7 +30,7 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
 import { BrowserView } from '@src/main/modules/view/browser'
-import { PageType, BROWSER } from '@src/common/constants'
+import { CENTRE_PAGES, BROWSER } from '@src/common/constants'
 
 import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
 import { Scenes } from '@src/common/types'
@@ -84,7 +84,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[1].submenu[9]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(PageType.FIND)
+        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.FIND)
     })
 
     test('find next', async () => {
@@ -159,7 +159,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[0]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(PageType.ADDRESS)
+        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.ADDRESS)
     })
 
     test('centre', async () => {
@@ -169,7 +169,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[1]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(PageType.HOME)
+        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.HOME)
     })
 
     test('back', async () => {

@@ -14,7 +14,7 @@ import {
     navigate,
     SwitchEvent,
 } from '@src/renderer/src/utils'
-import { CTRL, PageType } from '@src/common/constants'
+import { CTRL, CENTRE_PAGES } from '@src/common/constants'
 
 /**
  * For creating cards
@@ -22,50 +22,50 @@ import { CTRL, PageType } from '@src/common/constants'
 type T_Card = {
     title: string
     description: string
-    destination: PageType
+    destination: CENTRE_PAGES
 }
 
 const buttons: Record<string, T_Card> = {
     bookmarks: {
         title: 'Bookmark (B)',
         description: 'Manage bookmarks',
-        destination: PageType.BOOKMARK,
+        destination: CENTRE_PAGES.BOOKMARK,
     },
     anchor: {
         title: 'Anchor (A)',
         description:
             'Temporary bookmark that will be deleted once you clicked it.',
-        destination: PageType.ANCHOR,
+        destination: CENTRE_PAGES.ANCHOR,
     },
     history: {
         title: 'History (H)',
         description: 'Manage history',
-        destination: PageType.HISTORY,
+        destination: CENTRE_PAGES.HISTORY,
     },
     popup: {
         title: 'Popup Blocker (P)',
         description: 'Manage Popup Blocker',
-        destination: PageType.POPUP_BLOCKER,
+        destination: CENTRE_PAGES.POPUP_BLOCKER,
     },
     keystrokes: {
         title: 'Keystroke (K)',
         description: 'Manage Keystrokes',
-        destination: PageType.KEYSTROKES,
+        destination: CENTRE_PAGES.KEYSTROKES,
     },
     setting: {
         title: 'Setting',
         description: '',
-        destination: PageType.SETTING,
+        destination: CENTRE_PAGES.SETTING,
     },
     shortcuts: {
         title: 'Shortcuts',
         description: 'Assign keyboard shortcuts.',
-        destination: PageType.SHORTCUT,
+        destination: CENTRE_PAGES.SHORTCUT,
     },
     welcome: {
         title: 'Visit Welcome Page',
         description: 'Double check the basic features of Focus',
-        destination: PageType.WELCOME,
+        destination: CENTRE_PAGES.WELCOME,
     },
 }
 
@@ -78,7 +78,7 @@ const buttons: Record<string, T_Card> = {
  * - <cards />
  */
 export class Home extends A_Page {
-    public page = PageType.HOME
+    public page = CENTRE_PAGES.HOME
     protected search!: Input
     private title: Title = new Title()
     private location: Element<HTMLElement> = new Element({ tag: 'section' })
@@ -174,20 +174,26 @@ export class Home extends A_Page {
         ) {
             switch (e.code) {
                 case 'KeyB':
-                    document.dispatchEvent(new SwitchEvent(PageType.BOOKMARK))
+                    document.dispatchEvent(
+                        new SwitchEvent(CENTRE_PAGES.BOOKMARK),
+                    )
                     return true
                 case 'KeyH':
-                    document.dispatchEvent(new SwitchEvent(PageType.HISTORY))
+                    document.dispatchEvent(
+                        new SwitchEvent(CENTRE_PAGES.HISTORY),
+                    )
                     return true
                 case 'KeyA':
-                    document.dispatchEvent(new SwitchEvent(PageType.ANCHOR))
+                    document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.ANCHOR))
                     return true
                 case 'KeyK':
-                    document.dispatchEvent(new SwitchEvent(PageType.KEYSTROKES))
+                    document.dispatchEvent(
+                        new SwitchEvent(CENTRE_PAGES.KEYSTROKES),
+                    )
                     return true
                 case 'KeyP':
                     document.dispatchEvent(
-                        new SwitchEvent(PageType.POPUP_BLOCKER),
+                        new SwitchEvent(CENTRE_PAGES.POPUP_BLOCKER),
                     )
                     return true
             }

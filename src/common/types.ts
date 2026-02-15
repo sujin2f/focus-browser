@@ -2,7 +2,7 @@ import type { MenuItemConstructorOptions } from 'electron'
 import {
     Menu,
     MenuCategory,
-    PageType,
+    CENTRE_PAGES,
     BROWSER,
     SEARCH_ENGINES,
 } from '@src/common/constants'
@@ -50,7 +50,7 @@ export type PopupBlocker = {
     allowed?: boolean
 }
 
-export type Scenes = PageType | typeof BROWSER
+export type Scenes = CENTRE_PAGES | typeof BROWSER
 
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
@@ -65,4 +65,4 @@ export type ElementProps<T> = {
     onClick: (ev: HTMLElementEventMap['click']) => unknown
 }
 
-export type EventSwitch = CustomEvent<PageType>
+export type EventSwitch = CustomEvent<CENTRE_PAGES>

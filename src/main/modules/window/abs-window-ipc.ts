@@ -13,7 +13,7 @@ import {
     BROWSER,
     LogTypes,
     MainEventTypes,
-    PageType,
+    CENTRE_PAGES,
     NAVIGATION,
 } from '@src/common/constants'
 
@@ -64,7 +64,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
 
             case MainEventTypes.SWITCH:
-                this.switch(params[0] as PageType)
+                this.switch(params[0] as CENTRE_PAGES)
                 return
 
             case MainEventTypes.TITLE:

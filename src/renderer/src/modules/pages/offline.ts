@@ -5,10 +5,10 @@ import { Heading } from '@src/renderer/src/modules/fragments/heading'
 import { Button } from '@src/renderer/src/modules/fragments/button'
 
 import { ipcRenderer } from '@src/renderer/src/utils'
-import { IPC_CHANNELS, PageType, BROWSER } from '@src/common/constants'
+import { IPC_CHANNELS, CENTRE_PAGES, BROWSER } from '@src/common/constants'
 
 export class Offline extends A_Page {
-    public page = PageType.OFFLINE
+    public page = CENTRE_PAGES.OFFLINE
 
     constructor() {
         super()

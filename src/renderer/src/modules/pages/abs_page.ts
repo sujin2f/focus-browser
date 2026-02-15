@@ -1,6 +1,6 @@
 import { Element } from '@src/renderer/src/modules/fragments'
 import {
-    PageType,
+    CENTRE_PAGES,
     TableAction,
     PageMode,
     IPC_CHANNELS,
@@ -15,7 +15,7 @@ export abstract class A_Page {
     /**
      * Identifier
      */
-    abstract readonly page: PageType
+    abstract readonly page: CENTRE_PAGES
 
     private _root!: Element<HTMLElement>
     protected get root(): Element<HTMLElement> {

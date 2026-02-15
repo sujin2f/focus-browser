@@ -11,13 +11,13 @@ import {
     TableAction,
     IPC_CHANNELS,
     RequestHandler,
-    PageType,
+    CENTRE_PAGES,
     CTRL,
 } from '@src/common/constants'
 
 export class PopupBlocker extends A_PageWithTable<T_PopupBlocker> {
     order: 'ASC' | 'DESC' = 'DESC'
-    readonly page = PageType.POPUP_BLOCKER
+    readonly page = CENTRE_PAGES.POPUP_BLOCKER
 
     constructor() {
         super()

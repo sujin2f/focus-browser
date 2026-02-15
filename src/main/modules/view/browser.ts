@@ -11,7 +11,7 @@ import type { Bookmark } from '@src/common/types'
 import {
     IPC_CHANNELS,
     MainEventTypes,
-    PageType,
+    CENTRE_PAGES,
     SEARCH_ENGINES,
 } from '@src/common/constants'
 import { Logger } from '@src/common/logger'
@@ -38,6 +38,8 @@ export class BrowserView extends WebContentsView {
     public get failedUrl() {
         return this._failedUrl
     }
+
+    public initialized = false
 
     /**
      * Constants
@@ -109,6 +111,7 @@ export class BrowserView extends WebContentsView {
      * @param keyword URL to load or search string
      */
     public async loadURL(keyword: string) {
+        this.initialized = true
         const trimmed = keyword.trim()
         if (!keyword || !trimmed) {
             return
@@ -144,7 +147,7 @@ export class BrowserView extends WebContentsView {
                     IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
-                    PageType.OFFLINE,
+                    CENTRE_PAGES.OFFLINE,
                 )
                 return
             }
@@ -285,7 +288,7 @@ export class BrowserView extends WebContentsView {
                     IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
-                    PageType.POPUP_BLOCKER,
+                    CENTRE_PAGES.POPUP_BLOCKER,
                 )
             })
             notification.show()

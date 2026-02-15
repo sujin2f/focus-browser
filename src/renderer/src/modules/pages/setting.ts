@@ -10,13 +10,13 @@ import { ipcRenderer, ctrlOrComm } from '@src/renderer/src/utils'
 import type { Info } from '@src/common/types'
 import {
     IPC_CHANNELS,
-    PageType,
+    CENTRE_PAGES,
     RequestHandler,
     SEARCH_ENGINES,
 } from '@src/common/constants'
 
 export class Setting extends A_Page {
-    public page = PageType.SETTING
+    public page = CENTRE_PAGES.SETTING
 
     constructor() {
         super()

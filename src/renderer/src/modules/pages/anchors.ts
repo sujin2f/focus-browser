@@ -12,14 +12,14 @@ import {
     IPC_CHANNELS,
     RequestHandler,
     TableAction,
-    PageType,
+    CENTRE_PAGES,
     CTRL,
 } from '@src/common/constants'
 
 export class Anchors extends A_PageWithTable<Bookmark> {
     public order: 'ASC' | 'DESC' = 'ASC'
 
-    readonly page = PageType.ANCHOR
+    readonly page = CENTRE_PAGES.ANCHOR
 
     constructor() {
         super()

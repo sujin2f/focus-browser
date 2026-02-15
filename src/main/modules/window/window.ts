@@ -60,6 +60,9 @@ export class BrowserWindow extends AbsWindowIPC {
             if (this.browser.failedUrl) {
                 this.browser.reload()
             }
+            if (!this.browser.initialized) {
+                this.browser.searchKeyword('')
+            }
             return
         }
 

@@ -12,7 +12,7 @@ import type { Scenes, MenuBlock, MenuItems } from '@src/common/types'
 import {
     MenuCategory,
     Menu,
-    PageType,
+    CENTRE_PAGES,
     BROWSER,
     SystemType,
     DEFAULT_SHORTCUTS,
@@ -42,7 +42,7 @@ import { isBeta, isTest } from '@src/common/utils'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
-    protected _current: Scenes = PageType.DASHBOARD
+    protected _current: Scenes = CENTRE_PAGES.DASHBOARD
     protected get isBrowser() {
         return this._current === BROWSER
     }
@@ -125,7 +125,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
-                    this.switch(PageType.FIND)
+                    this.switch(CENTRE_PAGES.FIND)
                 },
             },
             [Menu.FIND_NEXT]: {
@@ -179,13 +179,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADDRESS]: {
                 accelerator: this.getShortcut(Menu.ADDRESS),
                 click: () => {
-                    this.switch(PageType.ADDRESS)
+                    this.switch(CENTRE_PAGES.ADDRESS)
                 },
             },
             [Menu.CENTRE]: {
                 accelerator: this.getShortcut(Menu.CENTRE),
                 click: () => {
-                    this.switch(PageType.HOME)
+                    this.switch(CENTRE_PAGES.HOME)
                 },
             },
             [Menu.s0001]: {},
@@ -438,7 +438,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             },
             {
                 label: 'Control Centre',
-                click: () => this.switch(PageType.HOME),
+                click: () => this.switch(CENTRE_PAGES.HOME),
             },
             { type: 'separator' },
             {
@@ -529,7 +529,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
         // Clicking the notification navigates to the bookmark page
         notification.addListener('click', () => {
-            this.switch(PageType.BOOKMARK)
+            this.switch(CENTRE_PAGES.BOOKMARK)
         })
         notification.show()
         Logger.getInstance().log('addBookmark >> notification should be shown.')
@@ -557,7 +557,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
         // Clicking the notification navigates to the anchor page
         notification.addListener('click', () => {
-            this.switch(PageType.ANCHOR)
+            this.switch(CENTRE_PAGES.ANCHOR)
         })
         notification.show()
     }

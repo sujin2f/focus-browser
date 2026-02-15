@@ -36,7 +36,7 @@ import { BrowserView } from '@src/main/modules/view/browser'
 import {
     RequestHandler,
     IPC_CHANNELS,
-    PageType,
+    CENTRE_PAGES,
     BROWSER,
     CURRENT_PAGE_INFO,
 } from '@src/common/constants'
@@ -102,8 +102,8 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onSwitch > switch scene', () => {
-        ipc[1][1](null, PageType.ADDRESS)
-        expect(switchFn).toHaveBeenCalledWith(PageType.ADDRESS)
+        ipc[1][1](null, CENTRE_PAGES.ADDRESS)
+        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.ADDRESS)
     })
 
     test('onSwitch > switch scene', () => {

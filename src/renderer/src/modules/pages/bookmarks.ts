@@ -22,14 +22,14 @@ import {
     PageMode,
     RequestHandler,
     TableAction,
-    PageType,
+    CENTRE_PAGES,
     CTRL,
 } from '@src/common/constants'
 
 export class Bookmarks extends A_PageWithTable<Bookmark> {
     order: 'ASC' | 'DESC' = 'ASC'
 
-    readonly page = PageType.BOOKMARK
+    readonly page = CENTRE_PAGES.BOOKMARK
 
     // Add Form
     private form: Form = new Form()

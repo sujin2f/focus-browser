@@ -3,31 +3,44 @@ import {
     type WebContentsViewConstructorOptions,
 } from 'electron'
 
-import { PageType } from '@src/common/constants'
+import { CENTRE_PAGES } from '@src/common/constants'
 
 import { resolveHtmlPath } from '@src/main/utils'
 
 export class CenterView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        this.loadScene(PageType.DASHBOARD)
+        this.loadScene(CENTRE_PAGES.DASHBOARD)
     }
 
-    public loadScene(scene: PageType) {
+    public loadScene(scene: CENTRE_PAGES) {
         switch (scene) {
-            case PageType.DASHBOARD:
-                this.webContents.loadURL(resolveHtmlPath(PageType.DASHBOARD))
-                return
-            case PageType.HOME:
-                this.webContents.loadURL(resolveHtmlPath(PageType.HOME))
-                return
-            case PageType.ADDRESS:
+            case CENTRE_PAGES.DASHBOARD:
                 this.webContents.loadURL(
-                    `${resolveHtmlPath(PageType.HOME)}?address=true`,
+                    resolveHtmlPath(CENTRE_PAGES.DASHBOARD),
+                )
+                return
+            case CENTRE_PAGES.HOME:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))
+                return
+            case CENTRE_PAGES.BOOKMARK:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.BOOKMARK))
+                return
+            case CENTRE_PAGES.ANCHOR:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.ANCHOR))
+                return
+            case CENTRE_PAGES.POPUP_BLOCKER:
+                this.webContents.loadURL(
+                    resolveHtmlPath(CENTRE_PAGES.POPUP_BLOCKER),
+                )
+                return
+            case CENTRE_PAGES.ADDRESS:
+                this.webContents.loadURL(
+                    `${resolveHtmlPath(CENTRE_PAGES.HOME)}?address=true`,
                 )
                 return
             default:
-                this.webContents.loadURL(resolveHtmlPath(PageType.HOME))
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))
         }
     }
 }

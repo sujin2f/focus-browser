@@ -4,7 +4,11 @@ import { Button } from '@src/renderer/src/modules/fragments/button'
 
 import { ipcRenderer, SwitchEvent } from '@src/renderer/src/utils'
 import type { ElementProps } from '@src/common/types'
-import { IPC_CHANNELS, PageType, RequestHandler } from '@src/common/constants'
+import {
+    IPC_CHANNELS,
+    CENTRE_PAGES,
+    RequestHandler,
+} from '@src/common/constants'
 
 export class Callout extends Element<HTMLDivElement> {
     private button: Button
@@ -33,7 +37,7 @@ export class Callout extends Element<HTMLDivElement> {
                 ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
                     helpText: false,
                 })
-                document.dispatchEvent(new SwitchEvent(PageType.RELOAD))
+                document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.RELOAD))
             },
         }).append('Hide Tip')
         this.wrapper = new Element({ tag: 'div' })

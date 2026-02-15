@@ -2,7 +2,7 @@ import {
     IPC_CHANNELS,
     RequestHandler,
     BROWSER,
-    PageType,
+    CENTRE_PAGES,
     CTRL,
     CustomEvents,
 } from '@src/common/constants'
@@ -22,7 +22,7 @@ export const ipcRenderer = {
 }
 
 export const navigate = (url?: string, handler?: RequestHandler) => {
-    document.dispatchEvent(new SwitchEvent(PageType.HOME))
+    document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.HOME))
     if (url) {
         ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, url, handler)
         return
@@ -51,8 +51,8 @@ export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
 
 export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl')
 
-export class SwitchEvent extends CustomEvent<PageType> {
-    constructor(detail: PageType) {
+export class SwitchEvent extends CustomEvent<CENTRE_PAGES> {
+    constructor(detail: CENTRE_PAGES) {
         super(CustomEvents.SWITCH, { detail })
     }
 }

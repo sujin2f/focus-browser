@@ -12,13 +12,13 @@ import {
     IPC_CHANNELS,
     RequestHandler,
     TableAction,
-    PageType,
+    CENTRE_PAGES,
     CTRL,
 } from '@src/common/constants'
 
 export class History extends A_PageWithTable<NavigationEntry> {
     order: 'ASC' | 'DESC' = 'DESC'
-    readonly page = PageType.HISTORY
+    readonly page = CENTRE_PAGES.HISTORY
 
     constructor() {
         super()

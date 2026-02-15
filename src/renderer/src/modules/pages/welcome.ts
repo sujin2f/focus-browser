@@ -5,12 +5,12 @@ import { ButtonGroup } from '@src/renderer/src/modules/fragments/button-group'
 import { Button } from '@src/renderer/src/modules/fragments/button'
 import { Heading } from '@src/renderer/src/modules/fragments/heading'
 
-import { CTRL, PageType } from '@src/common/constants'
+import { CTRL, CENTRE_PAGES } from '@src/common/constants'
 import { ctrlOrComm, navigate } from '@src/renderer/src/utils'
 import { ShortcodeTable } from '../fragments/table-shortcode'
 
 export class Welcome extends A_Page {
-    public readonly page = PageType.WELCOME
+    public readonly page = CENTRE_PAGES.WELCOME
 
     private get welcome() {
         return new Heading(1).append('Single Tab Browser for Fast Navigation')

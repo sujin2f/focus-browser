@@ -3,7 +3,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Element } from '@src/renderer/src/modules/fragments'
-import { PageType, TableAction } from '@src/common/constants'
+import { CENTRE_PAGES, TableAction } from '@src/common/constants'
 import { TrLinked } from '@src/renderer/src/modules/fragments/tr-linked'
 import { A_PageWithTable } from './abs_with_table'
 import { isMac } from '@src/renderer/src/utils'
@@ -13,7 +13,7 @@ class Test extends A_PageWithTable<string> {
     refresh(): void {
         throw new Error('Method not implemented.')
     }
-    page: PageType = PageType.WELCOME
+    page: CENTRE_PAGES = CENTRE_PAGES.WELCOME
 
     constructor() {
         super()

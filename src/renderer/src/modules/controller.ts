@@ -1,4 +1,4 @@
-import { PageType, CustomEvents, IPC_CHANNELS } from '@src/common/constants'
+import { CENTRE_PAGES, CustomEvents, IPC_CHANNELS } from '@src/common/constants'
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 
 import { A_Page } from '@src/renderer/src/modules/pages/abs_page'
@@ -34,7 +34,7 @@ export class Controller {
             document.addEventListener(
                 CustomEvents.SWITCH as string,
                 (e: Event) => {
-                    const customEvent = e as CustomEvent<PageType>
+                    const customEvent = e as CustomEvent<CENTRE_PAGES>
                     Logger.getInstance().log(
                         `[Renderer] Switch to ${customEvent.detail}`,
                     )
@@ -43,19 +43,19 @@ export class Controller {
             )
 
             this.initIPC()
-            this.switch(PageType.HOME)
+            this.switch(CENTRE_PAGES.HOME)
         })
     }
 
     private initIPC() {
         ipcRenderer.on(IPC_CHANNELS.SWITCH, (...args: unknown[]) => {
-            const scene = args[0] as PageType
+            const scene = args[0] as CENTRE_PAGES
             this.switch(scene)
         })
     }
 
-    private switch(page: PageType) {
-        if (page === PageType.RELOAD) {
+    private switch(page: CENTRE_PAGES) {
+        if (page === CENTRE_PAGES.RELOAD) {
             // reload
             this._currentPage.refresh()
             return
@@ -66,40 +66,40 @@ export class Controller {
         }
 
         switch (page) {
-            case PageType.HOME:
+            case CENTRE_PAGES.HOME:
                 this._currentPage = new Home()
                 break
-            case PageType.ADDRESS:
+            case CENTRE_PAGES.ADDRESS:
                 this._currentPage = new Address()
                 break
-            case PageType.BOOKMARK:
+            case CENTRE_PAGES.BOOKMARK:
                 this._currentPage = new Bookmarks()
                 break
-            case PageType.HISTORY:
+            case CENTRE_PAGES.HISTORY:
                 this._currentPage = new History()
                 break
-            case PageType.ANCHOR:
+            case CENTRE_PAGES.ANCHOR:
                 this._currentPage = new Anchors()
                 break
-            case PageType.POPUP_BLOCKER:
+            case CENTRE_PAGES.POPUP_BLOCKER:
                 this._currentPage = new PopupBlocker()
                 break
-            case PageType.KEYSTROKES:
+            case CENTRE_PAGES.KEYSTROKES:
                 this._currentPage = new Keystrokes()
                 break
-            case PageType.WELCOME:
+            case CENTRE_PAGES.WELCOME:
                 this._currentPage = new Welcome()
                 break
-            case PageType.SETTING:
+            case CENTRE_PAGES.SETTING:
                 this._currentPage = new Setting()
                 break
-            case PageType.OFFLINE:
+            case CENTRE_PAGES.OFFLINE:
                 this._currentPage = new Offline()
                 break
-            case PageType.FIND:
+            case CENTRE_PAGES.FIND:
                 this._currentPage = new Find()
                 break
-            case PageType.SHORTCUT:
+            case CENTRE_PAGES.SHORTCUT:
                 this._currentPage = new Shortcut()
                 break
         }

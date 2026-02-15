@@ -5,8 +5,6 @@ import { NAVIGATION } from '@src/common/constants'
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { Card } from '@src/renderer/src/fragments/card'
 
-import '@home/styles/common.css'
-
 class Dashboard extends A_Entry {
     private get grid() {
         const grid = document.querySelector<HTMLElement>('#grid')
@@ -18,7 +16,7 @@ class Dashboard extends A_Entry {
 
     constructor() {
         super()
-        new H1('Welcome to Focus!').prepend(this.root)
+        new H1('Welcome to Focus!').prepend(this.getSection('root'))
         new Card('Continue', 'Visit the last page from your history')
             .append(this.grid)
             .setOnClick(() => {

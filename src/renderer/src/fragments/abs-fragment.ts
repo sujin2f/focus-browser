@@ -1,7 +1,7 @@
 export abstract class A_Fragment<T extends HTMLElement> {
     protected node: T
     private _element?: T
-    protected get element(): T {
+    public get element(): T {
         if (!this._element) {
             // TODO IPC
             throw new Error('Cannot find _element')

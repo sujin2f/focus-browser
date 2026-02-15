@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Dashboard</title>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+    </head>
+
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto">
+            <section
+                class="flex items-center mb-4"
+                id="section-button"
+            ></section>
+            <section id="section-address"></section>
+            <section
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2"
+                id="section-grid"
+            ></section>
+        </div>
+        <%= require('html-loader!./fragments/button.html').default %> <%=
+        require('html-loader!./fragments/card.html').default %><%=
+        require('html-loader!./fragments/input.html').default %>
+    </body>
+</html>

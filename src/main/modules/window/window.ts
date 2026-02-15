@@ -2,7 +2,7 @@ import { session, type BaseWindowConstructorOptions } from 'electron'
 
 import { preload } from '@src/main/utils'
 import type { Scenes } from '@src/common/types'
-import { PageType } from '@src/common/constants'
+import { BROWSER } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
@@ -55,7 +55,7 @@ export class BrowserWindow extends AbsWindowIPC {
      */
     public switch(scene: Scenes) {
         this._current = scene
-        if (this.isBrowser) {
+        if (this.isBrowser || scene === BROWSER) {
             this.contentView = this.browser
             if (this.browser.failedUrl) {
                 this.browser.reload()
@@ -64,7 +64,7 @@ export class BrowserWindow extends AbsWindowIPC {
         }
 
         this.contentView = this.centre
-        this.centre.loadScene(PageType.HOME)
+        this.centre.loadScene(scene)
         this.centre.webContents.focus()
     }
 

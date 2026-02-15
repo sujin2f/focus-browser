@@ -56,3 +56,16 @@ export class SwitchEvent extends CustomEvent<PageType> {
         super(CustomEvents.SWITCH, { detail })
     }
 }
+
+export const tagNameIs = (
+    element: HTMLElement | EventTarget | null,
+    tagName: string,
+): boolean => {
+    if (!element) {
+        return false
+    }
+
+    return (
+        (element as HTMLElement).tagName.toLowerCase() === tagName.toLowerCase()
+    )
+}

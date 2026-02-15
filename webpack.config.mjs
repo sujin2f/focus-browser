@@ -89,6 +89,8 @@ const renderer = {
     entry: {
         'renderer/index': './src/renderer/src/index.ts',
         'renderer/dashboard': './src/renderer/src/entries/dashboard.ts',
+        'renderer/main': './src/renderer/src/entries/main.ts',
+        'renderer/bookmarks': './src/renderer/src/entries/bookmarks.ts',
     },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
@@ -104,6 +106,16 @@ const renderer = {
             template: './src/renderer/templates/dashboard.html',
             filename: 'dashboard.html',
             chunks: ['renderer/dashboard'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/main.html',
+            filename: 'main.html',
+            chunks: ['renderer/main'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/bookmarks.html',
+            filename: 'bookmarks.html',
+            chunks: ['renderer/bookmarks'],
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({

@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Dashboard</title>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+    </head>
+
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto" id="root">
+            <div
+                class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
+            >
+                <section id="section-title"></section>
+                <section id="section-buttons" class="flex gap-2"></section>
+            </div>
+            <form id="section-search"></form>
+            <section id="section-address"></section>
+            <section class="grid" id="section-list"></section>
+        </div>
+        <%=require('html-loader!./fragments/h1.html').default %>
+        <%=require('html-loader!./fragments/back-button.html').default %>
+        <%=require('html-loader!./fragments/button.html').default %>
+        <%=require('html-loader!./fragments/button-hollow.html').default %>
+        <%=require('html-loader!./fragments/card.html').default %>
+        <%=require('html-loader!./fragments/input.html').default %>
+        <%=require('html-loader!./fragments/list-row.html').default %>
+    </body>
+</html>

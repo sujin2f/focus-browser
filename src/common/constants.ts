@@ -14,7 +14,6 @@ export enum NAVIGATION {
 export enum PageType {
     RELOAD,
     WELCOME,
-    HOME,
     ADDRESS,
     BOOKMARK,
     HISTORY,
@@ -25,7 +24,8 @@ export enum PageType {
     FIND,
     SHORTCUT,
     KEYSTROKES,
-    DASHBOARD,
+    HOME = 'main.html',
+    DASHBOARD = 'dashboard.html',
 }
 
 export const BROWSER = 'scene-browser'

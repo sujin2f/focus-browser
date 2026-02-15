@@ -3,6 +3,8 @@ import { Logger } from '@src/common/logger'
 import type { Info } from '@src/common/types'
 import { Channel, RequestHandler } from '@src/common/constants'
 
+import '@home/styles/common.css'
+
 export abstract class A_Entry {
     protected _settings: Partial<Info> = {}
     protected get settings() {
@@ -13,17 +15,17 @@ export abstract class A_Entry {
         this.callbackUpdateInfo()
     }
 
-    protected get root() {
-        const root = document.querySelector<HTMLElement>('#root')
-        if (!root) {
+    protected getSection(id: string) {
+        const element = document.querySelector<HTMLElement>(`#${id}`)
+        if (!element) {
             // TODO ipc
-            throw new Error('No root element exist')
+            throw new Error(`No ${id} element exist`)
         }
-        return root
+        return element
     }
 
     constructor() {
-        document.addEventListener('keydown', this.callbackShortcut)
+        document.addEventListener('keydown', this.callbackShortcut.bind(this))
     }
 
     protected callbackShortcut(e: KeyboardEvent) {

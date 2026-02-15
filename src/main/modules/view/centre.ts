@@ -14,7 +14,6 @@ export class CenterView extends WebContentsView {
     }
 
     public loadScene(scene: PageType) {
-        console.log(scene)
         switch (scene) {
             case PageType.DASHBOARD:
                 this.webContents.loadURL(resolveHtmlPath(PageType.DASHBOARD))
@@ -28,7 +27,7 @@ export class CenterView extends WebContentsView {
                 )
                 return
             default:
-                this.webContents.loadURL(resolveHtmlPath('index.html'))
+                this.webContents.loadURL(resolveHtmlPath(PageType.HOME))
         }
     }
 }

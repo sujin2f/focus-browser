@@ -15,7 +15,7 @@ type T_Card = {
 const cards: Record<string, T_Card> = {
     bookmarks: {
         title: 'Bookmark (B)',
-        description: 'Manage bookmarks',
+        description: 'Your Bookmarks',
         destination: 'bookmarks.html',
     },
     anchors: {
@@ -26,7 +26,7 @@ const cards: Record<string, T_Card> = {
     },
     history: {
         title: 'History (H)',
-        description: 'Manage history',
+        description: 'Navigation history',
         destination: 'history.html',
     },
     popup: {

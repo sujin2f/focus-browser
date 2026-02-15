@@ -92,6 +92,8 @@ const renderer = {
         'renderer/main': './src/renderer/src/entries/main.ts',
         'renderer/bookmarks': './src/renderer/src/entries/bookmarks.ts',
         'renderer/anchors': './src/renderer/src/entries/anchors.ts',
+        'renderer/history': './src/renderer/src/entries/history.ts',
+        'renderer/popup': './src/renderer/src/entries/popup.ts',
     },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
@@ -122,6 +124,16 @@ const renderer = {
             template: './src/renderer/templates/anchors.html',
             filename: 'anchors.html',
             chunks: ['renderer/anchors'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/history.html',
+            filename: 'history.html',
+            chunks: ['renderer/history'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/popup.html',
+            filename: 'popup.html',
+            chunks: ['renderer/popup'],
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({

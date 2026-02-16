@@ -1,3 +1,5 @@
+// yarn test abs-window-ipc.spec.ts
+
 import {
     electron,
     ipcMainOn,
@@ -32,25 +34,27 @@ jest.doMock('@main/modules/store/bookmarks', bookmarks)
 
 jest.doMock('@main/modules/view/browser', browser)
 
-import { WebContentsView } from 'electron'
 import { BrowserView } from '@src/main/modules/view/browser'
 import {
     RequestHandler,
-    Channel,
-    PageType,
+    IPC_CHANNELS,
+    CENTRE_PAGES,
     BROWSER,
     CURRENT_PAGE_INFO,
 } from '@src/common/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
+import { CenterView } from '../view/centre'
+import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
     switch = switchFn
+    protected _current: Scenes = BROWSER
     constructor() {
         super()
         this.browser = new BrowserView({})
-        this.centre = new WebContentsView()
+        this.centre = new CenterView({})
     }
 }
 
@@ -77,7 +81,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
             'url',
         )
         expect(send).toHaveBeenCalledWith(
-            Channel.INFO,
+            IPC_CHANNELS.INFO,
             RequestHandler.RESPONSE,
             { title: 'test title', url: 'https://sujinc.com/focus-browser' },
         )
@@ -100,8 +104,8 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onSwitch > switch scene', () => {
-        ipc[1][1](null, PageType.ADDRESS)
-        expect(switchFn).toHaveBeenCalledWith(PageType.ADDRESS)
+        ipc[1][1](null, CENTRE_PAGES.ADDRESS)
+        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.ADDRESS)
     })
 
     test('onSwitch > switch scene', () => {
@@ -119,7 +123,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onHistory > request', () => {
         ipc[2][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.HISTORY,
+            IPC_CHANNELS.HISTORY,
             RequestHandler.RESPONSE,
             [],
         )
@@ -137,11 +141,13 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onBookmarks > request', () => {
+        console.log(ipc[3][1])
         ipc[3][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.BOOKMARK,
+            IPC_CHANNELS.BOOKMARK,
             RequestHandler.RESPONSE,
             [],
+            false,
         )
     })
 
@@ -163,7 +169,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onAnchors > request', () => {
         ipc[4][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.ANCHOR,
+            IPC_CHANNELS.ANCHOR,
             RequestHandler.RESPONSE,
             [],
         )
@@ -177,7 +183,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onPopupBlocker > request', () => {
         ipc[5][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
-            Channel.POPUP_BLOCKER,
+            IPC_CHANNELS.POPUP_BLOCKER,
             RequestHandler.RESPONSE,
             [],
             [],

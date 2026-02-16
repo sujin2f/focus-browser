@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Find</title>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+    </head>
+
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto">
+            <div
+                class="flex flex-col h-dvh justify-center items-center max-w-4xl m-auto"
+            >
+                <%=require('html-loader!./fragments/h1.html').default %>
+                <section id="section-title"></section>
+                <%=require('html-loader!./fragments/button.html').default %>
+                <section class="mt-2" id="section-form"></section>
+            </div>
+        </div>
+    </body>
+</html>

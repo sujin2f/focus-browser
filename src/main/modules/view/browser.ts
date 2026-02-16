@@ -9,10 +9,10 @@ import fetch from 'cross-fetch'
 
 import type { Bookmark } from '@src/common/types'
 import {
-    Channel,
+    IPC_CHANNELS,
     MainEventTypes,
-    PageType,
-    SearchEngine,
+    CENTRE_PAGES,
+    SEARCH_ENGINES,
 } from '@src/common/constants'
 import { Logger } from '@src/common/logger'
 
@@ -39,6 +39,8 @@ export class BrowserView extends WebContentsView {
         return this._failedUrl
     }
 
+    public initialized = false
+
     /**
      * Constants
      */
@@ -48,10 +50,10 @@ export class BrowserView extends WebContentsView {
         super(options)
 
         ipcMain.emit(
-            Channel.MAIN_PROCESS,
+            IPC_CHANNELS.MAIN_PROCESS,
             null,
             MainEventTypes.TITLE,
-            'Loading...',
+            'Welcome to Focus!',
         )
 
         this.setPopupBlocker()
@@ -61,7 +63,7 @@ export class BrowserView extends WebContentsView {
             // Web Title to App Title
             .on('did-finish-load', () => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     this.webContents.getTitle(),
@@ -70,7 +72,7 @@ export class BrowserView extends WebContentsView {
             })
             .on('page-title-updated', (_, title) => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     title,
@@ -78,7 +80,7 @@ export class BrowserView extends WebContentsView {
             })
             .on('will-navigate', () =>
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.TITLE,
                     'Loading...',
@@ -87,7 +89,7 @@ export class BrowserView extends WebContentsView {
             // Context Menu
             .on('context-menu', (_, params) => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.CONTEXT_MENU,
                     params,
@@ -95,9 +97,12 @@ export class BrowserView extends WebContentsView {
             })
 
         this.webContents.setZoomFactor(1)
+    }
 
+    public loadLastHistory() {
+        Logger.getInstance().info('loadLastHistory')
         const url = this.restoreHistory() || this.DEFAULT_URL
-        Logger.getInstance().log('BrowserView::constructor()', url)
+        Logger.getInstance().info('url', url)
         this.loadURL(url)
     }
 
@@ -106,6 +111,7 @@ export class BrowserView extends WebContentsView {
      * @param keyword URL to load or search string
      */
     public async loadURL(keyword: string) {
+        this.initialized = true
         const trimmed = keyword.trim()
         if (!keyword || !trimmed) {
             return
@@ -138,10 +144,10 @@ export class BrowserView extends WebContentsView {
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = url.toString()
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
-                    PageType.OFFLINE,
+                    CENTRE_PAGES.OFFLINE,
                 )
                 return
             }
@@ -150,28 +156,35 @@ export class BrowserView extends WebContentsView {
         })
     }
 
-    private searchKeyword(keyword: string) {
+    public searchKeyword(keyword: string) {
         const searchEngine = Status.getInstance().get('searchEngine')
         this._failedUrl = undefined
-        this.loadURL(`${SearchEngine[searchEngine]}${keyword}`)
+        this.loadURL(`${SEARCH_ENGINES[searchEngine]}${keyword}`)
     }
 
     /**
      * Restore history from storage
      */
     private restoreHistory() {
+        Logger.getInstance().info('restoreHistory')
         const history = new History()
         history.parse()
 
-        if (!isNaN(history.get('index'))) {
+        const index = history.get('index')
+        Logger.getInstance().info('history.get(index)', index)
+
+        if (!isNaN(index) && index !== -1) {
             this.webContents.navigationHistory.restore({
-                index: history.get('index'),
+                index,
                 entries: history.get('history'),
             })
         }
 
-        if (history.current) {
-            return history.current.url
+        const current = history.current
+        Logger.getInstance().info('history.current', current)
+
+        if (current) {
+            return current.url
         }
         return ''
     }
@@ -272,10 +285,10 @@ export class BrowserView extends WebContentsView {
             })
             notification.addListener('click', () => {
                 ipcMain.emit(
-                    Channel.MAIN_PROCESS,
+                    IPC_CHANNELS.MAIN_PROCESS,
                     null,
                     MainEventTypes.SWITCH,
-                    PageType.POPUP_BLOCKER,
+                    CENTRE_PAGES.POPUP_BLOCKER,
                 )
             })
             notification.show()
@@ -343,7 +356,7 @@ export class BrowserView extends WebContentsView {
      */
     public reload() {
         ipcMain.emit(
-            Channel.MAIN_PROCESS,
+            IPC_CHANNELS.MAIN_PROCESS,
             null,
             MainEventTypes.TITLE,
             'Reloading...',

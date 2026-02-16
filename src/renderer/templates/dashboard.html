@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Dashboard</title>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+    </head>
+
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto">
+            <%=require('html-loader!./fragments/h1.html').default %>
+            <div
+                id="section-root"
+                class="flex flex-col h-dvh justify-center items-center max-w-4xl m-auto"
+            >
+                <%=require('html-loader!./fragments/card.html').default %>
+                <section class="grid grid-cols-2 mt-2" id="grid"></section>
+            </div>
+        </div>
+    </body>
+</html>

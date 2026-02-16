@@ -24,20 +24,6 @@ statusGet.mockReturnValue('GOOGLE')
 import { BrowserView } from '@src/main/modules/view/browser'
 
 describe('Web Browser View (browser.ts)', () => {
-    test('construction', async () => {
-        new BrowserView({})
-        await loadURL.withImplementation(
-            async () => {},
-            async () => {},
-        )
-        await fromPrebuiltAdsAndTracking.withImplementation(
-            async () => {},
-            async () => {},
-        )
-        // from History mock
-        expect(loadURL).toHaveBeenCalledWith('http://example.com/')
-    })
-
     test('loadURL > failure', async () => {
         const view = new BrowserView({})
         await view.loadURL('hey')

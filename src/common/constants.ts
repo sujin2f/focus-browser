@@ -3,28 +3,34 @@ import type { StatusProps } from '@src/common/types'
 export const MAX_HISTORY = 200
 export const CURRENT_PAGE_INFO = 'current-page-info'
 
+export enum NAVIGATION {
+    LAST_VISIT = 'Last Visit',
+    SEARCH_ENGINE = 'Search Engine',
+}
+
 /**
  * Control centre pages
  */
-export enum PageType {
+export enum CENTRE_PAGES {
     RELOAD,
     WELCOME,
-    HOME,
     ADDRESS,
-    BOOKMARK,
     HISTORY,
-    ANCHOR,
-    POPUP_BLOCKER,
     SETTING,
-    OFFLINE,
-    FIND,
     SHORTCUT,
     KEYSTROKES,
+    OFFLINE = 'offline.html',
+    FIND = 'find.html',
+    POPUP_BLOCKER = 'popup.html',
+    ANCHOR = 'anchors.html',
+    BOOKMARK = 'bookmarks.html',
+    HOME = 'main.html',
+    DASHBOARD = 'dashboard.html',
 }
 
 export const BROWSER = 'scene-browser'
 
-export enum Channel {
+export enum IPC_CHANNELS {
     INFO = 'INFO',
     SWITCH = 'SWITCH',
     BOOKMARK = 'BOOKMARK',
@@ -34,6 +40,8 @@ export enum Channel {
     FIND = 'FIND',
     LOG = 'LOG',
     MAIN_PROCESS = 'MAIN_PROCESS',
+    KEYSTROKES = 'KEYSTROKES',
+    SHORTCUTS = 'SHORTCUTS',
 }
 
 export enum RequestHandler {
@@ -43,6 +51,7 @@ export enum RequestHandler {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
+    RESULT = 'RESULT',
 }
 
 export enum PageMode {
@@ -115,7 +124,7 @@ export enum Menu {
     TEST = 'Run Test Block',
 }
 
-export const SearchEngine = {
+export const SEARCH_ENGINES = {
     DUCKDUCKGO: 'https://duckduckgo.com/?q=',
     GOOGLE: 'https://www.google.com/search?q=',
     GOOGLE_AI: 'https://www.google.com/ai?q=',

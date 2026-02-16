@@ -2,9 +2,9 @@ import type { MenuItemConstructorOptions } from 'electron'
 import {
     Menu,
     MenuCategory,
-    PageType,
+    CENTRE_PAGES,
     BROWSER,
-    SearchEngine,
+    SEARCH_ENGINES,
 } from '@src/common/constants'
 
 /**
@@ -19,7 +19,7 @@ export type StatusProps = {
     welcome: boolean
     helpText: boolean
     adBlocker: boolean
-    searchEngine: keyof typeof SearchEngine
+    searchEngine: keyof typeof SEARCH_ENGINES
     frame: boolean
 }
 
@@ -50,7 +50,7 @@ export type PopupBlocker = {
     allowed?: boolean
 }
 
-export type Scenes = PageType | typeof BROWSER
+export type Scenes = CENTRE_PAGES | typeof BROWSER
 
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
@@ -65,4 +65,4 @@ export type ElementProps<T> = {
     onClick: (ev: HTMLElementEventMap['click']) => unknown
 }
 
-export type EventSwitch = CustomEvent<PageType>
+export type EventSwitch = CustomEvent<CENTRE_PAGES>

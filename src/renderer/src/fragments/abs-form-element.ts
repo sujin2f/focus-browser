@@ -1,0 +1,84 @@
+import { A_Fragment } from './abs-fragment'
+
+export abstract class A_FormElement<
+    T extends HTMLElement,
+> extends A_Fragment<T> {
+    public get input() {
+        const element = this.select<HTMLInputElement | HTMLSelectElement>(
+            'input',
+        )
+        if (!element) {
+            throw new Error('input is not defined')
+        }
+        return element
+    }
+
+    public set helpText(helpText: string) {
+        const element = this.select<HTMLParagraphElement>('help-text')
+        if (!element) {
+            throw new Error('help-text is not defined')
+        }
+        element.innerHTML = helpText
+    }
+
+    public set error(message: string) {
+        const element = this.select<HTMLParagraphElement>('error-message')
+        if (!element) {
+            throw new Error('error-message is not defined')
+        }
+        element.innerHTML = message
+        if (message) {
+            element.classList.remove('hidden')
+        } else {
+            element.classList.add('hidden')
+        }
+    }
+
+    public get value() {
+        return this.input.value
+    }
+
+    public set value(value: string | number) {
+        this.input.value = value.toString()
+    }
+
+    public set name(name: string) {
+        this.input.name = name
+    }
+
+    constructor(tagName: string, label: string, name: string) {
+        super(`#${tagName}`)
+        this.node.querySelector('[data-selector="label"]')!.textContent = label
+        this.node
+            .querySelector('[data-selector="input"]')!
+            .setAttribute('name', name)
+    }
+
+    public setOnInput(callback: ((e: Event) => void) | (() => void)) {
+        this.input.addEventListener('input', callback.bind(this))
+        return this
+    }
+
+    public setOnChange(callback: (e: Event) => void) {
+        this.input.addEventListener('change', callback.bind(this))
+        return this
+    }
+
+    public setOnKey(callback: (e: KeyboardEvent) => void) {
+        ;(this.input as HTMLInputElement).addEventListener(
+            'keydown',
+            callback.bind(this),
+        )
+        return this
+    }
+
+    public focus() {
+        this.input.focus()
+        return this
+    }
+
+    public blur() {
+        this.input.blur()
+        return this
+    }
+}

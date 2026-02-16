@@ -1,0 +1,17 @@
+<template id="modal">
+    <div
+        class="fixed top-0 left-0 w-screen h-screen bg-slate-600/50 items-center justify-center hidden"
+    >
+        <div
+            class="bg-white dark:bg-gray-950 dark:text-white pt-20 pr-20 pb-10 pl-10 rounded-4xl relative container"
+        >
+            <button
+                class="cursor-pointer bg-slate-500 text-white rounded-full aspect-square w-14 absolute right-5 top-5"
+                data-selector="close"
+            >
+                X
+            </button>
+            <section data-selector="content"></section>
+        </div>
+    </div>
+</template>

@@ -211,25 +211,34 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const bookmarks = Bookmarks.getInstance()
         switch (handler) {
             case RequestHandler.REQUEST:
-                this.centre.webContents.send(
-                    IPC_CHANNELS.BOOKMARK,
-                    RequestHandler.RESPONSE,
-                    bookmarks.get(),
-                )
+                this.sendBookmarks()
                 return
             case RequestHandler.ADD:
                 bookmarks.push(bookmark)
                 bookmarks.save()
+                this.sendBookmarks(true)
                 return
             case RequestHandler.MODIFY:
                 bookmarks.update(index, bookmark)
                 bookmarks.save()
+                this.sendBookmarks(true)
                 return
             case RequestHandler.REMOVE:
                 bookmarks.remove(index)
                 bookmarks.save()
+                this.sendBookmarks(true)
                 return
         }
+    }
+
+    private sendBookmarks(updated: boolean = false) {
+        const bookmarks = Bookmarks.getInstance()
+        this.centre.webContents.send(
+            IPC_CHANNELS.BOOKMARK,
+            RequestHandler.RESPONSE,
+            bookmarks.get(),
+            updated,
+        )
     }
 
     private onAnchors(_: IpcMainEvent, handler: RequestHandler, url: string) {

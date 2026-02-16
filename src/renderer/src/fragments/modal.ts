@@ -3,6 +3,10 @@ import { A_Fragment } from './abs-fragment'
 export class Modal extends A_Fragment<HTMLElement> {
     constructor() {
         super('#modal')
+
+        this.node
+            .querySelector('[data-selector="close"]')!
+            .addEventListener('click', this.hide.bind(this))
     }
 
     public show() {
@@ -17,5 +21,9 @@ export class Modal extends A_Fragment<HTMLElement> {
 
     public get activated() {
         return this.element.classList.contains('flex')
+    }
+
+    public get content() {
+        return this.select('content')
     }
 }

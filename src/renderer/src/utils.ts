@@ -3,11 +3,8 @@ import {
     RequestHandler,
     BROWSER,
     CENTRE_PAGES,
-    CTRL,
     CustomEvents,
 } from '@src/common/constants'
-import { Element } from '@src/renderer/src/modules/fragments'
-import { Keyboard } from './modules/fragments/keyboard'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -28,23 +25,6 @@ export const navigate = (url?: string, handler?: RequestHandler) => {
         return
     }
     ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER)
-}
-
-export const shortcutToHtml = (shortcut: string): Element<HTMLElement>[] => {
-    const keys = shortcut
-        .split('+')
-        .map((key) => key.trim())
-        .map((key) => new Keyboard().append(key === CTRL ? ctrlOrComm() : key))
-
-    return keys
-        .flatMap((n) => [
-            n,
-            new Element({
-                tag: 'span',
-                className: ['text-gray-500'],
-            }).append('+'),
-        ])
-        .slice(0, -1)
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1

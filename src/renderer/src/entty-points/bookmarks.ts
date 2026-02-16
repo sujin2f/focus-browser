@@ -12,19 +12,28 @@ import { H1 } from '@src/renderer/src/fragments/h1'
 import { Button } from '@src/renderer/src/fragments/button'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
+import { Notification } from '@src/renderer/src/fragments/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { Bookmark } from '@src/common/types'
 
 import { Modal } from '@src/renderer/src/fragments/modal'
+import { Input } from '../fragments/input'
 
 class Bookmarks extends A_List<Bookmark> {
     protected isSearchActivated() {
         return !this.modal.activated
     }
 
-    protected modal = new Modal().appendTo('root')
+    private notification: Notification = new Notification().appendTo('root')
+
+    private editIndex = NaN
+    private modal = new Modal().appendTo('root')
+    private title = new Input('Title', 'title').appendTo(this.modal.content)
+    private url = new Input('URL', 'url').appendTo(this.modal.content)
+    private shortcut = new Input('Shortcut', 'url').appendTo(this.modal.content)
+    private submit: Button
 
     constructor() {
         super()
@@ -36,7 +45,59 @@ class Bookmarks extends A_List<Bookmark> {
         new BackButton().prependTo(h1.element)
 
         // Buttons
-        new Button('Add Bookmark (⌘D)').appendTo('buttons')
+        new Button('Add Bookmark').appendTo('buttons').setOnClick(() => {
+            this.title.value = this.settings.title || ''
+            this.url.value = this.settings.url || ''
+            this.shortcut.value = ''
+
+            this.modal.show()
+        })
+
+        const formButtons = document.createElement('div')
+        formButtons.classList.add('flex', 'justify-between')
+        this.modal.content.append(formButtons)
+
+        // Submit Change
+        this.submit = new Button('Save Changes')
+            .appendTo(formButtons)
+            .setOnClick(() => {
+                this.submit.disable()
+
+                if (this.editIndex) {
+                    ipcRenderer.send(
+                        IPC_CHANNELS.BOOKMARK,
+                        RequestHandler.MODIFY,
+                        {
+                            title: this.title.value.toString(),
+                            url: this.url.value.toString(),
+                            shortcut: this.shortcut.value.toString(),
+                        } satisfies Bookmark,
+                        this.editIndex,
+                    )
+                    return
+                }
+
+                ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.ADD, {
+                    title: this.title.value.toString(),
+                    url: this.url.value.toString(),
+                    shortcut: this.shortcut.value.toString(),
+                } satisfies Bookmark)
+            })
+
+        // Remove
+        new Button('🗑️', 'button-clear')
+            .appendTo(formButtons)
+            .setOnClick(() => {
+                if (this.editIndex) {
+                    ipcRenderer.send(
+                        IPC_CHANNELS.BOOKMARK,
+                        RequestHandler.REMOVE,
+                        {},
+                        this.editIndex,
+                    )
+                    return
+                }
+            })
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
@@ -53,21 +114,35 @@ class Bookmarks extends A_List<Bookmark> {
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
 
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return
             }
 
             this.items = args[1] as Bookmark[]
+            const updated = args[2] as boolean
+
+            this.modal.hide()
+            this.submit.enable()
+
+            if (updated) {
+                this.notification.info('Bookmarks updated!')
+            }
+
             this.listItems = this.items
-            this.renderList()
+
+            if (this.searchKeyword) {
+                this.filterSearch()
+            } else {
+                this.renderList()
+            }
         })
     }
 
     renderList() {
         getSection('list').innerHTML = ''
-        this.listItems.forEach((bookmark) => {
+        this.listItems.forEach((bookmark, index) => {
             const row = new ListRow(bookmark.title, bookmark.url)
                 .appendTo('list')
                 .setOnClick((e: PointerEvent) => {
@@ -82,7 +157,10 @@ class Bookmarks extends A_List<Bookmark> {
             new Button('⚙️', 'button-clear')
                 .appendTo(row.suffix)
                 .setOnClick(() => {
-                    // TODO Edit Action
+                    this.editIndex = index
+                    this.title.value = bookmark.title
+                    this.url.value = bookmark.url
+                    this.shortcut.value = bookmark.shortcut || ''
                     this.modal.show()
                 })
 
@@ -102,6 +180,25 @@ class Bookmarks extends A_List<Bookmark> {
             item.shortcut?.toLowerCase().includes(keyword) ||
             item.title.toLowerCase().includes(keyword)
         )
+    }
+
+    protected filterSearch(): void {
+        if (!this.searchKeyword) {
+            super.filterSearch()
+            return
+        }
+
+        this.items.forEach((item) => {
+            if (
+                item.shortcut?.toLowerCase() ===
+                this.searchKeyword.toLowerCase()
+            ) {
+                navigate(item.url)
+                return
+            }
+        })
+
+        super.filterSearch()
     }
 }
 

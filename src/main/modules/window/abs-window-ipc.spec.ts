@@ -1,3 +1,5 @@
+// yarn test abs-window-ipc.spec.ts
+
 import {
     electron,
     ipcMainOn,
@@ -139,11 +141,13 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onBookmarks > request', () => {
+        console.log(ipc[3][1])
         ipc[3][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.BOOKMARK,
             RequestHandler.RESPONSE,
             [],
+            false,
         )
     })
 

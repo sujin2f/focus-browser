@@ -20,7 +20,6 @@ describe('src/renderer/util', () => {
         expect(util.ipcRenderer).toBeDefined()
         expect(typeof util.ipcRenderer.send).toBe('function')
         expect(typeof util.isMac).toBe('function')
-        expect(typeof util.shortcutToHtml).toBe('function')
         expect(typeof util.navigate).toBe('function')
     })
 })

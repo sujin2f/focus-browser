@@ -3,7 +3,7 @@ import { Input } from '@src/renderer/src/fragments/input'
 import { navigate, tagNameIs } from '@src/renderer/src/utils'
 
 export abstract class A_List<T> extends A_Entry {
-    protected search: Input
+    private search: Input
     protected items: T[] = []
     protected listItems: T[] = []
 

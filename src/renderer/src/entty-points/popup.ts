@@ -40,8 +40,12 @@ class Popup extends A_List<PopupBlocker> {
             blocked.forEach((host) => this.items.push({ host, allowed: false }))
 
             this.listItems = this.items
-            this.renderList()
-            this.filterSearch()
+
+            if (this.searchKeyword) {
+                this.filterSearch()
+            } else {
+                this.renderList()
+            }
         })
     }
 

@@ -15,15 +15,6 @@ export abstract class A_Entry {
         this.callbackUpdateInfo()
     }
 
-    protected getSection(id: string) {
-        const element = document.querySelector<HTMLElement>(`#${id}`)
-        if (!element) {
-            // TODO ipc
-            throw new Error(`No ${id} element exist`)
-        }
-        return element
-    }
-
     constructor() {
         document.addEventListener('keydown', this.callbackShortcut.bind(this))
     }

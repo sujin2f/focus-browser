@@ -18,7 +18,7 @@ export class ListRow extends A_Fragment<HTMLButtonElement> {
     }
 
     public get prefix() {
-        const prefix = this.element.querySelector('[data-selector="prefix"]')
+        const prefix = this.select('prefix')
         if (!prefix) {
             throw new Error('prefix is not defined')
         }
@@ -26,7 +26,7 @@ export class ListRow extends A_Fragment<HTMLButtonElement> {
     }
 
     public get suffix() {
-        const suffix = this.element.querySelector('[data-selector="suffix"]')
+        const suffix = this.select('suffix')
         if (!suffix) {
             throw new Error('suffix is not defined')
         }

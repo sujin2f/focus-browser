@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
@@ -11,8 +11,8 @@ class Find extends A_Entry {
     constructor() {
         super()
 
-        new Input('Find in Page')
-            .prepend(this.getSection('section-form'))
+        new Input('Find in Page', 'search')
+            .prependTo('form')
             .setOnEnter((e) => {
                 if (e.code === 'Enter') {
                     ipcRenderer.send(
@@ -24,8 +24,8 @@ class Find extends A_Entry {
                 }
             })
             .focus()
-        new Button('Cancel').append(this.getSection('section-button'))
-        new Button('Find').append(this.getSection('section-button'))
+        new Button('Cancel').appendTo('button')
+        new Button('Find').appendTo('button')
     }
 }
 

@@ -51,6 +51,7 @@ export enum RequestHandler {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
+    RESULT = 'RESULT',
 }
 
 export enum PageMode {

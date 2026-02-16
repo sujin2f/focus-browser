@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 import { checkElectron, navigate } from '@src/renderer/src/utils'
 import { NAVIGATION } from '@src/common/constants'
 
@@ -16,14 +16,14 @@ class Dashboard extends A_Entry {
 
     constructor() {
         super()
-        new H1('Welcome to Focus!').prepend(this.getSection('root'))
+        new H1('Welcome to Focus!').prependTo('root')
         new Card('🫰 Continue (Esc)', 'Visit the last page from your history')
-            .append(this.grid)
+            .appendTo(this.grid)
             .setOnClick(() => {
                 navigate(NAVIGATION.LAST_VISIT)
             })
         new Card('⚙️ Search Engine', 'Search Web')
-            .append(this.grid)
+            .appendTo(this.grid)
             .setOnClick(() => {
                 navigate(NAVIGATION.SEARCH_ENGINE)
             })

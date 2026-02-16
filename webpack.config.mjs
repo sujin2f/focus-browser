@@ -86,18 +86,12 @@ const renderer = {
     ...commonConfig,
     target: ['web', 'electron-renderer'],
     name: 'renderer',
-    entry: { 'renderer/index': './src/renderer/src/index.ts' },
+    entry: {},
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/index.html',
-            filename: 'index.html',
-            chunks: ['renderer/index'],
-        }),
-
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({
             envVersion: '"' + process.env.npm_package_version + '"',
@@ -137,7 +131,8 @@ const pages = [
 ]
 
 pages.forEach((page) => {
-    renderer.entry[`renderer/${page}`] = `./src/renderer/src/entries/${page}.ts`
+    renderer.entry[`renderer/${page}`] =
+        `./src/renderer/src/entty-points/${page}.ts`
     renderer.plugins.push(
         new HtmlWebpackPlugin({
             template: `./src/renderer/templates/${page}.html`,

@@ -12,18 +12,15 @@
     <body
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
-        <section id="root" class="container mx-auto pt-5">
+        <div class="container mx-auto">
             <div
-                class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
+                class="flex flex-col h-dvh justify-center items-center max-w-4xl m-auto"
             >
-                <%=require('html-loader!./fragments/h1.html').default %> %>
+                <%=require('html-loader!./fragments/h1.html').default %>
                 <section id="section-title"></section>
+                <%=require('html-loader!./fragments/button.html').default %>
+                <section class="mt-2" id="section-form"></section>
             </div>
-            <%=require('html-loader!./fragments/button.html').default %>
-            <div
-                class="flex flex-col h-dvh justify-center items-center"
-                id="section-form"
-            ></div>
-        </section>
+        </div>
     </body>
 </html>

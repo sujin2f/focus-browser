@@ -12,7 +12,7 @@
     <body
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
-        <div class="container mx-auto" id="root">
+        <div class="container mx-auto" id="section-root">
             <div
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
@@ -24,7 +24,8 @@
             <%=require('html-loader!./fragments/select.html').default %>
             <%=require('html-loader!./fragments/input.html').default %>
             <%=require('html-loader!./fragments/button.html').default %>
-            <section id="section-form"></section>
+            <form id="section-form"></form>
         </div>
+        <%=require('html-loader!./fragments/notification.html').default %>
     </body>
 </html>

@@ -1,6 +1,11 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer, tagNameIs } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    ipcRenderer,
+    getSection,
+    tagNameIs,
+} from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { Input } from '@src/renderer/src/fragments/input'
@@ -21,14 +26,12 @@ class History extends A_Entry {
         this.requestAnchors()
 
         // Title
-        const h1 = new H1('History 📝').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('History 📝').prependTo('title')
+        new BackButton().prependTo(h1.element)
 
         // Search
-        this.search = new Input('Search History')
-            .append(this.getSection('section-search'))
+        this.search = new Input('Search History', 'search')
+            .appendTo('search')
             .setOnInput(() => {
                 // TODO search
             })
@@ -67,10 +70,10 @@ class History extends A_Entry {
     }
 
     private renderList() {
-        this.getSection('section-list').innerHTML = ''
+        getSection('list').innerHTML = ''
         this.history.forEach((item, index) => {
             new ListRow(item.title, item.url)
-                .prepend(this.getSection('section-list'))
+                .prependTo('list')
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,

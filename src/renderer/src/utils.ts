@@ -69,3 +69,12 @@ export const tagNameIs = (
         (element as HTMLElement).tagName.toLowerCase() === tagName.toLowerCase()
     )
 }
+
+export const getSection = <T extends HTMLElement>(id: string) => {
+    const element = document.querySelector<HTMLElement>(`#section-${id}`) as T
+    if (!element) {
+        // TODO ipc
+        throw new Error(`No #section-${id} element exist`)
+    }
+    return element
+}

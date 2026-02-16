@@ -1,12 +1,13 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { H2 } from '@src/renderer/src/fragments/h2'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { Input } from '@src/renderer/src/fragments/input'
 import { Button } from '@src/renderer/src/fragments/button'
+/* CONSTANTS /> */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 
 class Shortcuts extends A_Entry {
@@ -17,10 +18,8 @@ class Shortcuts extends A_Entry {
         this.request()
 
         // Title
-        const h1 = new H1('Shortcuts 🏁').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('Shortcuts 🏁').prependTo('title')
+        new BackButton().prependTo(h1.element)
     }
 
     private request(): void {
@@ -41,20 +40,19 @@ class Shortcuts extends A_Entry {
         return this.shortcuts[key] || ''
     }
     private createInput(key: string) {
-        new Input(key).append(this.getSection('section-form')).value =
-            this.getValue(key)
+        new Input(key, key).appendTo('form').value = this.getValue(key)
     }
 
     private render() {
-        const section = this.getSection('section-form')
+        const section = getSection('form')
         section.innerHTML = ''
-        new H2('Edit').append(section)
+        new H2('Edit').appendTo(section)
         this.createInput('Add Bookmark')
         this.createInput('Add Anchor')
-        new H2('Navigate').append(section)
+        new H2('Navigate').appendTo(section)
         this.createInput('Control Centre')
         this.createInput('Address Bar')
-        new Button('Save Changes').append(section)
+        new Button('Save Changes').appendTo(section)
     }
 
     private save() {}

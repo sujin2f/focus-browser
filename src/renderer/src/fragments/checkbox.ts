@@ -9,7 +9,7 @@ export class Checkbox extends A_FormElement<HTMLLabelElement> {
         return (this.input as HTMLInputElement).checked
     }
 
-    constructor(label: string) {
-        super('checkbox', label)
+    constructor(label: string, name: string) {
+        super('checkbox', label, name)
     }
 }

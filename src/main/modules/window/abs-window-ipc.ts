@@ -380,13 +380,28 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             case RequestHandler.MODIFY: {
+                Logger.getInstance().info('Keystroke modification accepted.')
                 const host = Object.keys(keystrokes)[0]
                 if (!host) {
+                    Logger.getInstance().error('Keystroke modification failed.')
+                    this.centre.webContents.send(
+                        IPC_CHANNELS.KEYSTROKES,
+                        RequestHandler.RESULT,
+                        false,
+                    )
+
                     return
                 }
                 const keystroke = Object.values(keystrokes)[0]
                 Keystrokes.getInstance().update(host, keystroke)
                 Keystrokes.getInstance().save()
+
+                Logger.getInstance().error('Keystroke modification done.')
+                this.centre.webContents.send(
+                    IPC_CHANNELS.KEYSTROKES,
+                    RequestHandler.RESULT,
+                    true,
+                )
                 return
             }
         }

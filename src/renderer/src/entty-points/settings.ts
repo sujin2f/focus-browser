@@ -1,6 +1,6 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron } from '@src/renderer/src/utils'
+import { checkElectron, getSection } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { Input } from '@src/renderer/src/fragments/input'
@@ -28,38 +28,34 @@ class Keystrokes extends A_Entry {
         )
 
         // Title
-        const h1 = new H1('Settings ⚙️').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('Settings ⚙️').prependTo(getSection('title'))
+        new BackButton().prependTo(h1.element)
 
         // Version
-        this.getSection('section-version').innerHTML = `Version: ${envVersion}`
+        getSection('version').innerHTML = `Version: ${envVersion}`
     }
 
     protected callbackUpdateInfo() {
-        this.getSection('section-form').innerHTML = ''
+        getSection('form').innerHTML = ''
 
-        const frame = new Checkbox('Show Native Frame').append(
-            this.getSection('section-form'),
-        )
-        frame.helpText =
-            'Note: This requires restarting the application. You can toggle window fit to screen by pressing ⌘Esc.'
-        frame.checked = this.settings.frame || false
+        // const frame = new Checkbox('Show Native Frame').appendTo('form'
+        // )
+        // frame.helpText =
+        //     'Note: This requires restarting the application. You can toggle window fit to screen by pressing ⌘Esc.'
+        // frame.checked = this.settings.frame || false
 
-        const helpText = new Checkbox('Show Help Text').append(
-            this.getSection('section-form'),
-        )
-        helpText.checked = this.settings.helpText || false
+        // const helpText = new Checkbox('Show Help Text').appendTo('orm'
+        // )
+        // helpText.checked = this.settings.helpText || false
 
-        const maxHistory = new Input('Maximum History').append(
-            this.getSection('section-form'),
+        const maxHistory = new Input('Maximum History', 'maxHistory').appendTo(
+            'form',
         )
         maxHistory.type = 'number'
         maxHistory.value = this.settings.maxHistory || MAX_HISTORY
 
-        const adBlocker = new Checkbox('Use Ad-Blocker').append(
-            this.getSection('section-form'),
+        const adBlocker = new Checkbox('Use Ad-Blocker', 'adBlocker').appendTo(
+            'form',
         )
         adBlocker.checked = this.settings.adBlocker || false
         if (this.settings.adBlockerStatus === null) {
@@ -69,17 +65,20 @@ class Keystrokes extends A_Entry {
             adBlocker.helpText = 'Ad Blocker is Disabled.'
         }
 
-        const searchEngine = new Select('Search Engine').append(
-            this.getSection('section-form'),
-        )
+        const searchEngine = new Select(
+            'Search Engine',
+            'searchEngine',
+        ).appendTo('form')
         Object.keys(SEARCH_ENGINES).forEach((site) => {
-            new Option(site, site, site === this.settings.searchEngine).append(
-                searchEngine.input,
-            )
+            new Option(
+                site,
+                site,
+                site === this.settings.searchEngine,
+            ).appendTo(searchEngine.input)
         })
 
         new Button('Save Changes')
-            .append(this.getSection('section-form'))
+            .appendTo('form')
             .setOnClick(this.save.bind(this))
     }
 

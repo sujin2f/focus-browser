@@ -1,6 +1,11 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer, tagNameIs } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    ipcRenderer,
+    getSection,
+    tagNameIs,
+} from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { Input } from '@src/renderer/src/fragments/input'
@@ -21,14 +26,12 @@ class Popup extends A_Entry {
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1('Popup Blocker 👮').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('Popup Blocker 👮').prependTo('title')
+        new BackButton().prependTo(h1.element)
 
         // Search
-        this.search = new Input('Search Popup Blocker')
-            .append(this.getSection('section-search'))
+        this.search = new Input('Search Popup Blocker', 'search')
+            .appendTo('search')
             .setOnInput(() => {
                 // TODO search
             })
@@ -73,13 +76,11 @@ class Popup extends A_Entry {
     }
 
     private renderList() {
-        this.getSection('section-list').innerHTML = ''
+        getSection('list').innerHTML = ''
         this.popups.forEach((item) => {
-            new ListRow(item.host)
-                .append(this.getSection('section-list'))
-                .setOnClick(() => {
-                    // TODO
-                })
+            new ListRow(item.host).appendTo('list').setOnClick(() => {
+                // TODO
+            })
         })
     }
 }

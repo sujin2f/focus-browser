@@ -1,3 +1,5 @@
+import { getSection } from '@src/renderer/src/utils'
+
 export abstract class A_Fragment<T extends HTMLElement> {
     protected node: T
     private _element?: T
@@ -18,19 +20,35 @@ export abstract class A_Fragment<T extends HTMLElement> {
         this.node = template?.content.cloneNode(true) as T
     }
 
-    public append(parent: HTMLElement | Element) {
+    /**
+     * @param parent HTML Element or #id
+     * @returns
+     */
+    public appendTo(parent: HTMLElement | Element | string) {
         if (this.node) {
-            parent.append(this.node)
-            this._element = parent.lastElementChild! as T
+            const dest =
+                typeof parent === 'string' ? getSection(parent) : parent
+            dest.append(this.node)
+            this._element = dest.lastElementChild! as T
         }
         return this
     }
 
-    public prepend(parent: HTMLElement) {
+    /**
+     * @param parent HTML Element or #id
+     * @returns
+     */
+    public prependTo(parent: HTMLElement | Element | string) {
         if (this.node) {
-            parent.prepend(this.node)
-            this._element = parent.firstElementChild! as T
+            const dest =
+                typeof parent === 'string' ? getSection(parent) : parent
+            dest.prepend(this.node)
+            this._element = dest.firstElementChild! as T
         }
         return this
+    }
+
+    protected select<R extends HTMLElement>(selector: string): R {
+        return this.element.querySelector(`[data-selector="${selector}"]`) as R
     }
 }

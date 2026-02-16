@@ -568,6 +568,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             type: 'char',
             keyCode: 'A',
         })
+        this.switch(CENTRE_PAGES.DASHBOARD)
 
         // return await this.browser.webContents
         //     .executeJavaScript(

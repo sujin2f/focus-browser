@@ -5,7 +5,7 @@ export class Input extends A_FormElement<HTMLLabelElement> {
         ;(this.input as HTMLInputElement).type = type
     }
 
-    constructor(label: string) {
-        super('input', label)
+    constructor(label: string, name: string) {
+        super('input', label, name)
     }
 }

@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
@@ -12,10 +12,10 @@ class Offline extends A_Entry {
         super()
 
         // Title
-        new H1('No internet 😭').append(this.getSection('section-title'))
+        new H1('No internet 😭').appendTo('title')
 
-        new Button('Refresh')
-            .append(this.getSection('section-form'))
+        new Button('💫 Refresh')
+            .appendTo('form')
             .setOnClick(this.reload.bind(this))
     }
 

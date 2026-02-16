@@ -1,9 +1,10 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import {
     checkElectron,
     ipcRenderer,
     navigate,
+    getSection,
     tagNameIs,
 } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
@@ -26,14 +27,12 @@ class Anchors extends A_Entry {
         this.requestAnchors()
 
         // Title
-        const h1 = new H1('Anchors ⚓️').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('Anchors ⚓️').prependTo('title')
+        new BackButton().prependTo(h1.element)
 
         // Search
-        this.search = new Input('Search Anchor')
-            .append(this.getSection('section-search'))
+        this.search = new Input('Search Anchor', 'search')
+            .appendTo('search')
             .setOnInput(() => {
                 // TODO search
             })
@@ -72,10 +71,10 @@ class Anchors extends A_Entry {
     }
 
     private renderList() {
-        this.getSection('section-list').innerHTML = ''
+        getSection('list').innerHTML = ''
         this.anchors.forEach((anchor) => {
             new ListRow(anchor.title, anchor.url)
-                .append(this.getSection('section-list'))
+                .appendTo('list')
                 .setOnClick(() => {
                     navigate(anchor.url, RequestHandler.REMOVE)
                 })

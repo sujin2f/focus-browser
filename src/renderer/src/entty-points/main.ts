@@ -1,10 +1,10 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, navigate } from '@src/renderer/src/utils'
+import { checkElectron, navigate, getSection } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { Card } from '@src/renderer/src/fragments/card'
-import { Button } from '@src/renderer/src/fragments/button'
 import { Input } from '@src/renderer/src/fragments/input'
+import { BackButton } from '@src/renderer/src/fragments/back-button'
 
 type T_Card = {
     title: string
@@ -55,34 +55,35 @@ class Main extends A_Entry {
     constructor() {
         super()
 
-        new Button('Back to Browser (Esc)')
-            .append(this.getSection('section-button'))
-            .setOnClick(() => {
-                navigate()
-            })
+        new BackButton().appendTo('button')
 
-        const input = new Input('Enter search keyword or address (⌘L)').append(
-            this.getSection('section-address'),
+        getSection<HTMLFormElement>('address').addEventListener(
+            'submit',
+            (e) => {
+                e.preventDefault()
+                const target = e.target as HTMLFormElement
+                const formData = new FormData(target)
+                const address = formData.get('address')?.toString().trim()
+                if (!address) {
+                    return
+                }
+                navigate(address)
+            },
         )
-        input.setOnEnter((e: KeyboardEvent) => {
-            if (e.key !== 'Enter') {
-                return
-            }
 
-            const value = (e.target as HTMLInputElement).value.trim()
-            if (!value) {
-                return
-            }
+        const input = new Input(
+            'Enter search keyword or address (⌘L)',
+            'search',
+        ).appendTo('address')
+        input.name = 'address'
 
-            navigate(value)
-        })
         if (window.location.href.includes('address=true')) {
             input.element.focus()
         }
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)
-                .append(this.getSection('section-grid'))
+                .appendTo('grid')
                 .setOnClick(() => {
                     window.location.href = card.destination
                 })

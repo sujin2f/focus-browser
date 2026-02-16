@@ -4,9 +4,9 @@ export abstract class A_FormElement<
     T extends HTMLElement,
 > extends A_Fragment<T> {
     public get input() {
-        const element = this.element.querySelector<
-            HTMLInputElement | HTMLSelectElement
-        >('[data-selector="input"]')
+        const element = this.select<HTMLInputElement | HTMLSelectElement>(
+            'input',
+        )
         if (!element) {
             throw new Error('input is not defined')
         }
@@ -14,9 +14,7 @@ export abstract class A_FormElement<
     }
 
     public set helpText(helpText: string) {
-        const element = this.element.querySelector<HTMLParagraphElement>(
-            '[data-selector="help-text"]',
-        )
+        const element = this.select<HTMLParagraphElement>('help-text')
         if (!element) {
             throw new Error('help-text is not defined')
         }
@@ -24,9 +22,7 @@ export abstract class A_FormElement<
     }
 
     public set error(message: string) {
-        const element = this.element.querySelector<HTMLParagraphElement>(
-            '[data-selector="error-message"]',
-        )
+        const element = this.select<HTMLParagraphElement>('error-message')
         if (!element) {
             throw new Error('error-message is not defined')
         }
@@ -46,9 +42,16 @@ export abstract class A_FormElement<
         this.input.value = value.toString()
     }
 
-    constructor(tagName: string, label: string) {
+    public set name(name: string) {
+        this.input.name = name
+    }
+
+    constructor(tagName: string, label: string, name: string) {
         super(`#${tagName}`)
         this.node.querySelector('[data-selector="label"]')!.textContent = label
+        this.node
+            .querySelector('[data-selector="input"]')!
+            .setAttribute('name', name)
     }
 
     public setOnInput(callback: ((e: Event) => void) | (() => void)) {

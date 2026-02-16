@@ -1,9 +1,10 @@
-import { A_Entry } from '@src/renderer/src/entries/abs-entry'
+import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import {
     checkElectron,
     ipcRenderer,
     navigate,
+    getSection,
     tagNameIs,
 } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
@@ -27,19 +28,15 @@ class Bookmarks extends A_Entry {
         this.requestBookmarks()
 
         // Title
-        const h1 = new H1('Bookmarks 🔖').prepend(
-            this.getSection('section-title'),
-        )
-        new BackButton().prepend(h1.element)
+        const h1 = new H1('Bookmarks 🔖').prependTo('title')
+        new BackButton().prependTo(h1.element)
 
         // Buttons
-        new Button('Add Bookmark (⌘D)').append(
-            this.getSection('section-buttons'),
-        )
+        new Button('Add Bookmark (⌘D)').appendTo('buttons')
 
         // Search
-        this.search = new Input('Search Bookmark')
-            .append(this.getSection('section-search'))
+        this.search = new Input('Search Bookmark', 'search')
+            .appendTo('search')
             .setOnInput(() => {
                 // TODO search
             })
@@ -78,10 +75,10 @@ class Bookmarks extends A_Entry {
     }
 
     private renderList() {
-        this.getSection('section-list').innerHTML = ''
+        getSection('list').innerHTML = ''
         this.bookmarks.forEach((bookmark) => {
             const row = new ListRow(bookmark.title, bookmark.url)
-                .append(this.getSection('section-list'))
+                .appendTo('list')
                 .setOnClick((e: PointerEvent) => {
                     if (tagNameIs(e.target, 'button')) {
                         e.preventDefault()
@@ -91,7 +88,7 @@ class Bookmarks extends A_Entry {
                     navigate(bookmark.url)
                 })
             new Button('⚙️', 'button-clear')
-                .append(row.suffix)
+                .appendTo(row.suffix)
                 .setOnClick(() => {
                     // TODO Edit Action
                 })

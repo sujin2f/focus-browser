@@ -1,3 +1,32 @@
 @import 'tailwindcss';
 
-@custom-variant hover (&:hover);
+@keyframes notification {
+    0% {
+        max-height: 0;
+        opacity: 0;
+    }
+    5% {
+        opacity: 1;
+    }
+    10% {
+        max-height: 200px;
+    }
+    90% {
+        max-height: 200px;
+    }
+    95% {
+        opacity: 1;
+    }
+    100% {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+.notification {
+    animation-name: notification;
+    animation-duration: 5s;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}

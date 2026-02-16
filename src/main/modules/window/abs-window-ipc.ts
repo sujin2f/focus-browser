@@ -426,6 +426,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Shortcut.getInstance().update(shortcuts)
                 Shortcut.getInstance().save()
                 this.resetMenu()
+
+                this.centre.webContents.send(
+                    IPC_CHANNELS.SHORTCUTS,
+                    RequestHandler.RESULT,
+                    true,
+                )
                 return
             }
         }

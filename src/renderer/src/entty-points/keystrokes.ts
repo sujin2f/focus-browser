@@ -15,7 +15,7 @@ import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 class Keystrokes extends A_Entry {
     private keystrokes: Record<string, string> = {}
 
-    private form: HTMLFormElement
+    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
     private select: Select
     private input: Input
     private button: Button
@@ -32,7 +32,6 @@ class Keystrokes extends A_Entry {
         new BackButton().prependTo(h1.element)
 
         // Form
-        this.form = getSection<HTMLFormElement>('form')
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Host
@@ -52,10 +51,6 @@ class Keystrokes extends A_Entry {
         this.button.type = 'submit'
     }
 
-    private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.REQUEST)
-    }
-
     private render() {
         new Option('== Select Host ==', '').appendTo(this.select.input)
 
@@ -67,6 +62,10 @@ class Keystrokes extends A_Entry {
                 this.input.value = value
             }
         })
+    }
+
+    private request(): void {
+        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.REQUEST)
     }
 
     private handleIPC() {
@@ -104,8 +103,7 @@ class Keystrokes extends A_Entry {
 
         this.button.disable()
 
-        const target = e.target as HTMLFormElement
-        const formData = new FormData(target)
+        const formData = new FormData(this.form)
         const host = formData.get('hosts')?.toString()
         const value = formData.get('value')?.toString()
 

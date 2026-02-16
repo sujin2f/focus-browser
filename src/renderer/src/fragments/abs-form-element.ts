@@ -64,7 +64,7 @@ export abstract class A_FormElement<
         return this
     }
 
-    public setOnEnter(callback: (e: KeyboardEvent) => void) {
+    public setOnKey(callback: (e: KeyboardEvent) => void) {
         ;(this.input as HTMLInputElement).addEventListener(
             'keydown',
             callback.bind(this),
@@ -74,6 +74,11 @@ export abstract class A_FormElement<
 
     public focus() {
         this.input.focus()
+        return this
+    }
+
+    public blur() {
+        this.input.blur()
         return this
     }
 }

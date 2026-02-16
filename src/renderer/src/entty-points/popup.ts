@@ -1,14 +1,8 @@
-import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
+import { A_List } from '@src/renderer/src/entty-points/abs-list'
 /* Utils */
-import {
-    checkElectron,
-    ipcRenderer,
-    getSection,
-    tagNameIs,
-} from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
-import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 /* CONSTANTS */
@@ -16,10 +10,7 @@ import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
-class Popup extends A_Entry {
-    private popups: PopupBlocker[] = []
-    private search: Input
-
+class Popup extends A_List<PopupBlocker> {
     constructor() {
         super()
         this.requestInfo('helpText', 'title', 'url')
@@ -28,31 +19,6 @@ class Popup extends A_Entry {
         // Title
         const h1 = new H1('Popup Blocker 👮').prependTo('title')
         new BackButton().prependTo(h1.element)
-
-        // Search
-        this.search = new Input('Search Popup Blocker', 'search')
-            .appendTo('search')
-            .setOnInput(() => {
-                // TODO search
-            })
-    }
-
-    protected callbackShortcut(e: KeyboardEvent) {
-        if (tagNameIs(document.activeElement, 'input')) {
-            return
-        }
-
-        if (e.key.length !== 1) {
-            return
-        }
-
-        if (e.altKey || e.ctrlKey || e.metaKey) {
-            return
-        }
-
-        // Focus Search
-        this.search.value = ''
-        this.search.focus()
     }
 
     private requestPopupBlockers(): void {
@@ -64,24 +30,32 @@ class Popup extends A_Entry {
                 return
             }
 
+            this.items = []
+            this.listItems = []
+
             const blocked = args[1] as string[]
             const allowed = args[2] as string[]
 
-            allowed.forEach((host) => this.popups.push({ host, allowed: true }))
-            blocked.forEach((host) =>
-                this.popups.push({ host, allowed: false }),
-            )
+            allowed.forEach((host) => this.items.push({ host, allowed: true }))
+            blocked.forEach((host) => this.items.push({ host, allowed: false }))
+
+            this.listItems = this.items
+
             this.renderList()
         })
     }
 
-    private renderList() {
+    renderList() {
         getSection('list').innerHTML = ''
-        this.popups.forEach((item) => {
+        this.listItems.forEach((item) => {
             new ListRow(item.host).appendTo('list').setOnClick(() => {
                 // TODO
             })
         })
+    }
+
+    filterList(item: PopupBlocker, keyword: string): boolean {
+        return item.host.toLowerCase().includes(keyword)
     }
 }
 

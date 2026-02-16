@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
+import { A_List } from '@src/renderer/src/entty-points/abs-list'
 /* Utils */
 import {
     checkElectron,
@@ -10,7 +10,6 @@ import {
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
 import { Button } from '@src/renderer/src/fragments/button'
-import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 /* CONSTANTS */
@@ -18,9 +17,14 @@ import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { Bookmark } from '@src/common/types'
 
-class Bookmarks extends A_Entry {
-    private bookmarks: Bookmark[] = []
-    private search: Input
+import { Modal } from '@src/renderer/src/fragments/modal'
+
+class Bookmarks extends A_List<Bookmark> {
+    protected isSearchActivated() {
+        return !this.modal.activated
+    }
+
+    protected modal = new Modal().appendTo('root')
 
     constructor() {
         super()
@@ -33,31 +37,17 @@ class Bookmarks extends A_Entry {
 
         // Buttons
         new Button('Add Bookmark (⌘D)').appendTo('buttons')
-
-        // Search
-        this.search = new Input('Search Bookmark', 'search')
-            .appendTo('search')
-            .setOnInput(() => {
-                // TODO search
-            })
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
-        if (tagNameIs(document.activeElement, 'input')) {
-            return
+        if (e.key === 'Escape') {
+            if (this.modal.activated) {
+                this.modal.hide()
+                return
+            }
         }
 
-        if (e.key.length !== 1) {
-            return
-        }
-
-        if (e.altKey || e.ctrlKey || e.metaKey) {
-            return
-        }
-
-        // Focus Search
-        this.search.value = ''
-        this.search.focus()
+        super.callbackShortcut(e)
     }
 
     private requestBookmarks(): void {
@@ -69,14 +59,15 @@ class Bookmarks extends A_Entry {
                 return
             }
 
-            this.bookmarks = args[1] as Bookmark[]
+            this.items = args[1] as Bookmark[]
+            this.listItems = this.items
             this.renderList()
         })
     }
 
-    private renderList() {
+    renderList() {
         getSection('list').innerHTML = ''
-        this.bookmarks.forEach((bookmark) => {
+        this.listItems.forEach((bookmark) => {
             const row = new ListRow(bookmark.title, bookmark.url)
                 .appendTo('list')
                 .setOnClick((e: PointerEvent) => {
@@ -87,12 +78,30 @@ class Bookmarks extends A_Entry {
 
                     navigate(bookmark.url)
                 })
+
             new Button('⚙️', 'button-clear')
                 .appendTo(row.suffix)
                 .setOnClick(() => {
                     // TODO Edit Action
+                    this.modal.show()
                 })
+
+            if (bookmark.shortcut) {
+                // Shortcut
+                new Button(bookmark.shortcut.toUpperCase())
+                    .prependTo(row.suffix)
+                    .setOnClick(() => {
+                        navigate(bookmark.url)
+                    })
+            }
         })
+    }
+
+    filterList(item: Bookmark, keyword: string): boolean {
+        return (
+            item.shortcut?.toLowerCase().includes(keyword) ||
+            item.title.toLowerCase().includes(keyword)
+        )
     }
 }
 

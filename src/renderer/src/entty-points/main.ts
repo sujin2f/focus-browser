@@ -52,30 +52,25 @@ const cards: Record<string, T_Card> = {
 }
 
 class Main extends A_Entry {
+    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
+
     constructor() {
         super()
 
         new BackButton().appendTo('button')
 
-        getSection<HTMLFormElement>('address').addEventListener(
-            'submit',
-            (e) => {
-                e.preventDefault()
-                const target = e.target as HTMLFormElement
-                const formData = new FormData(target)
-                const address = formData.get('address')?.toString().trim()
-                if (!address) {
-                    return
-                }
-                navigate(address)
-            },
-        )
-
         const input = new Input(
             'Enter search keyword or address (⌘L)',
             'search',
-        ).appendTo('address')
+        ).appendTo(this.form)
         input.name = 'address'
+
+        this.form.addEventListener('submit', () => {
+            if (!input.value) {
+                return
+            }
+            navigate(input.value.toString())
+        })
 
         if (window.location.href.includes('address=true')) {
             input.element.focus()

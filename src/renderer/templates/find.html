@@ -15,12 +15,13 @@
         <section class="container mx-auto pt-5">
             <%=require('html-loader!./fragments/input.html').default %>
             <%=require('html-loader!./fragments/button.html').default %>
-            <div
+            <%=require('html-loader!./fragments/button-hollow.html').default %>
+            <form
                 class="flex flex-col h-dvh justify-center items-center"
                 id="section-form"
             >
                 <div class="flex flex-row gap-2" id="section-button"></div>
-            </div>
+            </form>
         </section>
     </body>
 </html>

@@ -90,7 +90,7 @@ class Bookmarks extends A_Entry {
 
                     navigate(bookmark.url)
                 })
-            new Button('⚙️', 'button-hollow')
+            new Button('⚙️', 'button-clear')
                 .append(row.suffix)
                 .setOnClick(() => {
                     // TODO Edit Action

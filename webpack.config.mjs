@@ -97,6 +97,7 @@ const renderer = {
         'renderer/keystrokes': './src/renderer/src/entries/keystrokes.ts',
         'renderer/settings': './src/renderer/src/entries/settings.ts',
         'renderer/shortcuts': './src/renderer/src/entries/shortcuts.ts',
+        'renderer/find': './src/renderer/src/entries/find.ts',
     },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
@@ -152,6 +153,11 @@ const renderer = {
             template: './src/renderer/templates/shortcuts.html',
             filename: 'shortcuts.html',
             chunks: ['renderer/shortcuts'],
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/templates/find.html',
+            filename: 'find.html',
+            chunks: ['renderer/find'],
         }),
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({

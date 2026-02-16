@@ -23,6 +23,11 @@ export class CenterView extends WebContentsView {
             case CENTRE_PAGES.HOME:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))
                 return
+            case CENTRE_PAGES.ADDRESS:
+                this.webContents.loadURL(
+                    `${resolveHtmlPath(CENTRE_PAGES.HOME)}?address=true`,
+                )
+                return
             case CENTRE_PAGES.BOOKMARK:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.BOOKMARK))
                 return
@@ -34,10 +39,8 @@ export class CenterView extends WebContentsView {
                     resolveHtmlPath(CENTRE_PAGES.POPUP_BLOCKER),
                 )
                 return
-            case CENTRE_PAGES.ADDRESS:
-                this.webContents.loadURL(
-                    `${resolveHtmlPath(CENTRE_PAGES.HOME)}?address=true`,
-                )
+            case CENTRE_PAGES.FIND:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.FIND))
                 return
             default:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))

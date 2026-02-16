@@ -180,32 +180,26 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         address?: string,
         handler?: RequestHandler,
     ) {
-        this.switch(scene)
-
-        if (this.isBrowser && address) {
-            this.title = 'Loading...'
-            if (address === 'reload') {
-                this.browser.reload()
-                return
-            }
-
-            if (address === NAVIGATION.LAST_VISIT) {
-                this.browser.loadLastHistory()
-                return
-            }
-
-            if (address === NAVIGATION.SEARCH_ENGINE) {
-                this.browser.searchKeyword('')
-                return
-            }
-
-            this.browser.loadURL(address)
-        }
-
+        // TODO callback
         if (handler === RequestHandler.REMOVE && address) {
             Anchors.getInstance().remove(address)
             Anchors.getInstance().save()
         }
+
+        if (address) {
+            this.browser.initialized = true
+            this.title = 'Loading...'
+            if (address === 'reload') {
+                this.browser.reload()
+            } else if (address === NAVIGATION.LAST_VISIT) {
+                this.browser.loadLastHistory()
+            } else if (address === NAVIGATION.SEARCH_ENGINE) {
+                this.browser.searchKeyword('')
+            } else {
+                this.browser.loadURL(address)
+            }
+        }
+        this.switch(scene)
     }
 
     private onHistory(_: IpcMainEvent, handler: RequestHandler, index: number) {

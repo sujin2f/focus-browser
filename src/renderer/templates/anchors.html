@@ -16,14 +16,17 @@
             <div
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
+                <%=require('html-loader!./fragments/h1.html').default %>
+                <%=require('html-loader!./fragments/back-button.html').default
+                %>
                 <section id="section-title"></section>
             </div>
+
+            <%=require('html-loader!./fragments/input.html').default %>
             <section id="section-search"></section>
+
+            <%=require('html-loader!./fragments/list-row.html').default %>
             <section class="grid" id="section-list"></section>
         </div>
-        <%=require('html-loader!./fragments/h1.html').default %>
-        <%=require('html-loader!./fragments/back-button.html').default %>
-        <%=require('html-loader!./fragments/input.html').default %>
-        <%=require('html-loader!./fragments/list-row.html').default %>
     </body>
 </html>

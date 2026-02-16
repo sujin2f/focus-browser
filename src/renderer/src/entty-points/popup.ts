@@ -24,7 +24,7 @@ class Popup extends A_List<PopupBlocker> {
     private requestPopupBlockers(): void {
         ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, RequestHandler.REQUEST)
 
-        ipcRenderer.once(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
+        ipcRenderer.on(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
             const handler = args[0] as RequestHandler
             if (handler !== RequestHandler.RESPONSE) {
                 return
@@ -40,16 +40,21 @@ class Popup extends A_List<PopupBlocker> {
             blocked.forEach((host) => this.items.push({ host, allowed: false }))
 
             this.listItems = this.items
-
             this.renderList()
+            this.filterSearch()
         })
     }
 
     renderList() {
         getSection('list').innerHTML = ''
         this.listItems.forEach((item) => {
-            new ListRow(item.host).appendTo('list').setOnClick(() => {
-                // TODO
+            const content = `${item.allowed ? '✅ ' : ''}${item.host}`
+            new ListRow(content).appendTo('list').setOnClick(() => {
+                ipcRenderer.send(
+                    IPC_CHANNELS.POPUP_BLOCKER,
+                    RequestHandler.MODIFY,
+                    item.host,
+                )
             })
         })
     }

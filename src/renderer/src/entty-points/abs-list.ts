@@ -7,6 +7,10 @@ export abstract class A_List<T> extends A_Entry {
     protected items: T[] = []
     protected listItems: T[] = []
 
+    protected get searchKeyword() {
+        return this.search.value.toString().toLowerCase()
+    }
+
     constructor() {
         super()
 
@@ -17,17 +21,7 @@ export abstract class A_List<T> extends A_Entry {
                     return
                 }
 
-                const keyword = this.search.value.toString().toLowerCase()
-                if (!keyword) {
-                    this.listItems = this.items
-                    this.renderList()
-                    return
-                }
-
-                this.listItems = this.items.filter((item) =>
-                    this.filterList(item, keyword),
-                )
-                this.renderList()
+                this.filterSearch()
             })
     }
 
@@ -63,5 +57,18 @@ export abstract class A_List<T> extends A_Entry {
         // Focus Search
         this.search.value = ''
         this.search.focus()
+    }
+
+    protected filterSearch() {
+        if (!this.searchKeyword) {
+            this.listItems = this.items
+            this.renderList()
+            return
+        }
+
+        this.listItems = this.items.filter((item) =>
+            this.filterList(item, this.searchKeyword),
+        )
+        this.renderList()
     }
 }

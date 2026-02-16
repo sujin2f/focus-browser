@@ -197,6 +197,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             case RequestHandler.REMOVE:
                 this.browser.webContents.navigationHistory.clear()
+                this.sendResult(IPC_CHANNELS.HISTORY)
                 return
         }
     }
@@ -255,19 +256,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     ) {
         switch (handler) {
             case RequestHandler.REQUEST: {
-                const blocked = PopupBlocker.getInstance().get('blocked')
-                const allowed = PopupBlocker.getInstance().get('allowed')
-                Logger.getInstance().log(
-                    'Popup blocker request: ',
-                    blocked,
-                    allowed,
-                )
-                this.centre.webContents.send(
-                    IPC_CHANNELS.POPUP_BLOCKER,
-                    RequestHandler.RESPONSE,
-                    Array.from(blocked),
-                    Array.from(allowed),
-                )
+                this.sendPopupBlocker()
                 return
             }
 
@@ -275,10 +264,22 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 const popupBlocker = PopupBlocker.getInstance()
                 popupBlocker.toggle(host)
                 popupBlocker.save()
-
+                this.sendPopupBlocker()
                 return
             }
         }
+    }
+
+    private sendPopupBlocker() {
+        const blocked = PopupBlocker.getInstance().get('blocked')
+        const allowed = PopupBlocker.getInstance().get('allowed')
+        Logger.getInstance().log('Popup blocker request: ', blocked, allowed)
+        this.centre.webContents.send(
+            IPC_CHANNELS.POPUP_BLOCKER,
+            RequestHandler.RESPONSE,
+            Array.from(blocked),
+            Array.from(allowed),
+        )
     }
 
     private async sendInfo(...requests: (keyof Info)[]) {

@@ -42,6 +42,9 @@ export class CenterView extends WebContentsView {
             case CENTRE_PAGES.FIND:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.FIND))
                 return
+            case CENTRE_PAGES.OFFLINE:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.OFFLINE))
+                return
             default:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))
         }

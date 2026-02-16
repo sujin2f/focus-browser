@@ -86,19 +86,7 @@ const renderer = {
     ...commonConfig,
     target: ['web', 'electron-renderer'],
     name: 'renderer',
-    entry: {
-        'renderer/index': './src/renderer/src/index.ts',
-        'renderer/dashboard': './src/renderer/src/entries/dashboard.ts',
-        'renderer/main': './src/renderer/src/entries/main.ts',
-        'renderer/bookmarks': './src/renderer/src/entries/bookmarks.ts',
-        'renderer/anchors': './src/renderer/src/entries/anchors.ts',
-        'renderer/history': './src/renderer/src/entries/history.ts',
-        'renderer/popup': './src/renderer/src/entries/popup.ts',
-        'renderer/keystrokes': './src/renderer/src/entries/keystrokes.ts',
-        'renderer/settings': './src/renderer/src/entries/settings.ts',
-        'renderer/shortcuts': './src/renderer/src/entries/shortcuts.ts',
-        'renderer/find': './src/renderer/src/entries/find.ts',
-    },
+    entry: { 'renderer/index': './src/renderer/src/index.ts' },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist', 'renderer'),
         filename: '[name].js',
@@ -109,56 +97,7 @@ const renderer = {
             filename: 'index.html',
             chunks: ['renderer/index'],
         }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/dashboard.html',
-            filename: 'dashboard.html',
-            chunks: ['renderer/dashboard'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/main.html',
-            filename: 'main.html',
-            chunks: ['renderer/main'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/bookmarks.html',
-            filename: 'bookmarks.html',
-            chunks: ['renderer/bookmarks'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/anchors.html',
-            filename: 'anchors.html',
-            chunks: ['renderer/anchors'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/history.html',
-            filename: 'history.html',
-            chunks: ['renderer/history'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/popup.html',
-            filename: 'popup.html',
-            chunks: ['renderer/popup'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/keystrokes.html',
-            filename: 'keystrokes.html',
-            chunks: ['renderer/keystrokes'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/settings.html',
-            filename: 'settings.html',
-            chunks: ['renderer/settings'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/shortcuts.html',
-            filename: 'shortcuts.html',
-            chunks: ['renderer/shortcuts'],
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/renderer/templates/find.html',
-            filename: 'find.html',
-            chunks: ['renderer/find'],
-        }),
+
         // These will be converted a value. i.g. if (...IS_BETA === true) => if (true === true)
         new webpack.DefinePlugin({
             envVersion: '"' + process.env.npm_package_version + '"',
@@ -182,5 +121,30 @@ const renderer = {
               }
             : undefined,
 }
+
+const pages = [
+    'dashboard',
+    'main',
+    'bookmarks',
+    'anchors',
+    'history',
+    'popup',
+    'keystrokes',
+    'settings',
+    'shortcuts',
+    'find',
+    'offline',
+]
+
+pages.forEach((page) => {
+    renderer.entry[`renderer/${page}`] = `./src/renderer/src/entries/${page}.ts`
+    renderer.plugins.push(
+        new HtmlWebpackPlugin({
+            template: `./src/renderer/templates/${page}.html`,
+            filename: `${page}.html`,
+            chunks: [`renderer/${page}`],
+        }),
+    )
+})
 
 export default [mainConfig, renderer]

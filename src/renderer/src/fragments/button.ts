@@ -16,10 +16,14 @@ export class Button extends A_Fragment<HTMLButtonElement> {
     }
 
     public disable() {
+        this.element.classList.remove('hover')
+        this.element.classList.add('opacity-40')
         this.element.disabled = true
     }
 
     public enable() {
+        this.element.classList.add('hover')
+        this.element.classList.remove('opacity-40')
         this.element.disabled = false
     }
 }

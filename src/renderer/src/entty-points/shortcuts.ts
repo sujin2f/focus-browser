@@ -47,7 +47,8 @@ class Shortcuts extends A_Entry {
         new H2('Navigate').appendTo(this.form)
         this.createInput('Control Centre')
         this.createInput('Address Bar')
-        new Button('Save Changes').appendTo(this.form).type = 'submit'
+        this.button = new Button('Save Changes').appendTo(this.form)
+        this.button.type = 'submit'
     }
 
     private request(): void {

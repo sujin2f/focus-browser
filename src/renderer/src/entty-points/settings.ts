@@ -1,19 +1,29 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, getSection } from '@src/renderer/src/utils'
+import { checkElectron, getSection, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { H1 } from '@src/renderer/src/fragments/h1'
+import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { Input } from '@src/renderer/src/fragments/input'
 import { Checkbox } from '@src/renderer/src/fragments/checkbox'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { Select } from '@src/renderer/src/fragments/select'
-import { Button } from '@src/renderer/src/fragments/button'
 import { Option } from '@src/renderer/src/fragments/option'
+import { Button } from '@src/renderer/src/fragments/button'
+import { Notification } from '@src/renderer/src/fragments/notification'
 /* CONSTANTS */
-import { MAX_HISTORY, SEARCH_ENGINES } from '@src/common/constants'
+import {
+    IPC_CHANNELS,
+    MAX_HISTORY,
+    RequestHandler,
+    SEARCH_ENGINES,
+} from '@src/common/constants'
+/* T_Type */
+import type { Info } from '@src/common/types'
 
-class Keystrokes extends A_Entry {
-    private keystrokes: Record<string, string> = {}
+class Settings extends A_Entry {
+    private notification: Notification = new Notification().appendTo('root')
+    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
+    private button?: Button
 
     constructor() {
         super()
@@ -27,6 +37,9 @@ class Keystrokes extends A_Entry {
             'frame',
         )
 
+        // Form
+        this.form.addEventListener('submit', this.onSubmit.bind(this))
+
         // Title
         const h1 = new H1('Settings ⚙️').prependTo(getSection('title'))
         new BackButton().prependTo(h1.element)
@@ -36,7 +49,7 @@ class Keystrokes extends A_Entry {
     }
 
     protected callbackUpdateInfo() {
-        getSection('form').innerHTML = ''
+        this.form.innerHTML = ''
 
         // const frame = new Checkbox('Show Native Frame').appendTo('form'
         // )
@@ -49,13 +62,13 @@ class Keystrokes extends A_Entry {
         // helpText.checked = this.settings.helpText || false
 
         const maxHistory = new Input('Maximum History', 'maxHistory').appendTo(
-            'form',
+            this.form,
         )
         maxHistory.type = 'number'
         maxHistory.value = this.settings.maxHistory || MAX_HISTORY
 
         const adBlocker = new Checkbox('Use Ad-Blocker', 'adBlocker').appendTo(
-            'form',
+            this.form,
         )
         adBlocker.checked = this.settings.adBlocker || false
         if (this.settings.adBlockerStatus === null) {
@@ -68,7 +81,7 @@ class Keystrokes extends A_Entry {
         const searchEngine = new Select(
             'Search Engine',
             'searchEngine',
-        ).appendTo('form')
+        ).appendTo(this.form)
         Object.keys(SEARCH_ENGINES).forEach((site) => {
             new Option(
                 site,
@@ -77,15 +90,49 @@ class Keystrokes extends A_Entry {
             ).appendTo(searchEngine.input)
         })
 
-        new Button('Save Changes')
-            .appendTo('form')
-            .setOnClick(this.save.bind(this))
+        this.button = new Button('Save Changes').appendTo(this.form)
+        this.button.type = 'submit'
     }
 
-    private save() {}
+    private onSubmit(e: SubmitEvent) {
+        e.preventDefault()
+        console.log('onSubmit')
+        this.button?.disable()
+        const formData = new FormData(this.form)
+
+        const maxHistory = parseInt(
+            formData.get('maxHistory')?.toString() || MAX_HISTORY.toString(),
+        )
+        const adBlocker = !!formData.get('adBlocker')
+        const searchEngine = (formData.get('searchEngine')?.toString() ||
+            '') as keyof typeof SEARCH_ENGINES
+
+        if (!searchEngine) {
+            this.button?.enable()
+            this.notification.error('Unknown error has occurred.')
+            return
+        }
+
+        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
+            maxHistory,
+            adBlocker,
+            searchEngine,
+        } satisfies Partial<Info>)
+
+        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
+            const handler = args[0] as RequestHandler
+
+            if (handler !== RequestHandler.RESULT) {
+                return
+            }
+
+            this.button?.enable()
+            this.notification.show('Settings are saved successfully!')
+        })
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     checkElectron()
-    new Keystrokes()
+    new Settings()
 })

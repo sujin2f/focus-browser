@@ -119,42 +119,19 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 isNaN(data.cacheSize!)
             ) {
                 await this.browser.webContents.session.clearCache()
-                await this.sendInfo('cacheSize')
-                return
+                delete data['cacheSize']
             }
 
             // Reset adBlocker in case it fails in some reason
             if (Object.prototype.hasOwnProperty.call(data, 'adBlockerStatus')) {
                 await this.browser.setAdBlocker()
-                await this.sendInfo('adBlockerStatus')
-                return
+                delete data['adBlockerStatus']
             }
 
             // Toggle Maximize
             if (Object.prototype.hasOwnProperty.call(data, 'maximize')) {
                 this.toggleMaximize()
-                return
-            }
-
-            // Shortcuts
-            // TODO Deprecated
-            if (Object.prototype.hasOwnProperty.call(data, 'shortcuts')) {
-                Shortcut.getInstance().update(data.shortcuts!)
-                Shortcut.getInstance().save()
-                this.resetMenu()
-                await this.sendInfo('shortcuts')
-                return
-            }
-
-            // Keystroke
-            // TODO Deprecated
-            if (Object.prototype.hasOwnProperty.call(data, 'keystrokes')) {
-                const host = Object.keys(data.keystrokes!)[0]
-                const keystroke = data.keystrokes![host] || ''
-                Keystrokes.getInstance().update(host, keystroke)
-                Keystrokes.getInstance().save()
-                await this.sendInfo('keystrokes')
-                return
+                delete data['maximize']
             }
 
             const status = Status.getInstance()
@@ -164,8 +141,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             // If adBlocker setting changed, reset.
             if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
                 await this.browser.setAdBlocker()
-                await this.sendInfo('adBlocker')
             }
+
+            this.sendResult(IPC_CHANNELS.INFO)
             return
         }
 
@@ -384,11 +362,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 const host = Object.keys(keystrokes)[0]
                 if (!host) {
                     Logger.getInstance().error('Keystroke modification failed.')
-                    this.centre.webContents.send(
-                        IPC_CHANNELS.KEYSTROKES,
-                        RequestHandler.RESULT,
-                        false,
-                    )
+                    this.sendResult(IPC_CHANNELS.KEYSTROKES, false)
 
                     return
                 }
@@ -397,11 +371,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Keystrokes.getInstance().save()
 
                 Logger.getInstance().error('Keystroke modification done.')
-                this.centre.webContents.send(
-                    IPC_CHANNELS.KEYSTROKES,
-                    RequestHandler.RESULT,
-                    true,
-                )
+                this.sendResult(IPC_CHANNELS.KEYSTROKES)
                 return
             }
         }
@@ -426,14 +396,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Shortcut.getInstance().update(shortcuts)
                 Shortcut.getInstance().save()
                 this.resetMenu()
-
-                this.centre.webContents.send(
-                    IPC_CHANNELS.SHORTCUTS,
-                    RequestHandler.RESULT,
-                    true,
-                )
+                this.sendResult(IPC_CHANNELS.SHORTCUTS)
                 return
             }
         }
+    }
+
+    private sendResult(channel: IPC_CHANNELS, result = true) {
+        this.centre.webContents.send(channel, RequestHandler.RESULT, result)
     }
 }

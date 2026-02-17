@@ -129,6 +129,7 @@ const pages = [
     'shortcuts',
     'find',
     'offline',
+    'loading',
 ]
 
 pages.forEach((page) => {

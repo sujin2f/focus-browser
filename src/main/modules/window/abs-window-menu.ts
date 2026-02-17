@@ -26,7 +26,6 @@ import { BrowserView } from '@src/main/modules/view/browser'
 import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 import { isBeta, isDev, isTest } from '@src/common/utils'
-import { removeIndexedDB } from '@src/main/utils'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -565,7 +564,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        Logger.getInstance().log(removeIndexedDB())
+        this.switch(CENTRE_PAGES.ANCHOR)
     }
 
     abstract switch(scene: Scenes): void

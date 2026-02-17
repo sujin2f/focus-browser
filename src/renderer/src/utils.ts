@@ -22,9 +22,11 @@ export const navigate = (url?: string, handler?: RequestHandler) => {
     document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.HOME))
     if (url) {
         ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, url, handler)
+        window.location.href = 'loading.html'
         return
     }
     ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER)
+    window.location.href = 'loading.html'
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1

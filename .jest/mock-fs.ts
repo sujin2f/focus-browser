@@ -5,7 +5,7 @@ readMock.mockReturnValue({ foo: 'sujin' })
 export const fs = () => ({
     existsSync: jest.fn(() => true),
     readFileSync: jest.fn(() => JSON.stringify(readMock())),
-    readdirSync: jest.fn(() => []),
+    readdirSync: jest.fn((): unknown[] => []),
     writeFileSync: writeMock,
     mkdirSync: jest.fn(),
 })

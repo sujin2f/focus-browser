@@ -36,4 +36,9 @@ export class Anchors extends Store<Props> {
             }
         }
     }
+
+    clear() {
+        this._data = { anchors: [] }
+        this.save()
+    }
 }

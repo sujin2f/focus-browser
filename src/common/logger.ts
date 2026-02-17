@@ -1,5 +1,5 @@
 import { IPC_CHANNELS, LogTypes } from '@src/common/constants'
-import { isBeta, isTest } from './utils'
+import { isBeta, isDev, isTest } from './utils'
 
 interface I_Logger {
     error(...params: unknown[]): void
@@ -38,7 +38,7 @@ export class Logger {
     constructor() {
         this.isMain = typeof window !== 'object'
 
-        if (isBeta() && !isTest()) {
+        if (isDev() || (isBeta() && !isTest())) {
             // the Main Process
             if (this.isMain) {
                 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -125,6 +125,7 @@ const pages = [
     'popup',
     'keystrokes',
     'settings',
+    'cleaner',
     'shortcuts',
     'find',
     'offline',

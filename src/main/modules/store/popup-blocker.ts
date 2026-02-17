@@ -65,4 +65,9 @@ export class PopupBlocker extends Store<T_Popup> {
             this._data = this.defaults
         }
     }
+
+    clear() {
+        this.data.blocked = new Set<string>()
+        this.save()
+    }
 }

@@ -27,15 +27,7 @@ class Settings extends A_Entry {
 
     constructor() {
         super()
-        this.requestInfo(
-            'helpText',
-            'maxHistory',
-            'adBlocker',
-            'adBlockerStatus',
-            'cacheSize',
-            'searchEngine',
-            'frame',
-        )
+        this.requestInfo('maxHistory', 'adBlocker', 'searchEngine')
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))

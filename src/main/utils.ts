@@ -1,4 +1,6 @@
+import { app } from 'electron'
 import * as path from 'path'
+import * as fs from 'fs'
 
 export function resolveHtmlPath(htmlFileName: string) {
     if (process.env.NODE_ENV === 'development') {
@@ -16,3 +18,46 @@ export const adBlockerPreload = path.join(
     '..',
     'adblocker-preload.js',
 )
+
+const getDirectorySize = (dir: string): number => {
+    const files = fs.readdirSync(dir, { withFileTypes: true }) // Get file entries with type info
+    const paths = files.map((file) => {
+        const fullPath = path.join(dir, file.name)
+        if (file.isDirectory()) {
+            return getDirectorySize(fullPath) // Recurse into subdirectories
+        }
+        if (file.isFile()) {
+            const { size } = fs.statSync(fullPath)
+            return size // Get the size of the file in bytes
+        }
+        return 0
+    })
+
+    return paths
+        .flat(Infinity)
+        .reduce((accumulator, size) => accumulator + size, 0)
+}
+
+export const getIndexedDBPath = () => {
+    const userDataPath = app.getPath('userData')
+    return path.join(userDataPath, 'Partitions', 'my-partition', 'IndexedDB')
+}
+
+export const getIndexedDBSize = () => {
+    const size = getDirectorySize(getIndexedDBPath())
+    return size
+}
+
+// TODO make async or child process
+export const removeIndexedDB = () => {
+    const dir = getIndexedDBPath()
+    const files = fs.readdirSync(dir, { withFileTypes: true })
+    files.forEach((file) => {
+        const dest = `${file.parentPath}/${file.name}`
+        if (file.isDirectory()) {
+            fs.rmSync(dest, { recursive: true, force: true })
+        } else {
+            fs.rmSync(dest)
+        }
+    })
+}

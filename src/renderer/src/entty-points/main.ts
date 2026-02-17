@@ -49,6 +49,11 @@ const cards: Record<string, T_Card> = {
         description: '',
         destination: 'settings.html',
     },
+    cleaner: {
+        title: '🧼 Cleaner',
+        description: 'Clear cache, history, and else',
+        destination: 'cleaner.html',
+    },
 }
 
 class Main extends A_Entry {

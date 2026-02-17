@@ -18,7 +18,7 @@ import type { Bookmark } from '@src/common/types'
 class Anchors extends A_List<Bookmark> {
     constructor() {
         super()
-        this.requestInfo('helpText', 'title', 'url')
+        this.requestInfo('title', 'url')
         this.requestAnchors()
 
         // Title

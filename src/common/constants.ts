@@ -42,6 +42,7 @@ export enum IPC_CHANNELS {
     MAIN_PROCESS = 'MAIN_PROCESS',
     KEYSTROKES = 'KEYSTROKES',
     SHORTCUTS = 'SHORTCUTS',
+    CLEANER = 'CLEANER',
 }
 
 export enum RequestHandler {
@@ -138,11 +139,8 @@ export const DEFAULT_STATUS: StatusProps = {
     x: NaN,
     y: NaN,
     maxHistory: MAX_HISTORY,
-    welcome: true,
-    helpText: true,
     adBlocker: true,
     searchEngine: 'DUCKDUCKGO',
-    frame: true,
 }
 
 export const CTRL = 'ControlOrCommand'

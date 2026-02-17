@@ -18,7 +18,7 @@ class History extends A_List<Bookmark> {
 
     constructor() {
         super()
-        this.requestInfo('helpText', 'title', 'url')
+        this.requestInfo('title', 'url')
         this.request()
 
         // Title

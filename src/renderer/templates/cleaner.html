@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Settings</title>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self'"
+        />
+    </head>
+
+    <body
+        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
+    >
+        <div class="container mx-auto" id="section-root">
+            <div
+                class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
+            >
+                <%=require('html-loader!./fragments/h1.html').default %>
+                <%=require('html-loader!./fragments/back-button.html').default
+                %>
+                <section id="section-title"></section>
+            </div>
+            <%=require('html-loader!./fragments/card.html').default %>
+            <section
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mt-2"
+                id="section-grid"
+            ></section>
+        </div>
+        <%=require('html-loader!./fragments/notification.html').default %>
+        <%=require('html-loader!./fragments/loading.html').default %>
+    </body>
+</html>

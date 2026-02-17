@@ -37,8 +37,8 @@ class Bookmarks extends A_List<Bookmark> {
 
     constructor() {
         super()
-        this.requestInfo('helpText', 'title', 'url')
-        this.requestBookmarks()
+        this.requestInfo('title', 'url')
+        this.request()
 
         // Title
         const h1 = new H1('Bookmarks 🔖').prependTo('title')
@@ -111,7 +111,7 @@ class Bookmarks extends A_List<Bookmark> {
         super.callbackShortcut(e)
     }
 
-    private requestBookmarks(): void {
+    private request(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
 
         ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {

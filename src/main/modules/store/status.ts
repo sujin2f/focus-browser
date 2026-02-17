@@ -32,8 +32,6 @@ export class Status extends Store<StatusProps> {
         // Exclude none-StatusProps
         const {
             /* eslint-disable @typescript-eslint/no-unused-vars */
-            shortcuts,
-            cacheSize,
             title,
             url,
             adBlockerStatus,
@@ -44,5 +42,15 @@ export class Status extends Store<StatusProps> {
             ...this._data,
             ...updates,
         }
+    }
+
+    public save() {
+        // Remove unknown items
+        Object.keys(this._data).forEach((key) => {
+            if (!Object.hasOwn(DEFAULT_STATUS, key)) {
+                delete (this._data as unknown as Record<string, string>)[key]
+            }
+        })
+        super.save()
     }
 }

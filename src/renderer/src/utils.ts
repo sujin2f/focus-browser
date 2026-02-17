@@ -58,3 +58,15 @@ export const getSection = <T extends HTMLElement>(id: string) => {
     }
     return element
 }
+
+export const byteToSize = (byte: number): string => {
+    const mb = 1024 * 1024
+    if (byte < mb) {
+        return `${byte} bytes`
+    } else if (byte < mb * 1024) {
+        const size = byte / mb
+        return `${size.toFixed(2)} Mb`
+    }
+    const size = byte / (mb * 1024)
+    return `${size.toFixed(2)} Gb`
+}

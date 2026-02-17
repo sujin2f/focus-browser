@@ -22,9 +22,11 @@ import {
     bookmarkUpdate,
     bookmarkRemove,
 } from '@test/mock-store'
+import { fs } from '@test/mock-fs'
 
 jest.resetModules()
 jest.doMock('electron', electron)
+jest.doMock('fs', fs)
 
 jest.doMock('@main/modules/store/status', status)
 jest.doMock('@main/modules/store/shortcut', shortcut)
@@ -87,14 +89,10 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         )
     })
 
-    test('onInfo > MODIFY > clear cache', async () => {
-        await ipc[0][1](null, RequestHandler.MODIFY, { cacheSize: NaN })
+    test('cleaner > REMOVE > clear cache', async () => {
+        console.log(ipc)
+        await ipc[10][1](null, RequestHandler.REMOVE, 'cacheSize')
         expect(clearCache).toHaveBeenCalled()
-    })
-
-    test('onInfo > MODIFY > reset adBlocker', async () => {
-        await ipc[0][1](null, RequestHandler.MODIFY, { adBlockerStatus: true })
-        expect(setAdBlocker).toHaveBeenCalled()
     })
 
     test('onInfo > MODIFY > change adBlocker setting', async () => {
@@ -141,7 +139,6 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onBookmarks > request', () => {
-        console.log(ipc[3][1])
         ipc[3][1](null, RequestHandler.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.BOOKMARK,

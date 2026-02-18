@@ -58,28 +58,23 @@ const cards: Record<string, T_Card> = {
 
 class Main extends A_Entry {
     private form: HTMLFormElement = getSection<HTMLFormElement>('form')
-
+    private input = new Input(
+        'Enter search keyword or address (⌘L)',
+        'address',
+    ).appendTo(this.form)
     constructor() {
         super()
 
+        this.requestInfo('url')
+
         new BackButton().appendTo('button')
 
-        const input = new Input(
-            'Enter search keyword or address (⌘L)',
-            'search',
-        ).appendTo(this.form)
-        input.name = 'address'
-
         this.form.addEventListener('submit', () => {
-            if (!input.value) {
+            if (!this.input.value) {
                 return
             }
-            navigate(input.value.toString())
+            navigate(this.input.value.toString())
         })
-
-        if (window.location.href.includes('address=true')) {
-            input.element.focus()
-        }
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)
@@ -118,6 +113,13 @@ class Main extends A_Entry {
                     window.location.href = cards.shortcuts.destination
                     return true
             }
+        }
+    }
+
+    protected callbackUpdateInfo(): void {
+        if (window.location.href.includes('address=true')) {
+            this.input.value = this.settings.url || ''
+            this.input.element.focus()
         }
     }
 }

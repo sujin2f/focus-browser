@@ -8,4 +8,8 @@ export class Input extends A_FormElement<HTMLLabelElement> {
     constructor(label: string, name: string) {
         super('input', label, name)
     }
+
+    public selectText() {
+        ;(this.input as HTMLInputElement).select()
+    }
 }

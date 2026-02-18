@@ -16,11 +16,8 @@ export type StatusProps = {
     x: number
     y: number
     maxHistory: number
-    welcome: boolean
-    helpText: boolean
     adBlocker: boolean
     searchEngine: keyof typeof SEARCH_ENGINES
-    frame: boolean
 }
 
 /**
@@ -28,21 +25,18 @@ export type StatusProps = {
  */
 export type Info = Partial<
     StatusProps & {
-        shortcuts: Record<string, string>
-        cacheSize: number
         title: string
         url: string
         adBlockerStatus: boolean | null
         findText: string
-        maximize: boolean
-        keystrokes: Record<string, string>
     }
 >
 
-export type Bookmark = {
+export type T_Bookmark = {
     url: string
     title: string
     shortcut?: string
+    children?: T_Bookmark[]
 }
 
 export type PopupBlocker = {
@@ -66,3 +60,11 @@ export type ElementProps<T> = {
 }
 
 export type EventSwitch = CustomEvent<CENTRE_PAGES>
+
+export type T_Cleaner = {
+    cacheSize: number
+    anchors: number
+    history: number
+    popup: number
+    indexedDB: number
+}

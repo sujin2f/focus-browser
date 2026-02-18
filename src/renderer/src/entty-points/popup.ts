@@ -13,7 +13,7 @@ import type { PopupBlocker } from '@src/common/types'
 class Popup extends A_List<PopupBlocker> {
     constructor() {
         super()
-        this.requestInfo('helpText', 'title', 'url')
+        this.requestInfo('title', 'url')
         this.requestPopupBlockers()
 
         // Title

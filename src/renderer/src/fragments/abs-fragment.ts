@@ -1,7 +1,7 @@
 import { getSection } from '@src/renderer/src/utils'
 
 export abstract class A_Fragment<T extends HTMLElement> {
-    protected node: T
+    public node: T
     private _element?: T
     public get element(): T {
         if (!this._element) {

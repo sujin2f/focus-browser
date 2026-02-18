@@ -6,8 +6,6 @@ import {
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
-
-import type { Bookmark } from '@src/common/types'
 import {
     IPC_CHANNELS,
     MainEventTypes,
@@ -20,9 +18,11 @@ import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
 import { Keystrokes } from '@main/modules/store/keystrokes'
+/* T_Types */
+import type { T_Bookmark } from '@src/common/types'
 
 export class BrowserView extends WebContentsView {
-    public get url(): Bookmark {
+    public get url(): T_Bookmark {
         return {
             title: this.webContents.getTitle(),
             url: this.webContents.getURL(),
@@ -99,11 +99,14 @@ export class BrowserView extends WebContentsView {
         this.webContents.setZoomFactor(1)
     }
 
-    public loadLastHistory() {
-        Logger.getInstance().info('loadLastHistory')
-        const url = this.restoreHistory() || this.DEFAULT_URL
-        Logger.getInstance().info('url', url)
-        this.loadURL(url)
+    public async loadLastVisit() {
+        const loaded = await this.restoreHistory()
+        Logger.getInstance().info('loadLastHistory', this.url, loaded)
+        if (loaded) {
+            return
+        }
+
+        this.searchKeyword('')
     }
 
     /**
@@ -165,7 +168,7 @@ export class BrowserView extends WebContentsView {
     /**
      * Restore history from storage
      */
-    private restoreHistory() {
+    private async restoreHistory() {
         Logger.getInstance().info('restoreHistory')
         const history = new History()
         history.parse()
@@ -173,20 +176,15 @@ export class BrowserView extends WebContentsView {
         const index = history.get('index')
         Logger.getInstance().info('history.get(index)', index)
 
-        if (!isNaN(index) && index !== -1) {
-            this.webContents.navigationHistory.restore({
+        if (index === 0 || (!isNaN(index) && index !== -1)) {
+            await this.webContents.navigationHistory.restore({
                 index,
                 entries: history.get('history'),
             })
+            return true
         }
 
-        const current = history.current
-        Logger.getInstance().info('history.current', current)
-
-        if (current) {
-            return current.url
-        }
-        return ''
+        return false
     }
 
     public async setAdBlocker() {

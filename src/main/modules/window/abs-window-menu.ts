@@ -25,7 +25,7 @@ import { Shortcut } from '@main/modules/store/shortcut'
 import { BrowserView } from '@src/main/modules/view/browser'
 import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@src/common/logger'
-import { isBeta, isTest } from '@src/common/utils'
+import { isBeta, isDev, isTest } from '@src/common/utils'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -315,11 +315,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                       [MenuCategory.NAVIGATE]: navigate,
                   }
 
-        if (isBeta() && !isTest()) {
+        if (isDev() || (isBeta() && !isTest())) {
             if (result[MenuCategory.EDIT]) {
                 result[MenuCategory.EDIT][Menu.TEST] = {
                     label: 'Run Test Block',
-                    accelerator: 'CommandOrControl+W',
+                    accelerator: 'CommandOrControl+T',
                     click: this.runTest.bind(this),
                 }
             }
@@ -564,22 +564,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.browser.webContents.sendInputEvent({
-            type: 'char',
-            keyCode: 'A',
-        })
         this.switch(CENTRE_PAGES.DASHBOARD)
-
-        // return await this.browser.webContents
-        //     .executeJavaScript(
-        //         '[document.activeElement.tagName, document.activeElement.isContentEditable]',
-        //     )
-        //     .then((focusedElement) => {
-        //         console.log('Focused Element:', focusedElement)
-        //     })
-        //     .catch((error) => {
-        //         console.error('Error retrieving focused element:', error)
-        //     })
     }
 
     abstract switch(scene: Scenes): void

@@ -22,9 +22,11 @@ export const navigate = (url?: string, handler?: RequestHandler) => {
     document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.HOME))
     if (url) {
         ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, url, handler)
+        window.location.href = 'loading.html'
         return
     }
     ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER)
+    window.location.href = 'loading.html'
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
@@ -57,4 +59,16 @@ export const getSection = <T extends HTMLElement>(id: string) => {
         throw new Error(`No #section-${id} element exist`)
     }
     return element
+}
+
+export const byteToSize = (byte: number): string => {
+    const mb = 1024 * 1024
+    if (byte < mb) {
+        return `${byte} bytes`
+    } else if (byte < mb * 1024) {
+        const size = byte / mb
+        return `${size.toFixed(2)} Mb`
+    }
+    const size = byte / (mb * 1024)
+    return `${size.toFixed(2)} Gb`
 }

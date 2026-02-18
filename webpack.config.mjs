@@ -125,9 +125,11 @@ const pages = [
     'popup',
     'keystrokes',
     'settings',
+    'cleaner',
     'shortcuts',
     'find',
     'offline',
+    'loading',
 ]
 
 pages.forEach((page) => {

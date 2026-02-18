@@ -1,8 +1,9 @@
 import { Store } from '@main/modules/store/store'
 import { Logger } from '@src/common/logger'
-import type { Bookmark } from '@src/common/types'
+/* T_Types */
+import type { T_Bookmark } from '@src/common/types'
 
-export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
+export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
     static instance: Bookmarks
     static getInstance(): Bookmarks {
         if (!Bookmarks.instance) {
@@ -16,7 +17,7 @@ export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
         return super.get('bookmarks')
     }
 
-    update(index: number, bookmark: Bookmark) {
+    update(index: number, bookmark: T_Bookmark) {
         Logger.getInstance().log(
             'Bookmark edited from: ',
             this._data.bookmarks[index],
@@ -26,7 +27,7 @@ export class Bookmarks extends Store<{ bookmarks: Bookmark[] }> {
         this._data.bookmarks[index] = bookmark
     }
 
-    push(bookmark: Bookmark) {
+    push(bookmark: T_Bookmark) {
         for (const item of this._data.bookmarks) {
             if (item.url === bookmark.url) {
                 return false

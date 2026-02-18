@@ -13,15 +13,14 @@ import { Button } from '@src/renderer/src/fragments/button'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 import { Notification } from '@src/renderer/src/fragments/notification'
+import { Modal } from '@src/renderer/src/fragments/modal'
+import { Input } from '@src/renderer/src/fragments/input'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
-import type { Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types'
 
-import { Modal } from '@src/renderer/src/fragments/modal'
-import { Input } from '../fragments/input'
-
-class Bookmarks extends A_List<Bookmark> {
+class Bookmarks extends A_List<T_Bookmark> {
     protected isSearchActivated() {
         return !this.modal.activated
     }
@@ -37,21 +36,15 @@ class Bookmarks extends A_List<Bookmark> {
 
     constructor() {
         super()
-        this.requestInfo('helpText', 'title', 'url')
-        this.requestBookmarks()
+        this.requestInfo('title', 'url')
+        this.request()
 
         // Title
         const h1 = new H1('Bookmarks 🔖').prependTo('title')
         new BackButton().prependTo(h1.element)
 
-        // Buttons
-        new Button('Add Bookmark').appendTo('buttons').setOnClick(() => {
-            this.title.value = this.settings.title || ''
-            this.url.value = this.settings.url || ''
-            this.shortcut.value = ''
-
-            this.modal.show()
-        })
+        // Buttons >> Add Folder
+        // new Button('📁 Create Folder').appendTo('buttons')
 
         const formButtons = document.createElement('div')
         formButtons.classList.add('flex', 'justify-between')
@@ -71,7 +64,7 @@ class Bookmarks extends A_List<Bookmark> {
                             title: this.title.value.toString(),
                             url: this.url.value.toString(),
                             shortcut: this.shortcut.value.toString(),
-                        } satisfies Bookmark,
+                        } satisfies T_Bookmark,
                         this.editIndex,
                     )
                     return
@@ -81,7 +74,7 @@ class Bookmarks extends A_List<Bookmark> {
                     title: this.title.value.toString(),
                     url: this.url.value.toString(),
                     shortcut: this.shortcut.value.toString(),
-                } satisfies Bookmark)
+                } satisfies T_Bookmark)
             })
 
         // Remove
@@ -111,7 +104,22 @@ class Bookmarks extends A_List<Bookmark> {
         super.callbackShortcut(e)
     }
 
-    private requestBookmarks(): void {
+    protected callbackUpdateInfo(): void {
+        if (this.settings.url) {
+            // Buttons >> Add Bookmark
+            new Button('💾 Add Bookmark')
+                .prependTo('buttons')
+                .setOnClick(() => {
+                    this.title.value = this.settings.title || ''
+                    this.url.value = this.settings.url || ''
+                    this.shortcut.value = ''
+
+                    this.modal.show()
+                })
+        }
+    }
+
+    private request(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
 
         ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
@@ -120,7 +128,7 @@ class Bookmarks extends A_List<Bookmark> {
                 return
             }
 
-            this.items = args[1] as Bookmark[]
+            this.items = args[1] as T_Bookmark[]
             const updated = args[2] as boolean
 
             this.modal.hide()
@@ -175,7 +183,7 @@ class Bookmarks extends A_List<Bookmark> {
         })
     }
 
-    filterList(item: Bookmark, keyword: string): boolean {
+    filterList(item: T_Bookmark, keyword: string): boolean {
         return (
             item.shortcut?.toLowerCase().includes(keyword) ||
             item.title.toLowerCase().includes(keyword)
@@ -200,6 +208,8 @@ class Bookmarks extends A_List<Bookmark> {
 
         super.filterSearch()
     }
+
+    private openBookmarkModal() {}
 }
 
 document.addEventListener('DOMContentLoaded', () => {

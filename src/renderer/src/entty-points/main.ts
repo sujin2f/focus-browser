@@ -1,10 +1,10 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, navigate, getSection } from '@src/renderer/src/utils'
+import { checkElectron } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { Card } from '@src/renderer/src/fragments/card'
-import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
+import { getAddressBar } from '@src/renderer/src/fragments/address-bar'
 
 type T_Card = {
     title: string
@@ -49,32 +49,22 @@ const cards: Record<string, T_Card> = {
         description: '',
         destination: 'settings.html',
     },
+    cleaner: {
+        title: '🧼 Cleaner',
+        description: 'Clear cache, history, and else',
+        destination: 'cleaner.html',
+    },
 }
 
 class Main extends A_Entry {
-    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
+    private input = getAddressBar('form')
 
     constructor() {
         super()
 
+        this.requestInfo('url')
+
         new BackButton().appendTo('button')
-
-        const input = new Input(
-            'Enter search keyword or address (⌘L)',
-            'search',
-        ).appendTo(this.form)
-        input.name = 'address'
-
-        this.form.addEventListener('submit', () => {
-            if (!input.value) {
-                return
-            }
-            navigate(input.value.toString())
-        })
-
-        if (window.location.href.includes('address=true')) {
-            input.element.focus()
-        }
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)
@@ -113,6 +103,14 @@ class Main extends A_Entry {
                     window.location.href = cards.shortcuts.destination
                     return true
             }
+        }
+    }
+
+    protected callbackUpdateInfo(): void {
+        if (window.location.href.includes('address=true')) {
+            this.input.value = this.settings.url || ''
+            this.input.selectText()
+            this.input.focus()
         }
     }
 }

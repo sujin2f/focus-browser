@@ -42,6 +42,7 @@ export enum IPC_CHANNELS {
     MAIN_PROCESS = 'MAIN_PROCESS',
     KEYSTROKES = 'KEYSTROKES',
     SHORTCUTS = 'SHORTCUTS',
+    CLEANER = 'CLEANER',
 }
 
 export enum RequestHandler {
@@ -94,10 +95,10 @@ export enum Menu {
     CUT = 'Cut',
     COPY = 'Copy',
     PASTE = 'Paste',
-    PASTE_KEYSTROKE = 'Paste Keystroke',
+    PASTE_KEYSTROKE = '🎹 Paste Keystroke',
     SELECT_ALL = 'Select All',
-    ADD_BOOKMARK = 'Add Bookmark',
-    ADD_ANCHOR = 'Add Anchor',
+    ADD_BOOKMARK = '🔖 Add Bookmark',
+    ADD_ANCHOR = '⚓️ Add Anchor',
     FULL_SCREEN = 'Toggle Full Screen',
     RESET_ZOOM = 'Reset Zoom',
     ZOOM_IN = 'Zoom In',
@@ -138,11 +139,8 @@ export const DEFAULT_STATUS: StatusProps = {
     x: NaN,
     y: NaN,
     maxHistory: MAX_HISTORY,
-    welcome: true,
-    helpText: true,
     adBlocker: true,
     searchEngine: 'DUCKDUCKGO',
-    frame: true,
 }
 
 export const CTRL = 'ControlOrCommand'

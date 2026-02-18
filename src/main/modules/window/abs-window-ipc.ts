@@ -5,8 +5,6 @@ import {
     type ContextMenuParams,
 } from 'electron'
 import { Logger } from '@src/common/logger'
-
-import type { Scenes, Bookmark, Info } from '@src/common/types'
 import {
     IPC_CHANNELS,
     RequestHandler,
@@ -26,6 +24,9 @@ import { Keystrokes } from '@main/modules/store/keystrokes'
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
+import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
+/* T_Types */
+import type { Scenes, T_Bookmark, Info, T_Cleaner } from '@src/common/types'
 
 /**
  * All starts with here
@@ -44,6 +45,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.MAIN_PROCESS, this.onMainProcess.bind(this))
         ipcMain.on(IPC_CHANNELS.KEYSTROKES, this.onKeystrokes.bind(this))
         ipcMain.on(IPC_CHANNELS.SHORTCUTS, this.onShortcuts.bind(this))
+        ipcMain.on(IPC_CHANNELS.CLEANER, this.onCleaner.bind(this))
 
         if (isBeta() && !isTest()) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
@@ -113,27 +115,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
          * Modifying status
          */
         if (handler === RequestHandler.MODIFY) {
-            // Clear cache
-            if (
-                Object.prototype.hasOwnProperty.call(data, 'cacheSize') &&
-                isNaN(data.cacheSize!)
-            ) {
-                await this.browser.webContents.session.clearCache()
-                delete data['cacheSize']
-            }
-
-            // Reset adBlocker in case it fails in some reason
-            if (Object.prototype.hasOwnProperty.call(data, 'adBlockerStatus')) {
-                await this.browser.setAdBlocker()
-                delete data['adBlockerStatus']
-            }
-
-            // Toggle Maximize
-            if (Object.prototype.hasOwnProperty.call(data, 'maximize')) {
-                this.toggleMaximize()
-                delete data['maximize']
-            }
-
             const status = Status.getInstance()
             status.merge(data)
             status.save()
@@ -152,7 +133,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onSwitch(
+    private async onSwitch(
         _: IpcMainEvent,
         scene: Scenes,
         address?: string,
@@ -170,7 +151,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             if (address === 'reload') {
                 this.browser.reload()
             } else if (address === NAVIGATION.LAST_VISIT) {
-                this.browser.loadLastHistory()
+                await this.browser.loadLastVisit()
             } else if (address === NAVIGATION.SEARCH_ENGINE) {
                 this.browser.searchKeyword('')
             } else {
@@ -205,40 +186,39 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     private onBookmarks(
         _: IpcMainEvent,
         handler: RequestHandler,
-        bookmark: Bookmark,
+        bookmark: T_Bookmark,
         index: number,
     ) {
         const bookmarks = Bookmarks.getInstance()
+        const sendBookmarks = (updated: boolean = false) => {
+            this.centre.webContents.send(
+                IPC_CHANNELS.BOOKMARK,
+                RequestHandler.RESPONSE,
+                bookmarks.get(),
+                updated,
+            )
+        }
+
         switch (handler) {
             case RequestHandler.REQUEST:
-                this.sendBookmarks()
+                sendBookmarks()
                 return
             case RequestHandler.ADD:
                 bookmarks.push(bookmark)
                 bookmarks.save()
-                this.sendBookmarks(true)
+                sendBookmarks(true)
                 return
             case RequestHandler.MODIFY:
                 bookmarks.update(index, bookmark)
                 bookmarks.save()
-                this.sendBookmarks(true)
+                sendBookmarks(true)
                 return
             case RequestHandler.REMOVE:
                 bookmarks.remove(index)
                 bookmarks.save()
-                this.sendBookmarks(true)
+                sendBookmarks(true)
                 return
         }
-    }
-
-    private sendBookmarks(updated: boolean = false) {
-        const bookmarks = Bookmarks.getInstance()
-        this.centre.webContents.send(
-            IPC_CHANNELS.BOOKMARK,
-            RequestHandler.RESPONSE,
-            bookmarks.get(),
-            updated,
-        )
     }
 
     private onAnchors(_: IpcMainEvent, handler: RequestHandler, url: string) {
@@ -295,10 +275,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const info: Partial<Info> = {}
         const status = Status.getInstance().data
 
-        if (requests.includes('helpText')) {
-            info.helpText = status.helpText
-        }
-
         if (requests.includes('maxHistory')) {
             info.maxHistory = status.maxHistory
         }
@@ -311,15 +287,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             info.adBlockerStatus = this.browser.blocker && true
         }
 
-        if (requests.includes('cacheSize')) {
-            info.cacheSize =
-                await this.browser.webContents.session.getCacheSize()
-        }
-
-        if (requests.includes('frame')) {
-            info.frame = status.frame
-        }
-
         if (requests.includes('title')) {
             info.title = this.browser.webContents.getTitle()
         }
@@ -330,16 +297,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (requests.includes('searchEngine')) {
             info.searchEngine = status.searchEngine
-        }
-
-        // TODO Deprecated
-        if (requests.includes('shortcuts')) {
-            info.shortcuts = Shortcut.getInstance().getShortcuts()
-        }
-
-        // TODO Deprecated
-        if (requests.includes('keystrokes')) {
-            info.keystrokes = Keystrokes.getInstance().getKeystrokes()
         }
 
         Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)
@@ -409,6 +366,77 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.sendResult(IPC_CHANNELS.SHORTCUTS)
                 return
             }
+        }
+    }
+
+    /**
+     * Clear cache, indexedDB, anchor, history, and blocked popup info
+     *
+     * @param _
+     * @param handler
+     * @returns
+     */
+    private async onCleaner(
+        _: IpcMainEvent,
+        handler: RequestHandler,
+        key: string,
+    ) {
+        const send = async (updated: boolean = false) => {
+            const cacheSize =
+                await this.browser.webContents.session.getCacheSize()
+            const anchors = Object.keys(Anchors.getInstance().get()).length
+            const history =
+                this.browser.webContents.navigationHistory.getAllEntries()
+                    .length
+            const popup = PopupBlocker.getInstance().get('blocked')
+            const indexedDB = getIndexedDBSize()
+
+            this.centre.webContents.send(
+                IPC_CHANNELS.CLEANER,
+                RequestHandler.RESPONSE,
+                {
+                    cacheSize,
+                    anchors,
+                    history,
+                    popup: Array.from(popup).length,
+                    indexedDB,
+                } satisfies T_Cleaner,
+                updated,
+            )
+        }
+
+        switch (handler) {
+            case RequestHandler.REQUEST:
+                send()
+                return
+            case RequestHandler.REMOVE:
+                switch (key) {
+                    case 'cacheSize':
+                        await this.browser.webContents.session.clearCache()
+                        send(true)
+                        return
+
+                    case 'indexedDB':
+                        removeIndexedDB()
+                        send(true)
+                        return
+
+                    case 'anchor':
+                        Anchors.getInstance().clear()
+                        send(true)
+                        return
+
+                    case 'history':
+                        this.browser.webContents.navigationHistory.clear()
+                        send(true)
+                        return
+
+                    case 'popups':
+                        PopupBlocker.getInstance().clear()
+                        send(true)
+                        return
+                }
+                return
         }
     }
 

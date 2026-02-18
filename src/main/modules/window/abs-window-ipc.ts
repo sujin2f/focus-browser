@@ -133,7 +133,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onSwitch(
+    private async onSwitch(
         _: IpcMainEvent,
         scene: Scenes,
         address?: string,
@@ -151,7 +151,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             if (address === 'reload') {
                 this.browser.reload()
             } else if (address === NAVIGATION.LAST_VISIT) {
-                this.browser.loadLastHistory()
+                await this.browser.loadLastVisit()
             } else if (address === NAVIGATION.SEARCH_ENGINE) {
                 this.browser.searchKeyword('')
             } else {

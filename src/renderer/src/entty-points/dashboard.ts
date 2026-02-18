@@ -57,6 +57,12 @@ class Dashboard extends A_Entry {
             })
         })
     }
+
+    protected callbackShortcut(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            navigate(NAVIGATION.LAST_VISIT)
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

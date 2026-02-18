@@ -43,14 +43,8 @@ class Bookmarks extends A_List<T_Bookmark> {
         const h1 = new H1('Bookmarks 🔖').prependTo('title')
         new BackButton().prependTo(h1.element)
 
-        // Buttons
-        new Button('Add Bookmark').appendTo('buttons').setOnClick(() => {
-            this.title.value = this.settings.title || ''
-            this.url.value = this.settings.url || ''
-            this.shortcut.value = ''
-
-            this.modal.show()
-        })
+        // Buttons >> Add Folder
+        // new Button('📁 Create Folder').appendTo('buttons')
 
         const formButtons = document.createElement('div')
         formButtons.classList.add('flex', 'justify-between')
@@ -108,6 +102,21 @@ class Bookmarks extends A_List<T_Bookmark> {
         }
 
         super.callbackShortcut(e)
+    }
+
+    protected callbackUpdateInfo(): void {
+        if (this.settings.url) {
+            // Buttons >> Add Bookmark
+            new Button('💾 Add Bookmark')
+                .prependTo('buttons')
+                .setOnClick(() => {
+                    this.title.value = this.settings.title || ''
+                    this.url.value = this.settings.url || ''
+                    this.shortcut.value = ''
+
+                    this.modal.show()
+                })
+        }
     }
 
     private request(): void {
@@ -199,6 +208,8 @@ class Bookmarks extends A_List<T_Bookmark> {
 
         super.filterSearch()
     }
+
+    private openBookmarkModal() {}
 }
 
 document.addEventListener('DOMContentLoaded', () => {

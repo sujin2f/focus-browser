@@ -28,10 +28,9 @@
                 ></section>
 
                 <%=require('html-loader!./template-parts/h2.html').default %>
-                <%=require('html-loader!./template-parts/list-row.html').default
-                %>
                 <section id="section-bookmarks" class="w-full">
-                    <section class="grid" id="section-list"></section>
+                    <%=require('html-loader!./template-parts/list.html').default
+                    %>
                 </section>
             </div>
         </div>

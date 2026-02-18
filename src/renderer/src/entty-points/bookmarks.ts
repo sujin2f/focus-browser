@@ -1,4 +1,4 @@
-import { A_List } from '@src/renderer/src/entty-points/abs-list'
+import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
 /* Utils */
 import {
     checkElectron,
@@ -11,7 +11,7 @@ import {
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 import { Modal } from '@src/renderer/src/template-parts/modal'
 import { Input } from '@src/renderer/src/template-parts/input'
@@ -22,12 +22,12 @@ import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class Bookmarks extends A_List<T_Bookmark> {
+class Bookmarks extends A_ListSearch<T_Bookmark> {
     protected isSearchActivated() {
         return !this.modal.activated
     }
 
-    private dirs: ListRow[] = []
+    private dirs: ListItem[] = []
 
     private notification: Notification = new Notification().appendTo('root')
 
@@ -148,7 +148,7 @@ class Bookmarks extends A_List<T_Bookmark> {
             if (hasParent) {
                 title = `- ${title}`
             }
-            const row = new ListRow(title, bookmark.url)
+            const row = new ListItem(title, bookmark.url)
 
             if (isDir) {
                 this.dirs.push(row)
@@ -158,9 +158,9 @@ class Bookmarks extends A_List<T_Bookmark> {
             }
 
             if (hasParent) {
-                row.appendTo(this.dirs[bookmark.parent!].children)
+                row.appendTo(this.list.element)
             } else {
-                row.appendTo('list')
+                row.appendTo(this.list.element)
             }
 
             row.setOnClick((e: PointerEvent) => {
@@ -175,23 +175,23 @@ class Bookmarks extends A_List<T_Bookmark> {
                 navigate(bookmark.url)
             })
 
-            new Button('⚙️', 'button-clear')
-                .appendTo(row.suffix)
-                .setOnClick(() => {
-                    this.showModal(isDir ? 'dir' : 'bookmark', index, bookmark)
-                })
+            // new Button('⚙️', 'button-clear')
+            //     .appendTo(row.suffix)
+            //     .setOnClick(() => {
+            //         this.showModal(isDir ? 'dir' : 'bookmark', index, bookmark)
+            //     })
 
-            if (bookmark.shortcut) {
-                // Shortcut
-                new Button(bookmark.shortcut.toUpperCase())
-                    .prependTo(row.suffix)
-                    .setOnClick(() => {
-                        if (isDir) {
-                            return
-                        }
-                        navigate(bookmark.url)
-                    })
-            }
+            // if (bookmark.shortcut) {
+            //     // Shortcut
+            //     new Button(bookmark.shortcut.toUpperCase())
+            //         .prependTo(row.suffix)
+            //         .setOnClick(() => {
+            //             if (isDir) {
+            //                 return
+            //             }
+            //             navigate(bookmark.url)
+            //         })
+            // }
         })
     }
 
@@ -238,7 +238,7 @@ class Bookmarks extends A_List<T_Bookmark> {
                     this.editIndex = index
                     this.title.value = bookmark.title
                     this.url.value = bookmark.url
-                    this.shortcut.value = bookmark.shortcut || ''
+                    this.shortcut.value = bookmark.shortcut
                     this.modal.show()
                     this.title.focus()
                     return
@@ -250,8 +250,8 @@ class Bookmarks extends A_List<T_Bookmark> {
                 this.url.hide()
                 this.folder.hide()
                 this.editIndex = index
-                this.title.value = bookmark?.title || ''
-                this.shortcut.value = bookmark?.shortcut || ''
+                this.title.value = bookmark?.title
+                this.shortcut.value = bookmark?.shortcut
                 this.modal.show()
                 this.title.focus()
                 return
@@ -270,8 +270,8 @@ class Bookmarks extends A_List<T_Bookmark> {
         }
 
         this.submit.disable()
-        const url = this.mode === 'bookmark' ? this.url.value.toString() : ''
-        const parent = parseInt(this.folder.value.toString())
+        const url = this.mode === 'bookmark' ? this.url.value : ''
+        const parent = parseInt(this.folder.value)
 
         if (!isNaN(this.editIndex)) {
             // Edit
@@ -279,10 +279,10 @@ class Bookmarks extends A_List<T_Bookmark> {
                 IPC_CHANNELS.BOOKMARK,
                 RequestHandler.MODIFY,
                 {
-                    title: this.title.value.toString(),
+                    title: this.title.value,
                     url,
                     parent: parent === -1 ? undefined : parent,
-                    shortcut: this.shortcut.value.toString(),
+                    shortcut: this.shortcut.value,
                 } satisfies T_Bookmark,
                 this.editIndex,
             )
@@ -291,10 +291,10 @@ class Bookmarks extends A_List<T_Bookmark> {
 
         // Add
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.ADD, {
-            title: this.title.value.toString(),
+            title: this.title.value,
             url,
             parent: parent === -1 ? undefined : parent,
-            shortcut: this.shortcut.value.toString(),
+            shortcut: this.shortcut.value,
         } satisfies T_Bookmark)
     }
 }

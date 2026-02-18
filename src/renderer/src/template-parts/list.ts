@@ -1,51 +1,26 @@
 import { A_Element } from './abs-element'
+/* Utils */
+import { getSection } from '@src/renderer/src/utils'
 
-export class ListRow extends A_Element<HTMLDivElement> {
-    public get button() {
-        const button = this.select('button')
-        if (!button) {
-            throw new Error('button is not defined')
-        }
-        return button
+export class List extends A_Element<HTMLElement> {
+    public get element(): HTMLElement {
+        return getSection('list')
     }
 
-    public get prefix() {
-        const prefix = this.select('prefix')
-        if (!prefix) {
-            throw new Error('prefix is not defined')
-        }
-        return prefix
-    }
-
-    public get suffix() {
-        const suffix = this.select('suffix')
-        if (!suffix) {
-            throw new Error('suffix is not defined')
-        }
-        return suffix
-    }
-
-    public get children() {
-        const children = this.select('children')
-        if (!children) {
-            throw new Error('children is not defined')
-        }
-        return children
-    }
-
-    constructor(title: string, description?: string) {
-        super('#list-row')
-
-        this.element.querySelector('h3')!.textContent = title
-        if (description) {
-            this.element.querySelector('p')!.textContent = description
-        } else {
-            this.element.querySelector('p')!.remove()
+    constructor(css: string = '') {
+        super()
+        if (css) {
+            // this.element.classList.add(`grid-cols-[max-content_1fr_max-content]`)
+            this.element.classList.add(css)
         }
     }
 
-    public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
-        this.button.addEventListener('click', callback.bind(this))
+    public appendTo(_: Element | string) {
+        throw new Error('Cannot call appendTo for List')
+        return this
+    }
+    public prependTo(_: Element | string) {
+        throw new Error('Cannot call prependTo for List')
         return this
     }
 }

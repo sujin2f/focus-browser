@@ -108,7 +108,7 @@ class Main extends A_Entry {
 
     protected callbackUpdateInfo(): void {
         if (window.location.href.includes('address=true')) {
-            this.input.value = this.settings.url || ''
+            this.input.value = this.settings.url
             this.input.selectText()
             this.input.focus()
         }

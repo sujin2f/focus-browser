@@ -1,4 +1,4 @@
-import { A_List } from '@src/renderer/src/entty-points/abs-list'
+import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
 /* Utils */
 import {
     checkElectron,
@@ -9,13 +9,13 @@ import {
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class Anchors extends A_List<T_Bookmark> {
+class Anchors extends A_ListSearch<T_Bookmark> {
     constructor() {
         super()
         this.requestInfo('title', 'url')
@@ -44,8 +44,8 @@ class Anchors extends A_List<T_Bookmark> {
     renderList() {
         getSection('list').innerHTML = ''
         this.listItems.forEach((anchor) => {
-            new ListRow(anchor.title, anchor.url)
-                .appendTo('list')
+            new ListItem(anchor.title, anchor.url)
+                .appendTo(this.list.element)
                 .setOnClick(() => {
                     navigate(anchor.url, RequestHandler.REMOVE)
                 })

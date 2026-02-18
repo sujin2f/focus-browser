@@ -1,16 +1,16 @@
-import { A_List } from '@src/renderer/src/entty-points/abs-list'
+import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
-class Popup extends A_List<PopupBlocker> {
+class Popup extends A_ListSearch<PopupBlocker> {
     constructor() {
         super()
         this.requestInfo('title', 'url')
@@ -53,7 +53,7 @@ class Popup extends A_List<PopupBlocker> {
         getSection('list').innerHTML = ''
         this.listItems.forEach((item) => {
             const content = `${item.allowed ? '✅ ' : ''}${item.host}`
-            new ListRow(content).appendTo('list').setOnClick(() => {
+            new ListItem(content).appendTo(this.list.element).setOnClick(() => {
                 ipcRenderer.send(
                     IPC_CHANNELS.POPUP_BLOCKER,
                     RequestHandler.MODIFY,

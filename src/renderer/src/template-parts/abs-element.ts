@@ -10,7 +10,10 @@ export abstract class A_Element<T extends HTMLElement> {
         return this._element
     }
 
-    constructor(selector: string) {
+    constructor(selector: string = '') {
+        if (!selector) {
+            return
+        }
         const template = document.querySelector<HTMLTemplateElement>(selector)
         if (!template) {
             // TODO IPC
@@ -37,7 +40,23 @@ export abstract class A_Element<T extends HTMLElement> {
     public prependTo(parent: Element | string) {
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         dest.prepend(this._element as Element)
-        this._element = dest.lastElementChild! as T
+        this._element = dest.firstElementChild! as T
+        return this
+    }
+
+    /**
+     * @param parent HTML Element or #id
+     * @returns
+     */
+    public after(parent: Element | string) {
+        const dest = typeof parent === 'string' ? getSection(parent) : parent
+        document.body.append(this._element as Element)
+        this._element = document.body.lastElementChild! as T
+        console.log(this._element)
+        this._element = dest.insertAdjacentElement(
+            'afterend',
+            this._element,
+        ) as T
         return this
     }
 
@@ -51,5 +70,9 @@ export abstract class A_Element<T extends HTMLElement> {
 
     public hide() {
         this.element.classList.add('hidden')
+    }
+
+    public isHidden() {
+        return this.element.classList.contains('hidden')
     }
 }

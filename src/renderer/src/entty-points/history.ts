@@ -1,18 +1,18 @@
-import { A_List } from '@src/renderer/src/entty-points/abs-list'
+import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { Button } from '@src/renderer/src/template-parts/button'
-import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class History extends A_List<T_Bookmark> {
+class History extends A_ListSearch<T_Bookmark> {
     private notification: Notification = new Notification().appendTo('root')
     private button: Button
 
@@ -65,8 +65,8 @@ class History extends A_List<T_Bookmark> {
     renderList() {
         getSection('list').innerHTML = ''
         this.listItems.forEach((item, index) => {
-            new ListRow(item.title, item.url)
-                .prependTo('list')
+            new ListItem(item.title, item.url)
+                .appendTo(this.list.element)
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,

@@ -34,12 +34,12 @@ export abstract class A_FormElement<
         }
     }
 
-    public get value() {
-        return this.input.value
+    public get value(): string {
+        return this.input.value || ''
     }
 
-    public set value(value: string | number) {
-        this.input.value = value.toString()
+    public set value(value: string | number | undefined | null) {
+        this.input.value = value?.toString() || ''
     }
 
     public set name(name: string) {

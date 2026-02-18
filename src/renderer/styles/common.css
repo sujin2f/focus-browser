@@ -34,3 +34,7 @@
 .loading {
     animation-duration: 2.5s;
 }
+
+.bookmark--welcome {
+    grid-template-columns: 40px 1fr;
+}

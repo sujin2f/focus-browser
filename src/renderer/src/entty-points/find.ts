@@ -6,9 +6,9 @@ import {
     ipcRenderer,
     navigate,
 } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { Input } from '@src/renderer/src/fragments/input'
-import { Button } from '@src/renderer/src/fragments/button'
+/* <HTML template-part /> */
+import { Input } from '@src/renderer/src/template-parts/input'
+import { Button } from '@src/renderer/src/template-parts/button'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 

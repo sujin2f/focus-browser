@@ -1,9 +1,9 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { Button } from '@src/renderer/src/fragments/button'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { Button } from '@src/renderer/src/template-parts/button'
 /* CONSTANTS */
 import { BROWSER, IPC_CHANNELS } from '@src/common/constants'
 

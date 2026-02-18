@@ -1,14 +1,14 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { Select } from '@src/renderer/src/fragments/select'
-import { Option } from '@src/renderer/src/fragments/option'
-import { Input } from '@src/renderer/src/fragments/input'
-import { Button } from '@src/renderer/src/fragments/button'
-import { Notification } from '@src/renderer/src/fragments/notification'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { Select } from '@src/renderer/src/template-parts/select'
+import { Option } from '@src/renderer/src/template-parts/option'
+import { Input } from '@src/renderer/src/template-parts/input'
+import { Button } from '@src/renderer/src/template-parts/button'
+import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 
@@ -91,7 +91,7 @@ class Keystrokes extends A_Entry {
 
                 case RequestHandler.RESULT:
                     this.button.enable()
-                    this.notification.show(
+                    this.notification.info(
                         'The keystroke is saved successfully!',
                     )
             }

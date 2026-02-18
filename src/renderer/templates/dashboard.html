@@ -13,23 +13,24 @@
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
         <div class="container mx-auto">
-            <%=require('html-loader!./fragments/h1.html').default %>
+            <%=require('html-loader!./template-parts/h1.html').default %>
             <div
                 id="section-root"
                 class="flex flex-col min-h-dvh justify-center items-center max-w-4xl m-auto"
             >
-                <%=require('html-loader!./fragments/input.html').default %>
+                <%=require('html-loader!./template-parts/input.html').default %>
                 <form id="section-form" class="w-full mt-10"></form>
 
-                <%=require('html-loader!./fragments/card.html').default %>
+                <%=require('html-loader!./template-parts/card.html').default %>
                 <section
                     class="grid grid-cols-2 mt-2"
                     id="section-grid"
                 ></section>
 
-                <%=require('html-loader!./fragments/h2.html').default %>
-                <%=require('html-loader!./fragments/list-row.html').default %>
-                <section id="section-bookmarks">
+                <%=require('html-loader!./template-parts/h2.html').default %>
+                <%=require('html-loader!./template-parts/list-row.html').default
+                %>
+                <section id="section-bookmarks" class="w-full">
                     <section class="grid" id="section-list"></section>
                 </section>
             </div>

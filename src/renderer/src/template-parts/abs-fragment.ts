@@ -17,7 +17,7 @@ export abstract class A_Fragment<T extends HTMLElement> {
             // TODO IPC
             throw new Error('Cannot find _element')
         }
-        this.node = template?.content.cloneNode(true) as T
+        this.node = template.content.cloneNode(true) as T
     }
 
     /**
@@ -50,5 +50,13 @@ export abstract class A_Fragment<T extends HTMLElement> {
 
     protected select<R extends HTMLElement>(selector: string): R {
         return this.element.querySelector(`[data-selector="${selector}"]`) as R
+    }
+
+    public show() {
+        this.element.classList.remove('hidden')
+    }
+
+    public hide() {
+        this.element.classList.add('hidden')
     }
 }

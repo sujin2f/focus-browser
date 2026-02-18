@@ -191,10 +191,14 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     ) {
         const bookmarks = Bookmarks.getInstance()
         const sendBookmarks = (updated: boolean = false) => {
+            const bookmarksStore = bookmarks.get()
+            Logger.getInstance().info(
+                `IPC sendBookmarks: ${bookmarksStore.length}`,
+            )
             this.centre.webContents.send(
                 IPC_CHANNELS.BOOKMARK,
                 RequestHandler.RESPONSE,
-                bookmarks.get(),
+                bookmarksStore,
                 updated,
             )
         }

@@ -3,12 +3,12 @@ import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* CONSTANTS */
 import { IPC_CHANNELS, NAVIGATION, RequestHandler } from '@src/common/constants'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { H2 } from '@src/renderer/src/fragments/h2'
-import { Card } from '@src/renderer/src/fragments/card'
-import { ListRow } from '@src/renderer/src/fragments/list-row'
-import { getAddressBar } from '@src/renderer/src/fragments/address-bar'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { H2 } from '@src/renderer/src/template-parts/h2'
+import { Card } from '@src/renderer/src/template-parts/card'
+import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 class Dashboard extends A_Entry {

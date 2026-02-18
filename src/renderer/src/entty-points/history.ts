@@ -1,12 +1,12 @@
 import { A_List } from '@src/renderer/src/entty-points/abs-list'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { Button } from '@src/renderer/src/fragments/button'
-import { ListRow } from '@src/renderer/src/fragments/list-row'
-import { Notification } from '@src/renderer/src/fragments/notification'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { Button } from '@src/renderer/src/template-parts/button'
+import { ListRow } from '@src/renderer/src/template-parts/list-row'
+import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
@@ -42,7 +42,7 @@ class History extends A_List<T_Bookmark> {
                     this.items = []
                     this.listItems = []
                     this.renderList()
-                    this.notification.show('History cleared successfully!')
+                    this.notification.info('History cleared successfully!')
                 })
             })
     }

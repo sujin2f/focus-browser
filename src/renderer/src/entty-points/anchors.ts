@@ -6,10 +6,10 @@ import {
     navigate,
     getSection,
 } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { ListRow } from '@src/renderer/src/fragments/list-row'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { ListRow } from '@src/renderer/src/template-parts/list-row'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */

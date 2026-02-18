@@ -1,10 +1,10 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { Card } from '@src/renderer/src/fragments/card'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { getAddressBar } from '@src/renderer/src/fragments/address-bar'
+/* <HTML template-part /> */
+import { Card } from '@src/renderer/src/template-parts/card'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 
 type T_Card = {
     title: string

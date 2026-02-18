@@ -1,5 +1,5 @@
 import { A_Entry } from './abs-entry'
-import { Input } from '@src/renderer/src/fragments/input'
+import { Input } from '@src/renderer/src/template-parts/input'
 import { navigate, tagNameIs } from '@src/renderer/src/utils'
 
 export abstract class A_List<T> extends A_Entry {

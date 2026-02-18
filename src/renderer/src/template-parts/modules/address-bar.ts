@@ -1,7 +1,7 @@
 /* Utils */
 import { navigate, getSection } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { Input } from '@src/renderer/src/fragments/input'
+/* <HTML template-part /> */
+import { Input } from '@src/renderer/src/template-parts/input'
 
 export const getAddressBar = (section: string) => {
     const input = new Input(

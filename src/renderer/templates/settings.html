@@ -16,18 +16,18 @@
             <div
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
-                <%=require('html-loader!./fragments/h1.html').default %>
-                <%=require('html-loader!./fragments/back-button.html').default
+                <%=require('html-loader!./template-parts/h1.html').default %>
+                <%=require('html-loader!./template-parts/back-button.html').default
                 %>
                 <section id="section-title"></section>
                 <section id="section-version"></section>
             </div>
-            <%=require('html-loader!./fragments/checkbox.html').default %>
-            <%=require('html-loader!./fragments/select.html').default %>
-            <%=require('html-loader!./fragments/input.html').default %>
-            <%=require('html-loader!./fragments/button.html').default %>
+            <%=require('html-loader!./template-parts/checkbox.html').default %>
+            <%=require('html-loader!./template-parts/select.html').default %>
+            <%=require('html-loader!./template-parts/input.html').default %>
+            <%=require('html-loader!./template-parts/button.html').default %>
             <form id="section-form"></form>
         </div>
-        <%=require('html-loader!./fragments/notification.html').default %>
+        <%=require('html-loader!./template-parts/notification.html').default %>
     </body>
 </html>

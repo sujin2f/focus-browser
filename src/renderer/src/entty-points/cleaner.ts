@@ -6,12 +6,12 @@ import {
     getSection,
     ipcRenderer,
 } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { Card } from '@src/renderer/src/fragments/card'
-import { Loading } from '@src/renderer/src/fragments/loading'
-import { Notification } from '@src/renderer/src/fragments/notification'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { Card } from '@src/renderer/src/template-parts/card'
+import { Loading } from '@src/renderer/src/template-parts/loading'
+import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */

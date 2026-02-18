@@ -1,15 +1,15 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
 import { checkElectron, getSection, ipcRenderer } from '@src/renderer/src/utils'
-/* <HTML Fragments /> */
-import { H1 } from '@src/renderer/src/fragments/h1'
-import { BackButton } from '@src/renderer/src/fragments/back-button'
-import { Input } from '@src/renderer/src/fragments/input'
-import { Checkbox } from '@src/renderer/src/fragments/checkbox'
-import { Select } from '@src/renderer/src/fragments/select'
-import { Option } from '@src/renderer/src/fragments/option'
-import { Button } from '@src/renderer/src/fragments/button'
-import { Notification } from '@src/renderer/src/fragments/notification'
+/* <HTML template-part /> */
+import { H1 } from '@src/renderer/src/template-parts/h1'
+import { BackButton } from '@src/renderer/src/template-parts/back-button'
+import { Input } from '@src/renderer/src/template-parts/input'
+import { Checkbox } from '@src/renderer/src/template-parts/checkbox'
+import { Select } from '@src/renderer/src/template-parts/select'
+import { Option } from '@src/renderer/src/template-parts/option'
+import { Button } from '@src/renderer/src/template-parts/button'
+import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,
@@ -119,7 +119,7 @@ class Settings extends A_Entry {
             }
 
             this.button?.enable()
-            this.notification.show('Settings are saved successfully!')
+            this.notification.info('Settings are saved successfully!')
         })
     }
 }

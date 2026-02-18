@@ -36,7 +36,7 @@ export type T_Bookmark = {
     url: string
     title: string
     shortcut?: string
-    children?: T_Bookmark[]
+    parent?: number
 }
 
 export type PopupBlocker = {

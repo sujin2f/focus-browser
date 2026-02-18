@@ -1,7 +1,8 @@
 import { Store } from '@main/modules/store/store'
-import type { Bookmark } from '@src/common/types'
+/* T_Types */
+import type { T_Bookmark } from '@src/common/types'
 
-type Props = { anchors: Bookmark[] }
+type Props = { anchors: T_Bookmark[] }
 
 export class Anchors extends Store<Props> {
     static instance: Anchors
@@ -17,7 +18,7 @@ export class Anchors extends Store<Props> {
         return super.get('anchors')
     }
 
-    push(anchor: Bookmark) {
+    push(anchor: T_Bookmark) {
         for (const item of this._data.anchors) {
             if (item.url === anchor.url) {
                 return false

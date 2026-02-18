@@ -16,10 +16,22 @@
             <%=require('html-loader!./fragments/h1.html').default %>
             <div
                 id="section-root"
-                class="flex flex-col h-dvh justify-center items-center max-w-4xl m-auto"
+                class="flex flex-col min-h-dvh justify-center items-center max-w-4xl m-auto"
             >
+                <%=require('html-loader!./fragments/input.html').default %>
+                <form id="section-form" class="w-full mt-10"></form>
+
                 <%=require('html-loader!./fragments/card.html').default %>
-                <section class="grid grid-cols-2 mt-2" id="grid"></section>
+                <section
+                    class="grid grid-cols-2 mt-2"
+                    id="section-grid"
+                ></section>
+
+                <%=require('html-loader!./fragments/h2.html').default %>
+                <%=require('html-loader!./fragments/list-row.html').default %>
+                <section id="section-bookmarks">
+                    <section class="grid" id="section-list"></section>
+                </section>
             </div>
         </div>
     </body>

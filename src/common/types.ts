@@ -32,10 +32,11 @@ export type Info = Partial<
     }
 >
 
-export type Bookmark = {
+export type T_Bookmark = {
     url: string
     title: string
     shortcut?: string
+    children?: T_Bookmark[]
 }
 
 export type PopupBlocker = {

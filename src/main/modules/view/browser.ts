@@ -6,8 +6,6 @@ import {
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
 import fetch from 'cross-fetch'
-
-import type { Bookmark } from '@src/common/types'
 import {
     IPC_CHANNELS,
     MainEventTypes,
@@ -20,9 +18,11 @@ import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'
 import { Status } from '@main/modules/store/status'
 import { Keystrokes } from '@main/modules/store/keystrokes'
+/* T_Types */
+import type { T_Bookmark } from '@src/common/types'
 
 export class BrowserView extends WebContentsView {
-    public get url(): Bookmark {
+    public get url(): T_Bookmark {
         return {
             title: this.webContents.getTitle(),
             url: this.webContents.getURL(),

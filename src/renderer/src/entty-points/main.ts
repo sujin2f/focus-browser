@@ -1,10 +1,10 @@
 import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
 /* Utils */
-import { checkElectron, navigate, getSection } from '@src/renderer/src/utils'
+import { checkElectron } from '@src/renderer/src/utils'
 /* <HTML Fragments /> */
 import { Card } from '@src/renderer/src/fragments/card'
-import { Input } from '@src/renderer/src/fragments/input'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
+import { getAddressBar } from '@src/renderer/src/fragments/address-bar'
 
 type T_Card = {
     title: string
@@ -57,24 +57,14 @@ const cards: Record<string, T_Card> = {
 }
 
 class Main extends A_Entry {
-    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
-    private input = new Input(
-        'Enter search keyword or address (⌘L)',
-        'address',
-    ).appendTo(this.form)
+    private input = getAddressBar('form')
+
     constructor() {
         super()
 
         this.requestInfo('url')
 
         new BackButton().appendTo('button')
-
-        this.form.addEventListener('submit', () => {
-            if (!this.input.value) {
-                return
-            }
-            navigate(this.input.value.toString())
-        })
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)

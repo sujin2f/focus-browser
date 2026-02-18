@@ -564,7 +564,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.switch(CENTRE_PAGES.ANCHOR)
+        this.switch(CENTRE_PAGES.DASHBOARD)
     }
 
     abstract switch(scene: Scenes): void

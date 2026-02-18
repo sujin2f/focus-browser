@@ -13,15 +13,14 @@ import { Button } from '@src/renderer/src/fragments/button'
 import { BackButton } from '@src/renderer/src/fragments/back-button'
 import { ListRow } from '@src/renderer/src/fragments/list-row'
 import { Notification } from '@src/renderer/src/fragments/notification'
+import { Modal } from '@src/renderer/src/fragments/modal'
+import { Input } from '@src/renderer/src/fragments/input'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
-import type { Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types'
 
-import { Modal } from '@src/renderer/src/fragments/modal'
-import { Input } from '../fragments/input'
-
-class Bookmarks extends A_List<Bookmark> {
+class Bookmarks extends A_List<T_Bookmark> {
     protected isSearchActivated() {
         return !this.modal.activated
     }
@@ -71,7 +70,7 @@ class Bookmarks extends A_List<Bookmark> {
                             title: this.title.value.toString(),
                             url: this.url.value.toString(),
                             shortcut: this.shortcut.value.toString(),
-                        } satisfies Bookmark,
+                        } satisfies T_Bookmark,
                         this.editIndex,
                     )
                     return
@@ -81,7 +80,7 @@ class Bookmarks extends A_List<Bookmark> {
                     title: this.title.value.toString(),
                     url: this.url.value.toString(),
                     shortcut: this.shortcut.value.toString(),
-                } satisfies Bookmark)
+                } satisfies T_Bookmark)
             })
 
         // Remove
@@ -120,7 +119,7 @@ class Bookmarks extends A_List<Bookmark> {
                 return
             }
 
-            this.items = args[1] as Bookmark[]
+            this.items = args[1] as T_Bookmark[]
             const updated = args[2] as boolean
 
             this.modal.hide()
@@ -175,7 +174,7 @@ class Bookmarks extends A_List<Bookmark> {
         })
     }
 
-    filterList(item: Bookmark, keyword: string): boolean {
+    filterList(item: T_Bookmark, keyword: string): boolean {
         return (
             item.shortcut?.toLowerCase().includes(keyword) ||
             item.title.toLowerCase().includes(keyword)

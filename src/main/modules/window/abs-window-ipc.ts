@@ -5,8 +5,6 @@ import {
     type ContextMenuParams,
 } from 'electron'
 import { Logger } from '@src/common/logger'
-
-import type { Scenes, Bookmark, Info, T_Cleaner } from '@src/common/types'
 import {
     IPC_CHANNELS,
     RequestHandler,
@@ -27,6 +25,8 @@ import { Keystrokes } from '@main/modules/store/keystrokes'
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
 import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
+/* T_Types */
+import type { Scenes, T_Bookmark, Info, T_Cleaner } from '@src/common/types'
 
 /**
  * All starts with here
@@ -186,7 +186,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     private onBookmarks(
         _: IpcMainEvent,
         handler: RequestHandler,
-        bookmark: Bookmark,
+        bookmark: T_Bookmark,
         index: number,
     ) {
         const bookmarks = Bookmarks.getInstance()

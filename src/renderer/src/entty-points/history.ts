@@ -10,9 +10,9 @@ import { Notification } from '@src/renderer/src/fragments/notification'
 /* CONSTANTS */
 import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 /* T_Types */
-import type { Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types'
 
-class History extends A_List<Bookmark> {
+class History extends A_List<T_Bookmark> {
     private notification: Notification = new Notification().appendTo('root')
     private button: Button
 
@@ -56,7 +56,7 @@ class History extends A_List<Bookmark> {
                 return
             }
 
-            this.items = args[1] as Bookmark[]
+            this.items = args[1] as T_Bookmark[]
             this.listItems = this.items
             this.renderList()
         })
@@ -77,7 +77,7 @@ class History extends A_List<Bookmark> {
         })
     }
 
-    filterList(item: Bookmark, keyword: string): boolean {
+    filterList(item: T_Bookmark, keyword: string): boolean {
         return item.title.toLowerCase().includes(keyword)
     }
 }

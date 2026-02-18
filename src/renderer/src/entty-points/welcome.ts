@@ -11,13 +11,13 @@ import { ListRow } from '@src/renderer/src/template-parts/list-row'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
-class Dashboard extends A_Entry {
+class Welcome extends A_Entry {
     constructor() {
         super()
 
         this.request()
 
-        new H1('Welcome to Focus!').prependTo('root')
+        new H1('🅕 Welcome to Focus!').prependTo('root')
 
         getAddressBar('form')
 
@@ -67,5 +67,5 @@ class Dashboard extends A_Entry {
 
 document.addEventListener('DOMContentLoaded', () => {
     checkElectron()
-    new Dashboard()
+    new Welcome()
 })

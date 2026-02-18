@@ -90,7 +90,6 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('cleaner > REMOVE > clear cache', async () => {
-        console.log(ipc)
         await ipc[10][1](null, RequestHandler.REMOVE, 'cacheSize')
         expect(clearCache).toHaveBeenCalled()
     })

@@ -117,7 +117,7 @@ const renderer = {
 }
 
 const pages = [
-    'dashboard',
+    'welcome',
     'main',
     'bookmarks',
     'anchors',

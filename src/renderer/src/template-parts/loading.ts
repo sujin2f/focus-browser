@@ -1,6 +1,6 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class Loading extends A_Fragment<HTMLAnchorElement> {
+export class Loading extends A_Element<HTMLAnchorElement> {
     constructor() {
         super('#loading')
     }

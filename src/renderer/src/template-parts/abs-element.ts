@@ -1,10 +1,9 @@
 import { getSection } from '@src/renderer/src/utils'
 
-export abstract class A_Fragment<T extends HTMLElement> {
-    public node: T
+export abstract class A_Element<T extends HTMLElement> {
     private _element?: T
     public get element(): T {
-        if (!this._element) {
+        if (!this._element || !this._element.textContent) {
             // TODO IPC
             throw new Error('Cannot find _element')
         }
@@ -15,22 +14,19 @@ export abstract class A_Fragment<T extends HTMLElement> {
         const template = document.querySelector<HTMLTemplateElement>(selector)
         if (!template) {
             // TODO IPC
-            throw new Error('Cannot find _element')
+            throw new Error('Cannot find template')
         }
-        this.node = template.content.cloneNode(true) as T
+        this._element = template.content.cloneNode(true) as T
     }
 
     /**
      * @param parent HTML Element or #id
      * @returns
      */
-    public appendTo(parent: HTMLElement | Element | string) {
-        if (this.node) {
-            const dest =
-                typeof parent === 'string' ? getSection(parent) : parent
-            dest.append(this.node)
-            this._element = dest.lastElementChild! as T
-        }
+    public appendTo(parent: Element | string) {
+        const dest = typeof parent === 'string' ? getSection(parent) : parent
+        dest.append(this._element as Element)
+        this._element = dest.lastElementChild! as T
         return this
     }
 
@@ -38,13 +34,10 @@ export abstract class A_Fragment<T extends HTMLElement> {
      * @param parent HTML Element or #id
      * @returns
      */
-    public prependTo(parent: HTMLElement | Element | string) {
-        if (this.node) {
-            const dest =
-                typeof parent === 'string' ? getSection(parent) : parent
-            dest.prepend(this.node)
-            this._element = dest.firstElementChild! as T
-        }
+    public prependTo(parent: Element | string) {
+        const dest = typeof parent === 'string' ? getSection(parent) : parent
+        dest.prepend(this._element as Element)
+        this._element = dest.lastElementChild! as T
         return this
     }
 

@@ -1,13 +1,13 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class Button extends A_Fragment<HTMLButtonElement> {
+export class Button extends A_Element<HTMLButtonElement> {
     public set type(type: 'submit' | 'reset') {
         this.element.type = type
     }
 
     constructor(title: string, selector: string = 'button') {
         super(`#${selector}`)
-        this.node.querySelector('button')!.textContent = title
+        this.element.querySelector('button')!.textContent = title
     }
 
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {

@@ -1,10 +1,10 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class Modal extends A_Fragment<HTMLElement> {
+export class Modal extends A_Element<HTMLElement> {
     constructor() {
         super('#modal')
 
-        this.node
+        this.element
             .querySelector('[data-selector="close"]')!
             .addEventListener('click', this.hide.bind(this))
     }

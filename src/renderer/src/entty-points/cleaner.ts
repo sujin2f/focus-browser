@@ -26,7 +26,7 @@ class Cleaner extends A_Entry {
             return
         }
         this.ready = false
-        this.cache.description = new Loading().node
+        this.cache.description = new Loading().element
         ipcRenderer.send(
             IPC_CHANNELS.CLEANER,
             RequestHandler.REMOVE,
@@ -40,7 +40,7 @@ class Cleaner extends A_Entry {
                 return
             }
             this.ready = false
-            this.indexedDB.description = new Loading().node
+            this.indexedDB.description = new Loading().element
             ipcRenderer.send(
                 IPC_CHANNELS.CLEANER,
                 RequestHandler.REMOVE,
@@ -52,7 +52,7 @@ class Cleaner extends A_Entry {
             return
         }
         this.ready = false
-        this.anchor.description = new Loading().node
+        this.anchor.description = new Loading().element
         ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'anchor')
     })
     private history = new Card('History').appendTo('grid').setOnClick(() => {
@@ -60,7 +60,7 @@ class Cleaner extends A_Entry {
             return
         }
         this.ready = false
-        this.history.description = new Loading().node
+        this.history.description = new Loading().element
         ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'history')
     })
     private popups = new Card('Blocked Popups')
@@ -70,7 +70,7 @@ class Cleaner extends A_Entry {
                 return
             }
             this.ready = false
-            this.popups.description = new Loading().node
+            this.popups.description = new Loading().element
             ipcRenderer.send(
                 IPC_CHANNELS.CLEANER,
                 RequestHandler.REMOVE,
@@ -85,11 +85,11 @@ class Cleaner extends A_Entry {
         const h1 = new H1('Cleaner 🧼').prependTo(getSection('title'))
         new BackButton().prependTo(h1.element)
 
-        this.cache.description = new Loading().node
-        this.indexedDB.description = new Loading().node
-        this.anchor.description = new Loading().node
-        this.history.description = new Loading().node
-        this.popups.description = new Loading().node
+        this.cache.description = new Loading().element
+        this.indexedDB.description = new Loading().element
+        this.anchor.description = new Loading().element
+        this.history.description = new Loading().element
+        this.popups.description = new Loading().element
 
         this.request()
     }

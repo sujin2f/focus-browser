@@ -1,6 +1,6 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class Card extends A_Fragment<HTMLAnchorElement> {
+export class Card extends A_Element<HTMLAnchorElement> {
     public set description(description: string | HTMLElement) {
         const paragraph = this.element.querySelector('p')
         if (!paragraph) {
@@ -12,9 +12,9 @@ export class Card extends A_Fragment<HTMLAnchorElement> {
 
     constructor(title: string, description?: string) {
         super('#card')
-        this.node.querySelector('h2')!.textContent = title
+        this.element.querySelector('h2')!.textContent = title
         if (description) {
-            this.node.querySelector('p')!.textContent = description
+            this.element.querySelector('p')!.textContent = description
         }
     }
 

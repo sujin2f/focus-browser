@@ -1,8 +1,8 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class H2 extends A_Fragment<HTMLHeadingElement> {
+export class H2 extends A_Element<HTMLHeadingElement> {
     constructor(title: string) {
         super('#h2')
-        this.node.querySelector('h2')!.textContent = title
+        this.element.querySelector('h2')!.textContent = title
     }
 }

@@ -1,6 +1,6 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class ListRow extends A_Fragment<HTMLDivElement> {
+export class ListRow extends A_Element<HTMLDivElement> {
     public get button() {
         const button = this.select('button')
         if (!button) {
@@ -36,11 +36,11 @@ export class ListRow extends A_Fragment<HTMLDivElement> {
     constructor(title: string, description?: string) {
         super('#list-row')
 
-        this.node.querySelector('h3')!.textContent = title
+        this.element.querySelector('h3')!.textContent = title
         if (description) {
-            this.node.querySelector('p')!.textContent = description
+            this.element.querySelector('p')!.textContent = description
         } else {
-            this.node.querySelector('p')!.remove()
+            this.element.querySelector('p')!.remove()
         }
     }
 

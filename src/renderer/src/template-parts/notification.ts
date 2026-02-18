@@ -1,6 +1,6 @@
-import { A_Fragment } from './abs-fragment'
+import { A_Element } from './abs-element'
 
-export class Notification extends A_Fragment<HTMLElement> {
+export class Notification extends A_Element<HTMLElement> {
     constructor() {
         super('#notification')
     }

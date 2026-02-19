@@ -333,8 +333,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         return result
     }
     private getShortcut(menu: Menu): string {
-        if (Shortcut.getInstance().getShortcut(menu)) {
-            return Shortcut.getInstance().getShortcut(menu)
+        const store = new Shortcut()
+        if (store.getShortcut(menu)) {
+            return store.getShortcut(menu)
         }
 
         const system =
@@ -515,7 +516,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      */
     private addBookmark() {
         Logger.getInstance().log('addBookmark')
-        const bookmarks = Bookmarks.getInstance()
+        const bookmarks = new Bookmarks()
         const added = bookmarks.push({
             id: '',
             url: this.browser.webContents.getURL(),
@@ -546,12 +547,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * behavior but switches to the Anchor page on notification click.
      */
     private addAnchor() {
-        const added = Anchors.getInstance().push({
+        const anchors = new Anchors()
+        const added = anchors.push({
             id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
-        Anchors.getInstance().save()
+        anchors.save()
 
         if (!added) {
             return

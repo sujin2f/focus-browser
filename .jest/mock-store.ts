@@ -1,34 +1,32 @@
 export const anchorPush = jest.fn(() => true)
 export const anchorRemove = jest.fn(() => true)
+class MockAnchor {
+    get = (): unknown[] => []
+    set = jest.fn()
+    save = jest.fn()
+    parse = jest.fn()
+    update = jest.fn()
+    push = anchorPush
+    remove = anchorRemove
+}
 export const anchors = () => ({
-    Anchors: {
-        getInstance: () => ({
-            get: (): unknown[] => [],
-            set: jest.fn(),
-            save: jest.fn(),
-            parse: jest.fn(),
-            update: jest.fn(),
-            push: anchorPush,
-            remove: anchorRemove,
-        }),
-    },
+    Anchors: MockAnchor,
 })
 
 export const bookmarkPush = jest.fn(() => true)
 export const bookmarkUpdate = jest.fn()
 export const bookmarkRemove = jest.fn()
+class MockBookmarks {
+    get = (): unknown[] => []
+    set = jest.fn()
+    save = jest.fn()
+    parse = jest.fn()
+    remove = bookmarkRemove
+    update = bookmarkUpdate
+    push = bookmarkPush
+}
 export const bookmarks = () => ({
-    Bookmarks: {
-        getInstance: () => ({
-            get: (): unknown[] => [],
-            set: jest.fn(),
-            save: jest.fn(),
-            parse: jest.fn(),
-            remove: bookmarkRemove,
-            update: bookmarkUpdate,
-            push: bookmarkPush,
-        }),
-    },
+    Bookmarks: MockBookmarks,
 })
 
 export const popupBlockerToggle = jest.fn()
@@ -46,36 +44,36 @@ export const popupBlocker = () => ({
     },
 })
 
+class MockShortcut {
+    get = jest.fn()
+    getShortcut = () => ''
+    set = jest.fn()
+    save = jest.fn()
+    parse = jest.fn()
+    update = jest.fn()
+    push = jest.fn(() => true)
+}
 export const shortcut = () => ({
-    Shortcut: {
-        getInstance: () => ({
-            get: jest.fn(),
-            getShortcut: () => '',
-            set: jest.fn(),
-            save: jest.fn(),
-            parse: jest.fn(),
-            update: jest.fn(),
-            push: jest.fn(() => true),
-        }),
-    },
+    Shortcut: MockShortcut,
 })
 
 export const statusMerge = jest.fn()
 export const statusGet = jest.fn()
+
+class MockStatus {
+    get = statusGet
+    set = jest.fn()
+    save = jest.fn()
+    parse = jest.fn()
+    update = jest.fn()
+    push = jest.fn(() => true)
+    getBounds = jest.fn()
+    merge = statusMerge
+    data = {}
+}
+
 export const status = () => ({
-    Status: {
-        getInstance: () => ({
-            get: statusGet,
-            set: jest.fn(),
-            save: jest.fn(),
-            parse: jest.fn(),
-            update: jest.fn(),
-            push: jest.fn(() => true),
-            getBounds: jest.fn(),
-            merge: statusMerge,
-            data: {},
-        }),
-    },
+    Status: MockStatus,
 })
 
 class MockHistory {

@@ -20,7 +20,8 @@ export class BrowserWindow extends AbsWindowIPC {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
-        const bounds = Status.getInstance().getBounds(this.getBounds())
+        const status = new Status()
+        const bounds = status.getBounds(this.getBounds())
         this.setBounds(bounds)
 
         this.initBrowser()
@@ -91,7 +92,7 @@ export class BrowserWindow extends AbsWindowIPC {
      * Save current status when the app is closed
      */
     private saveStatus() {
-        const status = Status.getInstance()
+        const status = new Status()
         const bounds = this.getBounds()
         status.set('width', bounds.width)
         status.set('height', bounds.height)

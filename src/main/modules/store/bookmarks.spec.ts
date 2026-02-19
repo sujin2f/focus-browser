@@ -15,7 +15,7 @@ import { Bookmarks } from '@main/modules/store/bookmarks'
 
 describe('Bookmarks store (module)', () => {
     test('singleton exists and push persists bookmark', () => {
-        const bookmarks = Bookmarks.getInstance()
+        const bookmarks = new Bookmarks()
 
         // Get
         expect(

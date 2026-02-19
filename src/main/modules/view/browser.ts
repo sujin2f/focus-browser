@@ -161,7 +161,8 @@ export class BrowserView extends WebContentsView {
     }
 
     public searchKeyword(keyword: string) {
-        const searchEngine = Status.getInstance().get('searchEngine')
+        const status = new Status()
+        const searchEngine = status.get('searchEngine')
         this._failedUrl = undefined
         this.loadURL(`${SEARCH_ENGINES[searchEngine]}${keyword}`)
     }
@@ -189,7 +190,8 @@ export class BrowserView extends WebContentsView {
     }
 
     public async setAdBlocker() {
-        const enabled = Status.getInstance().get('adBlocker')
+        const status = new Status()
+        const enabled = status.get('adBlocker')
 
         // Enabled and Set
         if (enabled && this._blocker) {

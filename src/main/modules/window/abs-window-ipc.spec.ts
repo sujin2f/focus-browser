@@ -114,7 +114,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         } satisfies T_IPC_Switch)
     })
 
-    test.only('onSwitch > switch scene', () => {
+    test('onSwitch > switch scene', () => {
         ipc[1][1](null, REQUEST_HANDLER.EXECUTE, {
             scene: BROWSER,
             address: 'test-url',

@@ -15,7 +15,7 @@ import { Anchors } from '@main/modules/store/anchors'
 
 describe('Anchors store (module)', () => {
     test('singleton exists and push calls fs.writeFileSync', () => {
-        const anchors = Anchors.getInstance()
+        const anchors = new Anchors()
 
         // Get
         expect(anchors.get()).toStrictEqual([

@@ -128,7 +128,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
          * Modifying status
          */
         if (handler === REQUEST_HANDLER.MODIFY && request.data) {
-            const status = Status.getInstance()
+            const status = new Status()
             status.merge(request.data)
             status.save()
 
@@ -166,8 +166,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         // Visit Anchor
         if (handler === REQUEST_HANDLER.REMOVE && request.address) {
-            Anchors.getInstance().remove(request.address)
-            Anchors.getInstance().save()
+            const anchors = new Anchors()
+            anchors.remove(request.address)
+            anchors.save()
         }
 
         this.switch(request)
@@ -204,7 +205,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         bookmark: T_Bookmark,
     ) {
-        const bookmarks = Bookmarks.getInstance()
+        const bookmarks = new Bookmarks()
         const sendBookmarks = (handler: REQUEST_HANDLER) => {
             const bookmarksStore = bookmarks.get()
             Logger.getInstance().info(
@@ -249,18 +250,19 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER, url: string) {
+        const anchors = new Anchors()
         switch (handler) {
             case REQUEST_HANDLER.REQUEST:
                 this.centre.webContents.send(
                     IPC_CHANNELS.ANCHOR,
                     REQUEST_HANDLER.RESPONSE,
-                    Anchors.getInstance().get(),
+                    anchors.get(),
                 )
                 return
 
             case REQUEST_HANDLER.REMOVE:
-                Anchors.getInstance().remove(url)
-                Anchors.getInstance().save()
+                anchors.remove(url)
+                anchors.save()
                 return
         }
     }
@@ -300,7 +302,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
     private async sendStatus(...requests: (keyof T_Status_Props)[]) {
         const response: T_Status_Props = {}
-        const status = Status.getInstance().data
+        const status = new Status().data
 
         if (requests.includes('maxHistory')) {
             response.maxHistory = status.maxHistory
@@ -376,19 +378,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         shortcuts: Record<string, string>,
     ) {
+        const store = new Shortcut()
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
                 this.centre.webContents.send(
                     IPC_CHANNELS.SHORTCUTS,
                     REQUEST_HANDLER.RESPONSE,
-                    Shortcut.getInstance().getShortcuts(),
+                    store.getShortcuts(),
                 )
                 return
             }
 
             case REQUEST_HANDLER.MODIFY: {
-                Shortcut.getInstance().update(shortcuts)
-                Shortcut.getInstance().save()
+                store.update(shortcuts)
+                store.save()
                 this.resetMenu()
                 this.sendResult(IPC_CHANNELS.SHORTCUTS)
                 return
@@ -411,7 +414,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const send = async (updated: boolean = false) => {
             const cacheSize =
                 await this.browser.webContents.session.getCacheSize()
-            const anchors = Object.keys(Anchors.getInstance().get()).length
+            const anchors = Object.keys(new Anchors().get()).length
             const history =
                 this.browser.webContents.navigationHistory.getAllEntries()
                     .length
@@ -448,10 +451,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                         send(true)
                         return
 
-                    case 'anchor':
-                        Anchors.getInstance().clear()
+                    case 'anchor': {
+                        const anchors = new Anchors()
+                        anchors.clear()
                         send(true)
                         return
+                    }
 
                     case 'history':
                         this.browser.webContents.navigationHistory.clear()

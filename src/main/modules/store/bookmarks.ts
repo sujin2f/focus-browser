@@ -6,13 +6,9 @@ import { Logger } from '@src/common/logger'
 import type { T_Bookmark } from '@src/common/types'
 
 export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
-    static instance: Bookmarks
-    static getInstance(): Bookmarks {
-        if (!Bookmarks.instance) {
-            Bookmarks.instance = new Bookmarks('bookmarks', { bookmarks: [] })
-            Bookmarks.instance.parse()
-        }
-        return Bookmarks.instance
+    constructor() {
+        super('bookmarks', { bookmarks: [] })
+        this.parse()
     }
 
     private get bookmarkIndex() {

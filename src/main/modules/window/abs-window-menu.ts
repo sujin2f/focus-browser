@@ -42,7 +42,7 @@ import { isBeta, isDev, isTest } from '@src/common/utils'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
-    protected _current: Scenes = CENTRE_PAGES.DASHBOARD
+    protected _current: Scenes = CENTRE_PAGES.WELCOME
     protected get isBrowser() {
         return this._current === BROWSER
     }
@@ -512,6 +512,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         Logger.getInstance().log('addBookmark')
         const bookmarks = Bookmarks.getInstance()
         const added = bookmarks.push({
+            id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
@@ -541,6 +542,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      */
     private addAnchor() {
         const added = Anchors.getInstance().push({
+            id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
@@ -564,7 +566,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.switch(CENTRE_PAGES.DASHBOARD)
+        this.switch(CENTRE_PAGES.WELCOME)
     }
 
     abstract switch(scene: Scenes): void

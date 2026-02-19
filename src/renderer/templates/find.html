@@ -13,9 +13,10 @@
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
         <section class="container mx-auto pt-5">
-            <%=require('html-loader!./fragments/input.html').default %>
-            <%=require('html-loader!./fragments/button.html').default %>
-            <%=require('html-loader!./fragments/button-hollow.html').default %>
+            <%=require('html-loader!./template-parts/input.html').default %>
+            <%=require('html-loader!./template-parts/button.html').default %>
+            <%=require('html-loader!./template-parts/button-hollow.html').default
+            %>
             <form
                 class="flex flex-col h-dvh justify-center items-center"
                 id="section-form"

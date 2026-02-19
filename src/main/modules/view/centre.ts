@@ -10,15 +10,13 @@ import { resolveHtmlPath } from '@src/main/utils'
 export class CenterView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
-        this.loadScene(CENTRE_PAGES.DASHBOARD)
+        this.loadScene(CENTRE_PAGES.WELCOME)
     }
 
     public loadScene(scene: CENTRE_PAGES) {
         switch (scene) {
-            case CENTRE_PAGES.DASHBOARD:
-                this.webContents.loadURL(
-                    resolveHtmlPath(CENTRE_PAGES.DASHBOARD),
-                )
+            case CENTRE_PAGES.WELCOME:
+                this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.WELCOME))
                 return
             case CENTRE_PAGES.HOME:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))

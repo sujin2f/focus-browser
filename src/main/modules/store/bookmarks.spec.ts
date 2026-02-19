@@ -18,27 +18,47 @@ describe('Bookmarks store (module)', () => {
         const bookmarks = Bookmarks.getInstance()
 
         // Get
-        expect(bookmarks.get()).toStrictEqual([
+        expect(
+            bookmarks.get().map((bookmark) => ({
+                url: bookmark.url,
+                title: bookmark.title,
+            })),
+        ).toStrictEqual([
             { url: '0', title: '0' },
             { url: '1', title: '1' },
         ])
 
         // Push
-        bookmarks.push({ url: '-1', title: '-1' })
-        expect(bookmarks.get()[0]).toStrictEqual({ url: '-1', title: '-1' })
+        const id = bookmarks.push({ id: '', url: '-1', title: '-1' })
+        const bookmark = bookmarks.get()[0]
+        expect({
+            url: bookmark.url,
+            title: bookmark.title,
+        }).toStrictEqual({ url: '-1', title: '-1' })
 
         // Update
-        bookmarks.update(1, { url: 'updated', title: 'updated' })
-        expect(bookmarks.get()).toStrictEqual([
-            { url: '-1', title: '-1' },
+        bookmarks.update({ id, url: 'updated', title: 'updated' })
+
+        expect(
+            bookmarks.get().map((bookmark) => ({
+                url: bookmark.url,
+                title: bookmark.title,
+            })),
+        ).toStrictEqual([
             { url: 'updated', title: 'updated' },
+            { url: '0', title: '0' },
             { url: '1', title: '1' },
         ])
 
         // Remove
         bookmarks.remove(1)
-        expect(bookmarks.get()).toStrictEqual([
-            { url: '-1', title: '-1' },
+        expect(
+            bookmarks.get().map((bookmark) => ({
+                url: bookmark.url,
+                title: bookmark.title,
+            })),
+        ).toStrictEqual([
+            { url: 'updated', title: 'updated' },
             { url: '1', title: '1' },
         ])
     })

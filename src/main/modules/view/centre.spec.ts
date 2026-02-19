@@ -23,7 +23,7 @@ describe('Web Browser View (browser.ts)', () => {
         )
         // from History mock
         expect(loadURL).toHaveBeenCalledWith(
-            expect.stringContaining('dashboard.html'),
+            expect.stringContaining('welcome.html'),
         )
     })
 })

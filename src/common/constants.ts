@@ -13,7 +13,6 @@ export enum NAVIGATION {
  */
 export enum CENTRE_PAGES {
     RELOAD,
-    WELCOME,
     ADDRESS,
     HISTORY,
     SETTING,
@@ -25,7 +24,7 @@ export enum CENTRE_PAGES {
     ANCHOR = 'anchors.html',
     BOOKMARK = 'bookmarks.html',
     HOME = 'main.html',
-    DASHBOARD = 'dashboard.html',
+    WELCOME = 'welcome.html',
 }
 
 export const BROWSER = 'scene-browser'

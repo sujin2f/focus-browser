@@ -13,26 +13,29 @@
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
         <div class="container mx-auto" id="section-root">
-            <%=require('html-loader!./fragments/input.html').default %>
-            <%=require('html-loader!./fragments/button.html').default %>
+            <%=require('html-loader!./template-parts/input.html').default %>
+            <%=require('html-loader!./template-parts/button.html').default %>
 
             <div
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
-                <%=require('html-loader!./fragments/h1.html').default %>
-                <%=require('html-loader!./fragments/back-button.html').default
+                <%=require('html-loader!./template-parts/h1.html').default %>
+                <%=require('html-loader!./template-parts/back-button.html').default
                 %>
                 <section id="section-title"></section>
                 <section id="section-buttons" class="flex gap-2"></section>
             </div>
             <section id="section-search"></section>
 
-            <%=require('html-loader!./fragments/button-clear.html').default %>
-            <%=require('html-loader!./fragments/list-row.html').default %>
-            <section class="grid" id="section-list"></section>
+            <section id="section-bookmarks" class="w-full">
+                <%=require('html-loader!./template-parts/list.html').default %>
+            </section>
 
-            <%=require('html-loader!./fragments/modal.html').default %>
-            <%=require('html-loader!./fragments/notification.html').default %>
+            <%=require('html-loader!./template-parts/button-clear.html').default
+            %> <%=require('html-loader!./template-parts/select.html').default %>
+            <%=require('html-loader!./template-parts/modal.html').default %>
+            <%=require('html-loader!./template-parts/notification.html').default
+            %>
         </div>
     </body>
 </html>

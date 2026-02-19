@@ -41,6 +41,7 @@ class Bookmarks extends A_Bookmarks {
             this.modal.notification.info('Bookmark changed.')
         }
         super.renderList()
+        this.setShortcuts()
     }
 
     protected callbackUpdateInfo(): void {
@@ -79,24 +80,24 @@ class Bookmarks extends A_Bookmarks {
             },
         )
 
-        const shortcut = new ListItem('')
-        const edit = new ListItem('')
+        let shortcut = new ListItem('')
+        const edit = new ListItem(
+            new Button('⚙️', 'button-clear').setOnClick(() => {
+                this.modal.open(this.getDirs(), { isDir, bookmark, index })
+            }),
+        )
         edit.clickable = false
-
-        new Button('⚙️', 'button-clear').appendTo(edit.title).setOnClick(() => {
-            this.modal.open(this.getDirs(), { isDir, bookmark, index })
-        })
 
         if (bookmark.shortcut) {
             // Shortcut
-            new Button(bookmark.shortcut.toUpperCase())
-                .prependTo(shortcut.title)
-                .setOnClick(() => {
+            shortcut = new ListItem(
+                new Button(bookmark.shortcut.toUpperCase()).setOnClick(() => {
                     if (isDir) {
                         return
                     }
                     navigate(bookmark.url)
-                })
+                }),
+            )
         }
 
         return [icon, row, shortcut, edit]
@@ -106,6 +107,27 @@ class Bookmarks extends A_Bookmarks {
         return this.items
             .filter(({ data }) => !data.url)
             .map(({ data }) => data)
+    }
+
+    /**
+     * shortcuts
+     */
+    private shortcuts: Record<string, string> = {}
+    private setShortcuts() {
+        this.items.forEach((item) => {
+            if (item.data.url && item.data.shortcut) {
+                const shortcut = item.data.shortcut.toLowerCase()
+                const parent = item.data.parent
+
+                if (parent && this.dirs[parent]) {
+                    const dirShortcut =
+                        this.dirs[parent].data.shortcut?.toLowerCase()
+                    this.shortcuts[`${dirShortcut}${shortcut}`] = item.data.url
+                } else {
+                    this.shortcuts[shortcut] = item.data.url
+                }
+            }
+        })
     }
 
     /**
@@ -119,10 +141,33 @@ class Bookmarks extends A_Bookmarks {
             }
             this.filterSearch()
         })
+        .setOnKeyUp((e) => {
+            // Allow standard location only
+            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
+                return
+            }
+
+            // For non-English keyboard, extract English key stroke from KeyboardEvent
+            if (e.code.startsWith('Key')) {
+                this.matchShortcut += e.code.charAt(3)
+            } else if (e.key.length === 1) {
+                this.matchShortcut += e.key
+            }
+
+            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
+            if (shortcut) {
+                navigate(shortcut)
+                return true
+            }
+        })
+    private matchShortcut = ''
     protected get searchKeyword() {
         return this.search.value.toLowerCase()
     }
     protected isSearchActivated() {
+        if (this.modal.activated) {
+            return false
+        }
         return true
     }
     protected callbackShortcut(e: KeyboardEvent) {
@@ -154,6 +199,7 @@ class Bookmarks extends A_Bookmarks {
 
         // Focus Search
         this.search.value = ''
+        this.matchShortcut = ''
         this.search.focus()
     }
     protected filterSearch() {

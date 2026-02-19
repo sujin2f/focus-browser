@@ -1,10 +1,10 @@
 import { getSection } from '@src/renderer/src/utils'
 
 export abstract class A_Element<T extends HTMLElement> {
+    private node?: Node
     private _element?: T
     public get element(): T {
-        if (!this._element || !this._element.textContent) {
-            // TODO IPC
+        if (!this._element) {
             throw new Error('Cannot find _element')
         }
         return this._element
@@ -19,17 +19,23 @@ export abstract class A_Element<T extends HTMLElement> {
             // TODO IPC
             throw new Error('Cannot find template')
         }
-        this._element = template.content.cloneNode(true) as T
+        this.node = template.content.cloneNode(true) as T
     }
+
+    protected init() {}
 
     /**
      * @param parent HTML Element or #id
      * @returns
      */
     public appendTo(parent: Element | string) {
+        if (!this.node) {
+            throw new Error('Cannot find node')
+        }
         const dest = typeof parent === 'string' ? getSection(parent) : parent
-        dest.append(this._element as Element)
+        dest.append(this.node)
         this._element = dest.lastElementChild! as T
+        this.init()
         return this
     }
 
@@ -38,9 +44,13 @@ export abstract class A_Element<T extends HTMLElement> {
      * @returns
      */
     public prependTo(parent: Element | string) {
+        if (!this.node) {
+            throw new Error('Cannot find node')
+        }
         const dest = typeof parent === 'string' ? getSection(parent) : parent
-        dest.prepend(this._element as Element)
+        dest.prepend(this.node)
         this._element = dest.firstElementChild! as T
+        this.init()
         return this
     }
 
@@ -52,7 +62,6 @@ export abstract class A_Element<T extends HTMLElement> {
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         document.body.append(this._element as Element)
         this._element = document.body.lastElementChild! as T
-        console.log(this._element)
         this._element = dest.insertAdjacentElement(
             'afterend',
             this._element,

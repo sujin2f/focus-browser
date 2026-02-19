@@ -14,7 +14,7 @@ import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
 import type { T_Bookmark } from '@src/common/types'
 
 type T_Dir = {
-    id: string
+    data: T_Bookmark
     isHidden: boolean
     dir: ListItem[]
     items: ListItem[]
@@ -60,7 +60,7 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
                 // Dir: Store dir attributes
                 if (!this.dirs[bookmark.id]) {
                     this.dirs[bookmark.id] = {
-                        id: bookmark.id,
+                        data: bookmark,
                         isHidden: true,
                         dir: [],
                         items: [],
@@ -95,9 +95,9 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
 
         // Folder Action
         Object.keys(this.dirs).forEach((dirKey) => {
-            const { dir, id } = this.dirs[dirKey]
+            const { dir, data } = this.dirs[dirKey]
             dir.forEach((item) => {
-                item.setOnClick(() => this.onFolderClick(id))
+                item.setOnClick(() => this.onFolderClick(data.id))
             })
         })
     }

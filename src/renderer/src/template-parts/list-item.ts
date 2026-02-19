@@ -19,20 +19,38 @@ export class ListItem extends A_Element<HTMLDivElement> {
         return this._clickable
     }
 
-    constructor(title: string, description?: string) {
+    constructor(
+        private _title: string | A_Element<HTMLElement>,
+        private _description?: string,
+    ) {
         super('#list-item')
+    }
 
-        this.element.querySelector('h3')!.textContent = title
-        if (description) {
-            this.element.querySelector('p')!.textContent = description
+    protected init() {
+        if (typeof this._title === 'string') {
+            this.element.querySelector('h3')!.textContent = this._title
+        } else {
+            this._title.appendTo(this.title)
+        }
+        if (this._description) {
+            this.element.querySelector('p')!.textContent = this._description
         } else {
             this.element.querySelector('p')!.remove()
         }
+
+        if (this.onClickCallback) {
+            this.setOnClick(this.onClickCallback)
+        }
     }
 
+    private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
         if (this._clickable) {
-            this.element.addEventListener('click', callback.bind(this))
+            try {
+                this.element.addEventListener('click', callback.bind(this))
+            } catch {
+                this.onClickCallback = callback
+            }
         }
         return this
     }

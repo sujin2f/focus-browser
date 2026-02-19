@@ -10,11 +10,21 @@ export class Card extends A_Element<HTMLAnchorElement> {
         paragraph.append(description)
     }
 
-    constructor(title: string, description?: string) {
+    public get description() {
+        return this.element.querySelector('p')! as HTMLParagraphElement
+    }
+
+    constructor(
+        private _title: string,
+        private _description?: string,
+    ) {
         super('#card')
-        this.element.querySelector('h2')!.textContent = title
-        if (description) {
-            this.element.querySelector('p')!.textContent = description
+    }
+
+    protected init() {
+        this.element.querySelector('h2')!.textContent = this._title
+        if (this._description) {
+            this.element.querySelector('p')!.textContent = this._description
         }
     }
 

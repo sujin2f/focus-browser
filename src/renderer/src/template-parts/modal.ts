@@ -3,7 +3,9 @@ import { A_Element } from './abs-element'
 export class Modal extends A_Element<HTMLElement> {
     constructor() {
         super('#modal')
+    }
 
+    protected init() {
         this.element
             .querySelector('[data-selector="close"]')!
             .addEventListener('click', this.hide.bind(this))

@@ -4,11 +4,17 @@ import { A_Element } from './abs-element'
  * <select />
  */
 export class Option extends A_Element<HTMLOptionElement> {
-    constructor(label: string, value: string, selected: boolean = false) {
+    constructor(
+        private label: string,
+        private value: string,
+        private selected: boolean = false,
+    ) {
         super('#option')
-        const option = this.element.querySelector('option')!
-        option.textContent = label
-        option.value = value
-        option.selected = selected
+    }
+
+    protected init() {
+        this.element.textContent = this.label
+        this.element.value = this.value
+        this.element.selected = this.selected
     }
 }

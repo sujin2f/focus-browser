@@ -5,13 +5,28 @@ export class Button extends A_Element<HTMLButtonElement> {
         this.element.type = type
     }
 
-    constructor(title: string, selector: string = 'button') {
+    constructor(
+        private _title: string,
+        selector: string = 'button',
+    ) {
         super(`#${selector}`)
-        this.element.querySelector('button')!.textContent = title
     }
 
+    protected init() {
+        this.element.textContent = this._title
+
+        if (this.onClickCallback) {
+            this.setOnClick(this.onClickCallback)
+        }
+    }
+
+    private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
-        this.element.addEventListener('click', callback.bind(this))
+        try {
+            this.element.addEventListener('click', callback.bind(this))
+        } catch {
+            this.onClickCallback = callback
+        }
         return this
     }
 

@@ -17,6 +17,7 @@ export class BookmarkModal extends Modal {
     private bookmark?: T_Bookmark
 
     public notification: Notification = new Notification().appendTo('root')
+    private form = document.createElement('form')
     private title: Input
     private url: Input
     private shortcut: Input
@@ -32,18 +33,15 @@ export class BookmarkModal extends Modal {
     constructor() {
         super()
 
-        const form = document.createElement('form')
-
-        this.title = new Input('Title', 'title').appendTo(form)
-        this.url = new Input('URL', 'url').appendTo(form)
-        this.shortcut = new Input('Shortcut', 'url').appendTo(form)
-        this.folder = new Select('Folder', 'folder').appendTo(form)
+        this.title = new Input('Title', 'title').appendTo(this.form)
+        this.url = new Input('URL', 'url').appendTo(this.form)
+        this.shortcut = new Input('Shortcut', 'url').appendTo(this.form)
+        this.folder = new Select('Folder', 'folder').appendTo(this.form)
 
         const formButtons = document.createElement('div')
         formButtons.classList.add('flex', 'justify-between')
 
-        this.content.append(form)
-        form.append(formButtons)
+        this.form.append(formButtons)
 
         // Submit Change
         this.submit = new Button('Save Changes').appendTo(formButtons)
@@ -64,10 +62,14 @@ export class BookmarkModal extends Modal {
                 )
             })
 
-        form.addEventListener('submit', (e) => {
+        this.form.addEventListener('submit', (e) => {
             e.preventDefault()
             this.onSubmit()
         })
+    }
+
+    protected init() {
+        this.content.append(this.form)
     }
 
     open(

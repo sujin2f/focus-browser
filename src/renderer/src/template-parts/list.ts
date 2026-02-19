@@ -10,7 +10,6 @@ export class List extends A_Element<HTMLElement> {
     constructor(css: string = '') {
         super()
         if (css) {
-            // this.element.classList.add(`grid-cols-[max-content_1fr_max-content]`)
             this.element.classList.add(css)
         }
     }

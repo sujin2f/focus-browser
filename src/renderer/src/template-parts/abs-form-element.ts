@@ -46,13 +46,20 @@ export abstract class A_FormElement<
         this.input.name = name
     }
 
-    constructor(tagName: string, label: string, name: string) {
+    constructor(
+        tagName: string,
+        private _label: string,
+        private _name: string,
+    ) {
         super(`#${tagName}`)
+    }
+
+    protected init() {
         this.element.querySelector('[data-selector="label"]')!.textContent =
-            label
+            this._label
         this.element
             .querySelector('[data-selector="input"]')!
-            .setAttribute('name', name)
+            .setAttribute('name', this._name)
     }
 
     public setOnInput(callback: ((e: Event) => void) | (() => void)) {
@@ -65,9 +72,9 @@ export abstract class A_FormElement<
         return this
     }
 
-    public setOnKey(callback: (e: KeyboardEvent) => void) {
+    public setOnKeyUp(callback: (e: KeyboardEvent) => void) {
         ;(this.input as HTMLInputElement).addEventListener(
-            'keydown',
+            'keyup',
             callback.bind(this),
         )
         return this

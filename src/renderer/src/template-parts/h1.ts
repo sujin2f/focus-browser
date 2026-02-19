@@ -1,8 +1,11 @@
 import { A_Element } from './abs-element'
 
 export class H1 extends A_Element<HTMLHeadingElement> {
-    constructor(title: string) {
+    constructor(private title: string) {
         super('#h1')
-        this.element.querySelector('h1')!.textContent = title
+    }
+
+    protected init() {
+        this.element.textContent = this.title
     }
 }

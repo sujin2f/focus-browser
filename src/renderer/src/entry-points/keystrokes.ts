@@ -69,33 +69,34 @@ class Keystrokes extends A_Entry {
     }
 
     private handleIPC() {
-        ipcRenderer.on(IPC_CHANNELS.KEYSTROKES, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
-
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE: {
-                    this.keystrokes = {}
-                    const keystrokes = args[1] as Record<string, string>
-                    const url = this.settings.url
-                    if (url) {
-                        const host = new URL(url).host
-                        this.keystrokes[host] = ''
+        ipcRenderer.on(
+            IPC_CHANNELS.KEYSTROKES,
+            (handler, ...args: unknown[]) => {
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE: {
+                        this.keystrokes = {}
+                        const keystrokes = args[0] as Record<string, string>
+                        const url = this.settings.url
+                        if (url) {
+                            const host = new URL(url).host
+                            this.keystrokes[host] = ''
+                        }
+                        Object.keys(keystrokes).forEach((host) => {
+                            this.keystrokes[host] = keystrokes[host]
+                        })
+                        this.render()
+                        this.select.focus()
+                        return
                     }
-                    Object.keys(keystrokes).forEach((host) => {
-                        this.keystrokes[host] = keystrokes[host]
-                    })
-                    this.render()
-                    this.select.focus()
-                    return
-                }
 
-                case REQUEST_HANDLER.RESULT:
-                    this.button.enable()
-                    this.notification.info(
-                        'The keystroke is saved successfully!',
-                    )
-            }
-        })
+                    case REQUEST_HANDLER.RESULT:
+                        this.button.enable()
+                        this.notification.info(
+                            'The keystroke is saved successfully!',
+                        )
+                }
+            },
+        )
     }
 
     private onSubmit(e: SubmitEvent) {

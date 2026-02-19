@@ -56,23 +56,24 @@ class Shortcuts extends A_Entry {
     }
 
     private handleIPC() {
-        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
+        ipcRenderer.on(
+            IPC_CHANNELS.SHORTCUTS,
+            (handler, ...args: unknown[]) => {
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE: {
+                        this.shortcuts = args[0] as Record<string, string>
+                        this.render()
+                        return
+                    }
 
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE: {
-                    this.shortcuts = args[1] as Record<string, string>
-                    this.render()
-                    return
+                    case REQUEST_HANDLER.RESULT:
+                        this.button?.enable()
+                        this.notification.info(
+                            'The shortcuts are saved successfully!',
+                        )
                 }
-
-                case REQUEST_HANDLER.RESULT:
-                    this.button?.enable()
-                    this.notification.info(
-                        'The shortcuts are saved successfully!',
-                    )
-            }
-        })
+            },
+        )
     }
 
     private onSubmit(e: SubmitEvent) {

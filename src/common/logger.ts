@@ -1,4 +1,4 @@
-import { IPC_CHANNELS, LogTypes } from '@src/common/constants'
+import { IPC_CHANNELS, LogTypes, REQUEST_HANDLER } from '@src/common/constants'
 import { isBeta, isDev, isTest } from './utils'
 
 interface I_Logger {
@@ -77,6 +77,7 @@ export class Logger {
         if (!this.isMain && this.isActive) {
             window.electron.ipcRenderer.sendMessage(
                 IPC_CHANNELS.LOG,
+                REQUEST_HANDLER.EXECUTE,
                 type,
                 ...params,
             )

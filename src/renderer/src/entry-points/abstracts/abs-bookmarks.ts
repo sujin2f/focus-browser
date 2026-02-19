@@ -30,14 +30,14 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
     protected request(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
 
-        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
-            this.callbackResponse(...args)
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, ...args: unknown[]) => {
+            this.callbackResponse(handler, ...args)
         })
     }
 
-    protected callbackResponse(...args: unknown[]) {
+    protected callbackResponse(_: REQUEST_HANDLER, ...args: unknown[]) {
         this.dirs = {}
-        this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+        this.items = (args[0] as T_Bookmark[]).map((bookmark) => ({
             data: bookmark,
             items: [] as ListItem[],
         }))

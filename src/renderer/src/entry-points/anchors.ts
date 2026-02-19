@@ -28,14 +28,12 @@ class Anchors extends A_ListSearch<T_Bookmark> {
 
     private requestAnchors(): void {
         ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
-
-        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
+        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (handler, ...args: unknown[]) => {
             if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
-            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            this.items = (args[0] as T_Bookmark[]).map((bookmark) => ({
                 data: bookmark,
                 items: [] as ListItem[],
             }))

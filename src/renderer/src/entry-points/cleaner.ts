@@ -101,14 +101,14 @@ class Cleaner extends A_Entry {
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST)
 
-        ipcRenderer.on(IPC_CHANNELS.CLEANER, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
+        ipcRenderer.on(IPC_CHANNELS.CLEANER, (handler, ...args: unknown[]) => {
             if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
-            const sizes = args[1] as T_Cleaner
-            const updated = args[2] as boolean
+            // TODO
+            const sizes = args[0] as T_Cleaner
+            const updated = args[1] as boolean
 
             if (updated) {
                 this.notification.info('Cleaned!')

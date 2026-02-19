@@ -30,9 +30,8 @@ export abstract class A_Entry {
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
 
-        ipcRenderer.once(IPC_CHANNELS.STATUS, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
-            const status = args[1] as T_IPC_Status
+        ipcRenderer.once(IPC_CHANNELS.STATUS, (handler, ...args: unknown[]) => {
+            const status = args[0] as T_IPC_Status
 
             if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return

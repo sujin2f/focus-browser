@@ -32,21 +32,25 @@ class History extends A_ListSearch<T_Bookmark> {
                 this.button.disable()
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
 
-                ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-                    const handler = args[0] as REQUEST_HANDLER
-                    if (handler !== REQUEST_HANDLER.RESULT) {
-                        return
-                    }
+                ipcRenderer.once(
+                    IPC_CHANNELS.HISTORY,
+                    (handler, ...args: unknown[]) => {
+                        if (handler !== REQUEST_HANDLER.RESULT) {
+                            return
+                        }
 
-                    this.button.enable()
-                    this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-                        data: bookmark,
-                        items: [] as ListItem[],
-                    }))
+                        this.button.enable()
+                        this.items = (args[0] as T_Bookmark[]).map(
+                            (bookmark) => ({
+                                data: bookmark,
+                                items: [] as ListItem[],
+                            }),
+                        )
 
-                    this.renderList()
-                    this.notification.info('History cleared successfully!')
-                })
+                        this.renderList()
+                        this.notification.info('History cleared successfully!')
+                    },
+                )
             })
     }
 

@@ -103,9 +103,7 @@ class Settings extends A_Entry {
             },
         } satisfies T_IPC_Status)
 
-        ipcRenderer.once(IPC_CHANNELS.STATUS, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
-
+        ipcRenderer.once(IPC_CHANNELS.STATUS, (handler) => {
             if (handler !== REQUEST_HANDLER.RESULT) {
                 return
             }

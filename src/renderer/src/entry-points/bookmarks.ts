@@ -57,11 +57,8 @@ class Bookmarks extends A_Bookmarks {
                 })
         }
     }
-
-    protected callbackResponse(...args: unknown[]) {
+    protected callbackResponse(handler: REQUEST_HANDLER, ...args: unknown[]) {
         this.modal.hide()
-
-        const handler = args[0] as REQUEST_HANDLER
         if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
             this.modal.notification.info('Bookmark changed.')
         }
@@ -69,7 +66,7 @@ class Bookmarks extends A_Bookmarks {
             this.modal.notification.error('Failed to change Bookmark.')
         }
 
-        super.callbackResponse(...args)
+        super.callbackResponse(handler, ...args)
     }
 
     protected getListCols(bookmark: T_Bookmark, index: number) {

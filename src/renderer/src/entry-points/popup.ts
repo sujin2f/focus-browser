@@ -24,36 +24,39 @@ class Popup extends A_ListSearch<PopupBlocker> {
     private requestPopupBlockers(): void {
         ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, REQUEST_HANDLER.REQUEST)
 
-        ipcRenderer.on(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
-            if (handler !== REQUEST_HANDLER.RESPONSE) {
-                return
-            }
+        ipcRenderer.on(
+            IPC_CHANNELS.POPUP_BLOCKER,
+            (handler, ...args: unknown[]) => {
+                if (handler !== REQUEST_HANDLER.RESPONSE) {
+                    return
+                }
 
-            this.items = []
+                this.items = []
 
-            const blocked = args[1] as string[]
-            const allowed = args[2] as string[]
+                // TODO
+                const blocked = args[0] as string[]
+                const allowed = args[1] as string[]
 
-            allowed.forEach((host) =>
-                this.items.push({
-                    data: { host, allowed: true },
-                    items: [],
-                }),
-            )
-            blocked.forEach((host) =>
-                this.items.push({
-                    data: { host, allowed: false },
-                    items: [],
-                }),
-            )
+                allowed.forEach((host) =>
+                    this.items.push({
+                        data: { host, allowed: true },
+                        items: [],
+                    }),
+                )
+                blocked.forEach((host) =>
+                    this.items.push({
+                        data: { host, allowed: false },
+                        items: [],
+                    }),
+                )
 
-            if (this.searchKeyword) {
-                this.filterSearch()
-            } else {
-                this.renderList()
-            }
-        })
+                if (this.searchKeyword) {
+                    this.filterSearch()
+                } else {
+                    this.renderList()
+                }
+            },
+        )
     }
 
     renderList() {

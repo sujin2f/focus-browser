@@ -80,7 +80,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onLog(_: IpcMainEvent, type: LogTypes, ...params: unknown[]) {
+    private onLog(
+        _: IpcMainEvent,
+        __: REQUEST_HANDLER,
+        type: LogTypes, // TODO
+        ...params: unknown[]
+    ) {
         switch (type) {
             case LogTypes.ERROR:
                 Logger.getInstance().error(...params)
@@ -198,7 +203,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
         bookmark: T_Bookmark,
-        // index: number,
     ) {
         const bookmarks = Bookmarks.getInstance()
         const sendBookmarks = (handler: REQUEST_HANDLER) => {

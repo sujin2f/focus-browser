@@ -9,7 +9,7 @@ export class BackButton extends A_Element<HTMLButtonElement> {
 
     protected init() {
         this.element.addEventListener('click', () => {
-            navigate()
+            navigate({})
         })
     }
 }

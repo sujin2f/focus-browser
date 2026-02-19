@@ -84,7 +84,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[1].submenu[9]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.FIND)
+        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.FIND })
     })
 
     test('find next', async () => {
@@ -159,7 +159,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[0]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.ADDRESS)
+        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.ADDRESS })
     })
 
     test('centre', async () => {
@@ -169,7 +169,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[1]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.HOME)
+        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.HOME })
     })
 
     test('back', async () => {

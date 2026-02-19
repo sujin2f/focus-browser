@@ -10,6 +10,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { BookmarkModal } from '@src/renderer/src/template-parts/modules/bookmarks-modal'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
+import { REQUEST_HANDLER } from '@src/common/constants'
 
 class Bookmarks extends A_Bookmarks {
     private modal = new BookmarkModal().appendTo('root')
@@ -36,10 +37,6 @@ class Bookmarks extends A_Bookmarks {
     }
 
     renderList() {
-        if (this.modal.activated) {
-            this.modal.hide()
-            this.modal.notification.info('Bookmark changed.')
-        }
         super.renderList()
         this.setShortcuts()
     }
@@ -61,6 +58,20 @@ class Bookmarks extends A_Bookmarks {
         }
     }
 
+    protected callbackResponse(...args: unknown[]) {
+        this.modal.hide()
+
+        const handler = args[0] as REQUEST_HANDLER
+        if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
+            this.modal.notification.info('Bookmark changed.')
+        }
+        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
+            this.modal.notification.error('Failed to change Bookmark.')
+        }
+
+        super.callbackResponse(...args)
+    }
+
     protected getListCols(bookmark: T_Bookmark, index: number) {
         const isDir = !bookmark.url
 
@@ -76,7 +87,7 @@ class Bookmarks extends A_Bookmarks {
                 if (isDir || tagNameIs(e.target, 'button')) {
                     return
                 }
-                navigate(bookmark.url)
+                navigate({ address: bookmark.url })
             },
         )
 
@@ -95,7 +106,7 @@ class Bookmarks extends A_Bookmarks {
                     if (isDir) {
                         return
                     }
-                    navigate(bookmark.url)
+                    navigate({ address: bookmark.url })
                 }),
             )
         }
@@ -156,7 +167,7 @@ class Bookmarks extends A_Bookmarks {
 
             const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
             if (shortcut) {
-                navigate(shortcut)
+                navigate({ address: shortcut })
                 return true
             }
         })
@@ -181,7 +192,7 @@ class Bookmarks extends A_Bookmarks {
                 ;(document.activeElement as HTMLInputElement).blur()
                 return
             }
-            navigate()
+            navigate({})
             return
         }
 

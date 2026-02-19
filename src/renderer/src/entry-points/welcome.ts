@@ -1,8 +1,6 @@
 import { A_Bookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
 import { checkElectron, navigate } from '@src/renderer/src/utils'
-/* CONSTANTS */
-import { NAVIGATION } from '@src/common/constants'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { H2 } from '@src/renderer/src/template-parts/h2'
@@ -23,12 +21,12 @@ class Welcome extends A_Bookmarks {
         new Card('🫰 Continue (Esc)', 'Visit the last page from your history')
             .appendTo('grid')
             .setOnClick(() => {
-                navigate(NAVIGATION.LAST_VISIT)
+                navigate({ lastVisit: true })
             })
         new Card('⚙️ Search Engine', 'Search Web')
             .appendTo('grid')
             .setOnClick(() => {
-                navigate(NAVIGATION.SEARCH_ENGINE)
+                navigate({ searchEngine: true })
             })
     }
 
@@ -46,7 +44,7 @@ class Welcome extends A_Bookmarks {
 
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
-            navigate(NAVIGATION.LAST_VISIT)
+            navigate({ lastVisit: true })
         }
     }
 }

@@ -9,7 +9,7 @@ import {
 /* <HTML template-part /> */
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -28,13 +28,9 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
     }
 
     protected request(): void {
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
 
         ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
-                return
-            }
             this.callbackResponse(...args)
         })
     }
@@ -131,7 +127,7 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
                 if (isDir || tagNameIs(e.target, 'button')) {
                     return
                 }
-                navigate(bookmark.url)
+                navigate({ address: bookmark.url })
             },
         )
         return [icon, row]

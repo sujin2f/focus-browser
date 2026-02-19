@@ -8,9 +8,9 @@ import {
 } from '@src/common/constants'
 
 /**
- * stores in status.json
+ * Status
  */
-export type StatusProps = {
+export type T_Status_Store_Props = {
     width: number
     height: number
     x: number
@@ -20,11 +20,8 @@ export type StatusProps = {
     searchEngine: keyof typeof SEARCH_ENGINES
 }
 
-/**
- * for IPC comm.
- */
-export type Info = Partial<
-    StatusProps & {
+export type T_Status_Props = Partial<
+    T_Status_Store_Props & {
         title: string
         url: string
         adBlockerStatus: boolean | null
@@ -32,6 +29,25 @@ export type Info = Partial<
     }
 >
 
+export type T_IPC_Status = {
+    request?: (keyof T_Status_Props)[]
+    data?: Partial<T_Status_Props>
+}
+
+/**
+ * Switch
+ */
+export type T_IPC_Switch = {
+    scene: Scenes
+    address?: string
+    reloading?: boolean
+    lastVisit?: boolean
+    searchEngine?: boolean
+}
+
+/**
+ * Bookmark
+ */
 export type T_Bookmark = {
     id: string
     url: string
@@ -40,28 +56,17 @@ export type T_Bookmark = {
     parent?: string
 }
 
+/**
+ * Popup Blocker
+ */
 export type PopupBlocker = {
     host: string
     allowed?: boolean
 }
 
-export type Scenes = CENTRE_PAGES | typeof BROWSER
-
-export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
-export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
-
-export type ElementProps<T> = {
-    tag: string
-    selector: string
-    className: string[]
-    hide: boolean
-    value: string
-    props: T
-    onClick: (ev: HTMLElementEventMap['click']) => unknown
-}
-
-export type EventSwitch = CustomEvent<CENTRE_PAGES>
-
+/**
+ * Cleaner
+ */
 export type T_Cleaner = {
     cacheSize: number
     anchors: number
@@ -69,3 +74,8 @@ export type T_Cleaner = {
     popup: number
     indexedDB: number
 }
+
+export type Scenes = CENTRE_PAGES | typeof BROWSER
+
+export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
+export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>

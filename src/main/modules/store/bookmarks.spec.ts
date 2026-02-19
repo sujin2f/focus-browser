@@ -51,7 +51,7 @@ describe('Bookmarks store (module)', () => {
         ])
 
         // Remove
-        bookmarks.remove(1)
+        bookmarks.remove(bookmarks.get()[1].id)
         expect(
             bookmarks.get().map((bookmark) => ({
                 url: bookmark.url,

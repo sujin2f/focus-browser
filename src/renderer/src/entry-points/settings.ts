@@ -14,11 +14,11 @@ import { Notification } from '@src/renderer/src/template-parts/notification'
 import {
     IPC_CHANNELS,
     MAX_HISTORY,
-    RequestHandler,
+    REQUEST_HANDLER,
     SEARCH_ENGINES,
 } from '@src/common/constants'
 /* T_Type */
-import type { Info } from '@src/common/types'
+import type { T_IPC_Status } from '@src/common/types'
 
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
@@ -95,16 +95,18 @@ class Settings extends A_Entry {
             return
         }
 
-        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
-            maxHistory,
-            adBlocker,
-            searchEngine,
-        } satisfies Partial<Info>)
+        ipcRenderer.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.MODIFY, {
+            data: {
+                maxHistory,
+                adBlocker,
+                searchEngine,
+            },
+        } satisfies T_IPC_Status)
 
-        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
+        ipcRenderer.once(IPC_CHANNELS.STATUS, (...args: unknown[]) => {
+            const handler = args[0] as REQUEST_HANDLER
 
-            if (handler !== RequestHandler.RESULT) {
+            if (handler !== REQUEST_HANDLER.RESULT) {
                 return
             }
 

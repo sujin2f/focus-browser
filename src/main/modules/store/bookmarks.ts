@@ -24,6 +24,16 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
         return NaN
     }
 
+    private findById(
+        id: string,
+    ): { bookmark: T_Bookmark; index: number } | void {
+        for (const [index, bookmark] of this._data.bookmarks.entries()) {
+            if (bookmark.id === id) {
+                return { bookmark, index }
+            }
+        }
+    }
+
     get() {
         return super.get('bookmarks')
     }
@@ -77,8 +87,12 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
         return bookmark.id
     }
 
-    remove(index: number) {
-        this._data.bookmarks.splice(index, 1)
+    remove(id: string): boolean {
+        const bookmark = this.findById(id)
+        if (!bookmark) return false
+
+        this._data.bookmarks.splice(bookmark.index, 1)
+        return true
     }
 
     parse() {

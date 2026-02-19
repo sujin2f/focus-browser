@@ -13,7 +13,7 @@ import { Card } from '@src/renderer/src/template-parts/card'
 import { Loading } from '@src/renderer/src/template-parts/loading'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import { T_Cleaner } from '@src/common/types'
 
@@ -29,7 +29,7 @@ class Cleaner extends A_Entry {
         new Loading().appendTo(this.cache.description)
         ipcRenderer.send(
             IPC_CHANNELS.CLEANER,
-            RequestHandler.REMOVE,
+            REQUEST_HANDLER.REMOVE,
             'cacheSize',
         )
     })
@@ -43,7 +43,7 @@ class Cleaner extends A_Entry {
             new Loading().appendTo(this.indexedDB.description)
             ipcRenderer.send(
                 IPC_CHANNELS.CLEANER,
-                RequestHandler.REMOVE,
+                REQUEST_HANDLER.REMOVE,
                 'indexedDB',
             )
         })
@@ -53,7 +53,7 @@ class Cleaner extends A_Entry {
         }
         this.ready = false
         new Loading().appendTo(this.anchor.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'anchor')
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, 'anchor')
     })
     private history = new Card('History').appendTo('grid').setOnClick(() => {
         if (!this.ready) {
@@ -61,7 +61,11 @@ class Cleaner extends A_Entry {
         }
         this.ready = false
         new Loading().appendTo(this.history.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'history')
+        ipcRenderer.send(
+            IPC_CHANNELS.CLEANER,
+            REQUEST_HANDLER.REMOVE,
+            'history',
+        )
     })
     private popups = new Card('Blocked Popups')
         .appendTo('grid')
@@ -73,7 +77,7 @@ class Cleaner extends A_Entry {
             new Loading().appendTo(this.popups.description)
             ipcRenderer.send(
                 IPC_CHANNELS.CLEANER,
-                RequestHandler.REMOVE,
+                REQUEST_HANDLER.REMOVE,
                 'popups',
             )
         })
@@ -95,11 +99,11 @@ class Cleaner extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST)
 
         ipcRenderer.on(IPC_CHANNELS.CLEANER, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
+            const handler = args[0] as REQUEST_HANDLER
+            if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 

@@ -10,7 +10,7 @@ import {
 import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Find extends A_Entry {
     private form: HTMLFormElement = getSection<HTMLFormElement>('form')
@@ -27,10 +27,10 @@ class Find extends A_Entry {
         this.form.addEventListener('submit', () => {
             ipcRenderer.send(
                 IPC_CHANNELS.FIND,
-                RequestHandler.REQUEST,
+                REQUEST_HANDLER.REQUEST,
                 input.value,
             )
-            navigate()
+            navigate({})
         })
     }
 }

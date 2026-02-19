@@ -8,7 +8,7 @@ import { Button } from '@src/renderer/src/template-parts/button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -30,11 +30,11 @@ class History extends A_ListSearch<T_Bookmark> {
             .prependTo('buttons')
             .setOnClick(() => {
                 this.button.disable()
-                ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REMOVE)
+                ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
 
                 ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-                    const handler = args[0] as RequestHandler
-                    if (handler !== RequestHandler.RESULT) {
+                    const handler = args[0] as REQUEST_HANDLER
+                    if (handler !== REQUEST_HANDLER.RESULT) {
                         return
                     }
 
@@ -51,11 +51,11 @@ class History extends A_ListSearch<T_Bookmark> {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
 
         ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
+            const handler = args[0] as REQUEST_HANDLER
+            if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
@@ -76,7 +76,7 @@ class History extends A_ListSearch<T_Bookmark> {
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
-                        RequestHandler.EXECUTE,
+                        REQUEST_HANDLER.EXECUTE,
                         index,
                     )
                 })

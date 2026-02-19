@@ -11,7 +11,7 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -27,11 +27,11 @@ class Anchors extends A_ListSearch<T_Bookmark> {
     }
 
     private requestAnchors(): void {
-        ipcRenderer.send(IPC_CHANNELS.ANCHOR, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
 
         ipcRenderer.once(IPC_CHANNELS.ANCHOR, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
+            const handler = args[0] as REQUEST_HANDLER
+            if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
@@ -50,7 +50,7 @@ class Anchors extends A_ListSearch<T_Bookmark> {
             const item = new ListItem(anchor.title, anchor.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
-                    navigate(anchor.url, RequestHandler.REMOVE)
+                    navigate({ address: anchor.url }, REQUEST_HANDLER.REMOVE)
                 })
             items.push(item)
         })

@@ -9,7 +9,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS /> */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Shortcuts extends A_Entry {
     private shortcuts: Record<string, string> = {}
@@ -52,21 +52,21 @@ class Shortcuts extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
     }
 
     private handleIPC() {
         ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
+            const handler = args[0] as REQUEST_HANDLER
 
             switch (handler) {
-                case RequestHandler.RESPONSE: {
+                case REQUEST_HANDLER.RESPONSE: {
                     this.shortcuts = args[1] as Record<string, string>
                     this.render()
                     return
                 }
 
-                case RequestHandler.RESULT:
+                case REQUEST_HANDLER.RESULT:
                     this.button?.enable()
                     this.notification.info(
                         'The shortcuts are saved successfully!',
@@ -89,7 +89,7 @@ class Shortcuts extends A_Entry {
         }
         ipcRenderer.send(
             IPC_CHANNELS.SHORTCUTS,
-            RequestHandler.MODIFY,
+            REQUEST_HANDLER.MODIFY,
             shortcuts,
         )
     }

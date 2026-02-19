@@ -13,7 +13,7 @@ export const getAddressBar = (section: string) => {
         if (!input.value) {
             return
         }
-        navigate(input.value)
+        navigate({ address: input.value })
     })
 
     return input

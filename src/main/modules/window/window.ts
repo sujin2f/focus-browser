@@ -1,7 +1,7 @@
 import { session, type BaseWindowConstructorOptions } from 'electron'
 
 import { preload } from '@src/main/utils'
-import type { Scenes } from '@src/common/types'
+import type { T_IPC_Switch } from '@src/common/types'
 import { BROWSER } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
@@ -51,23 +51,39 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     /**
-     * View controls
+     * Switch Scene
      */
-    public switch(scene: Scenes) {
-        this._current = scene
-        if (this.isBrowser || scene === BROWSER) {
+    public async switch(request: T_IPC_Switch) {
+        this._current = request.scene
+
+        if (request.scene === BROWSER) {
             this.contentView = this.browser
-            if (this.browser.failedUrl) {
+
+            if (request.reloading) {
+                this.title = 'Loading...'
                 this.browser.reload()
-            }
-            if (!this.browser.initialized) {
+            } else if (request.lastVisit) {
+                this.title = 'Loading...'
+                await this.browser.loadLastVisit()
+            } else if (request.searchEngine) {
+                this.title = 'Loading...'
+                this.browser.searchKeyword('')
+            } else if (request.address) {
+                this.title = 'Loading...'
+                this.browser.loadURL(request.address)
+            } else if (this.browser.failedUrl) {
+                this.browser.reload()
+            } else if (!this.browser.initialized) {
                 this.browser.searchKeyword('')
             }
+
+            this.browser.initialized = true // TODO
+            this.browser.webContents.focus()
             return
         }
 
         this.contentView = this.centre
-        this.centre.loadScene(scene)
+        this.centre.loadScene(request.scene)
         this.centre.webContents.focus()
     }
 

@@ -6,7 +6,7 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
@@ -22,11 +22,11 @@ class Popup extends A_ListSearch<PopupBlocker> {
     }
 
     private requestPopupBlockers(): void {
-        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, REQUEST_HANDLER.REQUEST)
 
         ipcRenderer.on(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
+            const handler = args[0] as REQUEST_HANDLER
+            if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
@@ -66,7 +66,7 @@ class Popup extends A_ListSearch<PopupBlocker> {
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.POPUP_BLOCKER,
-                        RequestHandler.MODIFY,
+                        REQUEST_HANDLER.MODIFY,
                         popup.host,
                     )
                 })

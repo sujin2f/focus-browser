@@ -512,6 +512,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         Logger.getInstance().log('addBookmark')
         const bookmarks = Bookmarks.getInstance()
         const added = bookmarks.push({
+            id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
@@ -541,6 +542,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      */
     private addAnchor() {
         const added = Anchors.getInstance().push({
+            id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })

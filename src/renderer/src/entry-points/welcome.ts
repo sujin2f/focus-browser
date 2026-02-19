@@ -1,4 +1,4 @@
-import { A_Bookmarks } from './abs-bookmarks'
+import { A_Bookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
 import { checkElectron, navigate } from '@src/renderer/src/utils'
 /* CONSTANTS */
@@ -7,6 +7,7 @@ import { NAVIGATION } from '@src/common/constants'
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { H2 } from '@src/renderer/src/template-parts/h2'
 import { Card } from '@src/renderer/src/template-parts/card'
+import type { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
@@ -32,11 +33,14 @@ class Welcome extends A_Bookmarks {
     }
 
     protected callbackResponse(...args: unknown[]) {
-        this.items = args[1] as T_Bookmark[]
+        this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            data: bookmark,
+            items: [] as ListItem[],
+        }))
+
         if (this.items.length) {
             new H2('🔖 Your Bookmarks').prependTo('bookmarks')
         }
-        this.listItems = this.items
         this.renderList()
     }
 

@@ -27,9 +27,12 @@
             </div>
             <section id="section-search"></section>
 
+            <section id="section-bookmarks" class="w-full">
+                <%=require('html-loader!./template-parts/list.html').default %>
+            </section>
+
             <%=require('html-loader!./template-parts/button-clear.html').default
-            %> <%=require('html-loader!./template-parts/list.html').default %>
-            <%=require('html-loader!./template-parts/select.html').default %>
+            %> <%=require('html-loader!./template-parts/select.html').default %>
             <%=require('html-loader!./template-parts/modal.html').default %>
             <%=require('html-loader!./template-parts/notification.html').default
             %>

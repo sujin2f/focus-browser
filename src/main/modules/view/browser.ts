@@ -24,6 +24,7 @@ import type { T_Bookmark } from '@src/common/types'
 export class BrowserView extends WebContentsView {
     public get url(): T_Bookmark {
         return {
+            id: '',
             title: this.webContents.getTitle(),
             url: this.webContents.getURL(),
         }

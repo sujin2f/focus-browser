@@ -19,7 +19,6 @@ export abstract class A_ListSearch<T> extends A_List<T> {
                 if (!this.isSearchActivated()) {
                     return
                 }
-
                 this.filterSearch()
             })
     }
@@ -59,14 +58,21 @@ export abstract class A_ListSearch<T> extends A_List<T> {
 
     protected filterSearch() {
         if (!this.searchKeyword) {
-            this.listItems = this.items
-            this.renderList()
+            this.items.forEach(({ items }) =>
+                items.forEach((item) => item.show()),
+            )
             return
         }
 
-        this.listItems = this.items.filter((item) =>
-            this.filterList(item, this.searchKeyword),
-        )
-        this.renderList()
+        this.items.forEach(({ data, items }) => {
+            const filtered = this.filterList(data, this.searchKeyword)
+            items.forEach((item) => {
+                if (filtered) {
+                    item.show()
+                } else {
+                    item.hide()
+                }
+            })
+        })
     }
 }

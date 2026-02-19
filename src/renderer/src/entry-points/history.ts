@@ -1,6 +1,6 @@
-import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
+import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
 /* Utils */
-import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
@@ -39,8 +39,11 @@ class History extends A_ListSearch<T_Bookmark> {
                     }
 
                     this.button.enable()
-                    this.items = []
-                    this.listItems = []
+                    this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+                        data: bookmark,
+                        items: [] as ListItem[],
+                    }))
+
                     this.renderList()
                     this.notification.info('History cleared successfully!')
                 })
@@ -56,16 +59,19 @@ class History extends A_ListSearch<T_Bookmark> {
                 return
             }
 
-            this.items = args[1] as T_Bookmark[]
-            this.listItems = this.items
+            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+                data: bookmark,
+                items: [] as ListItem[],
+            }))
             this.renderList()
         })
     }
 
     renderList() {
-        getSection('list').innerHTML = ''
-        this.listItems.forEach((item, index) => {
-            new ListItem(item.title, item.url)
+        super.renderList()
+
+        this.items.forEach(({ data: history, items }, index) => {
+            const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
                     ipcRenderer.send(
@@ -74,6 +80,7 @@ class History extends A_ListSearch<T_Bookmark> {
                         index,
                     )
                 })
+            items.push(item)
         })
     }
 

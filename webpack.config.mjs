@@ -134,7 +134,7 @@ const pages = [
 
 pages.forEach((page) => {
     renderer.entry[`renderer/${page}`] =
-        `./src/renderer/src/entty-points/${page}.ts`
+        `./src/renderer/src/entry-points/${page}.ts`
     renderer.plugins.push(
         new HtmlWebpackPlugin({
             template: `./src/renderer/templates/${page}.html`,

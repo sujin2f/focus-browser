@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
+import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */

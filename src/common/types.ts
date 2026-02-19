@@ -33,10 +33,11 @@ export type Info = Partial<
 >
 
 export type T_Bookmark = {
+    id: string
     url: string
     title: string
     shortcut?: string
-    parent?: number
+    parent?: string
 }
 
 export type PopupBlocker = {

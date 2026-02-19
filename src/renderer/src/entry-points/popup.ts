@@ -1,6 +1,6 @@
-import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
+import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
 /* Utils */
-import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
@@ -31,15 +31,22 @@ class Popup extends A_ListSearch<PopupBlocker> {
             }
 
             this.items = []
-            this.listItems = []
 
             const blocked = args[1] as string[]
             const allowed = args[2] as string[]
 
-            allowed.forEach((host) => this.items.push({ host, allowed: true }))
-            blocked.forEach((host) => this.items.push({ host, allowed: false }))
-
-            this.listItems = this.items
+            allowed.forEach((host) =>
+                this.items.push({
+                    data: { host, allowed: true },
+                    items: [],
+                }),
+            )
+            blocked.forEach((host) =>
+                this.items.push({
+                    data: { host, allowed: false },
+                    items: [],
+                }),
+            )
 
             if (this.searchKeyword) {
                 this.filterSearch()
@@ -50,16 +57,20 @@ class Popup extends A_ListSearch<PopupBlocker> {
     }
 
     renderList() {
-        getSection('list').innerHTML = ''
-        this.listItems.forEach((item) => {
-            const content = `${item.allowed ? '✅ ' : ''}${item.host}`
-            new ListItem(content).appendTo(this.list.element).setOnClick(() => {
-                ipcRenderer.send(
-                    IPC_CHANNELS.POPUP_BLOCKER,
-                    RequestHandler.MODIFY,
-                    item.host,
-                )
-            })
+        super.renderList()
+
+        this.items.forEach(({ data: popup, items }) => {
+            const content = `${popup.allowed ? '✅ ' : ''}${popup.host}`
+            const item = new ListItem(content)
+                .appendTo(this.list.element)
+                .setOnClick(() => {
+                    ipcRenderer.send(
+                        IPC_CHANNELS.POPUP_BLOCKER,
+                        RequestHandler.MODIFY,
+                        popup.host,
+                    )
+                })
+            items.push(item)
         })
     }
 

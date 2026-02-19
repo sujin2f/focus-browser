@@ -1,10 +1,10 @@
-import { A_ListSearch } from '@src/renderer/src/entty-points/abs-list-search'
+import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
 /* Utils */
 import {
     checkElectron,
     ipcRenderer,
     navigate,
-    getSection,
+    // getSection,
 } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
@@ -35,20 +35,24 @@ class Anchors extends A_ListSearch<T_Bookmark> {
                 return
             }
 
-            this.items = args[1] as T_Bookmark[]
-            this.listItems = this.items
+            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+                data: bookmark,
+                items: [] as ListItem[],
+            }))
             this.renderList()
         })
     }
 
-    renderList() {
-        getSection('list').innerHTML = ''
-        this.listItems.forEach((anchor) => {
-            new ListItem(anchor.title, anchor.url)
+    protected renderList() {
+        super.renderList()
+
+        this.items.forEach(({ data: anchor, items }) => {
+            const item = new ListItem(anchor.title, anchor.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
                     navigate(anchor.url, RequestHandler.REMOVE)
                 })
+            items.push(item)
         })
     }
 

@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 import { Store } from '@main/modules/store/store'
 import { Logger } from '@src/common/logger'
 /* T_Types */
@@ -26,14 +28,20 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
         return super.get('bookmarks')
     }
 
-    update(index: number, bookmark: T_Bookmark) {
-        Logger.getInstance().log(
-            'Bookmark edited from: ',
-            this._data.bookmarks[index],
-            ' to: ',
-            bookmark,
-        )
-        this._data.bookmarks[index] = bookmark
+    update(value: T_Bookmark) {
+        for (const [index, bookmark] of this._data.bookmarks.entries()) {
+            if (bookmark.id === value.id) {
+                this._data.bookmarks[index] = value
+
+                Logger.getInstance().log(
+                    'Bookmark edited from: ',
+                    bookmark,
+                    ' to: ',
+                    value,
+                )
+                return
+            }
+        }
     }
 
     /**
@@ -41,31 +49,44 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
      * @param bookmark
      * @returns
      */
-    push(bookmark: T_Bookmark) {
+    push(bookmark: T_Bookmark): string {
+        bookmark.id = crypto.randomUUID().toString()
+
+        // Directory
+        if (!bookmark.url) {
+            this._data.bookmarks.unshift(bookmark)
+            return bookmark.id
+        }
+
+        // URL duplicated
         for (const item of this._data.bookmarks) {
             if (item.url === bookmark.url) {
-                return false
+                return item.id
             }
         }
 
-        if (!bookmark.url) {
-            // dir
-            this._data.bookmarks.unshift(bookmark)
-            return true
-        }
-
+        // Empty list
         if (isNaN(this.bookmarkIndex)) {
             // Empty
             this._data.bookmarks.unshift(bookmark)
-            return true
+            return bookmark.id
         }
 
-        // After dirs
+        // Insert after Directories
         this._data.bookmarks.splice(this.bookmarkIndex, 0, bookmark)
-        return true
+        return bookmark.id
     }
 
     remove(index: number) {
         this._data.bookmarks.splice(index, 1)
+    }
+
+    parse() {
+        super.parse()
+        this._data.bookmarks.forEach((bookmark) => {
+            if (!bookmark.id) {
+                bookmark.id = crypto.randomUUID().toString()
+            }
+        })
     }
 }

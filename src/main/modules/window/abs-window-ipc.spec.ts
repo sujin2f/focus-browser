@@ -154,7 +154,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
 
     test('onBookmarks > update', () => {
         ipc[3][1](null, RequestHandler.MODIFY, { url: '1' }, 1)
-        expect(bookmarkUpdate).toHaveBeenCalledWith(1, { url: '1' })
+        expect(bookmarkUpdate).toHaveBeenCalledWith({ url: '1' })
     })
 
     test('onBookmarks > remove', () => {

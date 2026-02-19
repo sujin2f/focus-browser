@@ -90,8 +90,8 @@ export const byteToSize = (byte: number): string => {
  *     // We use 'implements' for type checking, the actual implementation comes from the mixins
  *     class Performer implements Singer, Dancer {
  *         // We use '!' to tell TypeScript that these will be assigned at runtime
- *         sing!: () => void
- *         dance!: () => void
+ *         sing(): void {}
+ *         dance(): void {}
  *     }
  *
  *     // Apply the mixins to the Performer class
@@ -105,10 +105,17 @@ export const byteToSize = (byte: number): string => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T
 export const applyMixins = (
-    derivedConstructor: Constructor,
+    derivedCtor: Constructor,
     constructors: Constructor[],
 ) => {
-    constructors.forEach((baseConstructor) => {
-        Object.assign(derivedConstructor.prototype, baseConstructor.prototype)
+    constructors.forEach((baseCtor) => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+            Object.defineProperty(
+                derivedCtor.prototype,
+                name,
+                Object.getOwnPropertyDescriptor(baseCtor.prototype, name) ||
+                    Object.create(null),
+            )
+        })
     })
 }

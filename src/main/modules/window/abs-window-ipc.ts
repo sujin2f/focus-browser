@@ -213,7 +213,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 sendBookmarks(true)
                 return
             case RequestHandler.MODIFY:
-                bookmarks.update(index, bookmark)
+                bookmarks.update(bookmark)
                 bookmarks.save()
                 sendBookmarks(true)
                 return

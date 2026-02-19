@@ -1,4 +1,4 @@
-import { A_Entry } from '@src/renderer/src/entty-points/abs-entry'
+import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
 import { checkElectron, getSection, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
@@ -43,16 +43,6 @@ class Settings extends A_Entry {
     protected callbackUpdateInfo() {
         this.form.innerHTML = ''
 
-        // const frame = new Checkbox('Show Native Frame').appendTo('form'
-        // )
-        // frame.helpText =
-        //     'Note: This requires restarting the application. You can toggle window fit to screen by pressing ⌘Esc.'
-        // frame.checked = this.settings.frame || false
-
-        // const helpText = new Checkbox('Show Help Text').appendTo('orm'
-        // )
-        // helpText.checked = this.settings.helpText || false
-
         const maxHistory = new Input('Maximum History', 'maxHistory').appendTo(
             this.form,
         )
@@ -88,7 +78,7 @@ class Settings extends A_Entry {
 
     private onSubmit(e: SubmitEvent) {
         e.preventDefault()
-        console.log('onSubmit')
+
         this.button?.disable()
         const formData = new FormData(this.form)
 

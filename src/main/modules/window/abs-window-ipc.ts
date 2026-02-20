@@ -181,13 +181,17 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         history: T_Bookmark[],
     ) {
         switch (handler) {
-            case REQUEST_HANDLER.REQUEST:
+            case REQUEST_HANDLER.REQUEST: {
+                const response = this.browser.initialized
+                    ? (this.browser.webContents.navigationHistory.getAllEntries() as T_Bookmark[])
+                    : []
                 this.centre.send(
                     IPC_CHANNELS.HISTORY,
                     REQUEST_HANDLER.RESPONSE,
-                    this.browser.webContents.navigationHistory.getAllEntries() as T_Bookmark[],
+                    response,
                 )
                 return
+            }
 
             case REQUEST_HANDLER.EXECUTE:
                 this.switch({ scene: BROWSER })

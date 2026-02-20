@@ -97,7 +97,7 @@ export class BrowserWindow extends AbsWindowIPC {
                 this.browser.searchKeyword('')
             }
 
-            this.browser.initialized = true // TODO
+            this.browser.initialized = true
             this.browser.webContents.focus()
             this.webContents.focus()
             return

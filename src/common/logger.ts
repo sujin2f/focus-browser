@@ -1,4 +1,4 @@
-import { IPC_CHANNELS, LogTypes } from '@src/common/constants'
+import { IPC_CHANNELS, LogTypes, REQUEST_HANDLER } from '@src/common/constants'
 import { isBeta, isDev, isTest } from './utils'
 
 interface I_Logger {
@@ -54,22 +54,22 @@ export class Logger {
     }
 
     error(...params: unknown[]) {
-        this.logger.error(...params)
+        this.logger.error('😡', ...params)
         this.sendToMain(LogTypes.ERROR, ...params)
     }
 
     warn(...params: unknown[]) {
-        this.logger.warn(...params)
+        this.logger.warn('😨', ...params)
         this.sendToMain(LogTypes.WARN, ...params)
     }
 
     log(...params: unknown[]) {
-        this.logger.log(...params)
+        this.logger.log('🥳', ...params)
         this.sendToMain(LogTypes.LOG, ...params)
     }
 
     info(...params: unknown[]) {
-        this.logger.info(...params)
+        this.logger.info('🤔', ...params)
         this.sendToMain(LogTypes.INFO, ...params)
     }
 
@@ -77,8 +77,8 @@ export class Logger {
         if (!this.isMain && this.isActive) {
             window.electron.ipcRenderer.sendMessage(
                 IPC_CHANNELS.LOG,
-                type,
-                ...params,
+                REQUEST_HANDLER.EXECUTE,
+                [type, params],
             )
         }
     }

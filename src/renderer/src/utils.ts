@@ -1,10 +1,5 @@
-import {
-    IPC_CHANNELS,
-    RequestHandler,
-    BROWSER,
-    CENTRE_PAGES,
-    CustomEvents,
-} from '@src/common/constants'
+import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import type { T_IPC_Switch } from '@src/common/types'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -18,26 +13,20 @@ export const ipcRenderer = {
     once: window.electron.ipcRenderer.once,
 }
 
-export const navigate = (url?: string, handler?: RequestHandler) => {
-    document.dispatchEvent(new SwitchEvent(CENTRE_PAGES.HOME))
-    if (url) {
-        ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, url, handler)
-        window.location.href = 'loading.html'
-        return
-    }
-    ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER)
+export const navigate = (
+    request: Partial<T_IPC_Switch>,
+    handler: REQUEST_HANDLER = REQUEST_HANDLER.EXECUTE,
+) => {
+    ipcRenderer.send(IPC_CHANNELS.SWITCH, handler, {
+        ...request,
+        scene: request.scene || BROWSER,
+    })
     window.location.href = 'loading.html'
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
 
 export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl')
-
-export class SwitchEvent extends CustomEvent<CENTRE_PAGES> {
-    constructor(detail: CENTRE_PAGES) {
-        super(CustomEvents.SWITCH, { detail })
-    }
-}
 
 export const tagNameIs = (
     element: HTMLElement | EventTarget | null,
@@ -55,7 +44,7 @@ export const tagNameIs = (
 export const getSection = <T extends Element>(id: string) => {
     const element = document.querySelector<Element>(`#section-${id}`) as T
     if (!element) {
-        // TODO ipc
+        navigate({ scene: BROWSER }, REQUEST_HANDLER.EXECUTE)
         throw new Error(`No #section-${id} element exist`)
     }
     return element

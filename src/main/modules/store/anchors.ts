@@ -5,13 +5,9 @@ import type { T_Bookmark } from '@src/common/types'
 type Props = { anchors: T_Bookmark[] }
 
 export class Anchors extends Store<Props> {
-    static instance: Anchors
-    static getInstance(): Anchors {
-        if (!Anchors.instance) {
-            Anchors.instance = new Anchors('anchors', { anchors: [] })
-            Anchors.instance.parse()
-        }
-        return Anchors.instance
+    constructor() {
+        super('anchors', { anchors: [] })
+        this.parse()
     }
 
     get() {

@@ -12,13 +12,12 @@ import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import {
+    EMOJI,
     IPC_CHANNELS,
     MAX_HISTORY,
-    RequestHandler,
+    REQUEST_HANDLER,
     SEARCH_ENGINES,
 } from '@src/common/constants'
-/* T_Type */
-import type { Info } from '@src/common/types'
 
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
@@ -33,7 +32,7 @@ class Settings extends A_Entry {
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Title
-        const h1 = new H1('Settings ⚙️').prependTo(getSection('title'))
+        const h1 = new H1(`Settings ${EMOJI.SETTINGS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Version
@@ -95,21 +94,20 @@ class Settings extends A_Entry {
             return
         }
 
-        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.MODIFY, {
-            maxHistory,
-            adBlocker,
-            searchEngine,
-        } satisfies Partial<Info>)
-
-        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-
-            if (handler !== RequestHandler.RESULT) {
-                return
+        ipcRenderer.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.MODIFY, {
+            data: {
+                maxHistory,
+                adBlocker,
+                searchEngine,
+            },
+        })
+        ipcRenderer.once(IPC_CHANNELS.STATUS, (handler) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                    this.button?.enable()
+                    this.notification.info('Settings are saved successfully!')
+                // TODO Failed
             }
-
-            this.button?.enable()
-            this.notification.info('Settings are saved successfully!')
         })
     }
 }

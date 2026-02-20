@@ -8,7 +8,7 @@ import {
     goToIndex,
     historyClear,
 } from '@test/mock-electron'
-import { browser, setAdBlocker, loadURL } from '@test/mock-browser'
+import { browser, setAdBlocker } from '@test/mock-browser'
 import {
     anchors,
     bookmarks,
@@ -38,16 +38,15 @@ jest.doMock('@main/modules/view/browser', browser)
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import {
-    RequestHandler,
+    REQUEST_HANDLER,
     IPC_CHANNELS,
     CENTRE_PAGES,
     BROWSER,
-    CURRENT_PAGE_INFO,
 } from '@src/common/constants'
 
 import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
 import { CenterView } from '../view/centre'
-import { Scenes } from '@src/common/types'
+import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
@@ -70,124 +69,138 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onInfo > request', async () => {
-        await ipc[0][1](null, RequestHandler.REQUEST)
+        await ipc[0][1](null, REQUEST_HANDLER.REQUEST, {
+            request: ['title'],
+        } satisfies T_IPC_Status)
         expect(send).toHaveBeenCalled()
     })
 
     test('onInfo > request > current page info', async () => {
-        ipc[0][1](
-            null,
-            RequestHandler.REQUEST,
-            CURRENT_PAGE_INFO,
-            'title',
-            'url',
-        )
+        ipc[0][1](null, REQUEST_HANDLER.REQUEST, {
+            request: ['title', 'url'],
+        } satisfies T_IPC_Status)
+
         expect(send).toHaveBeenCalledWith(
-            IPC_CHANNELS.INFO,
-            RequestHandler.RESPONSE,
-            { title: 'test title', url: 'https://sujinc.com/focus-browser' },
+            IPC_CHANNELS.STATUS,
+            REQUEST_HANDLER.RESPONSE,
+            {
+                data: {
+                    title: 'test title',
+                    url: 'https://sujinc.com/focus-browser',
+                },
+            },
         )
     })
 
     test('cleaner > REMOVE > clear cache', async () => {
-        await ipc[10][1](null, RequestHandler.REMOVE, 'cacheSize')
+        await ipc[10][1](null, REQUEST_HANDLER.REMOVE, { request: 'cacheSize' })
         expect(clearCache).toHaveBeenCalled()
     })
 
     test('onInfo > MODIFY > change adBlocker setting', async () => {
-        await ipc[0][1](null, RequestHandler.MODIFY, { adBlocker: true })
+        await ipc[0][1](null, REQUEST_HANDLER.MODIFY, {
+            data: { adBlocker: true },
+        })
         expect(setAdBlocker).toHaveBeenCalled()
         expect(statusMerge).toHaveBeenCalled()
     })
 
     test('onSwitch > switch scene', () => {
-        ipc[1][1](null, CENTRE_PAGES.ADDRESS)
-        expect(switchFn).toHaveBeenCalledWith(CENTRE_PAGES.ADDRESS)
+        ipc[1][1](null, REQUEST_HANDLER.EXECUTE, {
+            scene: CENTRE_PAGES.ADDRESS,
+        } satisfies T_IPC_Switch)
+        expect(switchFn).toHaveBeenCalledWith({
+            scene: CENTRE_PAGES.ADDRESS,
+        } satisfies T_IPC_Switch)
     })
 
     test('onSwitch > switch scene', () => {
-        ipc[1][1](null, BROWSER, 'test-url')
-        expect(switchFn).toHaveBeenCalledWith(BROWSER)
-        expect(loadURL).toHaveBeenCalled()
+        ipc[1][1](null, REQUEST_HANDLER.EXECUTE, {
+            scene: BROWSER,
+            address: 'test-url',
+        })
+        expect(switchFn).toHaveBeenCalledWith({
+            address: 'test-url',
+            scene: BROWSER,
+        })
     })
 
     test('onSwitch > click anchor', () => {
-        ipc[1][1](null, BROWSER, 'test-url', RequestHandler.REMOVE)
-        expect(switchFn).toHaveBeenCalledWith(BROWSER)
+        ipc[1][1](null, REQUEST_HANDLER.REMOVE, {
+            scene: BROWSER,
+            address: 'test-url',
+        })
+        expect(switchFn).toHaveBeenCalledWith({
+            address: 'test-url',
+            scene: BROWSER,
+        })
         expect(anchorRemove).toHaveBeenCalled()
     })
 
     test('onHistory > request', () => {
-        ipc[2][1](null, RequestHandler.REQUEST)
+        ipc[2][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.HISTORY,
-            RequestHandler.RESPONSE,
+            REQUEST_HANDLER.RESPONSE,
             [],
         )
     })
 
     test('onHistory > move to index', () => {
-        ipc[2][1](null, RequestHandler.EXECUTE, 2)
-        expect(switchFn).toHaveBeenCalledWith(BROWSER)
+        ipc[2][1](null, REQUEST_HANDLER.EXECUTE, [{ id: '2' }])
+        expect(switchFn).toHaveBeenCalledWith({ scene: BROWSER })
         expect(goToIndex).toHaveBeenCalledWith(2)
     })
 
     test('onHistory > clear', () => {
-        ipc[2][1](null, RequestHandler.REMOVE)
+        ipc[2][1](null, REQUEST_HANDLER.REMOVE)
         expect(historyClear).toHaveBeenCalled()
     })
 
     test('onBookmarks > request', () => {
-        ipc[3][1](null, RequestHandler.REQUEST)
+        ipc[3][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.BOOKMARK,
-            RequestHandler.RESPONSE,
+            REQUEST_HANDLER.RESPONSE,
             [],
-            false,
         )
     })
 
     test('onBookmarks > add', () => {
-        ipc[3][1](null, RequestHandler.ADD, { url: '1' })
+        ipc[3][1](null, REQUEST_HANDLER.ADD, [{ url: '1' }])
         expect(bookmarkPush).toHaveBeenCalledWith({ url: '1' })
     })
 
     test('onBookmarks > update', () => {
-        ipc[3][1](null, RequestHandler.MODIFY, { url: '1' }, 1)
+        ipc[3][1](null, REQUEST_HANDLER.MODIFY, [{ url: '1' }])
         expect(bookmarkUpdate).toHaveBeenCalledWith({ url: '1' })
     })
 
     test('onBookmarks > remove', () => {
-        ipc[3][1](null, RequestHandler.REMOVE, null, 1)
-        expect(bookmarkRemove).toHaveBeenCalledWith(1)
+        ipc[3][1](null, REQUEST_HANDLER.REMOVE, [{ id: 'id' }])
+        expect(bookmarkRemove).toHaveBeenCalledWith('id')
     })
 
     test('onAnchors > request', () => {
-        ipc[4][1](null, RequestHandler.REQUEST)
+        ipc[4][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.ANCHOR,
-            RequestHandler.RESPONSE,
+            REQUEST_HANDLER.RESPONSE,
             [],
         )
     })
 
-    test('onAnchors > remove', () => {
-        ipc[4][1](null, RequestHandler.REMOVE, 'url')
-        expect(anchorRemove).toHaveBeenCalledWith('url')
-    })
-
     test('onPopupBlocker > request', () => {
-        ipc[5][1](null, RequestHandler.REQUEST)
+        ipc[5][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.POPUP_BLOCKER,
-            RequestHandler.RESPONSE,
-            [],
-            [],
+            REQUEST_HANDLER.RESPONSE,
+            [[], []],
         )
     })
 
     test('onPopupBlocker > toggle', () => {
-        ipc[5][1](null, RequestHandler.MODIFY, 'host')
+        ipc[5][1](null, REQUEST_HANDLER.MODIFY, [['host']])
         expect(popupBlockerToggle).toHaveBeenCalledWith('host')
     })
 })

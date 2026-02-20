@@ -1,16 +1,12 @@
 import { type Rectangle } from 'electron'
 import { Store } from '@main/modules/store/store'
-import type { Info, StatusProps } from '@src/common/types'
+import type { T_Status_Props, T_Status_Store_Props } from '@src/common/types'
 import { DEFAULT_STATUS } from '@src/common/constants'
 
-export class Status extends Store<StatusProps> {
-    static instance: Status
-    static getInstance(): Status {
-        if (!Status.instance) {
-            Status.instance = new Status('status', DEFAULT_STATUS)
-            Status.instance.parse()
-        }
-        return Status.instance
+export class Status extends Store<T_Status_Store_Props> {
+    constructor() {
+        super('status', DEFAULT_STATUS)
+        this.parse()
     }
 
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
@@ -28,7 +24,7 @@ export class Status extends Store<StatusProps> {
         return bounds as Rectangle
     }
 
-    public merge(value: Info) {
+    public merge(value: T_Status_Props) {
         // Exclude none-StatusProps
         const {
             /* eslint-disable @typescript-eslint/no-unused-vars */

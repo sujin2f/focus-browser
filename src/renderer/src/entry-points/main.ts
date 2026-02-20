@@ -5,6 +5,7 @@ import { checkElectron } from '@src/renderer/src/utils'
 import { Card } from '@src/renderer/src/template-parts/card'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
+import { EMOJI, Menu } from '@src/common/constants'
 
 type T_Card = {
     title: string
@@ -14,43 +15,43 @@ type T_Card = {
 
 const cards: Record<string, T_Card> = {
     bookmarks: {
-        title: '🔖 Bookmark (B)',
+        title: `${EMOJI[Menu.ADD_BOOKMARK]} Bookmark (B)`,
         description: 'Your Bookmarks',
         destination: 'bookmarks.html',
     },
     anchors: {
-        title: '⚓️ Anchor (A)',
+        title: `${EMOJI[Menu.ADD_ANCHOR]} Anchor (A)`,
         description:
             'Temporary bookmark that will be deleted once you clicked it.',
         destination: 'anchors.html',
     },
     history: {
-        title: '📝 History (H)',
+        title: `${EMOJI.HISTORY} History (H)`,
         description: 'Navigation history',
         destination: 'history.html',
     },
     popup: {
-        title: '👮 Popup Blocker (P)',
+        title: `${EMOJI.POPUP_BLOCKER} Popup Blocker (P)`,
         description: 'Manage Popup Blocker',
         destination: 'popup.html',
     },
     keystrokes: {
-        title: '🎹 Keystroke (K)',
+        title: `${EMOJI.KEYSTROKES} Keystroke (K)`,
         description: 'Manage Keystrokes',
         destination: 'keystrokes.html',
     },
     shortcuts: {
-        title: '🏁 Shortcuts (S)',
+        title: `${EMOJI.SHORTCUTS} Shortcuts (S)`,
         description: 'Assign keyboard shortcuts.',
         destination: 'shortcuts.html',
     },
     setting: {
-        title: '⚙️ Settings',
+        title: `${EMOJI.SETTINGS} Settings`,
         description: '',
         destination: 'settings.html',
     },
     cleaner: {
-        title: '🧼 Cleaner',
+        title: `${EMOJI.CLEANER} Cleaner`,
         description: 'Clear cache, history, and else',
         destination: 'cleaner.html',
     },

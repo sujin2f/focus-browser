@@ -5,7 +5,7 @@ import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { Button } from '@src/renderer/src/template-parts/button'
 /* CONSTANTS */
-import { BROWSER, IPC_CHANNELS } from '@src/common/constants'
+import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Offline extends A_Entry {
     constructor() {
@@ -26,7 +26,10 @@ class Offline extends A_Entry {
     }
 
     private reload() {
-        ipcRenderer.send(IPC_CHANNELS.SWITCH, BROWSER, 'reload')
+        ipcRenderer.send(IPC_CHANNELS.SWITCH, REQUEST_HANDLER.EXECUTE, {
+            reloading: true,
+            scene: BROWSER,
+        })
     }
 }
 

@@ -1,11 +1,6 @@
 import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
-import {
-    byteToSize,
-    checkElectron,
-    getSection,
-    ipcRenderer,
-} from '@src/renderer/src/utils'
+import { byteToSize, checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
@@ -13,9 +8,7 @@ import { Card } from '@src/renderer/src/template-parts/card'
 import { Loading } from '@src/renderer/src/template-parts/loading'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
-/* T_Types */
-import { T_Cleaner } from '@src/common/types'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Cleaner extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
@@ -27,11 +20,9 @@ class Cleaner extends A_Entry {
         }
         this.ready = false
         new Loading().appendTo(this.cache.description)
-        ipcRenderer.send(
-            IPC_CHANNELS.CLEANER,
-            RequestHandler.REMOVE,
-            'cacheSize',
-        )
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'cacheSize',
+        })
     })
     private indexedDB = new Card('IndexedDB')
         .appendTo('grid')
@@ -41,11 +32,9 @@ class Cleaner extends A_Entry {
             }
             this.ready = false
             new Loading().appendTo(this.indexedDB.description)
-            ipcRenderer.send(
-                IPC_CHANNELS.CLEANER,
-                RequestHandler.REMOVE,
-                'indexedDB',
-            )
+            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+                request: 'indexedDB',
+            })
         })
     private anchor = new Card('Anchor').appendTo('grid').setOnClick(() => {
         if (!this.ready) {
@@ -53,7 +42,9 @@ class Cleaner extends A_Entry {
         }
         this.ready = false
         new Loading().appendTo(this.anchor.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'anchor')
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'anchor',
+        })
     })
     private history = new Card('History').appendTo('grid').setOnClick(() => {
         if (!this.ready) {
@@ -61,7 +52,9 @@ class Cleaner extends A_Entry {
         }
         this.ready = false
         new Loading().appendTo(this.history.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REMOVE, 'history')
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'history',
+        })
     })
     private popups = new Card('Blocked Popups')
         .appendTo('grid')
@@ -71,18 +64,16 @@ class Cleaner extends A_Entry {
             }
             this.ready = false
             new Loading().appendTo(this.popups.description)
-            ipcRenderer.send(
-                IPC_CHANNELS.CLEANER,
-                RequestHandler.REMOVE,
-                'popups',
-            )
+            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+                request: 'popups',
+            })
         })
 
     constructor() {
         super()
 
         // Title
-        const h1 = new H1('Cleaner 🧼').prependTo(getSection('title'))
+        const h1 = new H1(`Cleaner ${EMOJI.CLEANER}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         new Loading().appendTo(this.cache.description)
@@ -95,26 +86,22 @@ class Cleaner extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST, {
+            request: '',
+        })
 
-        ipcRenderer.on(IPC_CHANNELS.CLEANER, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
-                return
-            }
+        ipcRenderer.on(IPC_CHANNELS.CLEANER, (handler, arg) => {
+            const { response } = arg!
 
-            const sizes = args[1] as T_Cleaner
-            const updated = args[2] as boolean
-
-            if (updated) {
+            if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
                 this.notification.info('Cleaned!')
             }
 
-            this.cache.description = byteToSize(sizes.cacheSize)
-            this.indexedDB.description = byteToSize(sizes.indexedDB)
-            this.anchor.description = sizes.anchors.toString()
-            this.history.description = sizes.history.toString()
-            this.popups.description = sizes.popup.toString()
+            this.cache.description = byteToSize(response!.cacheSize)
+            this.indexedDB.description = byteToSize(response!.indexedDB)
+            this.anchor.description = response!.anchors.toString()
+            this.history.description = response!.history.toString()
+            this.popups.description = response!.popup.toString()
             this.ready = true
         })
     }

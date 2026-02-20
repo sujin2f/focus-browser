@@ -8,7 +8,7 @@ import { Button } from '@src/renderer/src/template-parts/button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -22,7 +22,7 @@ class History extends A_ListSearch<T_Bookmark> {
         this.request()
 
         // Title
-        const h1 = new H1('History 📝').prependTo('title')
+        const h1 = new H1(`History ${EMOJI.HISTORY}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Clear History
@@ -30,54 +30,58 @@ class History extends A_ListSearch<T_Bookmark> {
             .prependTo('buttons')
             .setOnClick(() => {
                 this.button.disable()
-                ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REMOVE)
-
-                ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-                    const handler = args[0] as RequestHandler
-                    if (handler !== RequestHandler.RESULT) {
-                        return
-                    }
-
-                    this.button.enable()
-                    this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-                        data: bookmark,
-                        items: [] as ListItem[],
-                    }))
-
-                    this.renderList()
-                    this.notification.info('History cleared successfully!')
-                })
+                ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
             })
+            .disable()
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.HISTORY, RequestHandler.REQUEST)
-
-        ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
-                return
+        ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.on(IPC_CHANNELS.HISTORY, (handler, history = []) => {
+            this.button.enable()
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE:
+                    this.handleResponse(history)
+                    return
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                    this.handleResponse(history)
+                    this.notification.info('History cleared successfully!')
+                    return
+                case REQUEST_HANDLER.RESPONSE_FAIL:
+                    this.notification.info('History cleared failed!')
+                    return
             }
-
-            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-                data: bookmark,
-                items: [] as ListItem[],
-            }))
-            this.renderList()
         })
+    }
+
+    private handleResponse(history: T_Bookmark[]) {
+        this.items = history.map((bookmark) => ({
+            data: bookmark,
+            items: [] as ListItem[],
+        }))
+        this.renderList()
     }
 
     renderList() {
         super.renderList()
 
-        this.items.forEach(({ data: history, items }, index) => {
+        const reversed = this.items.reverse()
+        const length = this.items.length
+
+        reversed.forEach(({ data: history, items }, index) => {
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
-                        RequestHandler.EXECUTE,
-                        index,
+                        REQUEST_HANDLER.EXECUTE,
+                        [
+                            {
+                                id: (length - 1 - index).toString(),
+                                url: '',
+                                title: '',
+                            },
+                        ],
                     )
                 })
             items.push(item)

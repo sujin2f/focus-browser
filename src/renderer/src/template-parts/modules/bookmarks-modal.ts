@@ -8,7 +8,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Select } from '@src/renderer/src/template-parts/select'
 import { Option } from '@src/renderer/src/template-parts/option'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -54,11 +54,17 @@ export class BookmarkModal extends Modal {
                 if (isNaN(this.index)) {
                     return
                 }
+                if (!this.bookmark) {
+                    return
+                }
+                if (!this.bookmark.id) {
+                    return
+                }
+
                 ipcRenderer.send(
                     IPC_CHANNELS.BOOKMARK,
-                    RequestHandler.REMOVE,
-                    {},
-                    this.index,
+                    REQUEST_HANDLER.REMOVE,
+                    [this.bookmark],
                 )
             })
 
@@ -140,29 +146,35 @@ export class BookmarkModal extends Modal {
         const parent = this.folder.value
 
         if (!isNaN(this.index)) {
+            if (!this.bookmark) {
+                return
+            }
+            if (!this.bookmark.id) {
+                return
+            }
+
             // Edit
-            ipcRenderer.send(
-                IPC_CHANNELS.BOOKMARK,
-                RequestHandler.MODIFY,
+            ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, [
                 {
-                    id: this.bookmark?.id || '',
+                    id: this.bookmark.id,
                     title: this.title.value,
                     url,
                     parent,
                     shortcut: this.shortcut.value,
-                } satisfies T_Bookmark,
-                this.index,
-            )
+                },
+            ])
             return
         }
 
         // Add
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.ADD, {
-            id: '',
-            title: this.title.value,
-            url,
-            parent,
-            shortcut: this.shortcut.value,
-        } satisfies T_Bookmark)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, [
+            {
+                id: '',
+                title: this.title.value,
+                url,
+                parent,
+                shortcut: this.shortcut.value,
+            },
+        ])
     }
 }

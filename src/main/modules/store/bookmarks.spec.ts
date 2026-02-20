@@ -15,7 +15,7 @@ import { Bookmarks } from '@main/modules/store/bookmarks'
 
 describe('Bookmarks store (module)', () => {
     test('singleton exists and push persists bookmark', () => {
-        const bookmarks = Bookmarks.getInstance()
+        const bookmarks = new Bookmarks()
 
         // Get
         expect(
@@ -51,7 +51,7 @@ describe('Bookmarks store (module)', () => {
         ])
 
         // Remove
-        bookmarks.remove(1)
+        bookmarks.remove(bookmarks.get()[1].id)
         expect(
             bookmarks.get().map((bookmark) => ({
                 url: bookmark.url,

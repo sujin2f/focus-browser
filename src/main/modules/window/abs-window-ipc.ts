@@ -7,12 +7,11 @@ import {
 import { Logger } from '@src/common/logger'
 import {
     IPC_CHANNELS,
-    RequestHandler,
+    REQUEST_HANDLER,
     BROWSER,
     LogTypes,
     MainEventTypes,
     CENTRE_PAGES,
-    NAVIGATION,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -26,7 +25,14 @@ import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { isBeta, isTest } from '@src/common/utils'
 import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
 /* T_Types */
-import type { Scenes, T_Bookmark, Info, T_Cleaner } from '@src/common/types'
+import type {
+    T_Bookmark,
+    T_Status_Props,
+    T_Cleaner,
+    T_IPC_Status,
+    T_IPC_Switch,
+    T_IPC_Message,
+} from '@src/common/types'
 
 /**
  * All starts with here
@@ -35,7 +41,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
 
-        ipcMain.on(IPC_CHANNELS.INFO, this.onInfo.bind(this))
+        ipcMain.on(IPC_CHANNELS.STATUS, this.onStatus.bind(this))
         ipcMain.on(IPC_CHANNELS.SWITCH, this.onSwitch.bind(this))
         ipcMain.on(IPC_CHANNELS.HISTORY, this.onHistory.bind(this))
         ipcMain.on(IPC_CHANNELS.BOOKMARK, this.onBookmarks.bind(this))
@@ -66,7 +72,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
 
             case MainEventTypes.SWITCH:
-                this.switch(params[0] as CENTRE_PAGES)
+                this.switch({ scene: params[0] as CENTRE_PAGES })
                 return
 
             case MainEventTypes.TITLE:
@@ -75,7 +81,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onLog(_: IpcMainEvent, type: LogTypes, ...params: unknown[]) {
+    private onLog(
+        _: IpcMainEvent,
+        __: REQUEST_HANDLER,
+        arg: [LogTypes, unknown[]],
+    ) {
+        const [type, params] = arg
         switch (type) {
             case LogTypes.ERROR:
                 Logger.getInstance().error(...params)
@@ -92,8 +103,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onFind(_: IpcMainEvent, handler: RequestHandler, text: string) {
-        if (handler !== RequestHandler.REQUEST) {
+    private onFind(_: IpcMainEvent, handler: REQUEST_HANDLER, text: string) {
+        if (handler !== REQUEST_HANDLER.REQUEST) {
             return
         }
 
@@ -105,78 +116,92 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async onInfo(
+    private async onStatus(
         _: IpcMainEvent,
-        handler: RequestHandler,
-        data: Partial<Info>,
-        ...requestKeys: (keyof Info)[]
+        handler: REQUEST_HANDLER,
+        request: T_IPC_Status,
     ) {
+        Logger.getInstance().info(
+            `IPC onStatus: ${handler}, ${JSON.stringify(request)}`,
+        )
+
         /**
          * Modifying status
          */
-        if (handler === RequestHandler.MODIFY) {
-            const status = Status.getInstance()
-            status.merge(data)
+        if (handler === REQUEST_HANDLER.MODIFY && request.data) {
+            const status = new Status()
+            status.merge(request.data)
             status.save()
 
             // If adBlocker setting changed, reset.
-            if (Object.prototype.hasOwnProperty.call(data, 'adBlocker')) {
+            if (
+                Object.prototype.hasOwnProperty.call(request.data, 'adBlocker')
+            ) {
                 await this.browser.setAdBlocker()
             }
 
-            this.sendResult(IPC_CHANNELS.INFO)
+            // TODO Failed
+            this.sendResult(IPC_CHANNELS.STATUS)
             return
         }
 
-        if (handler === RequestHandler.REQUEST) {
-            await this.sendInfo(data as string as keyof Info, ...requestKeys)
+        if (handler === REQUEST_HANDLER.REQUEST && request.request) {
+            await this.sendStatus(...request.request)
         }
     }
 
     private async onSwitch(
         _: IpcMainEvent,
-        scene: Scenes,
-        address?: string,
-        handler?: RequestHandler,
+        handler: REQUEST_HANDLER,
+        request: T_IPC_Switch,
     ) {
-        // TODO callback
-        if (handler === RequestHandler.REMOVE && address) {
-            Anchors.getInstance().remove(address)
-            Anchors.getInstance().save()
+        Logger.getInstance().info(
+            `IPC onSwitch: ${handler}, ${JSON.stringify(request)}`,
+        )
+
+        if (
+            handler !== REQUEST_HANDLER.REMOVE &&
+            handler !== REQUEST_HANDLER.EXECUTE
+        ) {
+            return
         }
 
-        if (address) {
-            this.browser.initialized = true
-            this.title = 'Loading...'
-            if (address === 'reload') {
-                this.browser.reload()
-            } else if (address === NAVIGATION.LAST_VISIT) {
-                await this.browser.loadLastVisit()
-            } else if (address === NAVIGATION.SEARCH_ENGINE) {
-                this.browser.searchKeyword('')
-            } else {
-                this.browser.loadURL(address)
-            }
+        // Visit Anchor
+        if (handler === REQUEST_HANDLER.REMOVE && request.address) {
+            const anchors = new Anchors()
+            anchors.remove(request.address)
+            anchors.save()
         }
-        this.switch(scene)
+
+        this.switch(request)
     }
 
-    private onHistory(_: IpcMainEvent, handler: RequestHandler, index: number) {
+    private onHistory(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        history: T_Bookmark[],
+    ) {
         switch (handler) {
-            case RequestHandler.REQUEST:
-                this.centre.webContents.send(
+            case REQUEST_HANDLER.REQUEST: {
+                const response = this.browser.initialized
+                    ? (this.browser.webContents.navigationHistory.getAllEntries() as T_Bookmark[])
+                    : []
+                this.centre.send(
                     IPC_CHANNELS.HISTORY,
-                    RequestHandler.RESPONSE,
-                    this.browser.webContents.navigationHistory.getAllEntries(),
+                    REQUEST_HANDLER.RESPONSE,
+                    response,
+                )
+                return
+            }
+
+            case REQUEST_HANDLER.EXECUTE:
+                this.switch({ scene: BROWSER })
+                this.browser.webContents.navigationHistory.goToIndex(
+                    parseInt(history[0].id),
                 )
                 return
 
-            case RequestHandler.EXECUTE:
-                this.switch(BROWSER)
-                this.browser.webContents.navigationHistory.goToIndex(index)
-                return
-
-            case RequestHandler.REMOVE:
+            case REQUEST_HANDLER.REMOVE:
                 this.browser.webContents.navigationHistory.clear()
                 this.sendResult(IPC_CHANNELS.HISTORY)
                 return
@@ -185,150 +210,148 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
     private onBookmarks(
         _: IpcMainEvent,
-        handler: RequestHandler,
-        bookmark: T_Bookmark,
-        index: number,
+        handler: REQUEST_HANDLER,
+        bookmarks: T_Bookmark[],
     ) {
-        const bookmarks = Bookmarks.getInstance()
-        const sendBookmarks = (updated: boolean = false) => {
-            const bookmarksStore = bookmarks.get()
-            Logger.getInstance().info(
-                `IPC sendBookmarks: ${bookmarksStore.length}`,
-            )
-            this.centre.webContents.send(
-                IPC_CHANNELS.BOOKMARK,
-                RequestHandler.RESPONSE,
-                bookmarksStore,
-                updated,
-            )
+        const store = new Bookmarks()
+        const sendBookmarks = (handler: REQUEST_HANDLER) => {
+            const bookmarks = store.get()
+            Logger.getInstance().info(`IPC sendBookmarks: ${bookmarks.length}`)
+            this.centre.send(IPC_CHANNELS.BOOKMARK, handler, bookmarks)
         }
 
         switch (handler) {
-            case RequestHandler.REQUEST:
-                sendBookmarks()
+            case REQUEST_HANDLER.REQUEST:
+                sendBookmarks(REQUEST_HANDLER.RESPONSE)
                 return
-            case RequestHandler.ADD:
-                bookmarks.push(bookmark)
-                bookmarks.save()
-                sendBookmarks(true)
+            case REQUEST_HANDLER.ADD:
+                store.push(bookmarks[0])
+                store.save()
+                sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
                 return
-            case RequestHandler.MODIFY:
-                bookmarks.update(bookmark)
-                bookmarks.save()
-                sendBookmarks(true)
+            case REQUEST_HANDLER.MODIFY:
+                store.update(bookmarks[0])
+                store.save()
+                sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
                 return
-            case RequestHandler.REMOVE:
-                bookmarks.remove(index)
-                bookmarks.save()
-                sendBookmarks(true)
+            case REQUEST_HANDLER.REMOVE: {
+                if (!bookmarks[0].id) {
+                    sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL)
+                    return
+                }
+                const result = store.remove(bookmarks[0].id)
+                if (result) {
+                    store.save()
+                    sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
+                    return
+                }
+                sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL)
                 return
+            }
         }
     }
 
-    private onAnchors(_: IpcMainEvent, handler: RequestHandler, url: string) {
+    private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {
+        const anchors = new Anchors()
         switch (handler) {
-            case RequestHandler.REQUEST:
-                this.centre.webContents.send(
+            case REQUEST_HANDLER.REQUEST:
+                this.centre.send(
                     IPC_CHANNELS.ANCHOR,
-                    RequestHandler.RESPONSE,
-                    Anchors.getInstance().get(),
+                    REQUEST_HANDLER.RESPONSE,
+                    anchors.get(),
                 )
-                return
-
-            case RequestHandler.REMOVE:
-                Anchors.getInstance().remove(url)
-                Anchors.getInstance().save()
                 return
         }
     }
 
     private onPopupBlocker(
         _: IpcMainEvent,
-        handler: RequestHandler,
-        host: string,
+        handler: REQUEST_HANDLER,
+        hosts: [string[]],
     ) {
         switch (handler) {
-            case RequestHandler.REQUEST: {
-                this.sendPopupBlocker()
+            case REQUEST_HANDLER.REQUEST: {
+                this.sendPopupBlocker(REQUEST_HANDLER.RESPONSE)
                 return
             }
 
-            case RequestHandler.MODIFY: {
+            case REQUEST_HANDLER.MODIFY: {
+                // TODO Fail
                 const popupBlocker = PopupBlocker.getInstance()
-                popupBlocker.toggle(host)
+                popupBlocker.toggle(hosts[0][0])
                 popupBlocker.save()
-                this.sendPopupBlocker()
+                this.sendPopupBlocker(REQUEST_HANDLER.RESPONSE_SUCCESS)
                 return
             }
         }
     }
 
-    private sendPopupBlocker() {
+    private sendPopupBlocker(handler: REQUEST_HANDLER) {
         const blocked = PopupBlocker.getInstance().get('blocked')
         const allowed = PopupBlocker.getInstance().get('allowed')
-        Logger.getInstance().log('Popup blocker request: ', blocked, allowed)
-        this.centre.webContents.send(
-            IPC_CHANNELS.POPUP_BLOCKER,
-            RequestHandler.RESPONSE,
+        Logger.getInstance().log(
+            'Popup blocker request: ',
             Array.from(blocked),
             Array.from(allowed),
         )
+        this.centre.send(IPC_CHANNELS.POPUP_BLOCKER, handler, [
+            Array.from(blocked),
+            Array.from(allowed),
+        ])
     }
 
-    private async sendInfo(...requests: (keyof Info)[]) {
-        const info: Partial<Info> = {}
-        const status = Status.getInstance().data
+    private async sendStatus(...requests: (keyof T_Status_Props)[]) {
+        const response: T_Status_Props = {}
+        const status = new Status().data
 
         if (requests.includes('maxHistory')) {
-            info.maxHistory = status.maxHistory
+            response.maxHistory = status.maxHistory
         }
 
         if (requests.includes('adBlocker')) {
-            info.adBlocker = status.adBlocker
+            response.adBlocker = status.adBlocker
         }
 
         if (requests.includes('adBlockerStatus')) {
-            info.adBlockerStatus = this.browser.blocker && true
+            response.adBlockerStatus = this.browser.blocker && true
         }
 
         if (requests.includes('title')) {
-            info.title = this.browser.webContents.getTitle()
+            response.title = this.browser.webContents.getTitle()
         }
 
         if (requests.includes('url')) {
-            info.url = this.browser.webContents.getURL()
+            response.url = this.browser.webContents.getURL()
         }
 
         if (requests.includes('searchEngine')) {
-            info.searchEngine = status.searchEngine
+            response.searchEngine = status.searchEngine
         }
 
-        Logger.getInstance().info(`IPC sending: ${JSON.stringify(info)}`)
+        Logger.getInstance().info('IPC sending: ', response)
 
-        this.centre.webContents.send(
-            IPC_CHANNELS.INFO,
-            RequestHandler.RESPONSE,
-            info,
-        )
+        this.centre.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.RESPONSE, {
+            data: response,
+        })
     }
 
     private async onKeystrokes(
         _: IpcMainEvent,
-        handler: RequestHandler,
+        handler: REQUEST_HANDLER,
         keystrokes: Record<string, string>,
     ) {
         switch (handler) {
-            case RequestHandler.REQUEST: {
-                this.centre.webContents.send(
+            case REQUEST_HANDLER.REQUEST: {
+                this.centre.send(
                     IPC_CHANNELS.KEYSTROKES,
-                    RequestHandler.RESPONSE,
+                    REQUEST_HANDLER.RESPONSE,
                     Keystrokes.getInstance().getKeystrokes(),
                 )
 
                 return
             }
 
-            case RequestHandler.MODIFY: {
+            case REQUEST_HANDLER.MODIFY: {
                 Logger.getInstance().info('Keystroke modification accepted.')
                 const host = Object.keys(keystrokes)[0]
                 if (!host) {
@@ -350,24 +373,26 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
     private async onShortcuts(
         _: IpcMainEvent,
-        handler: RequestHandler,
+        handler: REQUEST_HANDLER,
         shortcuts: Record<string, string>,
     ) {
+        const store = new Shortcut()
         switch (handler) {
-            case RequestHandler.REQUEST: {
-                this.centre.webContents.send(
+            case REQUEST_HANDLER.REQUEST: {
+                this.centre.send(
                     IPC_CHANNELS.SHORTCUTS,
-                    RequestHandler.RESPONSE,
-                    Shortcut.getInstance().getShortcuts(),
+                    REQUEST_HANDLER.RESPONSE,
+                    store.getShortcuts(),
                 )
                 return
             }
 
-            case RequestHandler.MODIFY: {
-                Shortcut.getInstance().update(shortcuts)
-                Shortcut.getInstance().save()
+            case REQUEST_HANDLER.MODIFY: {
+                store.update(shortcuts)
+                store.save()
                 this.resetMenu()
                 this.sendResult(IPC_CHANNELS.SHORTCUTS)
+                // TODO Failed
                 return
             }
         }
@@ -382,38 +407,41 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
      */
     private async onCleaner(
         _: IpcMainEvent,
-        handler: RequestHandler,
-        key: string,
+        handler: REQUEST_HANDLER,
+        { request: key }: T_Cleaner,
     ) {
         const send = async (updated: boolean = false) => {
             const cacheSize =
                 await this.browser.webContents.session.getCacheSize()
-            const anchors = Object.keys(Anchors.getInstance().get()).length
+            const anchors = Object.keys(new Anchors().get()).length
             const history =
                 this.browser.webContents.navigationHistory.getAllEntries()
                     .length
             const popup = PopupBlocker.getInstance().get('blocked')
             const indexedDB = getIndexedDBSize()
 
-            this.centre.webContents.send(
+            this.centre.send(
                 IPC_CHANNELS.CLEANER,
-                RequestHandler.RESPONSE,
+                updated
+                    ? REQUEST_HANDLER.RESPONSE_SUCCESS
+                    : REQUEST_HANDLER.RESPONSE,
                 {
-                    cacheSize,
-                    anchors,
-                    history,
-                    popup: Array.from(popup).length,
-                    indexedDB,
-                } satisfies T_Cleaner,
-                updated,
+                    response: {
+                        cacheSize,
+                        anchors,
+                        history,
+                        popup: Array.from(popup).length,
+                        indexedDB,
+                    },
+                },
             )
         }
 
         switch (handler) {
-            case RequestHandler.REQUEST:
+            case REQUEST_HANDLER.REQUEST:
                 send()
                 return
-            case RequestHandler.REMOVE:
+            case REQUEST_HANDLER.REMOVE:
                 switch (key) {
                     case 'cacheSize':
                         await this.browser.webContents.session.clearCache()
@@ -425,10 +453,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                         send(true)
                         return
 
-                    case 'anchor':
-                        Anchors.getInstance().clear()
+                    case 'anchor': {
+                        const anchors = new Anchors()
+                        anchors.clear()
                         send(true)
                         return
+                    }
 
                     case 'history':
                         this.browser.webContents.navigationHistory.clear()
@@ -445,6 +475,12 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private sendResult(channel: IPC_CHANNELS, result = true) {
-        this.centre.webContents.send(channel, RequestHandler.RESULT, result)
+        // this.centre.send(channel, REQUEST_HANDLER.RESULT, result)
+        this.centre.send(
+            channel as keyof T_IPC_Message,
+            result
+                ? REQUEST_HANDLER.RESPONSE_SUCCESS
+                : REQUEST_HANDLER.RESPONSE_FAIL,
+        )
     }
 }

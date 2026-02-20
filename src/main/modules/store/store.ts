@@ -54,6 +54,7 @@ export class Store<T extends JsonObject> {
 
     // ...and this will set it
     save(..._: unknown[]) {
+        // TODO #122 make async or child process / Not to here directly, but its reference
         // Wait, I thought using the node.js' synchronous APIs was bad form?
         // We're not writing a server so there's not nearly the same IO demand on the process
         // Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,
@@ -72,6 +73,7 @@ export class Store<T extends JsonObject> {
     }
 
     parse() {
+        // TODO #122 make async or child process / Not to here directly, but its reference
         // We'll try/catch it in case the file doesn't exist yet, which will be the case on the first application run.
         // `fs.readFileSync` will return a JSON string which we then parse into a Javascript object
         try {

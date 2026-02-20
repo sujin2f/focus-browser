@@ -1,16 +1,16 @@
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Logger } from '@src/common/logger'
-import type { Info } from '@src/common/types'
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import type { T_Status_Props } from '@src/common/types'
+import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 import '@home/styles/common.css'
 
 export abstract class A_Entry {
-    protected _settings: Partial<Info> = {}
+    protected _settings: T_Status_Props = {}
     protected get settings() {
         return this._settings
     }
-    protected set settings(settings: Partial<Info>) {
+    protected set settings(settings: T_Status_Props) {
         this._settings = settings
         this.callbackUpdateInfo()
     }
@@ -21,29 +21,31 @@ export abstract class A_Entry {
 
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
-            navigate()
+            navigate({})
         }
     }
 
-    protected requestInfo(...keys: (keyof Info)[]) {
+    protected requestInfo(...keys: (keyof T_Status_Props)[]) {
         Logger.getInstance().log(
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
 
-        ipcRenderer.once(IPC_CHANNELS.INFO, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            const setting = args[1] as Info
+        ipcRenderer.once(
+            IPC_CHANNELS.STATUS,
+            (handler, status = { data: {} }) => {
+                if (handler !== REQUEST_HANDLER.RESPONSE) {
+                    return
+                }
+                Logger.getInstance().info(
+                    `[Renderer] Get status ${JSON.stringify(status)}`,
+                )
+                this.settings = { ...this.settings, ...status.data }
+            },
+        )
 
-            if (handler !== RequestHandler.RESPONSE) {
-                return
-            }
-            Logger.getInstance().info(
-                `[Renderer] Get Info ${JSON.stringify(setting)}`,
-            )
-            this.settings = { ...this.settings, ...setting }
+        ipcRenderer.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.REQUEST, {
+            request: keys,
         })
-
-        ipcRenderer.send(IPC_CHANNELS.INFO, RequestHandler.REQUEST, ...keys)
     }
 
     protected callbackUpdateInfo() {}

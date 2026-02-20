@@ -1,17 +1,12 @@
-import type { StatusProps } from '@src/common/types'
+import type { T_Status_Store_Props } from '@src/common/types'
 
 export const MAX_HISTORY = 200
-export const CURRENT_PAGE_INFO = 'current-page-info'
-
-export enum NAVIGATION {
-    LAST_VISIT = 'Last Visit',
-    SEARCH_ENGINE = 'Search Engine',
-}
 
 /**
  * Control centre pages
  */
 export enum CENTRE_PAGES {
+    // TODO merge CENTRE_PAGES, and BROWSER
     RELOAD,
     ADDRESS,
     HISTORY,
@@ -30,7 +25,7 @@ export enum CENTRE_PAGES {
 export const BROWSER = 'scene-browser'
 
 export enum IPC_CHANNELS {
-    INFO = 'INFO',
+    STATUS = 'STATUS',
     SWITCH = 'SWITCH',
     BOOKMARK = 'BOOKMARK',
     HISTORY = 'HISTORY',
@@ -44,31 +39,17 @@ export enum IPC_CHANNELS {
     CLEANER = 'CLEANER',
 }
 
-export enum RequestHandler {
+export enum REQUEST_HANDLER {
     REQUEST = 'REQUEST',
     RESPONSE = 'RESPONSE',
+    RESPONSE_SUCCESS = 'RESPONSE_SUCCESS',
+    RESPONSE_FAIL = 'RESPONSE_FAIL',
     ADD = 'ADD',
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
-    RESULT = 'RESULT',
 }
 
-export enum PageMode {
-    LIST,
-    NEW,
-    EDIT,
-    FIND,
-}
-
-export enum TableAction {
-    EDIT,
-    UPDATE,
-    BLUR,
-    DELETE,
-    EXECUTE,
-    INFO,
-}
 export enum SystemType {
     DARWIN = 'darwin',
     DEFAULT = 'default',
@@ -94,10 +75,10 @@ export enum Menu {
     CUT = 'Cut',
     COPY = 'Copy',
     PASTE = 'Paste',
-    PASTE_KEYSTROKE = '🎹 Paste Keystroke',
+    PASTE_KEYSTROKE = 'Paste Keystroke',
     SELECT_ALL = 'Select All',
-    ADD_BOOKMARK = '🔖 Add Bookmark',
-    ADD_ANCHOR = '⚓️ Add Anchor',
+    ADD_BOOKMARK = 'Add Bookmark',
+    ADD_ANCHOR = 'Add Anchor',
     FULL_SCREEN = 'Toggle Full Screen',
     RESET_ZOOM = 'Reset Zoom',
     ZOOM_IN = 'Zoom In',
@@ -124,6 +105,23 @@ export enum Menu {
     TEST = 'Run Test Block',
 }
 
+export const EMOJI: Record<string, string> = {
+    [Menu.PASTE_KEYSTROKE]: '🎹',
+    [Menu.ADD_BOOKMARK]: '🔖',
+    [Menu.ADD_ANCHOR]: '⚓️',
+    CLEANER: '🧼',
+    HISTORY: '📝',
+    KEYSTROKES: '🎹',
+    POPUP_BLOCKER: '👮',
+    SHORTCUTS: '🏁',
+    SETTINGS: '⚙️',
+    HAND_HEART: '🫰',
+    FOCUS: '🅕',
+    FOLDER_OPEN: '📂',
+    FOLDER_CLOSE: '📁',
+    CHECKED: '✅',
+}
+
 export const SEARCH_ENGINES = {
     DUCKDUCKGO: 'https://duckduckgo.com/?q=',
     GOOGLE: 'https://www.google.com/search?q=',
@@ -132,7 +130,7 @@ export const SEARCH_ENGINES = {
     YAHOO: 'https://search.yahoo.com/search?p=',
 } as const
 
-export const DEFAULT_STATUS: StatusProps = {
+export const DEFAULT_STATUS: T_Status_Store_Props = {
     width: 1024,
     height: 728,
     x: NaN,
@@ -155,10 +153,6 @@ export enum MainEventTypes {
     TITLE = 'TITLE',
     SWITCH = 'SWITCH',
     CONTEXT_MENU = 'CONTEXT_MENU',
-}
-
-export enum CustomEvents {
-    SWITCH = 'switch',
 }
 
 export const DEFAULT_SHORTCUTS: Record<Menu, Record<SystemType, string>> = {

@@ -9,7 +9,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS /> */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Shortcuts extends A_Entry {
     private shortcuts: Record<string, string> = {}
@@ -20,14 +20,13 @@ class Shortcuts extends A_Entry {
 
     constructor() {
         super()
-        this.handleIPC()
         this.request()
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Title
-        const h1 = new H1('Shortcuts 🏁').prependTo('title')
+        const h1 = new H1(`Shortcuts ${EMOJI.SHORTCUTS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
     }
 
@@ -52,25 +51,21 @@ class Shortcuts extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, RequestHandler.REQUEST)
-    }
-
-    private handleIPC() {
-        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-
+        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
             switch (handler) {
-                case RequestHandler.RESPONSE: {
-                    this.shortcuts = args[1] as Record<string, string>
+                case REQUEST_HANDLER.RESPONSE: {
+                    this.shortcuts = shortcuts
                     this.render()
                     return
                 }
 
-                case RequestHandler.RESULT:
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.button?.enable()
                     this.notification.info(
                         'The shortcuts are saved successfully!',
                     )
+                // TODO Failed
             }
         })
     }
@@ -80,16 +75,17 @@ class Shortcuts extends A_Entry {
 
         this.button?.disable()
         const formData = new FormData(this.form)
-        const shortcuts = {
-            'Add Bookmark': formData.get('Add Bookmark')?.toString(),
-            'Add Anchor': formData.get('Add Anchor')?.toString(),
-            'Paste Keystroke': formData.get('Paste Keystroke')?.toString(),
-            'Control Centre': formData.get('Control Centre')?.toString(),
-            'Address Bar': formData.get('Address Bar')?.toString(),
+        const shortcuts: Record<string, string> = {
+            'Add Bookmark': formData.get('Add Bookmark')?.toString() || '',
+            'Add Anchor': formData.get('Add Anchor')?.toString() || '',
+            'Paste Keystroke':
+                formData.get('Paste Keystroke')?.toString() || '',
+            'Control Centre': formData.get('Control Centre')?.toString() || '',
+            'Address Bar': formData.get('Address Bar')?.toString() || '',
         }
         ipcRenderer.send(
             IPC_CHANNELS.SHORTCUTS,
-            RequestHandler.MODIFY,
+            REQUEST_HANDLER.MODIFY,
             shortcuts,
         )
     }

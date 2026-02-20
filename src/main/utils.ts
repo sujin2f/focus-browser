@@ -48,7 +48,7 @@ export const getIndexedDBSize = () => {
     return size
 }
 
-// TODO make async or child process
+// TODO #122 make async or child process
 export const removeIndexedDB = () => {
     const dir = getIndexedDBPath()
     const files = fs.readdirSync(dir, { withFileTypes: true })

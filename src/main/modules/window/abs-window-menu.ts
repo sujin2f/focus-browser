@@ -8,7 +8,12 @@ import {
     type ContextMenuParams,
 } from 'electron'
 
-import type { Scenes, MenuBlock, MenuItems } from '@src/common/types'
+import type {
+    Scenes,
+    MenuBlock,
+    MenuItems,
+    T_IPC_Switch,
+} from '@src/common/types'
 import {
     MenuCategory,
     Menu,
@@ -16,6 +21,7 @@ import {
     BROWSER,
     SystemType,
     DEFAULT_SHORTCUTS,
+    EMOJI,
 } from '@src/common/constants'
 
 import { Bookmarks } from '@main/modules/store/bookmarks'
@@ -125,7 +131,17 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
-                    this.switch(CENTRE_PAGES.FIND)
+                    // TODO #121 Find to child view
+                    // const find = new WebContentsView()
+                    // find.webContents.loadURL('https://google.com')
+                    // find.setBounds({ x: 400, y: 0, width: 400, height: 400 })
+                    // find.setVisible(true)
+                    // this.contentView = new WebContentsView()
+                    // this.contentView.addChildView(this.browser)
+                    // this.contentView.addChildView(find)
+                    // this.contentView.removeChildView(view)
+
+                    this.switch({ scene: CENTRE_PAGES.FIND })
                 },
             },
             [Menu.FIND_NEXT]: {
@@ -179,13 +195,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADDRESS]: {
                 accelerator: this.getShortcut(Menu.ADDRESS),
                 click: () => {
-                    this.switch(CENTRE_PAGES.ADDRESS)
+                    this.switch({ scene: CENTRE_PAGES.ADDRESS })
                 },
             },
             [Menu.CENTRE]: {
                 accelerator: this.getShortcut(Menu.CENTRE),
                 click: () => {
-                    this.switch(CENTRE_PAGES.HOME)
+                    this.switch({ scene: CENTRE_PAGES.HOME })
                 },
             },
             [Menu.s0001]: {},
@@ -327,9 +343,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         return result
     }
+
     private getShortcut(menu: Menu): string {
-        if (Shortcut.getInstance().getShortcut(menu)) {
-            return Shortcut.getInstance().getShortcut(menu)
+        const store = new Shortcut()
+        if (store.getShortcut(menu)) {
+            return store.getShortcut(menu)
         }
 
         const system =
@@ -365,9 +383,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     submenu.push({ type: 'separator' })
                     return
                 }
-
+                const label = `${EMOJI[subKey] ? `${EMOJI[subKey]} ` : ''}${subKey}`
                 submenu.push({
-                    label: subKey,
+                    label,
                     ...value[subKey as keyof typeof value],
                 } satisfies MenuItemConstructorOptions)
             })
@@ -438,7 +456,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             },
             {
                 label: 'Control Centre',
-                click: () => this.switch(CENTRE_PAGES.HOME),
+                click: () => this.switch({ scene: CENTRE_PAGES.HOME }),
             },
             { type: 'separator' },
             {
@@ -510,7 +528,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      */
     private addBookmark() {
         Logger.getInstance().log('addBookmark')
-        const bookmarks = Bookmarks.getInstance()
+        const bookmarks = new Bookmarks()
         const added = bookmarks.push({
             id: '',
             url: this.browser.webContents.getURL(),
@@ -530,7 +548,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
         // Clicking the notification navigates to the bookmark page
         notification.addListener('click', () => {
-            this.switch(CENTRE_PAGES.BOOKMARK)
+            this.switch({ scene: CENTRE_PAGES.BOOKMARK })
         })
         notification.show()
         Logger.getInstance().log('addBookmark >> notification should be shown.')
@@ -541,12 +559,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * behavior but switches to the Anchor page on notification click.
      */
     private addAnchor() {
-        const added = Anchors.getInstance().push({
+        const anchors = new Anchors()
+        const added = anchors.push({
             id: '',
             url: this.browser.webContents.getURL(),
             title: this.browser.webContents.getTitle(),
         })
-        Anchors.getInstance().save()
+        anchors.save()
 
         if (!added) {
             return
@@ -559,15 +578,18 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
         // Clicking the notification navigates to the anchor page
         notification.addListener('click', () => {
-            this.switch(CENTRE_PAGES.ANCHOR)
+            this.switch({ scene: CENTRE_PAGES.ANCHOR })
         })
         notification.show()
     }
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.switch(CENTRE_PAGES.WELCOME)
+        const windowFocus = this.webContents.isFocused()
+        const browserFocus = this.browser.webContents.isFocused()
+        Logger.getInstance().info(`windowFocus`, windowFocus)
+        Logger.getInstance().info(`browserFocus`, browserFocus)
     }
 
-    abstract switch(scene: Scenes): void
+    abstract switch(request: T_IPC_Switch): void
 }

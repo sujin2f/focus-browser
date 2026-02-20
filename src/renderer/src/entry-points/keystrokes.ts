@@ -10,7 +10,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Keystrokes extends A_Entry {
     private keystrokes: Record<string, string> = {}
@@ -23,12 +23,11 @@ class Keystrokes extends A_Entry {
 
     constructor() {
         super()
-        this.handleIPC()
         this.requestInfo('url')
         this.request()
 
         // Title
-        const h1 = new H1('Keystrokes 🎹').prependTo('title')
+        const h1 = new H1(`Keystrokes ${EMOJI.KEYSTROKES}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Form
@@ -65,17 +64,11 @@ class Keystrokes extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.REQUEST)
-    }
-
-    private handleIPC() {
-        ipcRenderer.on(IPC_CHANNELS.KEYSTROKES, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-
+        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.on(IPC_CHANNELS.KEYSTROKES, (handler, keystrokes = {}) => {
             switch (handler) {
-                case RequestHandler.RESPONSE: {
+                case REQUEST_HANDLER.RESPONSE: {
                     this.keystrokes = {}
-                    const keystrokes = args[1] as Record<string, string>
                     const url = this.settings.url
                     if (url) {
                         const host = new URL(url).host
@@ -89,11 +82,13 @@ class Keystrokes extends A_Entry {
                     return
                 }
 
-                case RequestHandler.RESULT:
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.button.enable()
                     this.notification.info(
                         'The keystroke is saved successfully!',
                     )
+
+                // TODO Failed
             }
         })
     }
@@ -113,8 +108,8 @@ class Keystrokes extends A_Entry {
             return
         }
 
-        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, RequestHandler.MODIFY, {
-            [host]: value,
+        ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, REQUEST_HANDLER.MODIFY, {
+            [host]: value || '',
         })
     }
 }

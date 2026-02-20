@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
@@ -13,10 +13,13 @@
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.mjs --config-name=renderer",
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package": "yarn run package:mac --ignore && yarn run package:linux --ignore && yarn run package:win --ignore && yarn run rename",
-        "package:mac": "electron-builder build --publish never --mac && yarn run rename",
-        "package:linux": "electron-builder build --publish never --linux && yarn run rename",
-        "package:win": "electron-builder build --publish never --win && yarn run rename",
+        "package": "yarn build && yarn run package:-mac --ignore && yarn run package:-linux --ignore && yarn run package:-win --ignore && yarn run rename",
+        "package:mac": "yarn build && yarn run package:-mac",
+        "package:-mac": "electron-builder build --publish never --mac && yarn run rename",
+        "package:linux": "yarn build && yarn run package:-linux",
+        "package:-linux": "electron-builder build --publish never --linux && yarn run rename",
+        "package:win": "yarn build && yarn run package:-win",
+        "package:-win": "electron-builder build --publish never --win && yarn run rename",
         "rename": "node ./release/rename-packages.mjs",
         "test": "jest --no-cache --forceExit --coverage",
         "prepare": "husky"

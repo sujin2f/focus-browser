@@ -35,7 +35,7 @@ export abstract class A_ListSearch<T> extends A_List<T> {
                 ;(document.activeElement as HTMLInputElement).blur()
                 return
             }
-            navigate()
+            navigate({})
             return
         }
 

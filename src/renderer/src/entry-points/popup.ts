@@ -6,7 +6,7 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
@@ -17,57 +17,69 @@ class Popup extends A_ListSearch<PopupBlocker> {
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1('Popup Blocker 👮').prependTo('title')
+        const h1 = new H1(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`).prependTo(
+            'title',
+        )
         new BackButton().prependTo(h1.element)
     }
 
     private requestPopupBlockers(): void {
-        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.POPUP_BLOCKER, REQUEST_HANDLER.REQUEST)
 
-        ipcRenderer.on(IPC_CHANNELS.POPUP_BLOCKER, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
-                return
-            }
+        ipcRenderer.on(
+            IPC_CHANNELS.POPUP_BLOCKER,
+            (handler, hosts = [[], []]) => {
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE:
+                        this.handleResponse(hosts)
+                        return
+                    case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                        this.handleResponse(hosts)
+                        // TODO
+                        // this.notification.info('History cleared successfully!')
+                        return
+                    case REQUEST_HANDLER.RESPONSE_FAIL:
+                        // this.notification.info('History cleared failed!')
+                        return
+                }
+            },
+        )
+    }
 
-            this.items = []
+    private handleResponse(hosts: [string[], string[]]) {
+        this.items = []
+        hosts[1].forEach((host) =>
+            this.items.push({
+                data: { host, allowed: true },
+                items: [],
+            }),
+        )
+        hosts[0].forEach((host) =>
+            this.items.push({
+                data: { host, allowed: false },
+                items: [],
+            }),
+        )
 
-            const blocked = args[1] as string[]
-            const allowed = args[2] as string[]
-
-            allowed.forEach((host) =>
-                this.items.push({
-                    data: { host, allowed: true },
-                    items: [],
-                }),
-            )
-            blocked.forEach((host) =>
-                this.items.push({
-                    data: { host, allowed: false },
-                    items: [],
-                }),
-            )
-
-            if (this.searchKeyword) {
-                this.filterSearch()
-            } else {
-                this.renderList()
-            }
-        })
+        if (this.searchKeyword) {
+            this.filterSearch()
+        } else {
+            this.renderList()
+        }
     }
 
     renderList() {
         super.renderList()
 
         this.items.forEach(({ data: popup, items }) => {
-            const content = `${popup.allowed ? '✅ ' : ''}${popup.host}`
+            const content = `${popup.allowed ? `${EMOJI.CHECKED} ` : ''}${popup.host}`
             const item = new ListItem(content)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.POPUP_BLOCKER,
-                        RequestHandler.MODIFY,
-                        popup.host,
+                        REQUEST_HANDLER.MODIFY,
+                        [[popup.host], []],
                     )
                 })
             items.push(item)

@@ -1,7 +1,11 @@
-import { session, type BaseWindowConstructorOptions } from 'electron'
+import {
+    session,
+    nativeTheme,
+    type BaseWindowConstructorOptions,
+} from 'electron'
 
 import { preload } from '@src/main/utils'
-import type { Scenes } from '@src/common/types'
+import type { T_IPC_Switch } from '@src/common/types'
 import { BROWSER } from '@src/common/constants'
 
 import { History } from '@main/modules/store/history'
@@ -20,14 +24,31 @@ export class BrowserWindow extends AbsWindowIPC {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
-        const bounds = Status.getInstance().getBounds(this.getBounds())
+        const status = new Status()
+        const bounds = status.getBounds(this.getBounds())
         this.setBounds(bounds)
 
         this.initBrowser()
         this.initCentre()
 
-        // Close action
-        this.addListener('close', () => this.saveStatus())
+        // Events
+        this.addListener('close', () => this.saveStatus()).addListener(
+            'resize',
+            () => {
+                const bounds = this.getContentBounds()
+                this.browser.setBounds({
+                    x: 0,
+                    y: 0,
+                    width: bounds.width,
+                    height: bounds.height,
+                })
+            },
+        )
+
+        if (nativeTheme.shouldUseDarkColors) {
+            this.browser.setBackgroundColor('#030712')
+            this.centre.setBackgroundColor('#030712')
+        }
     }
 
     private initBrowser() {
@@ -48,34 +69,46 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         })
         this.contentView = this.centre
+        this.centre.webContents.focus()
     }
 
     /**
-     * View controls
+     * Switch Scene
      */
-    public switch(scene: Scenes) {
-        this._current = scene
-        if (this.isBrowser || scene === BROWSER) {
+    public async switch(request: T_IPC_Switch) {
+        Logger.getInstance().log('Switch: ', request)
+        this._current = request.scene
+
+        if (request.scene === BROWSER) {
             this.contentView = this.browser
-            if (this.browser.failedUrl) {
+
+            await this.browser.restoreHistory()
+            Logger.getInstance().log('Switched to Browser: ', this.browser.url)
+
+            if (request.reloading) {
+                this.browser.reload()
+            } else if (request.lastVisit) {
+                await this.browser.loadLastVisit()
+            } else if (request.searchEngine || !this.browser.url.url) {
+                this.browser.searchKeyword('')
+            } else if (request.address) {
+                this.browser.loadURL(request.address)
+            } else if (this.browser.failedUrl) {
                 this.browser.reload()
             }
-            if (!this.browser.initialized) {
-                this.browser.searchKeyword('')
-            }
+
             return
         }
 
         this.contentView = this.centre
-        this.centre.loadScene(scene)
-        this.centre.webContents.focus()
+        this.centre.loadScene(request.scene)
     }
 
     /**
      * Save current status when the app is closed
      */
     private saveStatus() {
-        const status = Status.getInstance()
+        const status = new Status()
         const bounds = this.getBounds()
         status.set('width', bounds.width)
         status.set('height', bounds.height)
@@ -84,11 +117,20 @@ export class BrowserWindow extends AbsWindowIPC {
         status.save()
 
         // Save history
-        if (this.browser && this.browser.webContents) {
-            new History().save(
-                this.browser.webContents.navigationHistory,
-                status.get('maxHistory') as number,
-            )
+        if (
+            this.browser &&
+            this.browser.webContents &&
+            this.browser.initialized
+        ) {
+            Logger.getInstance().log('Save history')
+
+            const entries = this.browser.webContents.navigationHistory
+            const maxHistory = status.get('maxHistory')
+
+            Logger.getInstance().log('entries.length', entries.length())
+            Logger.getInstance().log('maxHistory', maxHistory)
+
+            new History().save(entries, maxHistory)
         }
     }
 
@@ -101,7 +143,7 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     show() {
-        this.current.webContents.focus()
         super.show()
+        this.current.webContents.focus()
     }
 }

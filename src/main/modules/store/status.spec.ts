@@ -9,7 +9,7 @@ import { Status } from '@main/modules/store/status'
 
 describe('Status store (module)', () => {
     test('get/set exist and persist to disk', () => {
-        const status = Status.getInstance()
+        const status = new Status()
         expect(status).toBeDefined()
 
         expect(status.getBounds().width).toBe(1024)

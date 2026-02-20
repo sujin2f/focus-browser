@@ -7,16 +7,12 @@ type ShortcutStore = {
 }
 
 export class Shortcut extends Store<ShortcutStore> {
-    static instance: Shortcut
-    static getInstance(): Shortcut {
-        if (!Shortcut.instance) {
-            Shortcut.instance = new Shortcut('shortcut', {
-                version: '1',
-                shortcuts: {},
-            })
-            Shortcut.instance.parse()
-        }
-        return Shortcut.instance
+    constructor() {
+        super('shortcut', {
+            version: '1',
+            shortcuts: {},
+        })
+        this.parse()
     }
 
     parse() {

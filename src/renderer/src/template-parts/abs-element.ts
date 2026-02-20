@@ -1,4 +1,5 @@
-import { getSection } from '@src/renderer/src/utils'
+import { BROWSER, REQUEST_HANDLER } from '@src/common/constants'
+import { getSection, navigate } from '@src/renderer/src/utils'
 
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node
@@ -16,7 +17,7 @@ export abstract class A_Element<T extends HTMLElement> {
         }
         const template = document.querySelector<HTMLTemplateElement>(selector)
         if (!template) {
-            // TODO IPC
+            navigate({ scene: BROWSER }, REQUEST_HANDLER.EXECUTE)
             throw new Error('Cannot find template')
         }
         this.node = template.content.cloneNode(true) as T

@@ -11,7 +11,12 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import {
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -22,20 +27,20 @@ class Anchors extends A_ListSearch<T_Bookmark> {
         this.requestAnchors()
 
         // Title
-        const h1 = new H1('Anchors ⚓️').prependTo('title')
+        const h1 = new H1(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`).prependTo(
+            'title',
+        )
         new BackButton().prependTo(h1.element)
     }
 
     private requestAnchors(): void {
-        ipcRenderer.send(IPC_CHANNELS.ANCHOR, RequestHandler.REQUEST)
-
-        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
+        ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (handler, anchors = []) => {
+            if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
-            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            this.items = anchors.map((bookmark) => ({
                 data: bookmark,
                 items: [] as ListItem[],
             }))
@@ -50,7 +55,7 @@ class Anchors extends A_ListSearch<T_Bookmark> {
             const item = new ListItem(anchor.title, anchor.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
-                    navigate(anchor.url, RequestHandler.REMOVE)
+                    navigate({ address: anchor.url }, REQUEST_HANDLER.REMOVE)
                 })
             items.push(item)
         })

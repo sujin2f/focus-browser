@@ -34,11 +34,13 @@ export class Button extends A_Element<HTMLButtonElement> {
         this.element.classList.remove('hover')
         this.element.classList.add('opacity-40')
         this.element.disabled = true
+        return this
     }
 
     public enable() {
         this.element.classList.add('hover')
         this.element.classList.remove('opacity-40')
         this.element.disabled = false
+        return this
     }
 }

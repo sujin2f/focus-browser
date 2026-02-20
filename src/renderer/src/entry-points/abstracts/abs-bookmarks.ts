@@ -9,7 +9,7 @@ import {
 /* <HTML template-part /> */
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, RequestHandler } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -28,20 +28,16 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
     }
 
     protected request(): void {
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, RequestHandler.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
 
-        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (...args: unknown[]) => {
-            const handler = args[0] as RequestHandler
-            if (handler !== RequestHandler.RESPONSE) {
-                return
-            }
-            this.callbackResponse(...args)
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, bookmarks = []) => {
+            this.callbackResponse(handler, bookmarks)
         })
     }
 
-    protected callbackResponse(...args: unknown[]) {
+    protected callbackResponse(_: REQUEST_HANDLER, bookmarks: T_Bookmark[]) {
         this.dirs = {}
-        this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+        this.items = bookmarks.map((bookmark) => ({
             data: bookmark,
             items: [] as ListItem[],
         }))
@@ -105,7 +101,9 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
     private onFolderClick = (id: string) => {
         const isHidden = this.dirs[id].isHidden
         const folderIndex = this.dirs[id].dir.length - 1
-        this.dirs[id].dir[folderIndex].title = isHidden ? '📂' : '📁'
+        this.dirs[id].dir[folderIndex].title = isHidden
+            ? EMOJI.FOLDER_OPEN
+            : EMOJI.FOLDER_CLOSE
 
         this.dirs[id].items.forEach((item) => {
             if (isHidden) {
@@ -131,7 +129,7 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
                 if (isDir || tagNameIs(e.target, 'button')) {
                     return
                 }
-                navigate(bookmark.url)
+                navigate({ address: bookmark.url })
             },
         )
         return [icon, row]

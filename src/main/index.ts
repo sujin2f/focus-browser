@@ -37,7 +37,7 @@ app.whenReady()
     })
 
 // TODO Import/ Export Settings OR Share via Cloud #12
-app.setAsDefaultProtocolClient('focusbrowser')
-app.on('open-url', (_, url) => {
-    Logger.getInstance().log('received url protocol.', url)
-})
+// app.setAsDefaultProtocolClient('focusbrowser')
+// app.on('open-url', (_, url) => {
+//     Logger.getInstance().log('received url protocol.', url)
+// })

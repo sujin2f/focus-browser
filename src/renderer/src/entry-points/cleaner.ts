@@ -86,7 +86,9 @@ class Cleaner extends A_Entry {
     }
 
     private request(): void {
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST, {
+            request: '',
+        })
 
         ipcRenderer.on(IPC_CHANNELS.CLEANER, (handler, arg) => {
             const { response } = arg!

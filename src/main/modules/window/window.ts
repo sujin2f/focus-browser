@@ -69,6 +69,7 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         })
         this.contentView = this.centre
+        this.centre.webContents.focus()
     }
 
     /**
@@ -143,5 +144,6 @@ export class BrowserWindow extends AbsWindowIPC {
 
     show() {
         super.show()
+        this.current.webContents.focus()
     }
 }

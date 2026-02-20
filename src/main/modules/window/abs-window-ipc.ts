@@ -140,6 +140,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 await this.browser.setAdBlocker()
             }
 
+            // TODO Failed
             this.sendResult(IPC_CHANNELS.STATUS)
             return
         }
@@ -270,25 +271,30 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     ) {
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                this.sendPopupBlocker()
+                this.sendPopupBlocker(REQUEST_HANDLER.RESPONSE)
                 return
             }
 
             case REQUEST_HANDLER.MODIFY: {
+                // TODO Fail
                 const popupBlocker = PopupBlocker.getInstance()
                 popupBlocker.toggle(hosts[0][0])
                 popupBlocker.save()
-                this.sendPopupBlocker()
+                this.sendPopupBlocker(REQUEST_HANDLER.RESPONSE_SUCCESS)
                 return
             }
         }
     }
 
-    private sendPopupBlocker() {
+    private sendPopupBlocker(handler: REQUEST_HANDLER) {
         const blocked = PopupBlocker.getInstance().get('blocked')
         const allowed = PopupBlocker.getInstance().get('allowed')
-        Logger.getInstance().log('Popup blocker request: ', blocked, allowed)
-        this.centre.send(IPC_CHANNELS.POPUP_BLOCKER, REQUEST_HANDLER.RESPONSE, [
+        Logger.getInstance().log(
+            'Popup blocker request: ',
+            Array.from(blocked),
+            Array.from(allowed),
+        )
+        this.centre.send(IPC_CHANNELS.POPUP_BLOCKER, handler, [
             Array.from(blocked),
             Array.from(allowed),
         ])
@@ -386,6 +392,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 store.save()
                 this.resetMenu()
                 this.sendResult(IPC_CHANNELS.SHORTCUTS)
+                // TODO Failed
                 return
             }
         }

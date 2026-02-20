@@ -44,7 +44,7 @@ export const tagNameIs = (
 export const getSection = <T extends Element>(id: string) => {
     const element = document.querySelector<Element>(`#section-${id}`) as T
     if (!element) {
-        // TODO ipc
+        navigate({ scene: BROWSER }, REQUEST_HANDLER.EXECUTE)
         throw new Error(`No #section-${id} element exist`)
     }
     return element

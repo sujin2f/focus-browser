@@ -48,7 +48,6 @@ export enum REQUEST_HANDLER {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
-    RESULT = 'RESULT', // TODO RESPONSE??
 }
 
 export enum SystemType {

@@ -57,7 +57,6 @@ class IPC extends AbsWindowIPC {
         this.browser = new BrowserView({})
         this.centre = new CenterView({})
     }
-    fitToWindow(): void {}
 }
 
 describe('Window: IPC (abs-window-ipc.ts)', () => {

@@ -101,13 +101,13 @@ class Settings extends A_Entry {
                 searchEngine,
             },
         })
-
         ipcRenderer.once(IPC_CHANNELS.STATUS, (handler) => {
-            if (handler !== REQUEST_HANDLER.RESULT) {
-                return
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                    this.button?.enable()
+                    this.notification.info('Settings are saved successfully!')
+                // TODO Failed
             }
-            this.button?.enable()
-            this.notification.info('Settings are saved successfully!')
         })
     }
 }

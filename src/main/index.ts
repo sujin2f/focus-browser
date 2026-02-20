@@ -36,7 +36,7 @@ app.whenReady()
         )
     })
 
-// TODO Import/ Export Settings OR Share via Cloud #12
+// TODO #12 Import/ Export Settings OR Share via Cloud
 // app.setAsDefaultProtocolClient('focusbrowser')
 // app.on('open-url', (_, url) => {
 //     Logger.getInstance().log('received url protocol.', url)

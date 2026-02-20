@@ -23,7 +23,6 @@ class Keystrokes extends A_Entry {
 
     constructor() {
         super()
-        this.handleIPC()
         this.requestInfo('url')
         this.request()
 
@@ -66,9 +65,6 @@ class Keystrokes extends A_Entry {
 
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, REQUEST_HANDLER.REQUEST)
-    }
-
-    private handleIPC() {
         ipcRenderer.on(IPC_CHANNELS.KEYSTROKES, (handler, keystrokes = {}) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE: {
@@ -86,11 +82,13 @@ class Keystrokes extends A_Entry {
                     return
                 }
 
-                case REQUEST_HANDLER.RESULT:
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.button.enable()
                     this.notification.info(
                         'The keystroke is saved successfully!',
                     )
+
+                // TODO Failed
             }
         })
     }

@@ -29,32 +29,43 @@ class Popup extends A_ListSearch<PopupBlocker> {
         ipcRenderer.on(
             IPC_CHANNELS.POPUP_BLOCKER,
             (handler, hosts = [[], []]) => {
-                if (handler !== REQUEST_HANDLER.RESPONSE) {
-                    return
-                }
-
-                this.items = []
-
-                hosts[1].forEach((host) =>
-                    this.items.push({
-                        data: { host, allowed: true },
-                        items: [],
-                    }),
-                )
-                hosts[0].forEach((host) =>
-                    this.items.push({
-                        data: { host, allowed: false },
-                        items: [],
-                    }),
-                )
-
-                if (this.searchKeyword) {
-                    this.filterSearch()
-                } else {
-                    this.renderList()
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE:
+                        this.handleResponse(hosts)
+                        return
+                    case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                        this.handleResponse(hosts)
+                        // TODO
+                        // this.notification.info('History cleared successfully!')
+                        return
+                    case REQUEST_HANDLER.RESPONSE_FAIL:
+                        // this.notification.info('History cleared failed!')
+                        return
                 }
             },
         )
+    }
+
+    private handleResponse(hosts: [string[], string[]]) {
+        this.items = []
+        hosts[1].forEach((host) =>
+            this.items.push({
+                data: { host, allowed: true },
+                items: [],
+            }),
+        )
+        hosts[0].forEach((host) =>
+            this.items.push({
+                data: { host, allowed: false },
+                items: [],
+            }),
+        )
+
+        if (this.searchKeyword) {
+            this.filterSearch()
+        } else {
+            this.renderList()
+        }
     }
 
     renderList() {

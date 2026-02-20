@@ -131,7 +131,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
-                    // TODO Find to child view #121
+                    // TODO #121 Find to child view
                     // const find = new WebContentsView()
                     // find.webContents.loadURL('https://google.com')
                     // find.setBounds({ x: 400, y: 0, width: 400, height: 400 })

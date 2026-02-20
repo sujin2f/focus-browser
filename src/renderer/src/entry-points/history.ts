@@ -31,40 +31,35 @@ class History extends A_ListSearch<T_Bookmark> {
             .setOnClick(() => {
                 this.button.disable()
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
-                ipcRenderer.once(
-                    IPC_CHANNELS.HISTORY,
-                    (handler, history = []) => {
-                        if (handler !== REQUEST_HANDLER.RESULT) {
-                            return
-                        }
-
-                        this.button.enable()
-                        this.items = history.map((data) => ({
-                            data,
-                            items: [] as ListItem[],
-                        }))
-
-                        this.renderList()
-                        this.notification.info('History cleared successfully!')
-                    },
-                )
             })
+            .disable()
     }
 
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
-        // TODO merge this with clear action
-        ipcRenderer.once(IPC_CHANNELS.HISTORY, (handler, history = []) => {
-            if (handler !== REQUEST_HANDLER.RESPONSE) {
-                return
+        ipcRenderer.on(IPC_CHANNELS.HISTORY, (handler, history = []) => {
+            this.button.enable()
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE:
+                    this.handleResponse(history)
+                    return
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                    this.handleResponse(history)
+                    this.notification.info('History cleared successfully!')
+                    return
+                case REQUEST_HANDLER.RESPONSE_FAIL:
+                    this.notification.info('History cleared failed!')
+                    return
             }
-
-            this.items = history.map((bookmark) => ({
-                data: bookmark,
-                items: [] as ListItem[],
-            }))
-            this.renderList()
         })
+    }
+
+    private handleResponse(history: T_Bookmark[]) {
+        this.items = history.map((bookmark) => ({
+            data: bookmark,
+            items: [] as ListItem[],
+        }))
+        this.renderList()
     }
 
     renderList() {

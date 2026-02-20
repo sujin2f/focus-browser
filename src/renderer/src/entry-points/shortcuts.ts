@@ -20,7 +20,6 @@ class Shortcuts extends A_Entry {
 
     constructor() {
         super()
-        this.handleIPC()
         this.request()
 
         // Form
@@ -53,9 +52,6 @@ class Shortcuts extends A_Entry {
 
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
-    }
-
-    private handleIPC() {
         ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE: {
@@ -64,11 +60,12 @@ class Shortcuts extends A_Entry {
                     return
                 }
 
-                case REQUEST_HANDLER.RESULT:
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.button?.enable()
                     this.notification.info(
                         'The shortcuts are saved successfully!',
                     )
+                // TODO Failed
             }
         })
     }

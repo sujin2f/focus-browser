@@ -146,7 +146,7 @@ export class BrowserView extends WebContentsView {
 
         this.title = 'Loading...'
         await this.webContents.loadURL(url.toString()).catch((e) => {
-            // TODO for the network that needs login like public cafe
+            // TODO #50 for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = url.toString()

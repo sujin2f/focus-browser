@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.3.4-beta5",
+    "version": "0.3.4-beta6",
     "description": "A lightweight browser without tabs, built with Electron.",
     "license": "MIT",
     "author": {

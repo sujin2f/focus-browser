@@ -2,7 +2,6 @@ import {
     session,
     nativeTheme,
     type BaseWindowConstructorOptions,
-    type Rectangle,
 } from 'electron'
 
 import { preload } from '@src/main/utils'
@@ -45,7 +44,7 @@ export class BrowserWindow extends AbsWindowIPC {
             'resize',
             () => this.fitToWindow(),
         )
-        this.fitToWindow(bounds)
+        this.fitToWindow()
     }
 
     private initBrowser() {
@@ -79,6 +78,7 @@ export class BrowserWindow extends AbsWindowIPC {
         if (request.scene === BROWSER) {
             this.browser.setVisible(true)
             this.centre.setVisible(false)
+            this.browser.webContents.focus()
 
             await this.browser.restoreHistory()
             Logger.getInstance().log('Switched to Browser: ', this.browser.url)
@@ -95,16 +95,14 @@ export class BrowserWindow extends AbsWindowIPC {
                 this.browser.reload()
             }
 
-            this.browser.webContents.focus()
-            this.webContents.focus()
             return
         }
 
         this.browser.setVisible(false)
         this.centre.setVisible(true)
-        // this.contentView = this.centre
-        this.centre.loadScene(request.scene)
         this.centre.webContents.focus()
+
+        this.centre.loadScene(request.scene)
     }
 
     /**
@@ -150,8 +148,8 @@ export class BrowserWindow extends AbsWindowIPC {
         super.show()
     }
 
-    private fitToWindow(_bounds?: Rectangle) {
-        const bounds = _bounds || this.getContentBounds()
+    private fitToWindow() {
+        const bounds = this.getContentBounds()
         this.browser.setBounds({
             x: 0,
             y: 0,

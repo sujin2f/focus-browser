@@ -582,7 +582,10 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.switch({ scene: CENTRE_PAGES.WELCOME })
+        const windowFocus = this.webContents.isFocused()
+        const browserFocus = this.browser.webContents.isFocused()
+        Logger.getInstance().info(`windowFocus`, windowFocus)
+        Logger.getInstance().info(`browserFocus`, browserFocus)
     }
 
     abstract switch(request: T_IPC_Switch): void

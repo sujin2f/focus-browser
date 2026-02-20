@@ -66,11 +66,6 @@ export class BrowserView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
 
-        const userAgent = this.webContents.getUserAgent()
-        this.webContents.setUserAgent(
-            `${userAgent} Focus/${process.env.VERSION}`,
-        )
-
         ipcMain.emit(
             IPC_CHANNELS.MAIN_PROCESS,
             null,

@@ -20,6 +20,7 @@ import { Status } from '@main/modules/store/status'
 import { Keystrokes } from '@main/modules/store/keystrokes'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
+import { isNatural } from '@src/common/utils'
 
 export class BrowserView extends WebContentsView {
     public get url(): T_Bookmark {
@@ -40,7 +41,22 @@ export class BrowserView extends WebContentsView {
         return this._failedUrl
     }
 
-    public initialized = false
+    private _initialized = false
+    public get initialized() {
+        return this._initialized
+    }
+    private set initialized(initialized: boolean) {
+        this._initialized = initialized
+    }
+
+    private set title(title: string) {
+        ipcMain.emit(
+            IPC_CHANNELS.MAIN_PROCESS,
+            null,
+            MainEventTypes.TITLE,
+            title,
+        )
+    }
 
     /**
      * Constants
@@ -49,6 +65,11 @@ export class BrowserView extends WebContentsView {
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
+
+        const userAgent = this.webContents.getUserAgent()
+        this.webContents.setUserAgent(
+            `${userAgent} Focus/${process.env.VERSION}`,
+        )
 
         ipcMain.emit(
             IPC_CHANNELS.MAIN_PROCESS,
@@ -72,21 +93,9 @@ export class BrowserView extends WebContentsView {
                 this.webContents.setVisualZoomLevelLimits(1, 3)
             })
             .on('page-title-updated', (_, title) => {
-                ipcMain.emit(
-                    IPC_CHANNELS.MAIN_PROCESS,
-                    null,
-                    MainEventTypes.TITLE,
-                    title,
-                )
+                this.title = title
             })
-            .on('will-navigate', () =>
-                ipcMain.emit(
-                    IPC_CHANNELS.MAIN_PROCESS,
-                    null,
-                    MainEventTypes.TITLE,
-                    'Loading...',
-                ),
-            )
+            .on('will-navigate', () => (this.title = 'Loading...'))
             // Context Menu
             .on('context-menu', (_, params) => {
                 ipcMain.emit(
@@ -101,12 +110,9 @@ export class BrowserView extends WebContentsView {
     }
 
     public async loadLastVisit() {
-        const loaded = await this.restoreHistory()
-        Logger.getInstance().info('loadLastHistory', this.url, loaded)
-        if (loaded) {
+        if (this.url.url) {
             return
         }
-
         this.searchKeyword('')
     }
 
@@ -115,7 +121,8 @@ export class BrowserView extends WebContentsView {
      * @param keyword URL to load or search string
      */
     public async loadURL(keyword: string) {
-        this.initialized = true
+        Logger.getInstance().log('loadURL', keyword)
+
         const trimmed = keyword.trim()
         if (!keyword || !trimmed) {
             return
@@ -142,6 +149,7 @@ export class BrowserView extends WebContentsView {
             return
         }
 
+        this.title = 'Loading...'
         await this.webContents.loadURL(url.toString()).catch((e) => {
             // TODO for the network that needs login like public cafe
             Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
@@ -170,22 +178,38 @@ export class BrowserView extends WebContentsView {
     /**
      * Restore history from storage
      */
-    private async restoreHistory() {
-        Logger.getInstance().info('restoreHistory')
+    public async restoreHistory() {
+        if (this.initialized) {
+            return
+        }
+        Logger.getInstance().log('restoreHistory')
+        this.initialized = true
+
         const history = new History()
         history.parse()
 
         const index = history.get('index')
-        Logger.getInstance().info('history.get(index)', index)
+        const entries = history.get('history')
+        Logger.getInstance().log('history.get(index)', index)
+        Logger.getInstance().log('history.length', entries.length)
 
-        if (index === 0 || (!isNaN(index) && index !== -1)) {
-            await this.webContents.navigationHistory.restore({
-                index,
-                entries: history.get('history'),
+        if (isNatural(index)) {
+            Logger.getInstance().info('history.entries[index]', {
+                url: entries[index].url,
+                title: entries[index].title,
             })
+
+            await this.webContents.navigationHistory
+                .restore({
+                    index,
+                    entries: history.get('history'),
+                })
+                .catch((e) => {
+                    Logger.getInstance().error('restoring history', e)
+                })
+
             return true
         }
-
         return false
     }
 
@@ -356,12 +380,7 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
-        ipcMain.emit(
-            IPC_CHANNELS.MAIN_PROCESS,
-            null,
-            MainEventTypes.TITLE,
-            'Reloading...',
-        )
+        this.title = 'Reloading...'
         if (this._failedUrl) {
             this.loadURL(this._failedUrl)
             return

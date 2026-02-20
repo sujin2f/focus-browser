@@ -58,6 +58,8 @@ export class MockWebContentsView {
                 clear: historyClear,
             },
             sendInputEvent,
+            getUserAgent: jest.fn(),
+            setUserAgent: jest.fn(),
         }
     }
 }

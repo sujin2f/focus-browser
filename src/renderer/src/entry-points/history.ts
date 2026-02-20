@@ -70,14 +70,23 @@ class History extends A_ListSearch<T_Bookmark> {
     renderList() {
         super.renderList()
 
-        this.items.forEach(({ data: history, items }, index) => {
+        const reversed = this.items.reverse()
+        const length = this.items.length
+
+        reversed.forEach(({ data: history, items }, index) => {
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
                         REQUEST_HANDLER.EXECUTE,
-                        [{ id: index.toString(), url: '', title: '' }],
+                        [
+                            {
+                                id: (length - 1 - index).toString(),
+                                url: '',
+                                title: '',
+                            },
+                        ],
                     )
                 })
             items.push(item)

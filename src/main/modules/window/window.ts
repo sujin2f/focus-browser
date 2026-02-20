@@ -73,31 +73,28 @@ export class BrowserWindow extends AbsWindowIPC {
      * Switch Scene
      */
     public async switch(request: T_IPC_Switch) {
+        Logger.getInstance().log('Switch: ', request)
         this._current = request.scene
 
         if (request.scene === BROWSER) {
             this.browser.setVisible(true)
             this.centre.setVisible(false)
 
+            await this.browser.restoreHistory()
+            Logger.getInstance().log('Switched to Browser: ', this.browser.url)
+
             if (request.reloading) {
-                this.title = 'Loading...'
                 this.browser.reload()
             } else if (request.lastVisit) {
-                this.title = 'Loading...'
                 await this.browser.loadLastVisit()
-            } else if (request.searchEngine) {
-                this.title = 'Loading...'
+            } else if (request.searchEngine || !this.browser.url.url) {
                 this.browser.searchKeyword('')
             } else if (request.address) {
-                this.title = 'Loading...'
                 this.browser.loadURL(request.address)
             } else if (this.browser.failedUrl) {
                 this.browser.reload()
-            } else if (!this.browser.initialized) {
-                this.browser.searchKeyword('')
             }
 
-            this.browser.initialized = true
             this.browser.webContents.focus()
             this.webContents.focus()
             return
@@ -123,11 +120,20 @@ export class BrowserWindow extends AbsWindowIPC {
         status.save()
 
         // Save history
-        if (this.browser && this.browser.webContents) {
-            new History().save(
-                this.browser.webContents.navigationHistory,
-                status.get('maxHistory') as number,
-            )
+        if (
+            this.browser &&
+            this.browser.webContents &&
+            this.browser.initialized
+        ) {
+            Logger.getInstance().log('Save history')
+
+            const entries = this.browser.webContents.navigationHistory
+            const maxHistory = status.get('maxHistory')
+
+            Logger.getInstance().log('entries.length', entries.length())
+            Logger.getInstance().log('maxHistory', maxHistory)
+
+            new History().save(entries, maxHistory)
         }
     }
 

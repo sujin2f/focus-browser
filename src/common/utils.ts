@@ -14,3 +14,7 @@ export const isDev = () => {
 export const isTest = () => {
     return typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
 }
+
+export const isNatural = (arg: number) => {
+    return arg >= 0
+}

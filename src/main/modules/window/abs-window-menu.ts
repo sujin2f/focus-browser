@@ -132,12 +132,15 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
                     // TODO Find to child view #121
-                    // const view = new WebContentsView()
-                    // view.webContents.loadURL(...)
-                    // this.contentView.addChildView(view)
-                    // view.setBounds({ x: 400, y: 0, width: 400, height: 400 })
-                    // view.setVisible(true)
+                    // const find = new WebContentsView()
+                    // find.webContents.loadURL('https://google.com')
+                    // find.setBounds({ x: 400, y: 0, width: 400, height: 400 })
+                    // find.setVisible(true)
+                    // this.contentView = new WebContentsView()
+                    // this.contentView.addChildView(this.browser)
+                    // this.contentView.addChildView(find)
                     // this.contentView.removeChildView(view)
+
                     this.switch({ scene: CENTRE_PAGES.FIND })
                 },
             },

@@ -24,27 +24,31 @@ export class BrowserWindow extends AbsWindowIPC {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
+        const status = new Status()
+        const bounds = status.getBounds(this.getBounds())
+        this.setBounds(bounds)
+
         this.initBrowser()
         this.initCentre()
 
-        this.contentView.addChildView(this.browser)
-        this.contentView.addChildView(this.centre)
+        // Events
+        this.addListener('close', () => this.saveStatus()).addListener(
+            'resize',
+            () => {
+                const bounds = this.getContentBounds()
+                this.browser.setBounds({
+                    x: 0,
+                    y: 0,
+                    width: bounds.width,
+                    height: bounds.height,
+                })
+            },
+        )
 
         if (nativeTheme.shouldUseDarkColors) {
             this.browser.setBackgroundColor('#030712')
             this.centre.setBackgroundColor('#030712')
         }
-
-        const status = new Status()
-        const bounds = status.getBounds(this.getBounds())
-        this.setBounds(bounds)
-
-        // Events
-        this.addListener('close', () => this.saveStatus()).addListener(
-            'resize',
-            () => this.fitToWindow(),
-        )
-        this.fitToWindow()
     }
 
     private initBrowser() {
@@ -56,7 +60,6 @@ export class BrowserWindow extends AbsWindowIPC {
                 contextIsolation: false,
             },
         })
-        this.browser.setVisible(false)
     }
 
     private initCentre() {
@@ -65,7 +68,7 @@ export class BrowserWindow extends AbsWindowIPC {
                 preload,
             },
         })
-        this.centre.setVisible(true)
+        this.contentView = this.centre
     }
 
     /**
@@ -76,9 +79,7 @@ export class BrowserWindow extends AbsWindowIPC {
         this._current = request.scene
 
         if (request.scene === BROWSER) {
-            this.browser.setVisible(true)
-            this.centre.setVisible(false)
-            this.browser.webContents.focus()
+            this.contentView = this.browser
 
             await this.browser.restoreHistory()
             Logger.getInstance().log('Switched to Browser: ', this.browser.url)
@@ -98,10 +99,7 @@ export class BrowserWindow extends AbsWindowIPC {
             return
         }
 
-        this.browser.setVisible(false)
-        this.centre.setVisible(true)
-        this.centre.webContents.focus()
-
+        this.contentView = this.centre
         this.centre.loadScene(request.scene)
     }
 
@@ -144,23 +142,6 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     show() {
-        this.current.webContents.focus()
         super.show()
-    }
-
-    private fitToWindow() {
-        const bounds = this.getContentBounds()
-        this.browser.setBounds({
-            x: 0,
-            y: 0,
-            width: bounds.width,
-            height: bounds.height,
-        })
-        this.centre.setBounds({
-            x: 0,
-            y: 0,
-            width: bounds.width,
-            height: bounds.height,
-        })
     }
 }

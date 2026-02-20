@@ -8,7 +8,6 @@ const __dirname = dirname(__filename)
 
 const commonConfig = {
     mode: process.env.NODE_ENV || 'development',
-    devtool: 'source-map',
     output: {
         clean: true, // Clean the output directory before emit.
         library: { type: 'commonjs2' },
@@ -143,5 +142,10 @@ pages.forEach((page) => {
         }),
     )
 })
+
+if (process.env.NODE_ENV === 'development') {
+    mainConfig.devtool = 'source-map'
+    renderer.devtool = 'source-map'
+}
 
 export default [mainConfig, renderer]

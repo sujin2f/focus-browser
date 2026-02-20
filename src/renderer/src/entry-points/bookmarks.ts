@@ -94,7 +94,7 @@ class Bookmarks extends A_Bookmarks {
 
         let shortcut = new ListItem('')
         const edit = new ListItem(
-            new Button('⚙️', 'button-clear').setOnClick(() => {
+            new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
                 this.modal.open(this.getDirs(), { isDir, bookmark, index })
             }),
         )

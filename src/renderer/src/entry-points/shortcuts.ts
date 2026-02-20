@@ -56,24 +56,21 @@ class Shortcuts extends A_Entry {
     }
 
     private handleIPC() {
-        ipcRenderer.on(
-            IPC_CHANNELS.SHORTCUTS,
-            (handler, ...args: unknown[]) => {
-                switch (handler) {
-                    case REQUEST_HANDLER.RESPONSE: {
-                        this.shortcuts = args[0] as Record<string, string>
-                        this.render()
-                        return
-                    }
-
-                    case REQUEST_HANDLER.RESULT:
-                        this.button?.enable()
-                        this.notification.info(
-                            'The shortcuts are saved successfully!',
-                        )
+        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE: {
+                    this.shortcuts = shortcuts
+                    this.render()
+                    return
                 }
-            },
-        )
+
+                case REQUEST_HANDLER.RESULT:
+                    this.button?.enable()
+                    this.notification.info(
+                        'The shortcuts are saved successfully!',
+                    )
+            }
+        })
     }
 
     private onSubmit(e: SubmitEvent) {
@@ -81,12 +78,13 @@ class Shortcuts extends A_Entry {
 
         this.button?.disable()
         const formData = new FormData(this.form)
-        const shortcuts = {
-            'Add Bookmark': formData.get('Add Bookmark')?.toString(),
-            'Add Anchor': formData.get('Add Anchor')?.toString(),
-            'Paste Keystroke': formData.get('Paste Keystroke')?.toString(),
-            'Control Centre': formData.get('Control Centre')?.toString(),
-            'Address Bar': formData.get('Address Bar')?.toString(),
+        const shortcuts: Record<string, string> = {
+            'Add Bookmark': formData.get('Add Bookmark')?.toString() || '',
+            'Add Anchor': formData.get('Add Anchor')?.toString() || '',
+            'Paste Keystroke':
+                formData.get('Paste Keystroke')?.toString() || '',
+            'Control Centre': formData.get('Control Centre')?.toString() || '',
+            'Address Bar': formData.get('Address Bar')?.toString() || '',
         }
         ipcRenderer.send(
             IPC_CHANNELS.SHORTCUTS,

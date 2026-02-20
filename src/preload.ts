@@ -1,36 +1,37 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { REQUEST_HANDLER } from '@src/common/constants'
+import { T_IPC_Message } from './common/types'
 
 const electronHandler = {
     ipcRenderer: {
-        sendMessage(
-            channel: IPC_CHANNELS,
+        sendMessage<T extends keyof T_IPC_Message>(
+            channel: T,
             handler: REQUEST_HANDLER,
-            ...args: unknown[]
+            arg?: T_IPC_Message[T],
         ) {
-            ipcRenderer.send(channel, handler, ...args)
+            ipcRenderer.send(channel, handler, arg)
         },
-        on(
-            channel: IPC_CHANNELS,
-            func: (handler: REQUEST_HANDLER, ...args: unknown[]) => void,
+        on<T extends keyof T_IPC_Message>(
+            channel: T,
+            func: (handler: REQUEST_HANDLER, arg?: T_IPC_Message[T]) => void,
         ) {
             const subscription = (
                 _event: IpcRendererEvent,
                 handler: REQUEST_HANDLER,
-                ...args: unknown[]
-            ) => func(handler, ...args)
+                arg?: T_IPC_Message[T],
+            ) => func(handler, arg)
             ipcRenderer.on(channel, subscription)
 
             return () => {
                 ipcRenderer.removeListener(channel, subscription)
             }
         },
-        once(
-            channel: IPC_CHANNELS,
-            func: (handler: REQUEST_HANDLER, ...args: unknown[]) => void,
+        once<T extends keyof T_IPC_Message>(
+            channel: T,
+            func: (handler: REQUEST_HANDLER, arg?: T_IPC_Message[T]) => void,
         ) {
-            ipcRenderer.once(channel, (_event, handler, ...args) =>
-                func(handler, ...args),
+            ipcRenderer.once(channel, (_event, handler, arg) =>
+                func(handler, arg),
             )
         },
     },

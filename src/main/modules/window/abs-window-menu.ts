@@ -340,6 +340,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         return result
     }
+
     private getShortcut(menu: Menu): string {
         const store = new Shortcut()
         if (store.getShortcut(menu)) {

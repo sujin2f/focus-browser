@@ -18,8 +18,6 @@ import {
     REQUEST_HANDLER,
     SEARCH_ENGINES,
 } from '@src/common/constants'
-/* T_Type */
-import type { T_IPC_Status } from '@src/common/types'
 
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
@@ -102,13 +100,12 @@ class Settings extends A_Entry {
                 adBlocker,
                 searchEngine,
             },
-        } satisfies T_IPC_Status)
+        })
 
         ipcRenderer.once(IPC_CHANNELS.STATUS, (handler) => {
             if (handler !== REQUEST_HANDLER.RESULT) {
                 return
             }
-
             this.button?.enable()
             this.notification.info('Settings are saved successfully!')
         })

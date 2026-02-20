@@ -3,9 +3,10 @@ import {
     type WebContentsViewConstructorOptions,
 } from 'electron'
 
-import { CENTRE_PAGES } from '@src/common/constants'
+import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
 
 import { resolveHtmlPath } from '@src/main/utils'
+import { T_IPC_Message } from '@src/common/types'
 
 export class CenterView extends WebContentsView {
     constructor(options: WebContentsViewConstructorOptions) {
@@ -46,5 +47,13 @@ export class CenterView extends WebContentsView {
             default:
                 this.webContents.loadURL(resolveHtmlPath(CENTRE_PAGES.HOME))
         }
+    }
+
+    public send<T extends keyof T_IPC_Message>(
+        channel: T,
+        handler: REQUEST_HANDLER,
+        arg?: T_IPC_Message[T],
+    ) {
+        this.webContents.send(channel, handler, arg)
     }
 }

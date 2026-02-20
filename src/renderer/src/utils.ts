@@ -20,7 +20,7 @@ export const navigate = (
     ipcRenderer.send(IPC_CHANNELS.SWITCH, handler, {
         ...request,
         scene: request.scene || BROWSER,
-    } satisfies T_IPC_Switch)
+    })
     window.location.href = 'loading.html'
 }
 

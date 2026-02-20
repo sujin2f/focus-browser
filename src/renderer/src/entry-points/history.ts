@@ -31,21 +31,18 @@ class History extends A_ListSearch<T_Bookmark> {
             .setOnClick(() => {
                 this.button.disable()
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
-
                 ipcRenderer.once(
                     IPC_CHANNELS.HISTORY,
-                    (handler, ...args: unknown[]) => {
+                    (handler, history = []) => {
                         if (handler !== REQUEST_HANDLER.RESULT) {
                             return
                         }
 
                         this.button.enable()
-                        this.items = (args[0] as T_Bookmark[]).map(
-                            (bookmark) => ({
-                                data: bookmark,
-                                items: [] as ListItem[],
-                            }),
-                        )
+                        this.items = history.map((data) => ({
+                            data,
+                            items: [] as ListItem[],
+                        }))
 
                         this.renderList()
                         this.notification.info('History cleared successfully!')
@@ -56,14 +53,13 @@ class History extends A_ListSearch<T_Bookmark> {
 
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
-
-        ipcRenderer.once(IPC_CHANNELS.HISTORY, (...args: unknown[]) => {
-            const handler = args[0] as REQUEST_HANDLER
+        // TODO merge this with clear action
+        ipcRenderer.once(IPC_CHANNELS.HISTORY, (handler, history = []) => {
             if (handler !== REQUEST_HANDLER.RESPONSE) {
                 return
             }
 
-            this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            this.items = history.map((bookmark) => ({
                 data: bookmark,
                 items: [] as ListItem[],
             }))
@@ -81,7 +77,7 @@ class History extends A_ListSearch<T_Bookmark> {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
                         REQUEST_HANDLER.EXECUTE,
-                        index,
+                        [{ id: index.toString(), url: '', title: '' }],
                     )
                 })
             items.push(item)

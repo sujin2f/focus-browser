@@ -78,8 +78,7 @@ export class Logger {
             window.electron.ipcRenderer.sendMessage(
                 IPC_CHANNELS.LOG,
                 REQUEST_HANDLER.EXECUTE,
-                type,
-                ...params,
+                [type, params],
             )
         }
     }

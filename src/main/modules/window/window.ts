@@ -1,7 +1,8 @@
 import {
     session,
-    type BaseWindowConstructorOptions,
     nativeTheme,
+    type BaseWindowConstructorOptions,
+    type Rectangle,
 } from 'electron'
 
 import { preload } from '@src/main/utils'
@@ -24,10 +25,6 @@ export class BrowserWindow extends AbsWindowIPC {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
-        const status = new Status()
-        const bounds = status.getBounds(this.getBounds())
-        this.setBounds(bounds)
-
         this.initBrowser()
         this.initCentre()
 
@@ -39,25 +36,16 @@ export class BrowserWindow extends AbsWindowIPC {
             this.centre.setBackgroundColor('#030712')
         }
 
+        const status = new Status()
+        const bounds = status.getBounds(this.getBounds())
+        this.setBounds(bounds)
+
         // Events
         this.addListener('close', () => this.saveStatus()).addListener(
             'resize',
-            () => {
-                const bounds = this.getContentBounds()
-                this.browser.setBounds({
-                    x: 0,
-                    y: 0,
-                    width: bounds.width,
-                    height: bounds.height,
-                })
-                this.centre.setBounds({
-                    x: 0,
-                    y: 0,
-                    width: bounds.width,
-                    height: bounds.height,
-                })
-            },
+            () => this.fitToWindow(),
         )
+        this.fitToWindow(bounds)
     }
 
     private initBrowser() {
@@ -70,14 +58,6 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         })
         this.browser.setVisible(false)
-
-        const bounds = this.getContentBounds()
-        this.browser.setBounds({
-            x: 0,
-            y: 0,
-            width: bounds.width,
-            height: bounds.height,
-        })
     }
 
     private initCentre() {
@@ -87,14 +67,6 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         })
         this.centre.setVisible(true)
-
-        const bounds = this.getContentBounds()
-        this.centre.setBounds({
-            x: 0,
-            y: 0,
-            width: bounds.width,
-            height: bounds.height,
-        })
     }
 
     /**
@@ -127,6 +99,7 @@ export class BrowserWindow extends AbsWindowIPC {
 
             this.browser.initialized = true // TODO
             this.browser.webContents.focus()
+            this.webContents.focus()
             return
         }
 
@@ -169,5 +142,21 @@ export class BrowserWindow extends AbsWindowIPC {
     show() {
         this.current.webContents.focus()
         super.show()
+    }
+
+    private fitToWindow(_bounds?: Rectangle) {
+        const bounds = _bounds || this.getContentBounds()
+        this.browser.setBounds({
+            x: 0,
+            y: 0,
+            width: bounds.width,
+            height: bounds.height,
+        })
+        this.centre.setBounds({
+            x: 0,
+            y: 0,
+            width: bounds.width,
+            height: bounds.height,
+        })
     }
 }

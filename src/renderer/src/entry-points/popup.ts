@@ -28,24 +28,20 @@ class Popup extends A_ListSearch<PopupBlocker> {
 
         ipcRenderer.on(
             IPC_CHANNELS.POPUP_BLOCKER,
-            (handler, ...args: unknown[]) => {
+            (handler, hosts = [[], []]) => {
                 if (handler !== REQUEST_HANDLER.RESPONSE) {
                     return
                 }
 
                 this.items = []
 
-                // TODO
-                const blocked = args[0] as string[]
-                const allowed = args[1] as string[]
-
-                allowed.forEach((host) =>
+                hosts[1].forEach((host) =>
                     this.items.push({
                         data: { host, allowed: true },
                         items: [],
                     }),
                 )
-                blocked.forEach((host) =>
+                hosts[0].forEach((host) =>
                     this.items.push({
                         data: { host, allowed: false },
                         items: [],
@@ -72,7 +68,7 @@ class Popup extends A_ListSearch<PopupBlocker> {
                     ipcRenderer.send(
                         IPC_CHANNELS.POPUP_BLOCKER,
                         REQUEST_HANDLER.MODIFY,
-                        popup.host,
+                        [[popup.host], []],
                     )
                 })
             items.push(item)

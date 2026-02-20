@@ -1,10 +1,12 @@
-import type { MenuItemConstructorOptions } from 'electron'
+import type { MenuItemConstructorOptions, NavigationEntry } from 'electron'
 import {
     Menu,
     MenuCategory,
     CENTRE_PAGES,
     BROWSER,
     SEARCH_ENGINES,
+    IPC_CHANNELS,
+    LogTypes,
 } from '@src/common/constants'
 
 /**
@@ -48,7 +50,7 @@ export type T_IPC_Switch = {
 /**
  * Bookmark
  */
-export type T_Bookmark = {
+export interface T_Bookmark extends NavigationEntry {
     id: string
     url: string
     title: string
@@ -67,15 +69,33 @@ export type PopupBlocker = {
 /**
  * Cleaner
  */
-export type T_Cleaner = {
+type T_Cleaner_Response = {
     cacheSize: number
     anchors: number
     history: number
     popup: number
     indexedDB: number
 }
+export type T_Cleaner = {
+    request?: string
+    response?: T_Cleaner_Response
+}
 
 export type Scenes = CENTRE_PAGES | typeof BROWSER
 
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
+
+export type T_IPC_Message = {
+    [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
+    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[]
+    [IPC_CHANNELS.STATUS]: T_IPC_Status
+    [IPC_CHANNELS.SWITCH]: T_IPC_Switch
+    [IPC_CHANNELS.HISTORY]: T_Bookmark[]
+    [IPC_CHANNELS.POPUP_BLOCKER]: [string[], string[]]
+    [IPC_CHANNELS.FIND]: string
+    [IPC_CHANNELS.LOG]: [LogTypes, unknown[]]
+    [IPC_CHANNELS.KEYSTROKES]: Record<string, string>
+    [IPC_CHANNELS.SHORTCUTS]: Record<string, string>
+    [IPC_CHANNELS.CLEANER]: T_Cleaner
+}

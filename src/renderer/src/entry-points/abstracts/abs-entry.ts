@@ -1,6 +1,6 @@
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Logger } from '@src/common/logger'
-import type { T_Status_Props, T_IPC_Status } from '@src/common/types'
+import type { T_Status_Props } from '@src/common/types'
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 import '@home/styles/common.css'
@@ -30,21 +30,22 @@ export abstract class A_Entry {
             `[Renderer] requestInfo ${JSON.stringify(keys)}`,
         )
 
-        ipcRenderer.once(IPC_CHANNELS.STATUS, (handler, ...args: unknown[]) => {
-            const status = args[0] as T_IPC_Status
-
-            if (handler !== REQUEST_HANDLER.RESPONSE) {
-                return
-            }
-            Logger.getInstance().info(
-                `[Renderer] Get status ${JSON.stringify(status)}`,
-            )
-            this.settings = { ...this.settings, ...status.data }
-        })
+        ipcRenderer.once(
+            IPC_CHANNELS.STATUS,
+            (handler, status = { data: {} }) => {
+                if (handler !== REQUEST_HANDLER.RESPONSE) {
+                    return
+                }
+                Logger.getInstance().info(
+                    `[Renderer] Get status ${JSON.stringify(status)}`,
+                )
+                this.settings = { ...this.settings, ...status.data }
+            },
+        )
 
         ipcRenderer.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.REQUEST, {
             request: keys,
-        } satisfies T_IPC_Status)
+        })
     }
 
     protected callbackUpdateInfo() {}

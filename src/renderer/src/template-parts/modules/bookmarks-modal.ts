@@ -64,7 +64,7 @@ export class BookmarkModal extends Modal {
                 ipcRenderer.send(
                     IPC_CHANNELS.BOOKMARK,
                     REQUEST_HANDLER.REMOVE,
-                    this.bookmark,
+                    [this.bookmark],
                 )
             })
 
@@ -154,28 +154,27 @@ export class BookmarkModal extends Modal {
             }
 
             // Edit
-            ipcRenderer.send(
-                IPC_CHANNELS.BOOKMARK,
-                REQUEST_HANDLER.MODIFY,
+            ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, [
                 {
                     id: this.bookmark.id,
                     title: this.title.value,
                     url,
                     parent,
                     shortcut: this.shortcut.value,
-                } satisfies T_Bookmark,
-                this.index,
-            )
+                },
+            ])
             return
         }
 
         // Add
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
-            id: '',
-            title: this.title.value,
-            url,
-            parent,
-            shortcut: this.shortcut.value,
-        } satisfies T_Bookmark)
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, [
+            {
+                id: '',
+                title: this.title.value,
+                url,
+                parent,
+                shortcut: this.shortcut.value,
+            },
+        ])
     }
 }

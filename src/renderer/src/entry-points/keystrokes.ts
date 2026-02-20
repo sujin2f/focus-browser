@@ -69,34 +69,30 @@ class Keystrokes extends A_Entry {
     }
 
     private handleIPC() {
-        ipcRenderer.on(
-            IPC_CHANNELS.KEYSTROKES,
-            (handler, ...args: unknown[]) => {
-                switch (handler) {
-                    case REQUEST_HANDLER.RESPONSE: {
-                        this.keystrokes = {}
-                        const keystrokes = args[0] as Record<string, string>
-                        const url = this.settings.url
-                        if (url) {
-                            const host = new URL(url).host
-                            this.keystrokes[host] = ''
-                        }
-                        Object.keys(keystrokes).forEach((host) => {
-                            this.keystrokes[host] = keystrokes[host]
-                        })
-                        this.render()
-                        this.select.focus()
-                        return
+        ipcRenderer.on(IPC_CHANNELS.KEYSTROKES, (handler, keystrokes = {}) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE: {
+                    this.keystrokes = {}
+                    const url = this.settings.url
+                    if (url) {
+                        const host = new URL(url).host
+                        this.keystrokes[host] = ''
                     }
-
-                    case REQUEST_HANDLER.RESULT:
-                        this.button.enable()
-                        this.notification.info(
-                            'The keystroke is saved successfully!',
-                        )
+                    Object.keys(keystrokes).forEach((host) => {
+                        this.keystrokes[host] = keystrokes[host]
+                    })
+                    this.render()
+                    this.select.focus()
+                    return
                 }
-            },
-        )
+
+                case REQUEST_HANDLER.RESULT:
+                    this.button.enable()
+                    this.notification.info(
+                        'The keystroke is saved successfully!',
+                    )
+            }
+        })
     }
 
     private onSubmit(e: SubmitEvent) {
@@ -115,7 +111,7 @@ class Keystrokes extends A_Entry {
         }
 
         ipcRenderer.send(IPC_CHANNELS.KEYSTROKES, REQUEST_HANDLER.MODIFY, {
-            [host]: value,
+            [host]: value || '',
         })
     }
 }

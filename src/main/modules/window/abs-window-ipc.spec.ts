@@ -93,7 +93,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('cleaner > REMOVE > clear cache', async () => {
-        await ipc[10][1](null, REQUEST_HANDLER.REMOVE, 'cacheSize')
+        await ipc[10][1](null, REQUEST_HANDLER.REMOVE, { request: 'cacheSize' })
         expect(clearCache).toHaveBeenCalled()
     })
 
@@ -147,7 +147,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onHistory > move to index', () => {
-        ipc[2][1](null, REQUEST_HANDLER.EXECUTE, 2)
+        ipc[2][1](null, REQUEST_HANDLER.EXECUTE, [{ id: '2' }])
         expect(switchFn).toHaveBeenCalledWith({ scene: BROWSER })
         expect(goToIndex).toHaveBeenCalledWith(2)
     })
@@ -167,17 +167,17 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onBookmarks > add', () => {
-        ipc[3][1](null, REQUEST_HANDLER.ADD, { url: '1' })
+        ipc[3][1](null, REQUEST_HANDLER.ADD, [{ url: '1' }])
         expect(bookmarkPush).toHaveBeenCalledWith({ url: '1' })
     })
 
     test('onBookmarks > update', () => {
-        ipc[3][1](null, REQUEST_HANDLER.MODIFY, { url: '1' }, 1)
+        ipc[3][1](null, REQUEST_HANDLER.MODIFY, [{ url: '1' }])
         expect(bookmarkUpdate).toHaveBeenCalledWith({ url: '1' })
     })
 
     test('onBookmarks > remove', () => {
-        ipc[3][1](null, REQUEST_HANDLER.REMOVE, { id: 'id' })
+        ipc[3][1](null, REQUEST_HANDLER.REMOVE, [{ id: 'id' }])
         expect(bookmarkRemove).toHaveBeenCalledWith('id')
     })
 
@@ -190,23 +190,17 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         )
     })
 
-    test('onAnchors > remove', () => {
-        ipc[4][1](null, REQUEST_HANDLER.REMOVE, 'url')
-        expect(anchorRemove).toHaveBeenCalledWith('url')
-    })
-
     test('onPopupBlocker > request', () => {
         ipc[5][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
             IPC_CHANNELS.POPUP_BLOCKER,
             REQUEST_HANDLER.RESPONSE,
-            [],
-            [],
+            [[], []],
         )
     })
 
     test('onPopupBlocker > toggle', () => {
-        ipc[5][1](null, REQUEST_HANDLER.MODIFY, 'host')
+        ipc[5][1](null, REQUEST_HANDLER.MODIFY, [['host']])
         expect(popupBlockerToggle).toHaveBeenCalledWith('host')
     })
 })

@@ -21,6 +21,7 @@ import {
     BROWSER,
     SystemType,
     DEFAULT_SHORTCUTS,
+    EMOJI,
 } from '@src/common/constants'
 
 import { Bookmarks } from '@main/modules/store/bookmarks'
@@ -130,6 +131,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
+                    // TODO Find to child view #121
+                    // const view = new WebContentsView()
+                    // view.webContents.loadURL(...)
+                    // this.contentView.addChildView(view)
+                    // view.setBounds({ x: 400, y: 0, width: 400, height: 400 })
+                    // view.setVisible(true)
+                    // this.contentView.removeChildView(view)
                     this.switch({ scene: CENTRE_PAGES.FIND })
                 },
             },
@@ -371,9 +379,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     submenu.push({ type: 'separator' })
                     return
                 }
-
+                const label = `${EMOJI[subKey] ? `${EMOJI[subKey]} ` : ''}${subKey}`
                 submenu.push({
-                    label: subKey,
+                    label,
                     ...value[subKey as keyof typeof value],
                 } satisfies MenuItemConstructorOptions)
             })

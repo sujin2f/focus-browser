@@ -10,7 +10,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Keystrokes extends A_Entry {
     private keystrokes: Record<string, string> = {}
@@ -28,7 +28,7 @@ class Keystrokes extends A_Entry {
         this.request()
 
         // Title
-        const h1 = new H1('Keystrokes 🎹').prependTo('title')
+        const h1 = new H1(`Keystrokes ${EMOJI.KEYSTROKES}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Form

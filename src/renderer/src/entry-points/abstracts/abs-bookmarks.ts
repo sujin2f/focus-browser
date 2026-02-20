@@ -9,7 +9,7 @@ import {
 /* <HTML template-part /> */
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -101,7 +101,9 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
     private onFolderClick = (id: string) => {
         const isHidden = this.dirs[id].isHidden
         const folderIndex = this.dirs[id].dir.length - 1
-        this.dirs[id].dir[folderIndex].title = isHidden ? '📂' : '📁'
+        this.dirs[id].dir[folderIndex].title = isHidden
+            ? EMOJI.FOLDER_OPEN
+            : EMOJI.FOLDER_CLOSE
 
         this.dirs[id].items.forEach((item) => {
             if (isHidden) {

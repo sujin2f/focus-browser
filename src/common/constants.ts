@@ -76,10 +76,10 @@ export enum Menu {
     CUT = 'Cut',
     COPY = 'Copy',
     PASTE = 'Paste',
-    PASTE_KEYSTROKE = '🎹 Paste Keystroke',
+    PASTE_KEYSTROKE = 'Paste Keystroke',
     SELECT_ALL = 'Select All',
-    ADD_BOOKMARK = '🔖 Add Bookmark',
-    ADD_ANCHOR = '⚓️ Add Anchor',
+    ADD_BOOKMARK = 'Add Bookmark',
+    ADD_ANCHOR = 'Add Anchor',
     FULL_SCREEN = 'Toggle Full Screen',
     RESET_ZOOM = 'Reset Zoom',
     ZOOM_IN = 'Zoom In',
@@ -104,6 +104,23 @@ export enum Menu {
     s0002 = 's0002',
     s0003 = 's0003',
     TEST = 'Run Test Block',
+}
+
+export const EMOJI: Record<string, string> = {
+    [Menu.PASTE_KEYSTROKE]: '🎹',
+    [Menu.ADD_BOOKMARK]: '🔖',
+    [Menu.ADD_ANCHOR]: '⚓️',
+    CLEANER: '🧼',
+    HISTORY: '📝',
+    KEYSTROKES: '🎹',
+    POPUP_BLOCKER: '👮',
+    SHORTCUTS: '🏁',
+    SETTINGS: '⚙️',
+    HAND_HEART: '🫰',
+    FOCUS: '🅕',
+    FOLDER_OPEN: '📂',
+    FOLDER_CLOSE: '📁',
+    CHECKED: '✅',
 }
 
 export const SEARCH_ENGINES = {

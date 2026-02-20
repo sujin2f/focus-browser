@@ -1,11 +1,6 @@
 import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
-import {
-    byteToSize,
-    checkElectron,
-    getSection,
-    ipcRenderer,
-} from '@src/renderer/src/utils'
+import { byteToSize, checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
@@ -13,7 +8,7 @@ import { Card } from '@src/renderer/src/template-parts/card'
 import { Loading } from '@src/renderer/src/template-parts/loading'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import { T_Cleaner } from '@src/common/types'
 
@@ -86,7 +81,7 @@ class Cleaner extends A_Entry {
         super()
 
         // Title
-        const h1 = new H1('Cleaner 🧼').prependTo(getSection('title'))
+        const h1 = new H1(`Cleaner ${EMOJI.CLEANER}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         new Loading().appendTo(this.cache.description)

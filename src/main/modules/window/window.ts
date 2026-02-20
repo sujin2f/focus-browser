@@ -1,4 +1,8 @@
-import { session, type BaseWindowConstructorOptions } from 'electron'
+import {
+    session,
+    type BaseWindowConstructorOptions,
+    nativeTheme,
+} from 'electron'
 
 import { preload } from '@src/main/utils'
 import type { T_IPC_Switch } from '@src/common/types'
@@ -27,8 +31,33 @@ export class BrowserWindow extends AbsWindowIPC {
         this.initBrowser()
         this.initCentre()
 
-        // Close action
-        this.addListener('close', () => this.saveStatus())
+        this.contentView.addChildView(this.browser)
+        this.contentView.addChildView(this.centre)
+
+        if (nativeTheme.shouldUseDarkColors) {
+            this.browser.setBackgroundColor('#030712')
+            this.centre.setBackgroundColor('#030712')
+        }
+
+        // Events
+        this.addListener('close', () => this.saveStatus()).addListener(
+            'resize',
+            () => {
+                const bounds = this.getContentBounds()
+                this.browser.setBounds({
+                    x: 0,
+                    y: 0,
+                    width: bounds.width,
+                    height: bounds.height,
+                })
+                this.centre.setBounds({
+                    x: 0,
+                    y: 0,
+                    width: bounds.width,
+                    height: bounds.height,
+                })
+            },
+        )
     }
 
     private initBrowser() {
@@ -40,6 +69,15 @@ export class BrowserWindow extends AbsWindowIPC {
                 contextIsolation: false,
             },
         })
+        this.browser.setVisible(false)
+
+        const bounds = this.getContentBounds()
+        this.browser.setBounds({
+            x: 0,
+            y: 0,
+            width: bounds.width,
+            height: bounds.height,
+        })
     }
 
     private initCentre() {
@@ -48,7 +86,15 @@ export class BrowserWindow extends AbsWindowIPC {
                 preload,
             },
         })
-        this.contentView = this.centre
+        this.centre.setVisible(true)
+
+        const bounds = this.getContentBounds()
+        this.centre.setBounds({
+            x: 0,
+            y: 0,
+            width: bounds.width,
+            height: bounds.height,
+        })
     }
 
     /**
@@ -58,7 +104,8 @@ export class BrowserWindow extends AbsWindowIPC {
         this._current = request.scene
 
         if (request.scene === BROWSER) {
-            this.contentView = this.browser
+            this.browser.setVisible(true)
+            this.centre.setVisible(false)
 
             if (request.reloading) {
                 this.title = 'Loading...'
@@ -83,7 +130,9 @@ export class BrowserWindow extends AbsWindowIPC {
             return
         }
 
-        this.contentView = this.centre
+        this.browser.setVisible(false)
+        this.centre.setVisible(true)
+        // this.contentView = this.centre
         this.centre.loadScene(request.scene)
         this.centre.webContents.focus()
     }

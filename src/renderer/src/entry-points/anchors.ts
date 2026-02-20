@@ -11,7 +11,12 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import {
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -22,7 +27,9 @@ class Anchors extends A_ListSearch<T_Bookmark> {
         this.requestAnchors()
 
         // Title
-        const h1 = new H1('Anchors ⚓️').prependTo('title')
+        const h1 = new H1(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`).prependTo(
+            'title',
+        )
         new BackButton().prependTo(h1.element)
     }
 

@@ -8,7 +8,7 @@ import { Button } from '@src/renderer/src/template-parts/button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
@@ -22,7 +22,7 @@ class History extends A_ListSearch<T_Bookmark> {
         this.request()
 
         // Title
-        const h1 = new H1('History 📝').prependTo('title')
+        const h1 = new H1(`History ${EMOJI.HISTORY}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Clear History

@@ -12,6 +12,7 @@ import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import {
+    EMOJI,
     IPC_CHANNELS,
     MAX_HISTORY,
     REQUEST_HANDLER,
@@ -33,7 +34,7 @@ class Settings extends A_Entry {
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Title
-        const h1 = new H1('Settings ⚙️').prependTo(getSection('title'))
+        const h1 = new H1(`Settings ${EMOJI.SETTINGS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
 
         // Version

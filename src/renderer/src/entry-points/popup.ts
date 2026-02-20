@@ -6,7 +6,7 @@ import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
@@ -17,7 +17,9 @@ class Popup extends A_ListSearch<PopupBlocker> {
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1('Popup Blocker 👮').prependTo('title')
+        const h1 = new H1(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`).prependTo(
+            'title',
+        )
         new BackButton().prependTo(h1.element)
     }
 
@@ -63,7 +65,7 @@ class Popup extends A_ListSearch<PopupBlocker> {
         super.renderList()
 
         this.items.forEach(({ data: popup, items }) => {
-            const content = `${popup.allowed ? '✅ ' : ''}${popup.host}`
+            const content = `${popup.allowed ? `${EMOJI.CHECKED} ` : ''}${popup.host}`
             const item = new ListItem(content)
                 .appendTo(this.list.element)
                 .setOnClick(() => {

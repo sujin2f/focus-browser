@@ -9,7 +9,7 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS /> */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 class Shortcuts extends A_Entry {
     private shortcuts: Record<string, string> = {}
@@ -27,7 +27,7 @@ class Shortcuts extends A_Entry {
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Title
-        const h1 = new H1('Shortcuts 🏁').prependTo('title')
+        const h1 = new H1(`Shortcuts ${EMOJI.SHORTCUTS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
     }
 

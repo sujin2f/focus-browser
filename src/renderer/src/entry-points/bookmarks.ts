@@ -238,7 +238,7 @@ class Bookmarks extends A_Bookmarks {
             return
         }
 
-        // Have search keyword
+        // Item Has search keyword
         this.items.forEach(({ data, items }) => {
             const show = this.filterList(data, this.searchKeyword)
             items.forEach((item) => {
@@ -250,11 +250,13 @@ class Bookmarks extends A_Bookmarks {
             })
         })
 
+        // Show items from matched Directory
         Object.keys(this.dirs).forEach((id) => {
             const show = this.filterList(this.dirs[id].data, this.searchKeyword)
             if (!show) {
                 return
             }
+
             this.dirs[id].items.forEach((item) => {
                 item.show()
             })

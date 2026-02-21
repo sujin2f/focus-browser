@@ -15,7 +15,7 @@ import { EMOJI, Menu } from '@src/common/constants'
 class Welcome extends A_Bookmarks {
     constructor() {
         super('bookmark--welcome')
-        this.requestInfo('shortcutAddress')
+        this.requestStatus('shortcutAddress')
 
         new H1(`${EMOJI.FOCUS} Welcome to Focus!`).prependTo('root')
 

@@ -23,7 +23,7 @@ class Keystrokes extends A_Entry {
 
     constructor() {
         super()
-        this.requestInfo('url')
+        this.requestStatus('url')
         this.request()
 
         // Title

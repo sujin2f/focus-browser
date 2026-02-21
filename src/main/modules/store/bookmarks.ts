@@ -88,6 +88,15 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
         if (!bookmark) return false
 
         this._data.bookmarks.splice(bookmark.index, 1)
+
+        // Removing Folder
+        if (!bookmark.bookmark.url) {
+            this._data.bookmarks.forEach((item) => {
+                if (item.parent === bookmark.bookmark.id) {
+                    delete item.parent
+                }
+            })
+        }
         return true
     }
 

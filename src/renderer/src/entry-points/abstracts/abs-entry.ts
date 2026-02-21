@@ -25,9 +25,9 @@ export abstract class A_Entry {
         }
     }
 
-    protected requestInfo(...keys: (keyof T_Status_Props)[]) {
+    protected requestStatus(...keys: (keyof T_Status_Props)[]) {
         Logger.getInstance().log(
-            `[Renderer] requestInfo ${JSON.stringify(keys)}`,
+            `[Renderer] requestStatus ${JSON.stringify(keys)}`,
         )
 
         ipcRenderer.once(

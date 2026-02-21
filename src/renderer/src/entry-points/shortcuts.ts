@@ -1,6 +1,11 @@
 import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer, getSection } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    ipcRenderer,
+    getSection,
+    navigate,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
@@ -9,10 +14,31 @@ import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS /> */
-import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import {
+    BROWSER,
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    MenuCategory,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
+
+const EDITABLE: Partial<Record<MenuCategory, Menu[]>> = {
+    [MenuCategory.EDIT]: [
+        Menu.ADD_BOOKMARK,
+        Menu.ADD_ANCHOR,
+        Menu.PASTE_KEYSTROKE,
+    ],
+    [MenuCategory.NAVIGATE]: [
+        Menu.CENTRE,
+        Menu.ADDRESS,
+        Menu.BACK_HIDDEN,
+        Menu.FORWARD_HIDDEN,
+    ],
+}
 
 class Shortcuts extends A_Entry {
-    private shortcuts: Record<string, string> = {}
+    private shortcuts: Partial<Record<Menu, string>> = {}
 
     private form: HTMLFormElement = getSection<HTMLFormElement>('form')
     private button?: Button
@@ -28,25 +54,37 @@ class Shortcuts extends A_Entry {
         // Title
         const h1 = new H1(`Shortcuts ${EMOJI.SHORTCUTS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
+
+        document
+            .getElementById('link--electron-shortcuts')!
+            .addEventListener('click', () => {
+                navigate({
+                    scene: BROWSER,
+                    address:
+                        'https://www.electronjs.org/docs/latest/tutorial/keyboard-shortcuts',
+                })
+            })
     }
 
-    private getValue(key: string): string {
+    private getValue(key: Menu): string {
         return this.shortcuts[key] || ''
-    }
-    private createInput(key: string) {
-        new Input(key, key).appendTo('form').value = this.getValue(key)
     }
 
     private render() {
         this.form.innerHTML = ''
-        new H2('Edit').appendTo(this.form)
-        this.createInput('Add Bookmark')
-        this.createInput('Add Anchor')
-        this.createInput('Paste Keystroke')
-        new H2('Navigate').appendTo(this.form)
-        this.createInput('Control Centre')
-        this.createInput('Address Bar')
-        this.button = new Button('Save Changes').appendTo(this.form)
+
+        Object.keys(EDITABLE).forEach((parent) => {
+            new H2(parent).appendTo(this.form).addClass('h2--shortcuts')
+            EDITABLE[parent as MenuCategory]!.forEach((menu) => {
+                const label = `${EMOJI[menu] ? `${EMOJI[menu]} ` : ''}${menu}`
+                new Input(label, menu).appendTo('form').value =
+                    this.getValue(menu)
+            })
+        })
+
+        this.button = new Button('Save Changes')
+            .appendTo(this.form)
+            .addClass('h2--shortcuts')
         this.button.type = 'submit'
     }
 
@@ -75,14 +113,14 @@ class Shortcuts extends A_Entry {
 
         this.button?.disable()
         const formData = new FormData(this.form)
-        const shortcuts: Record<string, string> = {
-            'Add Bookmark': formData.get('Add Bookmark')?.toString() || '',
-            'Add Anchor': formData.get('Add Anchor')?.toString() || '',
-            'Paste Keystroke':
-                formData.get('Paste Keystroke')?.toString() || '',
-            'Control Centre': formData.get('Control Centre')?.toString() || '',
-            'Address Bar': formData.get('Address Bar')?.toString() || '',
-        }
+        const shortcuts: Record<string, string> = {}
+
+        Object.keys(EDITABLE).forEach((parent) => {
+            EDITABLE[parent as MenuCategory]!.forEach((menu) => {
+                shortcuts[menu] = formData.get(menu)?.toString() || ''
+            })
+        })
+
         ipcRenderer.send(
             IPC_CHANNELS.SHORTCUTS,
             REQUEST_HANDLER.MODIFY,

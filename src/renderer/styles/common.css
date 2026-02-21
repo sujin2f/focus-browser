@@ -46,3 +46,8 @@
         margin-right: calc(var(--spacing) * 2);
     }
 }
+
+.h2--shortcuts {
+    grid-column-end: 3;
+    grid-column-start: 1;
+}

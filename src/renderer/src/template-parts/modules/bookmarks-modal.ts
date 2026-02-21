@@ -75,6 +75,7 @@ export class BookmarkModal extends Modal {
     }
 
     protected init() {
+        super.init()
         this.content.append(this.form)
     }
 

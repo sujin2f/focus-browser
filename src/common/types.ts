@@ -28,6 +28,7 @@ export type T_Status_Props = Partial<
         url: string
         adBlockerStatus: boolean | null
         findText: string
+        shortcutAddress: string
     }
 >
 

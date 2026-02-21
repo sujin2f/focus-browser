@@ -18,7 +18,17 @@ import {
     REQUEST_HANDLER,
     SEARCH_ENGINES,
 } from '@src/common/constants'
+/* T_Types */
+import type { T_Status_Props } from '@src/common/types'
 
+const request: (keyof T_Status_Props)[] = [
+    'maxHistory',
+    'adBlocker',
+    'adBlockerStatus',
+    'searchEngine',
+]
+
+// TODO too dirty
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
     private form: HTMLFormElement = getSection<HTMLFormElement>('form')
@@ -26,7 +36,7 @@ class Settings extends A_Entry {
 
     constructor() {
         super()
-        this.requestInfo('maxHistory', 'adBlocker', 'searchEngine')
+        this.requestInfo(...request)
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))
@@ -39,26 +49,57 @@ class Settings extends A_Entry {
         getSection('version').innerHTML = `Version: ${envVersion}`
     }
 
-    protected callbackUpdateInfo() {
+    protected callbackUpdateStatus() {
         this.form.innerHTML = ''
 
+        // Max History
         const maxHistory = new Input('Maximum History', 'maxHistory').appendTo(
             this.form,
         )
         maxHistory.type = 'number'
         maxHistory.value = this.settings.maxHistory || MAX_HISTORY
 
+        // adBlocker
         const adBlocker = new Checkbox('Use Ad-Blocker', 'adBlocker').appendTo(
             this.form,
         )
         adBlocker.checked = this.settings.adBlocker || false
         if (this.settings.adBlockerStatus === null) {
-            adBlocker.helpText = 'Ad Blocker is failed to load.'
+            const button = document.createElement('button')
+            button.addEventListener('click', (e) => {
+                e.preventDefault()
+
+                // reload adBlocker
+                ipcRenderer.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.MODIFY, {
+                    data: {
+                        adBlocker: true,
+                    },
+                    request,
+                })
+                ipcRenderer.once(
+                    IPC_CHANNELS.STATUS,
+                    (handler, status = { data: {} }) => {
+                        switch (handler) {
+                            case REQUEST_HANDLER.RESPONSE:
+                                this.settings = {
+                                    ...this.settings,
+                                    ...status.data,
+                                }
+                            // TODO Failed
+                        }
+                    },
+                )
+            })
+            button.innerHTML =
+                'Ad Blocker is failed to load. Click here to reload.'
+            button.classList.add('cursor-pointer')
+            adBlocker.getHelpText().append(button)
         }
         if (this.settings.adBlockerStatus === false) {
-            adBlocker.helpText = 'Ad Blocker is Disabled.'
+            adBlocker.helpText = 'Ad Blocker is Disabled. '
         }
 
+        // Search Engine
         const searchEngine = new Select(
             'Search Engine',
             'searchEngine',
@@ -100,15 +141,22 @@ class Settings extends A_Entry {
                 adBlocker,
                 searchEngine,
             },
+            request,
         })
-        ipcRenderer.once(IPC_CHANNELS.STATUS, (handler) => {
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    this.button?.enable()
-                    this.notification.info('Settings are saved successfully!')
-                // TODO Failed
-            }
-        })
+        ipcRenderer.once(
+            IPC_CHANNELS.STATUS,
+            (handler, status = { data: {} }) => {
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE:
+                        this.button?.enable()
+                        this.notification.info(
+                            'Settings are saved successfully!',
+                        )
+                        this.settings = { ...this.settings, ...status.data }
+                    // TODO Failed
+                }
+            },
+        )
     }
 }
 

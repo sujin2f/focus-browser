@@ -45,7 +45,7 @@ class Bookmarks extends A_Bookmarks {
         this.setShortcuts()
     }
 
-    protected callbackUpdateInfo(): void {
+    protected callbackUpdateStatus(): void {
         if (this.settings.url) {
             // Buttons >> Add Bookmark
             new Button('💾 Add Bookmark')
@@ -61,6 +61,7 @@ class Bookmarks extends A_Bookmarks {
                 })
         }
     }
+
     protected callbackResponse(
         handler: REQUEST_HANDLER,
         bookmarks: T_Bookmark[],

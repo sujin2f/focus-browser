@@ -12,6 +12,9 @@ import {
     LogTypes,
     MainEventTypes,
     CENTRE_PAGES,
+    Menu,
+    DEFAULT_SHORTCUTS,
+    SystemType,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -137,15 +140,15 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             if (
                 Object.prototype.hasOwnProperty.call(request.data, 'adBlocker')
             ) {
+                Logger.getInstance().log(
+                    'adBlocker setting changed: ',
+                    status.get('adBlocker'),
+                )
                 await this.browser.setAdBlocker()
             }
-
-            // TODO Failed
-            this.sendResult(IPC_CHANNELS.STATUS)
-            return
         }
 
-        if (handler === REQUEST_HANDLER.REQUEST && request.request) {
+        if (request.request) {
             await this.sendStatus(...request.request)
         }
     }
@@ -326,6 +329,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         if (requests.includes('searchEngine')) {
             response.searchEngine = status.searchEngine
+        }
+
+        if (requests.includes('shortcutAddress')) {
+            const store = new Shortcut().get('shortcuts')
+            if (store[Menu.ADDRESS]) {
+                response.shortcutAddress = store[Menu.ADDRESS]
+            } else {
+                const system =
+                    process.platform === 'darwin'
+                        ? SystemType.DARWIN
+                        : SystemType.DEFAULT
+                response.shortcutAddress =
+                    DEFAULT_SHORTCUTS[Menu.ADDRESS][system]
+            }
         }
 
         Logger.getInstance().info('IPC sending: ', response)

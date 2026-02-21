@@ -23,8 +23,6 @@ export abstract class A_ListSearch<T> extends A_List<T> {
             })
     }
 
-    abstract filterList(item: T, keyword: string): boolean
-
     protected isSearchActivated() {
         return true
     }
@@ -56,6 +54,18 @@ export abstract class A_ListSearch<T> extends A_List<T> {
         this.search.focus()
     }
 
+    /**
+     * Filter an item by keyword
+     *
+     * @param item
+     * @param keyword
+     * @returns {boolean} true to show
+     */
+    abstract filterList(item: T, keyword: string): boolean
+
+    /**
+     * Filter items
+     */
     protected filterSearch() {
         if (!this.searchKeyword) {
             this.items.forEach(({ items }) =>

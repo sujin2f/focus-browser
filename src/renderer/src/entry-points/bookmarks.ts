@@ -17,7 +17,7 @@ class Bookmarks extends A_Bookmarks {
 
     constructor() {
         super('bookmark--bookmarks')
-        this.requestInfo('title', 'url')
+        this.requestStatus('title', 'url')
 
         // Title
         const h1 = new H1(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`).prependTo(

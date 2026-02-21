@@ -14,11 +14,13 @@ export class Modal extends A_Element<HTMLElement> {
     public show() {
         this.element.classList.remove('hidden')
         this.element.classList.add('flex')
+        return this
     }
 
     public hide() {
         this.element.classList.add('hidden')
         this.element.classList.remove('flex')
+        return this
     }
 
     public get activated() {

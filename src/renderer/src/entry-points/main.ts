@@ -6,6 +6,7 @@ import { Card } from '@src/renderer/src/template-parts/card'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 import { Input } from '@src/renderer/src/template-parts/input'
+import { H1 } from '@src/renderer/src/template-parts/h1'
 /* CONSTANTS */
 import { EMOJI, Menu } from '@src/common/constants'
 
@@ -64,9 +65,11 @@ class Main extends A_Entry {
 
     constructor() {
         super()
-        this.requestInfo('url', 'shortcutAddress')
+        this.requestStatus('url', 'shortcutAddress')
 
-        new BackButton().appendTo('button')
+        // Title
+        const h1 = new H1('Press Esc to Browser Mode').prependTo('title')
+        new BackButton().prependTo(h1.element)
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)

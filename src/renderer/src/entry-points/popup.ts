@@ -13,7 +13,7 @@ import type { PopupBlocker } from '@src/common/types'
 class Popup extends A_ListSearch<PopupBlocker> {
     constructor() {
         super()
-        this.requestInfo('title', 'url')
+        this.requestStatus('title', 'url')
         this.requestPopupBlockers()
 
         // Title

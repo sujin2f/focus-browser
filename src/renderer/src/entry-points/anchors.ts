@@ -23,7 +23,7 @@ import type { T_Bookmark } from '@src/common/types'
 class Anchors extends A_ListSearch<T_Bookmark> {
     constructor() {
         super()
-        this.requestInfo('title', 'url')
+        this.requestStatus('title', 'url')
         this.requestAnchors()
 
         // Title

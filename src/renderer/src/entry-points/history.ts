@@ -18,7 +18,7 @@ class History extends A_ListSearch<T_Bookmark> {
 
     constructor() {
         super()
-        this.requestInfo('title', 'url')
+        this.requestStatus('title', 'url')
         this.request()
 
         // Title

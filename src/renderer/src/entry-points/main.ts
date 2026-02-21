@@ -5,6 +5,8 @@ import { checkElectron } from '@src/renderer/src/utils'
 import { Card } from '@src/renderer/src/template-parts/card'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
+import { Input } from '@src/renderer/src/template-parts/input'
+/* CONSTANTS */
 import { EMOJI, Menu } from '@src/common/constants'
 
 type T_Card = {
@@ -58,12 +60,11 @@ const cards: Record<string, T_Card> = {
 }
 
 class Main extends A_Entry {
-    private input = getAddressBar('form')
+    private input?: Input
 
     constructor() {
         super()
-
-        this.requestInfo('url')
+        this.requestInfo('url', 'shortcutAddress')
 
         new BackButton().appendTo('button')
 
@@ -107,7 +108,9 @@ class Main extends A_Entry {
         }
     }
 
-    protected callbackUpdateInfo(): void {
+    protected callbackUpdateStatus(): void {
+        this.input = getAddressBar('form', this.settings.shortcutAddress)
+
         if (window.location.href.includes('address=true')) {
             this.input.value = this.settings.url
             this.input.selectText()

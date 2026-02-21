@@ -21,6 +21,14 @@ export abstract class A_FormElement<
         element.innerHTML = helpText
     }
 
+    public getHelpText() {
+        const element = this.select<HTMLParagraphElement>('help-text')
+        if (!element) {
+            throw new Error('help-text is not defined')
+        }
+        return element
+    }
+
     public set error(message: string) {
         const element = this.select<HTMLParagraphElement>('error-message')
         if (!element) {

@@ -25,8 +25,8 @@ export const navigate = (
 }
 
 export const isMac = () => navigator.userAgent.indexOf('Mac') != -1
-
-export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl')
+export const ctrlOrComm = () => (isMac() ? '⌘' : 'Ctrl+')
+export const commandSymbol = (arg: string) => arg.replaceAll('Command+', '⌘')
 
 export const tagNameIs = (
     element: HTMLElement | EventTarget | null,

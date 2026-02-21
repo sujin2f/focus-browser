@@ -1,11 +1,19 @@
 /* Utils */
-import { navigate, getSection } from '@src/renderer/src/utils'
+import {
+    navigate,
+    getSection,
+    ctrlOrComm,
+    commandSymbol,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Input } from '@src/renderer/src/template-parts/input'
 
-export const getAddressBar = (section: string) => {
+export const getAddressBar = (
+    section: string,
+    shortcut = `${ctrlOrComm()}L`,
+) => {
     const input = new Input(
-        'Enter search keyword or address (⌘L)',
+        `Enter search keyword or address (${commandSymbol(shortcut)})`,
         'address',
     ).appendTo(section)
 

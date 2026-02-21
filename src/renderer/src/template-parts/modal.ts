@@ -6,9 +6,7 @@ export class Modal extends A_Element<HTMLElement> {
     }
 
     protected init() {
-        this.element
-            .querySelector('[data-selector="close"]')!
-            .addEventListener('click', this.hide.bind(this))
+        this.select('close').addEventListener('click', () => this.hide())
     }
 
     public show() {

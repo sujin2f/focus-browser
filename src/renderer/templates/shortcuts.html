@@ -22,10 +22,21 @@
                 <section id="section-title"></section>
                 <section id="section-version"></section>
             </div>
+
+            <p class="mt-2 dark:text-slate-400">
+                See available shortcut values, read
+                <button
+                    class="underline cursor-pointer"
+                    id="link--electron-shortcuts"
+                >
+                    this article</button
+                >.
+            </p>
+
             <%=require('html-loader!./template-parts/h2.html').default %>
             <%=require('html-loader!./template-parts/input.html').default %>
             <%=require('html-loader!./template-parts/button.html').default %>
-            <form id="section-form"></form>
+            <form id="section-form" class="grid grid-cols-2 gap-3"></form>
         </div>
         <%=require('html-loader!./template-parts/notification.html').default %>
     </body>

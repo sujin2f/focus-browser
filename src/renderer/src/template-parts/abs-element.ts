@@ -76,13 +76,20 @@ export abstract class A_Element<T extends HTMLElement> {
 
     public show() {
         this.element.classList.remove('hidden')
+        return this
     }
 
     public hide() {
         this.element.classList.add('hidden')
+        return this
     }
 
     public isHidden() {
         return this.element.classList.contains('hidden')
+    }
+
+    public addClass(...classes: string[]) {
+        this.element.classList.add(...classes)
+        return this
     }
 }

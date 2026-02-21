@@ -17,7 +17,7 @@ class Bookmarks extends A_Bookmarks {
 
     constructor() {
         super('bookmark--bookmarks')
-        this.requestInfo('title', 'url')
+        this.requestStatus('title', 'url')
 
         // Title
         const h1 = new H1(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`).prependTo(
@@ -31,13 +31,6 @@ class Bookmarks extends A_Bookmarks {
             .setOnClick(() => {
                 this.modal.open(this.getDirs(), { isDir: true })
             })
-    }
-
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return (
-            item.shortcut?.toLowerCase().includes(keyword) ||
-            item.title.toLowerCase().includes(keyword)
-        )
     }
 
     renderList() {
@@ -149,6 +142,19 @@ class Bookmarks extends A_Bookmarks {
     /**
      * from A_ListSearch
      */
+    /**
+     * Filter by keyword
+     *
+     * @param item
+     * @param keyword
+     * @returns {boolean} true to show
+     */
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return (
+            item.shortcut?.toLowerCase().includes(keyword) ||
+            item.title.toLowerCase().includes(keyword)
+        )
+    }
     private search: Input = new Input('Search', 'search')
         .appendTo('search')
         .setOnInput(() => {
@@ -232,14 +238,27 @@ class Bookmarks extends A_Bookmarks {
             return
         }
 
+        // Item Has search keyword
         this.items.forEach(({ data, items }) => {
-            const filtered = this.filterList(data, this.searchKeyword)
+            const show = this.filterList(data, this.searchKeyword)
             items.forEach((item) => {
-                if (filtered) {
+                if (show) {
                     item.show()
                 } else {
                     item.hide()
                 }
+            })
+        })
+
+        // Show items from matched Directory
+        Object.keys(this.dirs).forEach((id) => {
+            const show = this.filterList(this.dirs[id].data, this.searchKeyword)
+            if (!show) {
+                return
+            }
+
+            this.dirs[id].items.forEach((item) => {
+                item.show()
             })
         })
     }

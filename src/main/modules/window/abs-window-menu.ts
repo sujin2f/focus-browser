@@ -371,7 +371,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected resetMenu() {
         // Retrieve persisted menu config and attach callbacks for actions
         const data = this.menuItems
-
         const menu: MenuItemConstructorOptions[] = []
 
         // Convert stored MenuBlock into Electron MenuItemConstructorOptions[]

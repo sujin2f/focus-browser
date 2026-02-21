@@ -36,7 +36,7 @@ class Settings extends A_Entry {
 
     constructor() {
         super()
-        this.requestInfo(...request)
+        this.requestStatus(...request)
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))

@@ -11,12 +11,10 @@
 
     <body class="dark:bg-gray-950 dark:text-white min-h-dvh py-10">
         <div class="container mx-auto">
+            <%=require('html-loader!./template-parts/h1.html').default %>
             <%=require('html-loader!./template-parts/back-button.html').default
             %>
-            <section
-                class="flex items-center mb-4 font-bold text-4xl"
-                id="section-button"
-            ></section>
+            <section id="section-title" class="mb-4"></section>
 
             <%=require('html-loader!./template-parts/input.html').default %>
             <form id="section-form"></form>

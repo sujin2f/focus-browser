@@ -12,7 +12,7 @@ export abstract class A_Entry {
     }
     protected set settings(settings: T_Status_Props) {
         this._settings = settings
-        this.callbackUpdateInfo()
+        this.callbackUpdateStatus()
     }
 
     constructor() {
@@ -48,5 +48,5 @@ export abstract class A_Entry {
         })
     }
 
-    protected callbackUpdateInfo() {}
+    protected callbackUpdateStatus() {}
 }

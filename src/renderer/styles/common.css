@@ -40,7 +40,7 @@
 }
 
 .bookmark--bookmarks {
-    grid-template-columns: max-content 1fr max-content max-content;
+    grid-template-columns: max-content 1fr max-content max-content max-content;
 
     :nth-child(4n + 1) h3 {
         margin-right: calc(var(--spacing) * 2);

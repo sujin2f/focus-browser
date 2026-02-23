@@ -1,5 +1,6 @@
 import {
     ipcMain,
+    net,
     type BaseWindowConstructorOptions,
     type IpcMainEvent,
     type ContextMenuParams,
@@ -15,6 +16,9 @@ import {
     Menu,
     DEFAULT_SHORTCUTS,
     SystemType,
+    SUJINC_COM,
+    SUJINC_DOMAIN,
+    SUJINC_URL,
 } from '@src/common/constants'
 
 import { Status } from '@main/modules/store/status'
@@ -132,7 +136,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
          * Modifying status
          */
         if (handler === REQUEST_HANDLER.MODIFY && request.data) {
-            const status = new Status()
+            const status = Status.getInstance()
             status.merge(request.data)
             status.save()
 
@@ -211,47 +215,107 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onBookmarks(
+    private async onBookmarks(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
         bookmarks: T_Bookmark[],
     ) {
-        const store = new Bookmarks()
-        const sendBookmarks = (handler: REQUEST_HANDLER) => {
-            const bookmarks = store.get()
-            Logger.getInstance().info(`IPC sendBookmarks: ${bookmarks.length}`)
-            this.centre.send(IPC_CHANNELS.BOOKMARK, handler, bookmarks)
-        }
+        const storeBookmarks = new Bookmarks()
 
         switch (handler) {
             case REQUEST_HANDLER.REQUEST:
-                sendBookmarks(REQUEST_HANDLER.RESPONSE)
+                this.sendBookmarks(
+                    REQUEST_HANDLER.RESPONSE,
+                    storeBookmarks.get(),
+                )
                 return
+            case REQUEST_HANDLER.UPLOAD: {
+                const userInfo = await this.getUserInfo()
+                if (!userInfo) {
+                    this.sendResult(IPC_CHANNELS.BOOKMARK, false)
+                    return
+                }
+
+                const os =
+                    process.platform === 'darwin' ? 'mac' : process.platform
+                const version = process.getSystemVersion()
+                const message = Buffer.from(
+                    JSON.stringify(bookmarks[0]),
+                    'utf8',
+                ).toString('base64')
+                const access = await this.getAccessToken()
+
+                const response = await net.fetch(`${SUJINC_COM}/upload`, {
+                    body: JSON.stringify({
+                        title: bookmarks[0].title,
+                        device: `${os}(${version})`,
+                        message,
+                        messageType: 'bookmark',
+                    }),
+                    method: 'post',
+                    headers: { authorization: `Bearer ${access}` },
+                })
+
+                const result = await response.json()
+                if (result.result) {
+                    this.sendBookmarks(
+                        REQUEST_HANDLER.RESPONSE_SUCCESS,
+                        storeBookmarks.get(),
+                    )
+                    return
+                }
+
+                this.sendBookmarks(
+                    REQUEST_HANDLER.RESPONSE_FAIL,
+                    storeBookmarks.get(),
+                )
+                return
+            }
             case REQUEST_HANDLER.ADD:
-                store.push(bookmarks[0])
-                store.save()
-                sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
+                storeBookmarks.push(bookmarks[0])
+                storeBookmarks.save()
+                this.sendBookmarks(
+                    REQUEST_HANDLER.RESPONSE_SUCCESS,
+                    storeBookmarks.get(),
+                )
                 return
             case REQUEST_HANDLER.MODIFY:
-                store.update(bookmarks[0])
-                store.save()
-                sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
+                storeBookmarks.update(bookmarks[0])
+                storeBookmarks.save()
+                this.sendBookmarks(
+                    REQUEST_HANDLER.RESPONSE_SUCCESS,
+                    storeBookmarks.get(),
+                )
                 return
             case REQUEST_HANDLER.REMOVE: {
                 if (!bookmarks[0].id) {
-                    sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL)
+                    this.sendBookmarks(
+                        REQUEST_HANDLER.RESPONSE_FAIL,
+                        storeBookmarks.get(),
+                    )
                     return
                 }
-                const result = store.remove(bookmarks[0].id)
+                const result = storeBookmarks.remove(bookmarks[0].id)
                 if (result) {
-                    store.save()
-                    sendBookmarks(REQUEST_HANDLER.RESPONSE_SUCCESS)
+                    storeBookmarks.save()
+                    this.sendBookmarks(
+                        REQUEST_HANDLER.RESPONSE_SUCCESS,
+                        storeBookmarks.get(),
+                    )
                     return
                 }
-                sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL)
+                this.sendBookmarks(
+                    REQUEST_HANDLER.RESPONSE_FAIL,
+                    storeBookmarks.get(),
+                )
                 return
             }
         }
+    }
+
+    protected sendBookmarks(handler: REQUEST_HANDLER, bookmarks: T_Bookmark[]) {
+        Logger.getInstance().info(`IPC sendBookmarks: ${bookmarks.length}`)
+        this.centre.send(IPC_CHANNELS.BOOKMARK, handler, bookmarks)
     }
 
     private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {
@@ -305,14 +369,14 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
     private async sendStatus(...requests: (keyof T_Status_Props)[]) {
         const response: T_Status_Props = {}
-        const status = new Status().data
+        const status = Status.getInstance()
 
         if (requests.includes('maxHistory')) {
-            response.maxHistory = status.maxHistory
+            response.maxHistory = status.data.maxHistory
         }
 
         if (requests.includes('adBlocker')) {
-            response.adBlocker = status.adBlocker
+            response.adBlocker = status.data.adBlocker
         }
 
         if (requests.includes('adBlockerStatus')) {
@@ -328,7 +392,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
 
         if (requests.includes('searchEngine')) {
-            response.searchEngine = status.searchEngine
+            response.searchEngine = status.data.searchEngine
         }
 
         if (requests.includes('shortcutAddress')) {
@@ -345,11 +409,112 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
         }
 
+        if (requests.includes('userInfo')) {
+            response.userInfo = await this.getUserInfo()
+        }
+
         Logger.getInstance().info('IPC sending: ', response)
 
         this.centre.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.RESPONSE, {
             data: response,
         })
+    }
+
+    private async getUserInfo(): Promise<undefined | string> {
+        const refresh = this.getRefreshToken()
+        if (!refresh) {
+            return
+        }
+
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/user-info',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const userInfo = cookies[0]
+                if (!userInfo) {
+                    await this.removeTokens()
+                    return
+                }
+                const value = decodeURIComponent(userInfo.value)
+                return value
+            })
+    }
+
+    private async getRefreshToken(): Promise<string> {
+        const now = new Date().getTime() / 1000
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/refresh',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const refresh = cookies[0]
+                const exp = refresh?.expirationDate
+                if (!refresh || !exp || exp < now) {
+                    // If refresh token is expired, Clear!
+                    Logger.getInstance().log('Refresh token is expired.')
+                    await this.removeTokens()
+                    return ''
+                }
+                return refresh.value
+            })
+    }
+
+    private async getAccessToken(): Promise<string> {
+        const now = new Date().getTime() / 1000
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/access',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const access = cookies[0]
+                const exp = access?.expirationDate
+                if (!access || !exp || exp < now) {
+                    // If access token is expired, Refresh!
+                    const refresh = await this.getRefreshToken()
+                    if (!refresh) {
+                        await this.removeTokens()
+                        return ''
+                    }
+                    const access = await this.refreshTokens(refresh)
+                    if (!access.result) {
+                        await this.removeTokens()
+                        return ''
+                    }
+
+                    await this.browser.webContents.session.cookies.set({
+                        url: SUJINC_URL,
+                        name: 'sujinc.com/access',
+                        value: access.token,
+                        domain: SUJINC_DOMAIN,
+                        path: '/',
+                        secure: true,
+                        httpOnly: true,
+                        expirationDate: now + 3 * 60 * 60,
+                        sameSite: 'lax',
+                    })
+                    return access.token
+                }
+                return access.value
+            })
+    }
+
+    private async removeTokens() {
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/refresh',
+        )
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/access',
+        )
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/user-info',
+        )
     }
 
     private async onKeystrokes(
@@ -499,5 +664,14 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 ? REQUEST_HANDLER.RESPONSE_SUCCESS
                 : REQUEST_HANDLER.RESPONSE_FAIL,
         )
+    }
+
+    private async refreshTokens(refresh: string) {
+        Logger.getInstance().log('refreshTokens', refresh)
+        const response = await net.fetch(`${SUJINC_COM}/refresh`, {
+            method: 'post',
+            headers: { authorization: `Bearer ${refresh}` },
+        })
+        return await response.json()
     }
 }

@@ -65,7 +65,7 @@ class Main extends A_Entry {
 
     constructor() {
         super()
-        this.requestStatus('url', 'shortcutAddress')
+        this.requestStatus('url', 'shortcutAddress', 'userInfo')
 
         // Title
         const h1 = new H1('Press Esc to Browser Mode').prependTo('title')

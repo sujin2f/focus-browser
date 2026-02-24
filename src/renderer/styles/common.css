@@ -36,15 +36,29 @@
 }
 
 .bookmark--welcome {
-    grid-template-columns: 40px 1fr;
+    grid-template-columns: 40px minmax(200px, 1fr);
 }
 
 .bookmark--bookmarks {
-    grid-template-columns: max-content 1fr max-content max-content;
+    grid-template-columns:
+        max-content minmax(200px, 1fr)
+        max-content max-content max-content;
+}
 
-    :nth-child(4n + 1) h3 {
-        margin-right: calc(var(--spacing) * 2);
-    }
+.bookmark--bookmarks :nth-child(4n + 1) h3 {
+    margin-right: calc(var(--spacing) * 2);
+}
+
+.list--cloud-items {
+    grid-template-columns: max-content max-content minmax(200px, 1fr);
+}
+
+.list--cloud-items :nth-child(3n + 1) h3 {
+    margin-right: calc(var(--spacing) * 2);
+}
+
+.list--cloud-items :nth-child(3n + 2) h3 {
+    margin-right: calc(var(--spacing) * 2);
 }
 
 .h2--shortcuts {

@@ -4,9 +4,13 @@ import type { T_Status_Props, T_Status_Store_Props } from '@src/common/types'
 import { DEFAULT_STATUS } from '@src/common/constants'
 
 export class Status extends Store<T_Status_Store_Props> {
-    constructor() {
-        super('status', DEFAULT_STATUS)
-        this.parse()
+    static instance: Status
+    static getInstance(): Status {
+        if (!Status.instance) {
+            Status.instance = new Status('status', DEFAULT_STATUS)
+            Status.instance.parse()
+        }
+        return Status.instance
     }
 
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
@@ -47,6 +51,7 @@ export class Status extends Store<T_Status_Store_Props> {
                 delete (this._data as unknown as Record<string, string>)[key]
             }
         })
+
         super.save()
     }
 }

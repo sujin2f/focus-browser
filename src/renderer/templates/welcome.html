@@ -18,22 +18,22 @@
                 id="section-root"
                 class="flex flex-col min-h-dvh justify-center items-center max-w-4xl m-auto"
             >
-                <p class="mt-2 dark:text-slate-400">
+                <p class="mt-2 dark:text-slate-400 mb-5">
                     A single-tab web browser for experts
                 </p>
-                <%=require('html-loader!./template-parts/input.html').default %>
-                <form id="section-form" class="w-full mt-10"></form>
-
-                <%=require('html-loader!./template-parts/card.html').default %>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <%=require('html-loader!./template-parts/section-user-info.html').default%>
+                <%=require('html-loader!./template-parts/input.html').default%>
+                <%=require('html-loader!./template-parts/section-address.html').default%>
+                <%=require('html-loader!./template-parts/card.html').default%>
                 <section
-                    class="grid grid-cols-2 mt-2"
+                    class="grid grid-cols-3 mt-2"
                     id="section-grid"
                 ></section>
 
                 <%=require('html-loader!./template-parts/h2.html').default %>
                 <section id="section-bookmarks" class="w-full">
-                    <%=require('html-loader!./template-parts/list.html').default
-                    %>
+                    <%=require('html-loader!./template-parts/list.html').default%>
                 </section>
             </div>
         </div>

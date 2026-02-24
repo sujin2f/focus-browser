@@ -1,6 +1,12 @@
 import { A_Bookmarks } from '@src/renderer/src/entry-points/abstracts/abs-bookmarks'
 /* Utils */
-import { checkElectron, navigate, tagNameIs } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    getSection,
+    ipcRenderer,
+    navigate,
+    tagNameIs,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { Button } from '@src/renderer/src/template-parts/button'
@@ -8,16 +14,26 @@ import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Input } from '@src/renderer/src/template-parts/input'
 import { BookmarkModal } from '@src/renderer/src/template-parts/modules/bookmarks-modal'
+import { UserInfo } from '@src/renderer/src/template-parts/user-info'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
-import { EMOJI, Menu, REQUEST_HANDLER } from '@src/common/constants'
+/* CONSTANTS */
+import {
+    BROWSER,
+    CENTRE_PAGES,
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    REQUEST_HANDLER,
+    SUJINC_URL,
+} from '@src/common/constants'
 
 class Bookmarks extends A_Bookmarks {
     private modal = new BookmarkModal().appendTo('root')
 
     constructor() {
         super('bookmark--bookmarks')
-        this.requestStatus('title', 'url')
+        this.requestStatus('title', 'url', 'userInfo')
 
         // Title
         const h1 = new H1(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`).prependTo(
@@ -25,7 +41,7 @@ class Bookmarks extends A_Bookmarks {
         )
         new BackButton().prependTo(h1.element)
 
-        // Buttons >> Add Folder
+        // Buttons >> Create Folder
         new Button(`${EMOJI.FOLDER_OPEN} Create Folder`)
             .appendTo('buttons')
             .setOnClick(() => {
@@ -39,6 +55,21 @@ class Bookmarks extends A_Bookmarks {
     }
 
     protected callbackUpdateStatus(): void {
+        const userInfo = new UserInfo()
+        if (this.settings.userInfo) {
+            const user = JSON.parse(this.settings.userInfo)
+            userInfo.picture = user.picture
+
+            // Buttons >> Import Bookmarks
+            new Button(`${EMOJI.GLOBE} Import Bookmarks`)
+                .appendTo('buttons')
+                .setOnClick(() => {
+                    window.location.href = CENTRE_PAGES.IMPORTER
+                })
+        } else {
+            userInfo.loggedOut()
+        }
+
         if (this.settings.url) {
             // Buttons >> Add Bookmark
             new Button('💾 Add Bookmark')
@@ -60,14 +91,23 @@ class Bookmarks extends A_Bookmarks {
         bookmarks: T_Bookmark[],
     ) {
         this.modal.hide()
-        if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
-            this.modal.notification.info('Bookmark changed.')
+        switch (handler) {
+            case REQUEST_HANDLER.RESPONSE:
+                super.callbackResponse(handler, bookmarks)
+                return
+            case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                this.modal.notification.info(
+                    'Your request is successfully executed.',
+                )
+                super.callbackResponse(handler, bookmarks)
+                return
+            case REQUEST_HANDLER.RESPONSE_FAIL:
+                this.modal.notification.error(bookmarks[0].title)
+                return
+            case REQUEST_HANDLER.PUT:
+                this.modal.notification.info(bookmarks[0].title)
+                return
         }
-        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
-            this.modal.notification.error('Failed to change Bookmark.')
-        }
-
-        super.callbackResponse(handler, bookmarks)
     }
 
     protected getListCols(bookmark: T_Bookmark, index: number) {
@@ -89,7 +129,6 @@ class Bookmarks extends A_Bookmarks {
             },
         )
 
-        let shortcut = new ListItem('')
         const edit = new ListItem(
             new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
                 this.modal.open(this.getDirs(), { isDir, bookmark, index })
@@ -97,6 +136,7 @@ class Bookmarks extends A_Bookmarks {
         )
         edit.clickable = false
 
+        let shortcut = new ListItem('')
         if (bookmark.shortcut) {
             // Shortcut
             shortcut = new ListItem(
@@ -109,7 +149,35 @@ class Bookmarks extends A_Bookmarks {
             )
         }
 
-        return [icon, row, shortcut, edit]
+        let send = new ListItem('')
+        if (bookmark.url) {
+            // Shortcut
+            send = new ListItem(
+                new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
+                    if (!this.settings.userInfo) {
+                        getSection('login-alert').classList.remove('hidden')
+                        getSection('login-alert')
+                            .querySelector('button')
+                            ?.addEventListener('click', () => {
+                                navigate({
+                                    scene: BROWSER,
+                                    address: SUJINC_URL,
+                                })
+                            })
+                        return
+                    }
+
+                    ipcRenderer.send(
+                        IPC_CHANNELS.BOOKMARK,
+                        REQUEST_HANDLER.PUT,
+                        [bookmark],
+                    )
+                }),
+            )
+        }
+        send.clickable = false
+
+        return [icon, row, shortcut, send, edit]
     }
 
     private getDirs() {

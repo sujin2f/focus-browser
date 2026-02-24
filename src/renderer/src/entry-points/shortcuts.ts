@@ -13,7 +13,7 @@ import { H2 } from '@src/renderer/src/template-parts/h2'
 import { Input } from '@src/renderer/src/template-parts/input'
 import { Button } from '@src/renderer/src/template-parts/button'
 import { Notification } from '@src/renderer/src/template-parts/notification'
-/* CONSTANTS /> */
+/* CONSTANTS */
 import {
     BROWSER,
     EMOJI,
@@ -21,24 +21,13 @@ import {
     Menu,
     MenuCategory,
     REQUEST_HANDLER,
+    EDITABLE_SHORTCUTS,
 } from '@src/common/constants'
-
-const EDITABLE: Partial<Record<MenuCategory, Menu[]>> = {
-    [MenuCategory.EDIT]: [
-        Menu.ADD_BOOKMARK,
-        Menu.ADD_ANCHOR,
-        Menu.PASTE_KEYSTROKE,
-    ],
-    [MenuCategory.NAVIGATE]: [
-        Menu.CENTRE,
-        Menu.ADDRESS,
-        Menu.BACK_HIDDEN,
-        Menu.FORWARD_HIDDEN,
-    ],
-}
+/* T_Types */
+import type { T_Shortcut_Store } from '@src/common/types'
 
 class Shortcuts extends A_Entry {
-    private shortcuts: Partial<Record<Menu, string>> = {}
+    private shortcuts: T_Shortcut_Store = {}
 
     private form: HTMLFormElement = getSection<HTMLFormElement>('form')
     private button?: Button
@@ -73,9 +62,9 @@ class Shortcuts extends A_Entry {
     private render() {
         this.form.innerHTML = ''
 
-        Object.keys(EDITABLE).forEach((parent) => {
+        Object.keys(EDITABLE_SHORTCUTS).forEach((parent) => {
             new H2(parent).appendTo(this.form).addClass('h2--shortcuts')
-            EDITABLE[parent as MenuCategory]!.forEach((menu) => {
+            EDITABLE_SHORTCUTS[parent as MenuCategory]!.forEach((menu) => {
                 const label = `${EMOJI[menu] ? `${EMOJI[menu]} ` : ''}${menu}`
                 new Input(label, menu).appendTo('form').value =
                     this.getValue(menu)
@@ -115,8 +104,8 @@ class Shortcuts extends A_Entry {
         const formData = new FormData(this.form)
         const shortcuts: Record<string, string> = {}
 
-        Object.keys(EDITABLE).forEach((parent) => {
-            EDITABLE[parent as MenuCategory]!.forEach((menu) => {
+        Object.keys(EDITABLE_SHORTCUTS).forEach((parent) => {
+            EDITABLE_SHORTCUTS[parent as MenuCategory]!.forEach((menu) => {
                 shortcuts[menu] = formData.get(menu)?.toString() || ''
             })
         })

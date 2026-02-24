@@ -1,6 +1,8 @@
 import type { T_Status_Store_Props } from '@src/common/types'
 
 export const MAX_HISTORY = 200
+export const SUJINC_DOMAIN = 'sujinc.com' // sujinc.com | localhost
+export const SUJINC_URL = 'https://sujinc.com' // https://sujinc.com | http://localhost:8000
 
 /**
  * Control centre pages
@@ -20,6 +22,7 @@ export enum CENTRE_PAGES {
     BOOKMARK = 'bookmarks.html',
     HOME = 'main.html',
     WELCOME = 'welcome.html',
+    IMPORTER = 'importer.html',
 }
 
 export const BROWSER = 'scene-browser'
@@ -37,6 +40,7 @@ export enum IPC_CHANNELS {
     KEYSTROKES = 'KEYSTROKES',
     SHORTCUTS = 'SHORTCUTS',
     CLEANER = 'CLEANER',
+    CLOUD = 'CLOUD',
 }
 
 export enum REQUEST_HANDLER {
@@ -48,6 +52,7 @@ export enum REQUEST_HANDLER {
     MODIFY = 'MODIFY',
     REMOVE = 'REMOVE',
     EXECUTE = 'EXECUTE',
+    PUT = 'PUT',
 }
 
 export enum SystemType {
@@ -120,6 +125,10 @@ export const EMOJI: Record<string, string> = {
     FOLDER_OPEN: '📂',
     FOLDER_CLOSE: '📁',
     CHECKED: '✅',
+    GLOBE: '🌏',
+    CENTRE: '🎛️',
+    LOGIN: '🙋‍♀️',
+    CLOUD: '☁️',
 }
 
 export const SEARCH_ENGINES = {
@@ -308,4 +317,18 @@ export const DEFAULT_SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
         [SystemType.DARWIN]: '',
         [SystemType.DEFAULT]: '',
     },
+}
+
+export const EDITABLE_SHORTCUTS: Partial<Record<MenuCategory, Menu[]>> = {
+    [MenuCategory.EDIT]: [
+        Menu.ADD_BOOKMARK,
+        Menu.ADD_ANCHOR,
+        Menu.PASTE_KEYSTROKE,
+    ],
+    [MenuCategory.NAVIGATE]: [
+        Menu.CENTRE,
+        Menu.ADDRESS,
+        Menu.BACK_HIDDEN,
+        Menu.FORWARD_HIDDEN,
+    ],
 }

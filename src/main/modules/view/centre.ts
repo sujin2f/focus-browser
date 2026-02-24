@@ -23,7 +23,7 @@ export class CenterView extends WebContentsView {
                 this.loadURL(CENTRE_PAGES.HOME)
                 return
             case CENTRE_PAGES.ADDRESS:
-                this.loadURL(`${CENTRE_PAGES.HOME}?address=true`)
+                this.loadURL(CENTRE_PAGES.HOME, 'address=true')
                 return
             case CENTRE_PAGES.BOOKMARK:
                 this.loadURL(CENTRE_PAGES.BOOKMARK)
@@ -53,7 +53,8 @@ export class CenterView extends WebContentsView {
         this.webContents.send(channel, handler, arg)
     }
 
-    private loadURL(scene: string) {
-        this.webContents.loadURL(resolveHtmlPath(scene))
+    private loadURL(scene: string, _attrs: string = '') {
+        const attrs = _attrs ? `?${_attrs}` : ''
+        this.webContents.loadURL(resolveHtmlPath(scene) + attrs)
     }
 }

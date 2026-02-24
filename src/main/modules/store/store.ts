@@ -63,8 +63,7 @@ export class Store<T extends JsonObject> {
 
         // encrypt buffer
         if (data && this.isSecure) {
-            const encryptedBuffer = safeStorage.encryptString(data)
-            data = encryptedBuffer.toString('base64')
+            data = this.encrypt(data)
         }
 
         fs.writeFileSync(this.path, data, {
@@ -81,8 +80,7 @@ export class Store<T extends JsonObject> {
 
             // Decrypt buffer
             if (fileContent && this.isSecure) {
-                const encryptedBuffer = Buffer.from(fileContent, 'base64')
-                fileContent = safeStorage.decryptString(encryptedBuffer)
+                fileContent = this.decrypt(fileContent)
             }
 
             this._data = {
@@ -93,5 +91,13 @@ export class Store<T extends JsonObject> {
             // if there was some kind of error, return the passed in defaults instead.
             this._data = this.defaults
         }
+    }
+
+    protected encrypt(text: string) {
+        return safeStorage.encryptString(text).toString('base64')
+    }
+
+    protected decrypt(text: string) {
+        return safeStorage.decryptString(Buffer.from(text, 'base64'))
     }
 }

@@ -248,16 +248,19 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     'utf8',
                 ).toString('base64')
                 const access = await this.getAccessToken()
+                const machineId = Status.getInstance().get('machineId')
 
                 const response = await net
                     .fetch(`${SUJINC_URL}/focus/bookmark`, {
                         body: JSON.stringify({
+                            _id: '',
                             title: bookmark.title,
                             device: `${os}(${version})`,
                             key: bookmark.url,
+                            machineId,
                             message,
                             type: 'bookmark',
-                        }),
+                        } satisfies T_Cloud_Item),
                         method: 'PUT',
                         headers: { authorization: `Bearer ${access}` },
                     })

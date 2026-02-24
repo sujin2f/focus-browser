@@ -1,6 +1,10 @@
 import { type Rectangle } from 'electron'
+import { randomUUID } from 'crypto'
+/* Models */
 import { Store } from '@main/modules/store/store'
+/* T_Types */
 import type { T_Status_Props, T_Status_Store_Props } from '@src/common/types'
+/* CONSTANTS */
 import { DEFAULT_STATUS } from '@src/common/constants'
 
 export class Status extends Store<T_Status_Store_Props> {
@@ -51,7 +55,15 @@ export class Status extends Store<T_Status_Store_Props> {
                 delete (this._data as unknown as Record<string, string>)[key]
             }
         })
-
         super.save()
+    }
+
+    async parse() {
+        super.parse()
+
+        // Store unique machine ID
+        if (this._data.machineId === 'N/A') {
+            this.set('machineId', randomUUID())
+        }
     }
 }

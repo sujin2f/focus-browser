@@ -20,6 +20,7 @@ export type T_Status_Store_Props = {
     maxHistory: number
     adBlocker: boolean
     searchEngine: keyof typeof SEARCH_ENGINES
+    machineId: string
 }
 
 export type T_Status_Props = Partial<
@@ -86,12 +87,19 @@ export type T_Shortcut_Store = {
     [P in Menu]?: string
 }
 
+/**
+ * Message to sujinc.com
+ * This should match to
+ * @see https://github.com/sujin2f/Sujin/blob/trunk/%40lib/src/types/focus.ts
+ */
 export type T_Cloud_Item = {
     _id: string
-    device: string
-    message: string
     title: string
-    type: 'bookmark'
+    key: string
+    device: string
+    machineId: string
+    type: 'bookmark' | 'keystroke'
+    message: string
 }
 
 export type Scenes = CENTRE_PAGES | typeof BROWSER

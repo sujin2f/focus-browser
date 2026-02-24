@@ -17,15 +17,18 @@
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
                 <%=require('html-loader!./template-parts/h1.html').default %>
-                <%=require('html-loader!./template-parts/back-button.html').default
-                %>
+                <%=require('html-loader!./template-parts/back-button.html').default%>
                 <section id="section-title"></section>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <%=require('html-loader!./template-parts/section-user-info.html').default%>
             </div>
-            <%=require('html-loader!./template-parts/card.html').default %>
+
+            <%=require('html-loader!./template-parts/section-login-alert.html').default%>
             <section
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mt-2"
-                id="section-grid"
+                id="section-loading"
+                class="flex justify-center mt-10 text-5xl"
             ></section>
+            <%=require('html-loader!./template-parts/list.html').default %>
         </div>
         <%=require('html-loader!./template-parts/notification.html').default %>
         <%=require('html-loader!./template-parts/loading.html').default %>

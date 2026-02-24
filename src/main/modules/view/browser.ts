@@ -139,7 +139,10 @@ export class BrowserView extends WebContentsView {
         }
 
         // Search Keyword
-        if (!url.hostname.includes('.')) {
+        if (
+            !url.hostname.includes('localhost') &&
+            !url.hostname.includes('.')
+        ) {
             this.searchKeyword(trimmed)
             return
         }
@@ -164,7 +167,7 @@ export class BrowserView extends WebContentsView {
     }
 
     public searchKeyword(keyword: string) {
-        const status = new Status()
+        const status = Status.getInstance()
         const searchEngine = status.get('searchEngine')
         this._failedUrl = undefined
         this.loadURL(`${SEARCH_ENGINES[searchEngine]}${keyword}`)
@@ -209,7 +212,7 @@ export class BrowserView extends WebContentsView {
     }
 
     public async setAdBlocker() {
-        const status = new Status()
+        const status = Status.getInstance()
         const enabled = status.get('adBlocker')
 
         // Enabled and Set

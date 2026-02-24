@@ -28,7 +28,7 @@ export type T_Status_Props = Partial<
         url: string
         adBlockerStatus: boolean | null
         findText: string
-        shortcutAddress: string
+        userInfo: string
     }
 >
 
@@ -82,6 +82,18 @@ export type T_Cleaner = {
     response?: T_Cleaner_Response
 }
 
+export type T_Shortcut_Store = {
+    [P in Menu]?: string
+}
+
+export type T_Cloud_Item = {
+    _id: string
+    device: string
+    message: string
+    title: string
+    type: 'bookmark'
+}
+
 export type Scenes = CENTRE_PAGES | typeof BROWSER
 
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
@@ -97,6 +109,7 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.FIND]: string
     [IPC_CHANNELS.LOG]: [LogTypes, unknown[]]
     [IPC_CHANNELS.KEYSTROKES]: Record<string, string>
-    [IPC_CHANNELS.SHORTCUTS]: Record<string, string>
+    [IPC_CHANNELS.SHORTCUTS]: T_Shortcut_Store
     [IPC_CHANNELS.CLEANER]: T_Cleaner
+    [IPC_CHANNELS.CLOUD]: T_Cloud_Item[]
 }

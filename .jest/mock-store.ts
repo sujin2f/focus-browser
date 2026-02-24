@@ -60,20 +60,20 @@ export const shortcut = () => ({
 export const statusMerge = jest.fn()
 export const statusGet = jest.fn()
 
-class MockStatus {
-    get = statusGet
-    set = jest.fn()
-    save = jest.fn()
-    parse = jest.fn()
-    update = jest.fn()
-    push = jest.fn(() => true)
-    getBounds = jest.fn()
-    merge = statusMerge
-    data = {}
-}
-
 export const status = () => ({
-    Status: MockStatus,
+    Status: {
+        getInstance: () => ({
+            get: statusGet,
+            set: jest.fn(),
+            save: jest.fn(),
+            parse: jest.fn(),
+            update: jest.fn(),
+            push: jest.fn(() => true),
+            getBounds: jest.fn(),
+            merge: statusMerge,
+            data: {},
+        }),
+    },
 })
 
 class MockHistory {

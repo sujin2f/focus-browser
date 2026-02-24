@@ -1,11 +1,6 @@
 import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
 /* Utils */
-import {
-    checkElectron,
-    ipcRenderer,
-    navigate,
-    // getSection,
-} from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'

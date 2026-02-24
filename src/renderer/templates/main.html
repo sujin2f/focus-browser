@@ -11,14 +11,18 @@
 
     <body class="dark:bg-gray-950 dark:text-white min-h-dvh py-10">
         <div class="container mx-auto">
-            <%=require('html-loader!./template-parts/h1.html').default %>
-            <%=require('html-loader!./template-parts/back-button.html').default
-            %>
-            <section id="section-title" class="mb-4"></section>
+            <div
+                class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
+            >
+                <%=require('html-loader!./template-parts/h1.html').default %>
+                <%=require('html-loader!./template-parts/back-button.html').default%>
+                <section id="section-title"></section>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <%=require('html-loader!./template-parts/section-user-info.html').default%>
+            </div>
 
             <%=require('html-loader!./template-parts/input.html').default %>
-            <form id="section-form"></form>
-
+            <%=require('html-loader!./template-parts/section-address.html').default%>
             <%=require('html-loader!./template-parts/card.html').default %>
             <section
                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2"

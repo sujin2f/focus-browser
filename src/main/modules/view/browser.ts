@@ -289,10 +289,6 @@ export class BrowserView extends WebContentsView {
                         url,
                     )
                 })
-
-                blocker.on('filter-matched', () =>
-                    Logger.getInstance().log('🚦AdBlocker: filter-matched'),
-                )
             })
             .catch((e: unknown) => {
                 this._blocker = undefined

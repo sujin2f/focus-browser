@@ -146,6 +146,7 @@ export const DEFAULT_STATUS: T_Status_Store_Props = {
     maxHistory: MAX_HISTORY,
     adBlocker: true,
     searchEngine: 'DUCKDUCKGO',
+    machineId: 'N/A',
 }
 
 export const CTRL = 'ControlOrCommand'

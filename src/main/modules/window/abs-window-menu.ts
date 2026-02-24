@@ -7,13 +7,14 @@ import {
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
 } from 'electron'
-
+/* T_Types */
 import type {
     Scenes,
     MenuBlock,
     MenuItems,
     T_IPC_Switch,
 } from '@src/common/types'
+/* CONSTANTS */
 import {
     MenuCategory,
     Menu,
@@ -23,14 +24,14 @@ import {
     DEFAULT_SHORTCUTS,
     EMOJI,
 } from '@src/common/constants'
-
+/* Models */
 import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 import { Shortcut } from '@main/modules/store/shortcut'
-
 import { BrowserView } from '@src/main/modules/view/browser'
 import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@src/common/logger'
+/* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils'
 
 /**

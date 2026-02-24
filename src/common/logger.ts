@@ -41,10 +41,18 @@ export class Logger {
         if (isDev() || (isBeta() && !isTest())) {
             // the Main Process
             if (this.isMain) {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports
-                this.logger = require('electron-log')
-                ;(this.logger as I_Logger).initialize()
-                this.isActive = true
+                import('electron-log')
+                    .then((logger) => {
+                        this.logger = logger.default
+                        this.logger.initialize()
+                        this.isActive = true
+                    })
+                    .catch((error) => {
+                        Logger.getInstance().error(
+                            'Loading electron-log failed:',
+                            error,
+                        )
+                    })
                 return
             }
 

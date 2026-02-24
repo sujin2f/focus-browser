@@ -8,9 +8,9 @@ import * as electron from 'electron'
 import { parse } from 'tldts-experimental'
 
 import {
-    ElectronRequestType,
     FiltersEngine,
     Request,
+    type ElectronRequestType,
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
 import { adBlockerPreload } from '@src/main/utils'

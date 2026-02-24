@@ -1,3 +1,4 @@
+import { decode } from 'jsonwebtoken' // Or use jwt-decode
 import {
     ipcMain,
     net,
@@ -5,7 +6,17 @@ import {
     type IpcMainEvent,
     type ContextMenuParams,
 } from 'electron'
+
+import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
+/* Models */
 import { Logger } from '@src/common/logger'
+import { Status } from '@main/modules/store/status'
+import { Anchors } from '@main/modules/store/anchors'
+import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
+import { Bookmarks } from '@main/modules/store/bookmarks'
+import { Shortcut } from '@main/modules/store/shortcut'
+import { Keystrokes } from '@main/modules/store/keystrokes'
+/* CONSTANTS */
 import {
     IPC_CHANNELS,
     REQUEST_HANDLER,
@@ -13,22 +24,10 @@ import {
     LogTypes,
     MainEventTypes,
     CENTRE_PAGES,
-    Menu,
-    DEFAULT_SHORTCUTS,
-    SystemType,
-    SUJINC_COM,
     SUJINC_DOMAIN,
     SUJINC_URL,
 } from '@src/common/constants'
-
-import { Status } from '@main/modules/store/status'
-import { Anchors } from '@main/modules/store/anchors'
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Bookmarks } from '@main/modules/store/bookmarks'
-import { Shortcut } from '@main/modules/store/shortcut'
-import { Keystrokes } from '@main/modules/store/keystrokes'
-
-import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
+/* Utils */
 import { isBeta, isTest } from '@src/common/utils'
 import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
 /* T_Types */
@@ -39,6 +38,7 @@ import type {
     T_IPC_Status,
     T_IPC_Switch,
     T_IPC_Message,
+    T_Cloud_Item,
 } from '@src/common/types'
 
 /**
@@ -59,6 +59,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.KEYSTROKES, this.onKeystrokes.bind(this))
         ipcMain.on(IPC_CHANNELS.SHORTCUTS, this.onShortcuts.bind(this))
         ipcMain.on(IPC_CHANNELS.CLEANER, this.onCleaner.bind(this))
+        ipcMain.on(IPC_CHANNELS.CLOUD, this.onCloud.bind(this))
 
         if (isBeta() && !isTest()) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
@@ -229,46 +230,58 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     storeBookmarks.get(),
                 )
                 return
-            case REQUEST_HANDLER.UPLOAD: {
+            case REQUEST_HANDLER.PUT: {
                 const userInfo = await this.getUserInfo()
                 if (!userInfo) {
-                    this.sendResult(IPC_CHANNELS.BOOKMARK, false)
+                    this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
+                        { title: 'You are not logged in.' } as T_Bookmark,
+                    ])
                     return
                 }
 
+                const bookmark = bookmarks[0]
                 const os =
                     process.platform === 'darwin' ? 'mac' : process.platform
                 const version = process.getSystemVersion()
                 const message = Buffer.from(
-                    JSON.stringify(bookmarks[0]),
+                    JSON.stringify(bookmark),
                     'utf8',
                 ).toString('base64')
                 const access = await this.getAccessToken()
 
-                const response = await net.fetch(`${SUJINC_COM}/upload`, {
-                    body: JSON.stringify({
-                        title: bookmarks[0].title,
-                        device: `${os}(${version})`,
-                        message,
-                        messageType: 'bookmark',
-                    }),
-                    method: 'post',
-                    headers: { authorization: `Bearer ${access}` },
-                })
+                const response = await net
+                    .fetch(`${SUJINC_URL}/focus/bookmark`, {
+                        body: JSON.stringify({
+                            title: bookmark.title,
+                            device: `${os}(${version})`,
+                            key: bookmark.url,
+                            message,
+                            type: 'bookmark',
+                        }),
+                        method: 'PUT',
+                        headers: { authorization: `Bearer ${access}` },
+                    })
+                    .catch((e) => {
+                        Logger.getInstance().error(
+                            'Failed to PUT bookmark',
+                            e.message,
+                        )
+                        return { json: () => ({ result: false }) }
+                    })
 
                 const result = await response.json()
                 if (result.result) {
-                    this.sendBookmarks(
-                        REQUEST_HANDLER.RESPONSE_SUCCESS,
-                        storeBookmarks.get(),
-                    )
+                    this.sendBookmarks(REQUEST_HANDLER.PUT, [
+                        {
+                            title: 'Your bookmark is exported. Please import from other Focus browser.',
+                        } as T_Bookmark,
+                    ])
                     return
                 }
 
-                this.sendBookmarks(
-                    REQUEST_HANDLER.RESPONSE_FAIL,
-                    storeBookmarks.get(),
-                )
+                this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
+                    { title: 'Failed to export bookmark.' } as T_Bookmark,
+                ])
                 return
             }
             case REQUEST_HANDLER.ADD:
@@ -289,10 +302,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             case REQUEST_HANDLER.REMOVE: {
                 if (!bookmarks[0].id) {
-                    this.sendBookmarks(
-                        REQUEST_HANDLER.RESPONSE_FAIL,
-                        storeBookmarks.get(),
-                    )
+                    this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
+                        { title: 'Failed to remove bookmark.' } as T_Bookmark,
+                    ])
                     return
                 }
                 const result = storeBookmarks.remove(bookmarks[0].id)
@@ -304,10 +316,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     )
                     return
                 }
-                this.sendBookmarks(
-                    REQUEST_HANDLER.RESPONSE_FAIL,
-                    storeBookmarks.get(),
-                )
+                this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
+                    { title: 'Failed to remove bookmark.' } as T_Bookmark,
+                ])
                 return
             }
         }
@@ -395,20 +406,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             response.searchEngine = status.data.searchEngine
         }
 
-        if (requests.includes('shortcutAddress')) {
-            const store = new Shortcut().get('shortcuts')
-            if (store[Menu.ADDRESS]) {
-                response.shortcutAddress = store[Menu.ADDRESS]
-            } else {
-                const system =
-                    process.platform === 'darwin'
-                        ? SystemType.DARWIN
-                        : SystemType.DEFAULT
-                response.shortcutAddress =
-                    DEFAULT_SHORTCUTS[Menu.ADDRESS][system]
-            }
-        }
-
         if (requests.includes('userInfo')) {
             response.userInfo = await this.getUserInfo()
         }
@@ -443,22 +440,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private async getRefreshToken(): Promise<string> {
-        const now = new Date().getTime() / 1000
         return await this.browser.webContents.session.cookies
             .get({
                 name: 'sujinc.com/refresh',
                 domain: SUJINC_DOMAIN,
             })
             .then(async (cookies) => {
-                const refresh = cookies[0]
-                const exp = refresh?.expirationDate
-                if (!refresh || !exp || exp < now) {
-                    // If refresh token is expired, Clear!
-                    Logger.getInstance().log('Refresh token is expired.')
-                    await this.removeTokens()
-                    return ''
+                const cookie = this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
                 }
-                return refresh.value
+                // If refresh token is expired, Clear!
+                Logger.getInstance().log('Refresh token is expired.')
+                await this.removeTokens()
+                return ''
             })
     }
 
@@ -470,36 +465,48 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 domain: SUJINC_DOMAIN,
             })
             .then(async (cookies) => {
-                const access = cookies[0]
-                const exp = access?.expirationDate
-                if (!access || !exp || exp < now) {
-                    // If access token is expired, Refresh!
-                    const refresh = await this.getRefreshToken()
-                    if (!refresh) {
-                        await this.removeTokens()
-                        return ''
-                    }
-                    const access = await this.refreshTokens(refresh)
-                    if (!access.result) {
-                        await this.removeTokens()
-                        return ''
-                    }
-
-                    await this.browser.webContents.session.cookies.set({
-                        url: SUJINC_URL,
-                        name: 'sujinc.com/access',
-                        value: access.token,
-                        domain: SUJINC_DOMAIN,
-                        path: '/',
-                        secure: true,
-                        httpOnly: true,
-                        expirationDate: now + 3 * 60 * 60,
-                        sameSite: 'lax',
-                    })
-                    return access.token
+                const cookie = this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
                 }
-                return access.value
+
+                // If not available, try refresh token
+                const refresh = await this.getRefreshToken()
+                if (!refresh) {
+                    return ''
+                }
+                const access = await this.refreshTokens(refresh)
+                if (!access.result) {
+                    await this.removeTokens()
+                    return ''
+                }
+
+                await this.browser.webContents.session.cookies.set({
+                    url: SUJINC_URL,
+                    name: 'sujinc.com/access',
+                    value: access.token,
+                    domain: SUJINC_DOMAIN,
+                    path: '/',
+                    secure: true,
+                    httpOnly: true,
+                    expirationDate: now + 3 * 60 * 60,
+                    sameSite: 'lax',
+                })
+                return access.token
             })
+    }
+
+    private verifyToken(cookie?: Electron.Cookie) {
+        if (cookie && cookie.value) {
+            const token = decode(cookie.value)
+            if (token && typeof token !== 'string' && token.exp) {
+                const now = new Date().getTime() / 1000
+                if (token.exp > now) {
+                    return cookie
+                }
+            }
+        }
+        return
     }
 
     private async removeTokens() {
@@ -564,7 +571,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.centre.send(
                     IPC_CHANNELS.SHORTCUTS,
                     REQUEST_HANDLER.RESPONSE,
-                    store.getShortcuts(),
+                    store.getEditable(),
                 )
                 return
             }
@@ -656,6 +663,85 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
+    private async onCloud(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        items: T_Cloud_Item[],
+    ) {
+        Logger.getInstance().log('onCloud')
+        const token = await this.getAccessToken()
+        const user = await this.getUserInfo()
+        if (!token || !user) {
+            this.centre.send(
+                IPC_CHANNELS.CLOUD,
+                REQUEST_HANDLER.RESPONSE_FAIL,
+                [{ title: 'You are not logged in.' } as T_Cloud_Item],
+            )
+            return
+        }
+        const { email } = JSON.parse(user)
+
+        switch (handler) {
+            case REQUEST_HANDLER.REQUEST: {
+                const response = await net
+                    .fetch(`${SUJINC_URL}/focus/bookmarks`, {
+                        method: 'GET',
+                        headers: { authorization: `Bearer ${token}`, email },
+                    })
+                    .catch((e) => {
+                        Logger.getInstance().error(
+                            `Error to get bookmarks`,
+                            e.message,
+                        )
+                        return { json: () => [] as T_Bookmark[] }
+                    })
+                const result = await response.json()
+
+                this.centre.send(
+                    IPC_CHANNELS.CLOUD,
+                    REQUEST_HANDLER.RESPONSE,
+                    result,
+                )
+                return
+            }
+
+            case REQUEST_HANDLER.ADD: {
+                const buffer = Buffer.from(items[0].message, 'base64').toString(
+                    'utf-8',
+                )
+
+                const response = await net
+                    .fetch(`${SUJINC_URL}/focus/bookmark`, {
+                        method: 'DELETE',
+                        body: JSON.stringify({ id: items[0]._id }),
+                        headers: { authorization: `Bearer ${token}` },
+                    })
+                    .catch((e) => {
+                        Logger.getInstance().error(
+                            `Error to remove bookmarks`,
+                            e.message,
+                        )
+                        return { json: () => [] as T_Bookmark[] }
+                    })
+                const result = await response.json()
+
+                if (items[0].type === 'bookmark') {
+                    const bookmark = JSON.parse(buffer)
+                    const bookmarks = new Bookmarks()
+                    bookmarks.push(bookmark)
+                    bookmarks.save()
+                }
+
+                this.centre.send(
+                    IPC_CHANNELS.CLOUD,
+                    REQUEST_HANDLER.RESPONSE_SUCCESS,
+                    result,
+                )
+                return
+            }
+        }
+    }
+
     private sendResult(channel: IPC_CHANNELS, result = true) {
         // this.centre.send(channel, REQUEST_HANDLER.RESULT, result)
         this.centre.send(
@@ -666,12 +752,25 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         )
     }
 
-    private async refreshTokens(refresh: string) {
-        Logger.getInstance().log('refreshTokens', refresh)
-        const response = await net.fetch(`${SUJINC_COM}/refresh`, {
-            method: 'post',
-            headers: { authorization: `Bearer ${refresh}` },
-        })
+    /**
+     * Request access token
+     * @param refresh
+     * @returns
+     */
+    private async refreshTokens(token: string) {
+        Logger.getInstance().log('refreshTokens')
+        const response = await net
+            .fetch(`${SUJINC_URL}/auth/refresh`, {
+                method: 'POST',
+                headers: { authorization: `Bearer ${token}` },
+            })
+            .catch((e) => {
+                Logger.getInstance().error(
+                    `Error to refresh access token`,
+                    e.message,
+                )
+                return { json: () => ({ result: false }) }
+            })
         return await response.json()
     }
 }

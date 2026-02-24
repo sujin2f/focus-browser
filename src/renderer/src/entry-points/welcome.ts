@@ -1,21 +1,35 @@
 import { A_Bookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
-import { checkElectron, navigate } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    navigate,
+    ipcRenderer,
+    commandSymbol,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
 import { H2 } from '@src/renderer/src/template-parts/h2'
 import { Card } from '@src/renderer/src/template-parts/card'
+import { UserInfo } from '@src/renderer/src/template-parts/user-info'
 import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
 import type { ListItem } from '@src/renderer/src/template-parts/list-item'
 /* CONSTANTS */
-import { EMOJI, Menu } from '@src/common/constants'
+import {
+    CENTRE_PAGES,
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
 
 class Welcome extends A_Bookmarks {
+    private shortcuts: T_Shortcut_Store = {}
     constructor() {
         super('bookmark--welcome')
-        this.requestStatus('shortcutAddress')
+        this.requestStatus('userInfo')
+        this.requestShortcuts()
 
         new H1(`${EMOJI.FOCUS} Welcome to Focus!`).prependTo('root')
 
@@ -32,6 +46,19 @@ class Welcome extends A_Bookmarks {
             .setOnClick(() => {
                 navigate({ searchEngine: true })
             })
+    }
+
+    private requestShortcuts(): void {
+        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE: {
+                    this.shortcuts = shortcuts
+                    this.render()
+                    return
+                }
+            }
+        })
     }
 
     protected callbackResponse(...args: unknown[]) {
@@ -54,8 +81,27 @@ class Welcome extends A_Bookmarks {
         }
     }
 
-    protected callbackUpdateStatus(): void {
-        getAddressBar('form', this.settings.shortcutAddress).focus()
+    protected callbackUpdateStatus() {
+        if (!this.settings.userInfo) {
+            return
+        }
+        const userInfo = JSON.parse(this.settings.userInfo)
+        new UserInfo().picture = userInfo.picture
+    }
+
+    private render(): void {
+        getAddressBar(this.shortcuts[Menu.ADDRESS]).focus()
+        const shortcut = this.shortcuts[Menu.CENTRE]
+            ? `(${commandSymbol(this.shortcuts[Menu.CENTRE])})`
+            : ''
+        new Card(
+            `${EMOJI.CENTRE} Control Centre ${shortcut}`,
+            'Check out what to do',
+        )
+            .appendTo('grid')
+            .setOnClick(() => {
+                window.location.href = CENTRE_PAGES.HOME
+            })
     }
 }
 

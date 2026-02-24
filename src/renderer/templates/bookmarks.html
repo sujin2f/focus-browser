@@ -13,32 +13,34 @@
         class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
     >
         <div class="container mx-auto" id="section-root">
-            <%=require('html-loader!./template-parts/input.html').default %>
-            <%=require('html-loader!./template-parts/button.html').default %>
-
             <div
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
                 <%=require('html-loader!./template-parts/h1.html').default %>
-                <%=require('html-loader!./template-parts/back-button.html').default
-                %>
+                <%=require('html-loader!./template-parts/back-button.html').default%>
                 <section id="section-title"></section>
-                <section id="section-buttons" class="flex gap-2"></section>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <%=require('html-loader!./template-parts/section-user-info.html').default%>
             </div>
+
+            <%=require('html-loader!./template-parts/input.html').default %>
             <section id="section-search"></section>
 
-            <%=require('html-loader!./template-parts/section-login.html').default
-            %>
+            <section
+                id="section-buttons"
+                class="flex justify-end gap-2 mb-3"
+            ></section>
+
+            <%=require('html-loader!./template-parts/section-login-alert.html').default%>
 
             <section id="section-bookmarks" class="w-full">
                 <%=require('html-loader!./template-parts/list.html').default %>
             </section>
 
-            <%=require('html-loader!./template-parts/button-clear.html').default
-            %> <%=require('html-loader!./template-parts/select.html').default %>
+            <%=require('html-loader!./template-parts/button-clear.html').default%>
+            <%=require('html-loader!./template-parts/select.html').default %>
             <%=require('html-loader!./template-parts/modal.html').default %>
-            <%=require('html-loader!./template-parts/notification.html').default
-            %>
+            <%=require('html-loader!./template-parts/notification.html').default%>
         </div>
     </body>
 </html>

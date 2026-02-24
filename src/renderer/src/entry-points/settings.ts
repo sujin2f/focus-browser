@@ -1,14 +1,22 @@
 import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, getSection, ipcRenderer } from '@src/renderer/src/utils'
+import {
+    checkElectron,
+    getSection,
+    ipcRenderer,
+    byteToSize,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { H1 } from '@src/renderer/src/template-parts/h1'
+import { H2 } from '@src/renderer/src/template-parts/h2'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { Input } from '@src/renderer/src/template-parts/input'
 import { Checkbox } from '@src/renderer/src/template-parts/checkbox'
 import { Select } from '@src/renderer/src/template-parts/select'
 import { Option } from '@src/renderer/src/template-parts/option'
 import { Button } from '@src/renderer/src/template-parts/button'
+import { Card } from '@src/renderer/src/template-parts/card'
+import { Loading } from '@src/renderer/src/template-parts/loading'
 import { Notification } from '@src/renderer/src/template-parts/notification'
 /* CONSTANTS */
 import {
@@ -28,15 +36,71 @@ const request: (keyof T_Status_Props)[] = [
     'searchEngine',
 ]
 
-// TODO too dirty
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
-    private form: HTMLFormElement = getSection<HTMLFormElement>('form')
+    private form: HTMLFormElement = getSection<HTMLFormElement>('form-fields')
     private button?: Button
+
+    private ready = false
+    private cache = new Card('Cache').appendTo('grid').setOnClick(() => {
+        if (!this.ready) {
+            return
+        }
+        this.ready = false
+        new Loading().appendTo(this.cache.description)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'cacheSize',
+        })
+    })
+    private indexedDB = new Card('IndexedDB')
+        .appendTo('grid')
+        .setOnClick(() => {
+            if (!this.ready) {
+                return
+            }
+            this.ready = false
+            new Loading().appendTo(this.indexedDB.description)
+            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+                request: 'indexedDB',
+            })
+        })
+    private anchor = new Card('Anchor').appendTo('grid').setOnClick(() => {
+        if (!this.ready) {
+            return
+        }
+        this.ready = false
+        new Loading().appendTo(this.anchor.description)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'anchor',
+        })
+    })
+    private history = new Card('History').appendTo('grid').setOnClick(() => {
+        if (!this.ready) {
+            return
+        }
+        this.ready = false
+        new Loading().appendTo(this.history.description)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: 'history',
+        })
+    })
+    private popups = new Card('Blocked Popups')
+        .appendTo('grid')
+        .setOnClick(() => {
+            if (!this.ready) {
+                return
+            }
+            this.ready = false
+            new Loading().appendTo(this.popups.description)
+            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+                request: 'popups',
+            })
+        })
 
     constructor() {
         super()
         this.requestStatus(...request)
+        this.requestCleaner()
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))
@@ -44,6 +108,7 @@ class Settings extends A_Entry {
         // Title
         const h1 = new H1(`Settings ${EMOJI.SETTINGS}`).prependTo('title')
         new BackButton().prependTo(h1.element)
+        new H2(`${EMOJI.CLEANER} Cleaner`).prependTo('cleaner-heading')
 
         // Version
         getSection('version').innerHTML = `Version: ${envVersion}`
@@ -112,8 +177,31 @@ class Settings extends A_Entry {
             ).appendTo(searchEngine.input)
         })
 
-        this.button = new Button('Save Changes').appendTo(this.form)
+        this.button = new Button('Save Changes').appendTo(
+            getSection('form-button'),
+        )
         this.button.type = 'submit'
+    }
+
+    private requestCleaner(): void {
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST, {
+            request: '',
+        })
+
+        ipcRenderer.on(IPC_CHANNELS.CLEANER, (handler, arg) => {
+            const { response } = arg!
+
+            if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
+                this.notification.info('Cleaned!')
+            }
+
+            this.cache.description = byteToSize(response!.cacheSize)
+            this.indexedDB.description = byteToSize(response!.indexedDB)
+            this.anchor.description = response!.anchors.toString()
+            this.history.description = response!.history.toString()
+            this.popups.description = response!.popup.toString()
+            this.ready = true
+        })
     }
 
     private onSubmit(e: SubmitEvent) {

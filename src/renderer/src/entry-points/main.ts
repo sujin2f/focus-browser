@@ -1,14 +1,22 @@
 import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Card } from '@src/renderer/src/template-parts/card'
 import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 import { Input } from '@src/renderer/src/template-parts/input'
 import { H1 } from '@src/renderer/src/template-parts/h1'
+import { UserInfo } from '@src/renderer/src/template-parts/user-info'
+import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
 /* CONSTANTS */
-import { EMOJI, Menu } from '@src/common/constants'
+import {
+    EMOJI,
+    IPC_CHANNELS,
+    Menu,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
+/* T_Types */
+import type { T_Shortcut_Store } from '@src/common/types'
 
 type T_Card = {
     title: string
@@ -53,19 +61,21 @@ const cards: Record<string, T_Card> = {
         description: '',
         destination: 'settings.html',
     },
-    cleaner: {
-        title: `${EMOJI.CLEANER} Cleaner`,
-        description: 'Clear cache, history, and else',
-        destination: 'cleaner.html',
+    importer: {
+        title: `${EMOJI.CLOUD} Importer`,
+        description: 'Import Bookmark from cloud',
+        destination: 'importer.html',
     },
 }
 
 class Main extends A_Entry {
+    private shortcuts: T_Shortcut_Store = {}
     private input?: Input
 
     constructor() {
         super()
-        this.requestStatus('url', 'shortcutAddress', 'userInfo')
+        this.requestStatus('url', 'userInfo')
+        this.request()
 
         // Title
         const h1 = new H1('Press Esc to Browser Mode').prependTo('title')
@@ -111,10 +121,35 @@ class Main extends A_Entry {
         }
     }
 
-    protected callbackUpdateStatus(): void {
-        this.input = getAddressBar('form', this.settings.shortcutAddress)
+    protected callbackUpdateStatus() {
+        this.focus()
+        if (!this.settings.userInfo) {
+            return
+        }
+        const userInfo = JSON.parse(this.settings.userInfo)
+        new UserInfo().picture = userInfo.picture
+    }
 
-        if (window.location.href.includes('address=true')) {
+    private request(): void {
+        ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE: {
+                    this.shortcuts = shortcuts
+                    this.render()
+                    return
+                }
+            }
+        })
+    }
+
+    private render(): void {
+        this.input = getAddressBar(this.shortcuts[Menu.ADDRESS])
+        this.focus()
+    }
+
+    private focus() {
+        if (window.location.href.includes('address=true') && this.input) {
             this.input.value = this.settings.url
             this.input.selectText()
             this.input.focus()

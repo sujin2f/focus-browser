@@ -17,16 +17,26 @@
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
                 <%=require('html-loader!./template-parts/h1.html').default %>
-                <%=require('html-loader!./template-parts/back-button.html').default
-                %>
+                <%=require('html-loader!./template-parts/back-button.html').default%>
                 <section id="section-title"></section>
                 <section id="section-version"></section>
             </div>
-            <%=require('html-loader!./template-parts/checkbox.html').default %>
-            <%=require('html-loader!./template-parts/select.html').default %>
-            <%=require('html-loader!./template-parts/input.html').default %>
-            <%=require('html-loader!./template-parts/button.html').default %>
-            <form id="section-form"></form>
+            <form>
+                <%=require('html-loader!./template-parts/checkbox.html').default%>
+                <%=require('html-loader!./template-parts/select.html').default%>
+                <%=require('html-loader!./template-parts/input.html').default%>
+                <section id="section-form-fields"></section>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <section id="section-form-button" class="mb-5"></section>
+                <%=require('html-loader!./template-parts/h2.html').default %>
+                <section id="section-cleaner-heading"></section>
+                <%=require('html-loader!./template-parts/card.html').default %>
+                <%=require('html-loader!./template-parts/loading.html').default%>
+                <section
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mt-2"
+                    id="section-grid"
+                ></section>
+            </form>
         </div>
         <%=require('html-loader!./template-parts/notification.html').default %>
     </body>

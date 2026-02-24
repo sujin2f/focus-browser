@@ -8,16 +8,13 @@ import {
 /* <HTML template-part /> */
 import { Input } from '@src/renderer/src/template-parts/input'
 
-export const getAddressBar = (
-    section: string,
-    shortcut = `${ctrlOrComm()}L`,
-) => {
+export const getAddressBar = (shortcut = `${ctrlOrComm()}L`) => {
     const input = new Input(
         `Enter search keyword or address (${commandSymbol(shortcut)})`,
         'address',
-    ).appendTo(section)
+    ).appendTo('address')
 
-    getSection<HTMLFormElement>(section).addEventListener('submit', () => {
+    getSection<HTMLFormElement>('address').addEventListener('submit', () => {
         if (!input.value) {
             return
         }

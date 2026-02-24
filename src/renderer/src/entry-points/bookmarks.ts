@@ -14,15 +14,18 @@ import { BackButton } from '@src/renderer/src/template-parts/back-button'
 import { ListItem } from '@src/renderer/src/template-parts/list-item'
 import { Input } from '@src/renderer/src/template-parts/input'
 import { BookmarkModal } from '@src/renderer/src/template-parts/modules/bookmarks-modal'
+import { UserInfo } from '@src/renderer/src/template-parts/user-info'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
+/* CONSTANTS */
 import {
     BROWSER,
+    CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
     REQUEST_HANDLER,
-    SUJINC_COM,
+    SUJINC_URL,
 } from '@src/common/constants'
 
 class Bookmarks extends A_Bookmarks {
@@ -38,7 +41,7 @@ class Bookmarks extends A_Bookmarks {
         )
         new BackButton().prependTo(h1.element)
 
-        // Buttons >> Add Folder
+        // Buttons >> Create Folder
         new Button(`${EMOJI.FOLDER_OPEN} Create Folder`)
             .appendTo('buttons')
             .setOnClick(() => {
@@ -52,10 +55,21 @@ class Bookmarks extends A_Bookmarks {
     }
 
     protected callbackUpdateStatus(): void {
+        const userInfo = new UserInfo()
         if (this.settings.userInfo) {
-            // TODO
-            console.log(JSON.parse(this.settings.userInfo))
+            const user = JSON.parse(this.settings.userInfo)
+            userInfo.picture = user.picture
+
+            // Buttons >> Import Bookmarks
+            new Button(`${EMOJI.GLOBE} Import Bookmarks`)
+                .appendTo('buttons')
+                .setOnClick(() => {
+                    window.location.href = CENTRE_PAGES.IMPORTER
+                })
+        } else {
+            userInfo.loggedOut()
         }
+
         if (this.settings.url) {
             // Buttons >> Add Bookmark
             new Button('💾 Add Bookmark')
@@ -77,20 +91,23 @@ class Bookmarks extends A_Bookmarks {
         bookmarks: T_Bookmark[],
     ) {
         this.modal.hide()
-        if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
-            this.modal.notification.info('Bookmark changed.')
+        switch (handler) {
+            case REQUEST_HANDLER.RESPONSE:
+                super.callbackResponse(handler, bookmarks)
+                return
+            case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                this.modal.notification.info(
+                    'Your request is successfully executed.',
+                )
+                super.callbackResponse(handler, bookmarks)
+                return
+            case REQUEST_HANDLER.RESPONSE_FAIL:
+                this.modal.notification.error(bookmarks[0].title)
+                return
+            case REQUEST_HANDLER.PUT:
+                this.modal.notification.info(bookmarks[0].title)
+                return
         }
-        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
-            this.modal.notification.error('Failed to change Bookmark.')
-        }
-        if (handler === REQUEST_HANDLER.UPLOAD) {
-            this.modal.notification.info(
-                'Bookmark is exported. Please visit from other Focus browser and click to import.',
-            )
-            return
-        }
-
-        super.callbackResponse(handler, bookmarks)
     }
 
     protected getListCols(bookmark: T_Bookmark, index: number) {
@@ -138,13 +155,13 @@ class Bookmarks extends A_Bookmarks {
             send = new ListItem(
                 new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
                     if (!this.settings.userInfo) {
-                        getSection('login').classList.remove('hidden')
-                        getSection('login')
+                        getSection('login-alert').classList.remove('hidden')
+                        getSection('login-alert')
                             .querySelector('button')
                             ?.addEventListener('click', () => {
                                 navigate({
                                     scene: BROWSER,
-                                    address: SUJINC_COM,
+                                    address: SUJINC_URL,
                                 })
                             })
                         return
@@ -152,7 +169,7 @@ class Bookmarks extends A_Bookmarks {
 
                     ipcRenderer.send(
                         IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.UPLOAD,
+                        REQUEST_HANDLER.PUT,
                         [bookmark],
                     )
                 }),

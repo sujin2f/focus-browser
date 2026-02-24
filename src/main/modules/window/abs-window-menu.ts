@@ -346,8 +346,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private getShortcut(menu: Menu): string {
         const store = new Shortcut()
-        if (store.getShortcut(menu)) {
-            return store.getShortcut(menu)
+        const shortcut = store.getShortcut(menu)
+        if (shortcut) {
+            return shortcut
         }
 
         const system =
@@ -584,11 +585,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        // 'data-logged-in'
-
-        const js = `document.querySelector('#login-button').getAttribute('data-logged-in');`
-        const result = await this.browser.webContents.executeJavaScript(js)
-        console.log(result)
+        this.switch({ scene: CENTRE_PAGES.WELCOME })
     }
 
     abstract switch(request: T_IPC_Switch): void

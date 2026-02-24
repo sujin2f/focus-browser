@@ -47,7 +47,7 @@ const cards: Record<string, T_Card> = {
         destination: 'popup.html',
     },
     keystrokes: {
-        title: `${EMOJI.KEYSTROKES} Keystroke (K)`,
+        title: `${EMOJI[Menu.PASTE_KEYSTROKE]} Keystroke (K)`,
         description: 'Manage Keystrokes',
         destination: 'keystrokes.html',
     },

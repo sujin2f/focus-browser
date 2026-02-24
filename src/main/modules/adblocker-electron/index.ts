@@ -1,5 +1,7 @@
 /*!
  * Copied from @ghostery/adblocker-electron due to the path error
+ *
+ * @see https://github.com/ghostery/adblocker/blob/master/packages/adblocker-electron/src/index.ts
  */
 
 import * as electron from 'electron'

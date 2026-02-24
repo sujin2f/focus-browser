@@ -5,7 +5,6 @@ import {
     ipcMain,
 } from 'electron'
 import { ElectronBlocker } from '@main/modules/adblocker-electron'
-import fetch from 'cross-fetch'
 import {
     IPC_CHANNELS,
     MainEventTypes,
@@ -74,6 +73,7 @@ export class BrowserView extends WebContentsView {
         )
 
         this.setPopupBlocker()
+        this.setAdBlocker()
 
         // Events
         this.webContents
@@ -231,55 +231,80 @@ export class BrowserView extends WebContentsView {
             return
         }
         // Enabled and UnSet : Init
+        Logger.getInstance().info(
+            '🚦AdBlocker is enabling with fetch: ',
+            fetch.name,
+        )
         await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
             .then((blocker) => {
                 blocker.enableBlockingInSession(this.webContents.session)
                 this._blocker = blocker
-                Logger.getInstance().log('Ad-Blocker is enabled.')
+                Logger.getInstance().log('🚦AdBlocker is enabled.')
 
                 // For debug or future usage
-                /*
                 blocker.on('request-blocked', (request) => {
-                    console.log('blocked', request.tabId, request.url)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: blocked',
+                        request.tabId,
+                        request.url,
+                    )
                 })
 
                 blocker.on('request-redirected', (request) => {
-                    console.log('redirected', request.tabId, request.url)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: redirected',
+                        request.tabId,
+                        request.url,
+                    )
                 })
 
                 blocker.on('request-whitelisted', (request) => {
-                    console.log('whitelisted', request.tabId, request.url)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: whitelisted',
+                        request.tabId,
+                        request.url,
+                    )
                 })
 
                 blocker.on('csp-injected', (request, csps) => {
-                    console.log('csp', request.url, csps)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: csp',
+                        request.url,
+                        csps,
+                    )
                 })
 
                 blocker.on('script-injected', (script: string, url: string) => {
-                    console.log('script', script.length, url)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: script',
+                        script.length,
+                        url,
+                    )
                 })
 
                 blocker.on('style-injected', (style: string, url: string) => {
-                    console.log('style', style.length, url)
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: style',
+                        style.length,
+                        url,
+                    )
                 })
 
-                blocker.on(
-                    'filter-matched',
-                    console.log.bind(console, 'filter-matched'),
+                blocker.on('filter-matched', () =>
+                    Logger.getInstance().log('🚦AdBlocker: filter-matched'),
                 )
-                */
             })
             .catch((e: unknown) => {
                 this._blocker = undefined
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
                 Logger.getInstance().error(
-                    'Ad-Blocker is failed to load: ',
+                    '🚦AdBlocker: Ad-Blocker is failed to load: ',
                     JSON.stringify(e),
                 )
 
                 const notification = new Notification({
                     title: 'Focus',
-                    body: 'Ad Blocker failed to load',
+                    body: '🚦Ad-Blocker is failed to load',
                     silent: true,
                 })
                 notification.addListener('click', () => {
@@ -303,7 +328,7 @@ export class BrowserView extends WebContentsView {
             PopupBlocker.getInstance().block(url.host)
             const notification = new Notification({
                 title: 'Focus',
-                body: `Popup blocked from ${url.host}`,
+                body: `🚦Popup blocked from ${url.host}`,
                 silent: true,
             })
             notification.addListener('click', () => {

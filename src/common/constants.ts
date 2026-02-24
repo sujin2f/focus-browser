@@ -116,7 +116,6 @@ export const EMOJI: Record<string, string> = {
     [Menu.ADD_ANCHOR]: '⚓️',
     CLEANER: '🧼',
     HISTORY: '📝',
-    KEYSTROKES: '🎹',
     POPUP_BLOCKER: '👮',
     SHORTCUTS: '🏁',
     SETTINGS: '⚙️',

@@ -55,6 +55,12 @@ const commonConfig = {
             '@home': _resolve(__dirname, 'src', 'renderer'),
         },
     },
+    optimization: {
+        minimize: true,
+        splitChunks: {
+            chunks: 'all',
+        },
+    },
 }
 
 const mainConfig = {

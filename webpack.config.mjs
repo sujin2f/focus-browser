@@ -2,6 +2,7 @@ import { resolve as _resolve, join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import webpack from 'webpack'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -20,25 +21,9 @@ const commonConfig = {
                 exclude: /node_modules/,
             },
             {
-                test: /\.s?(c|a)ss$/,
-                use: [
-                    'style-loader',
-                    {
-                        loader: 'css-loader',
-                        options: {
-                            modules: true,
-                            sourceMap: true,
-                            importLoaders: 1,
-                        },
-                    },
-                    'sass-loader',
-                ],
-                include: /\.module\.s?(c|a)ss$/,
-            },
-            {
                 test: /\.s?css$/,
                 use: [
-                    'style-loader',
+                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     'sass-loader',
                     'postcss-loader',
@@ -145,6 +130,9 @@ pages.forEach((page) => {
             template: `./src/renderer/templates/${page}.html`,
             filename: `${page}.html`,
             chunks: [`renderer/${page}`],
+        }),
+        new MiniCssExtractPlugin({
+            filename: 'style.css',
         }),
     )
 })

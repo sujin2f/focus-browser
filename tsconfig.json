@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "module": "nodenext",
-        "moduleResolution": "nodenext",
         "lib": ["dom", "es2022"],
         "skipLibCheck": true,
         "noImplicitAny": true,

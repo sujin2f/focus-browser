@@ -26,9 +26,7 @@ export abstract class A_Entry {
     }
 
     protected requestStatus(...keys: (keyof T_Status_Props)[]) {
-        Logger.getInstance().log(
-            `[Renderer] requestStatus ${JSON.stringify(keys)}`,
-        )
+        Logger.getInstance().log(`requestStatus ${JSON.stringify(keys)}`)
 
         ipcRenderer.once(
             IPC_CHANNELS.STATUS,
@@ -37,7 +35,7 @@ export abstract class A_Entry {
                     return
                 }
                 Logger.getInstance().info(
-                    `[Renderer] Get status ${JSON.stringify(status)}`,
+                    `Get status ${JSON.stringify(status)}`,
                 )
                 this.settings = { ...this.settings, ...status.data }
             },

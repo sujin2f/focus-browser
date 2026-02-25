@@ -71,11 +71,12 @@ const cards: Record<string, T_Card> = {
 class Main extends A_Entry {
     private shortcuts: T_Shortcut_Store = {}
     private input?: Input
+    private ipc = 0
 
     constructor() {
         super()
         this.requestStatus('url', 'userInfo')
-        this.request()
+        this.requestShortcuts()
 
         // Title
         const h1 = new H1('Press Esc to Browser Mode').prependTo('title')
@@ -122,7 +123,8 @@ class Main extends A_Entry {
     }
 
     protected callbackUpdateStatus() {
-        this.focus()
+        this.ipc++
+        this.renderAddressBar()
         if (!this.settings.userInfo) {
             return
         }
@@ -130,29 +132,28 @@ class Main extends A_Entry {
         new UserInfo().picture = userInfo.picture
     }
 
-    private request(): void {
+    private requestShortcuts(): void {
         ipcRenderer.send(IPC_CHANNELS.SHORTCUTS, REQUEST_HANDLER.REQUEST)
         ipcRenderer.on(IPC_CHANNELS.SHORTCUTS, (handler, shortcuts = {}) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE: {
                     this.shortcuts = shortcuts
-                    this.render()
-                    return
                 }
             }
+            this.ipc++
+            this.renderAddressBar()
         })
     }
 
-    private render(): void {
-        this.input = getAddressBar(this.shortcuts[Menu.ADDRESS])
-        this.focus()
-    }
+    private renderAddressBar() {
+        if (this.ipc >= 2 && !this.input) {
+            this.input = getAddressBar(this.shortcuts[Menu.ADDRESS])
 
-    private focus() {
-        if (window.location.href.includes('address=true') && this.input) {
-            this.input.value = this.settings.url
-            this.input.selectText()
-            this.input.focus()
+            if (window.location.href.includes('address=true') && this.input) {
+                this.input.value = this.settings.url
+                this.input.selectText()
+                this.input.focus()
+            }
         }
     }
 }

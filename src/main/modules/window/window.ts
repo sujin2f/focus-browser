@@ -13,7 +13,7 @@ import { Status } from '@main/modules/store/status'
 
 import { BrowserView } from '@src/main/modules/view/browser'
 import { CenterView } from '@src/main/modules/view/centre'
-import { Logger } from '@src/common/logger'
+import { Logger } from '@main/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
 /**

@@ -10,7 +10,7 @@ import {
     CENTRE_PAGES,
     SEARCH_ENGINES,
 } from '@src/common/constants'
-import { Logger } from '@src/common/logger'
+import { Logger } from '@main/logger'
 
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
 import { History } from '@main/modules/store/history'

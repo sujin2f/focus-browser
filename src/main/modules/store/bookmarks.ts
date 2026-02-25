@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 
 import { Store } from '@main/modules/store/store'
-import { Logger } from '@src/common/logger'
+import { Logger } from '@main/logger'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 

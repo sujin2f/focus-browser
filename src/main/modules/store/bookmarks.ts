@@ -1,4 +1,4 @@
-import crypto from 'crypto'
+import { randomUUID } from 'crypto'
 
 import { Store } from '@main/modules/store/store'
 import { Logger } from '@src/common/logger'
@@ -56,7 +56,7 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
      * @returns
      */
     push(bookmark: T_Bookmark): string {
-        bookmark.id = crypto.randomUUID().toString()
+        bookmark.id = randomUUID().toString()
 
         // Directory
         if (!bookmark.url) {
@@ -104,7 +104,7 @@ export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
         super.parse()
         this._data.bookmarks.forEach((bookmark) => {
             if (!bookmark.id) {
-                bookmark.id = crypto.randomUUID().toString()
+                bookmark.id = randomUUID().toString()
             }
         })
     }

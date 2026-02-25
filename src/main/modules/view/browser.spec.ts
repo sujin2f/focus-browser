@@ -19,7 +19,13 @@ jest.doMock('@main/modules/store/history', history)
 jest.doMock('@main/modules/store/status', status)
 jest.doMock('@main/modules/store/keystrokes', keystrokes)
 jest.doMock('@main/modules/window/window', window)
-statusGet.mockReturnValue('GOOGLE')
+
+statusGet.mockImplementation((arg) => {
+    if (arg === 'adBlocker') {
+        return false
+    }
+    return 'GOOGLE'
+})
 
 import { BrowserView } from '@src/main/modules/view/browser'
 

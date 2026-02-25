@@ -27,7 +27,7 @@ import {
 class Welcome extends A_Bookmarks {
     private shortcuts: T_Shortcut_Store = {}
     constructor() {
-        super('bookmark--welcome')
+        super('list--welcome')
         this.requestStatus('userInfo')
         this.requestShortcuts()
 

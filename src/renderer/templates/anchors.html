@@ -17,15 +17,21 @@
                 class="flex justify-between items-baseline flex-col mb-4 gap-2 md:flex-row"
             >
                 <%=require('html-loader!./template-parts/h1.html').default %>
-                <%=require('html-loader!./template-parts/back-button.html').default
-                %>
+                <%=require('html-loader!./template-parts/back-button.html').default%>
                 <section id="section-title"></section>
+                <%=require('html-loader!./template-parts/button.html').default%>
+                <%=require('html-loader!./template-parts/section-user-info.html').default%>
             </div>
 
             <%=require('html-loader!./template-parts/input.html').default %>
             <section id="section-search"></section>
 
-            <%=require('html-loader!./template-parts/list.html').default %>
+            <%=require('html-loader!./template-parts/button-clear.html').default%>
+            <%=require('html-loader!./template-parts/section-login-alert.html').default%>
+            <section id="section-anchors" class="w-full">
+                <%=require('html-loader!./template-parts/list.html').default %>
+            </section>
+            <%=require('html-loader!./template-parts/notification.html').default%>
         </div>
     </body>
 </html>

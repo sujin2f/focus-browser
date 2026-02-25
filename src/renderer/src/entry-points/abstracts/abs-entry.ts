@@ -1,5 +1,5 @@
 import { ipcRenderer, navigate } from '@src/renderer/src/utils'
-import { Logger } from '@src/common/logger'
+import { Logger } from '@src/renderer/logger'
 import type { T_Status_Props } from '@src/common/types'
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 

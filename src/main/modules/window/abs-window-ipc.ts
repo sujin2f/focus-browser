@@ -1,4 +1,3 @@
-import { decode } from 'jsonwebtoken' // Or use jwt-decode
 import {
     ipcMain,
     net,
@@ -9,7 +8,7 @@ import {
 
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 /* Models */
-import { Logger } from '@src/common/logger'
+import { Logger } from '@main/logger'
 import { Status } from '@main/modules/store/status'
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
@@ -443,91 +442,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             })
     }
 
-    private async getRefreshToken(): Promise<string> {
-        return await this.browser.webContents.session.cookies
-            .get({
-                name: 'sujinc.com/refresh',
-                domain: SUJINC_DOMAIN,
-            })
-            .then(async (cookies) => {
-                const cookie = this.verifyToken(cookies[0])
-                if (cookie) {
-                    return cookie.value
-                }
-                // If refresh token is expired, Clear!
-                Logger.getInstance().log('Refresh token is expired.')
-                await this.removeTokens()
-                return ''
-            })
-    }
-
-    private async getAccessToken(): Promise<string> {
-        const now = new Date().getTime() / 1000
-        return await this.browser.webContents.session.cookies
-            .get({
-                name: 'sujinc.com/access',
-                domain: SUJINC_DOMAIN,
-            })
-            .then(async (cookies) => {
-                const cookie = this.verifyToken(cookies[0])
-                if (cookie) {
-                    return cookie.value
-                }
-
-                // If not available, try refresh token
-                const refresh = await this.getRefreshToken()
-                if (!refresh) {
-                    return ''
-                }
-                const access = await this.refreshTokens(refresh)
-                if (!access.result) {
-                    await this.removeTokens()
-                    return ''
-                }
-
-                await this.browser.webContents.session.cookies.set({
-                    url: SUJINC_URL,
-                    name: 'sujinc.com/access',
-                    value: access.token,
-                    domain: SUJINC_DOMAIN,
-                    path: '/',
-                    secure: true,
-                    httpOnly: true,
-                    expirationDate: now + 3 * 60 * 60,
-                    sameSite: 'lax',
-                })
-                return access.token
-            })
-    }
-
-    private verifyToken(cookie?: Electron.Cookie) {
-        if (cookie && cookie.value) {
-            const token = decode(cookie.value)
-            if (token && typeof token !== 'string' && token.exp) {
-                const now = new Date().getTime() / 1000
-                if (token.exp > now) {
-                    return cookie
-                }
-            }
-        }
-        return
-    }
-
-    private async removeTokens() {
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/refresh',
-        )
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/access',
-        )
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/user-info',
-        )
-    }
-
     private async onKeystrokes(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
@@ -753,6 +667,94 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             result
                 ? REQUEST_HANDLER.RESPONSE_SUCCESS
                 : REQUEST_HANDLER.RESPONSE_FAIL,
+        )
+    }
+
+    private async getRefreshToken(): Promise<string> {
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/refresh',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const cookie = await this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
+                }
+                // If refresh token is expired, Clear!
+                Logger.getInstance().log('Refresh token is expired.')
+                await this.removeTokens()
+                return ''
+            })
+    }
+
+    private async getAccessToken(): Promise<string> {
+        const now = new Date().getTime() / 1000
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/access',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const cookie = await this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
+                }
+
+                // If not available, try refresh token
+                const refresh = await this.getRefreshToken()
+                if (!refresh) {
+                    return ''
+                }
+                const access = await this.refreshTokens(refresh)
+                if (!access.result) {
+                    await this.removeTokens()
+                    return ''
+                }
+
+                await this.browser.webContents.session.cookies.set({
+                    url: SUJINC_URL,
+                    name: 'sujinc.com/access',
+                    value: access.token,
+                    domain: SUJINC_DOMAIN,
+                    path: '/',
+                    secure: true,
+                    httpOnly: true,
+                    expirationDate: now + 3 * 60 * 60,
+                    sameSite: 'lax',
+                })
+                return access.token
+            })
+    }
+
+    private async verifyToken(cookie?: Electron.Cookie) {
+        if (cookie && cookie.value) {
+            return await import('jwt-decode').then((module) => {
+                const token = module.jwtDecode(cookie.value)
+                if (token && typeof token !== 'string' && token.exp) {
+                    const now = new Date().getTime() / 1000
+                    if (token.exp > now) {
+                        return cookie
+                    }
+                }
+                return
+            })
+        }
+        return
+    }
+
+    private async removeTokens() {
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/refresh',
+        )
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/access',
+        )
+        await this.browser.webContents.session.cookies.remove(
+            SUJINC_URL,
+            'sujinc.com/user-info',
         )
     }
 

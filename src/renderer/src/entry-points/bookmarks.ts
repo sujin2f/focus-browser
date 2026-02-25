@@ -1,40 +1,105 @@
-import { A_Bookmarks } from '@src/renderer/src/entry-points/abstracts/abs-bookmarks'
+import { A_Bookmarks } from '@home/entry-points/abstracts/abs-bookmarks'
+import { A_TraitCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
+import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
+/* Models */
+import { Logger } from '@src/renderer/logger'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    navigate,
-    tagNameIs,
-} from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer, navigate, tagNameIs } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { Button } from '@src/renderer/src/template-parts/button'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
-import { Input } from '@src/renderer/src/template-parts/input'
-import { BookmarkModal } from '@src/renderer/src/template-parts/modules/bookmarks-modal'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
+import { H1 } from '@home/template-parts/h1'
+import { Button } from '@home/template-parts/button'
+import { BackButton } from '@home/template-parts/back-button'
+import { ListItem } from '@home/template-parts/list-item'
+import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
+import { UserInfo } from '@home/template-parts/user-info'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 /* CONSTANTS */
 import {
-    BROWSER,
     CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
     REQUEST_HANDLER,
-    SUJINC_URL,
 } from '@src/common/constants'
-import { Logger } from '@src/renderer/logger'
+
+class Search extends A_TraitSearch<T_Bookmark> {
+    public modal?: BookmarkModal
+
+    constructor(
+        protected parent: Bookmarks,
+        private callbackFilterSearch: (keyword: string) => void,
+    ) {
+        super(parent)
+    }
+
+    protected isSearchActivated() {
+        if (this.modal?.activated) {
+            return false
+        }
+        return true
+    }
+
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return (
+            item.shortcut?.toLowerCase().includes(keyword) ||
+            item.title.toLowerCase().includes(keyword)
+        )
+    }
+
+    filterSearch() {
+        this.callbackFilterSearch(this.searchKeyword)
+    }
+}
+
+class CloudPush extends A_TraitCloudPush<T_Bookmark> {
+    public sendCloudPush(bookmark: T_Bookmark): boolean {
+        if (!super.sendCloudPush(bookmark)) {
+            return false
+        }
+
+        Logger.getInstance().log('Sending Bookmark to Cloud', bookmark.title)
+        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, [
+            { title: bookmark.title, key: bookmark.url, type: 'bookmark' },
+        ])
+        return true
+    }
+}
 
 class Bookmarks extends A_Bookmarks {
-    private modal = new BookmarkModal().appendTo('root')
+    public modal = new BookmarkModal().appendTo('root')
+    // shortcuts
+    private shortcuts: Record<string, string> = {}
+    private matchShortcut = ''
+    // Search
+    private search = new Search(this, this.filterSearch.bind(this))
+    // Push
+    private cloud = new CloudPush(this, this.modal.notification)
 
     constructor() {
         super('list--bookmarks')
         this.requestStatus('title', 'url', 'userInfo')
+
+        this.search.modal = this.modal
+        this.search.element.setOnKeyUp((e) => {
+            // Allow standard location only
+            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
+                return
+            }
+
+            // For non-English keyboard, extract English key stroke from KeyboardEvent
+            if (e.code.startsWith('Key')) {
+                this.matchShortcut += e.code.charAt(3)
+            } else if (e.key.length === 1) {
+                this.matchShortcut += e.key
+            }
+
+            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
+            if (shortcut) {
+                navigate({ address: shortcut })
+                return true
+            }
+        })
 
         // Title
         const h1 = new H1(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`).prependTo(
@@ -105,9 +170,6 @@ class Bookmarks extends A_Bookmarks {
             case REQUEST_HANDLER.RESPONSE_FAIL:
                 this.modal.notification.error(bookmarks[0].title)
                 return
-            case REQUEST_HANDLER.PUT:
-                this.modal.notification.info(bookmarks[0].title)
-                return
         }
     }
 
@@ -155,28 +217,7 @@ class Bookmarks extends A_Bookmarks {
         if (bookmark.url) {
             send = new ListItem(
                 new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    if (!this.settings.userInfo) {
-                        getSection('login-alert').classList.remove('hidden')
-                        getSection('login-alert')
-                            .querySelector('button')
-                            ?.addEventListener('click', () => {
-                                navigate({
-                                    scene: BROWSER,
-                                    address: SUJINC_URL,
-                                })
-                            })
-                        return
-                    }
-
-                    Logger.getInstance().log(
-                        'Sending Bookmark to Cloud',
-                        bookmark.title,
-                    )
-                    ipcRenderer.send(
-                        IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.PUT,
-                        [bookmark],
-                    )
+                    this.cloud.sendCloudPush(bookmark)
                 }),
             )
         }
@@ -191,10 +232,6 @@ class Bookmarks extends A_Bookmarks {
             .map(({ data }) => data)
     }
 
-    /**
-     * shortcuts
-     */
-    private shortcuts: Record<string, string> = {}
     private setShortcuts() {
         this.items.forEach((item) => {
             if (item.data.url && item.data.shortcut) {
@@ -212,59 +249,6 @@ class Bookmarks extends A_Bookmarks {
         })
     }
 
-    /**
-     * from A_ListSearch
-     */
-    /**
-     * Filter by keyword
-     *
-     * @param item
-     * @param keyword
-     * @returns {boolean} true to show
-     */
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return (
-            item.shortcut?.toLowerCase().includes(keyword) ||
-            item.title.toLowerCase().includes(keyword)
-        )
-    }
-    private search: Input = new Input('Search', 'search')
-        .appendTo('search')
-        .setOnInput(() => {
-            if (!this.isSearchActivated()) {
-                return
-            }
-            this.filterSearch()
-        })
-        .setOnKeyUp((e) => {
-            // Allow standard location only
-            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
-                return
-            }
-
-            // For non-English keyboard, extract English key stroke from KeyboardEvent
-            if (e.code.startsWith('Key')) {
-                this.matchShortcut += e.code.charAt(3)
-            } else if (e.key.length === 1) {
-                this.matchShortcut += e.key
-            }
-
-            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
-            if (shortcut) {
-                navigate({ address: shortcut })
-                return true
-            }
-        })
-    private matchShortcut = ''
-    protected get searchKeyword() {
-        return this.search.value.toLowerCase()
-    }
-    protected isSearchActivated() {
-        if (this.modal.activated) {
-            return false
-        }
-        return true
-    }
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             if (this.modal.activated) {
@@ -293,12 +277,13 @@ class Bookmarks extends A_Bookmarks {
         }
 
         // Focus Search
-        this.search.value = ''
+        this.search.element.value = ''
         this.matchShortcut = ''
-        this.search.focus()
+        this.search.element.focus()
     }
-    protected filterSearch() {
-        if (!this.searchKeyword) {
+
+    filterSearch(searchKeyword: string) {
+        if (!searchKeyword) {
             this.items.forEach(({ data, items }) =>
                 items.forEach((item) => {
                     if (data.parent) {
@@ -313,7 +298,7 @@ class Bookmarks extends A_Bookmarks {
 
         // Item Has search keyword
         this.items.forEach(({ data, items }) => {
-            const show = this.filterList(data, this.searchKeyword)
+            const show = this.search.filterList(data, searchKeyword)
             items.forEach((item) => {
                 if (show) {
                     item.show()
@@ -325,7 +310,10 @@ class Bookmarks extends A_Bookmarks {
 
         // Show items from matched Directory
         Object.keys(this.dirs).forEach((id) => {
-            const show = this.filterList(this.dirs[id].data, this.searchKeyword)
+            const show = this.search.filterList(
+                this.dirs[id].data,
+                searchKeyword,
+            )
             if (!show) {
                 return
             }

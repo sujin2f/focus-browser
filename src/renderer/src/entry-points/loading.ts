@@ -1,6 +1,6 @@
-import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
+import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron } from '@src/renderer/src/utils'
+import { checkElectron } from '@home/utils'
 
 class Loading extends A_Entry {}
 

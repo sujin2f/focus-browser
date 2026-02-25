@@ -1,32 +1,57 @@
-import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
+import { A_TraitCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
+import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
+/* Models */
+import { Logger } from '@src/renderer/logger'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    navigate,
-} from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { Button } from '@src/renderer/src/template-parts/button'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
-import { Notification } from '@src/renderer/src/template-parts/notification'
+import { H1 } from '@home/template-parts/h1'
+import { BackButton } from '@home/template-parts/back-button'
+import { Button } from '@home/template-parts/button'
+import { ListItem } from '@home/template-parts/list-item'
+import { UserInfo } from '@home/template-parts/user-info'
+import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import {
     EMOJI,
     IPC_CHANNELS,
     Menu,
     REQUEST_HANDLER,
-    BROWSER,
-    SUJINC_URL,
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class Anchors extends A_ListSearch<T_Bookmark> {
-    private notification: Notification = new Notification().appendTo('root')
+class Search extends A_TraitSearch<T_Bookmark> {
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
+    }
+}
+
+class CloudPush extends A_TraitCloudPush<T_Bookmark> {
+    public sendCloudPush(bookmark: T_Bookmark): boolean {
+        if (!super.sendCloudPush(bookmark)) {
+            return false
+        }
+
+        Logger.getInstance().log('Sending Bookmark to Cloud', bookmark.title)
+        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, [
+            { title: bookmark.title, key: bookmark.url, type: 'bookmark' },
+        ])
+        return true
+    }
+}
+
+class Anchors extends A_List<T_Bookmark> {
+    public notification: Notification = new Notification().appendTo('root')
+
+    // Search
+    private search = new Search(this)
+    protected callbackShortcut(e: KeyboardEvent) {
+        this.search.callbackShortcut(e)
+    }
+    // Push
+    private cloud = new CloudPush(this, this.notification)
 
     constructor() {
         super('list--anchors')
@@ -63,16 +88,6 @@ class Anchors extends A_ListSearch<T_Bookmark> {
                     return
             }
         })
-        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, anchors = []) => {
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE_FAIL:
-                    this.notification.error(anchors[0].title)
-                    return
-                case REQUEST_HANDLER.PUT:
-                    this.notification.info(anchors[0].title)
-                    return
-            }
-        })
     }
 
     protected renderList() {
@@ -88,34 +103,13 @@ class Anchors extends A_ListSearch<T_Bookmark> {
             // Cloud
             const send = new ListItem(
                 new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    if (!this.settings.userInfo) {
-                        getSection('login-alert').classList.remove('hidden')
-                        getSection('login-alert')
-                            .querySelector('button')
-                            ?.addEventListener('click', () => {
-                                navigate({
-                                    scene: BROWSER,
-                                    address: SUJINC_URL,
-                                })
-                            })
-                        return
-                    }
-
-                    ipcRenderer.send(
-                        IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.PUT,
-                        [anchor],
-                    )
+                    this.cloud.sendCloudPush(anchor)
                 }),
             ).appendTo(this.list.element)
             send.clickable = false
 
             items.push(item, send)
         })
-    }
-
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
     }
 }
 

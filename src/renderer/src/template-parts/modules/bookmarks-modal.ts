@@ -1,12 +1,12 @@
 /* Utils */
-import { ipcRenderer } from '@src/renderer/src/utils'
+import { ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { Button } from '@src/renderer/src/template-parts/button'
-import { Notification } from '@src/renderer/src/template-parts/notification'
-import { Modal } from '@src/renderer/src/template-parts/modal'
-import { Input } from '@src/renderer/src/template-parts/input'
-import { Select } from '@src/renderer/src/template-parts/select'
-import { Option } from '@src/renderer/src/template-parts/option'
+import { Button } from '@home/template-parts/button'
+import { Notification } from '@home/template-parts/notification'
+import { Modal } from '@home/template-parts/modal'
+import { Input } from '@home/template-parts/input'
+import { Select } from '@home/template-parts/select'
+import { Option } from '@home/template-parts/option'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */

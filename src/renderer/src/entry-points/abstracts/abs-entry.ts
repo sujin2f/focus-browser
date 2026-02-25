@@ -1,13 +1,13 @@
-import { ipcRenderer, navigate } from '@src/renderer/src/utils'
+import { ipcRenderer, navigate } from '@home/utils'
 import { Logger } from '@src/renderer/logger'
 import type { T_Status_Props } from '@src/common/types'
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
-import '@home/styles/common.css'
+import '@src/renderer/styles/common.css'
 
 export abstract class A_Entry {
     protected _settings: T_Status_Props = {}
-    protected get settings() {
+    public get settings() {
         return this._settings
     }
     protected set settings(settings: T_Status_Props) {

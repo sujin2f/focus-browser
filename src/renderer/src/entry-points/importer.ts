@@ -1,18 +1,13 @@
-import { A_List } from '@src/renderer/src/entry-points/abstracts/abs-list'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    navigate,
-} from '@src/renderer/src/utils'
+import { checkElectron, getSection, ipcRenderer, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { Loading } from '@src/renderer/src/template-parts/loading'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
-import { Notification } from '@src/renderer/src/template-parts/notification'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
+import { H1 } from '@home/template-parts/h1'
+import { BackButton } from '@home/template-parts/back-button'
+import { Loading } from '@home/template-parts/loading'
+import { ListItem } from '@home/template-parts/list-item'
+import { Notification } from '@home/template-parts/notification'
+import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
     BROWSER,
@@ -29,6 +24,7 @@ class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
     private loading = new Loading().appendTo('loading').hide()
     private enable = false
+    private keys: string[] = []
 
     constructor() {
         super()
@@ -63,6 +59,16 @@ class Importer extends A_List<T_Cloud_Item> {
 
     private request(): void {
         this.loading.show()
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (handler, items = []) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE:
+                    this.enable = true
+                    this.keys.push(...items.map((item) => item.url))
+                    return
+            }
+        })
+
         ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
         ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, items = []) => {
             this.loading.hide()
@@ -78,15 +84,19 @@ class Importer extends A_List<T_Cloud_Item> {
                     return
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.enable = true
-                    this.items = items.map((item) => ({
-                        data: item,
-                        items: [] as ListItem[],
-                    }))
+                    this.items = this.items.filter(
+                        (item) => item.data._id !== items[0]._id,
+                    )
                     this.renderList()
-                    this.notification.info('The item is added successfully.')
+                    this.notification.info(items[0].title)
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
                     this.enable = true
+                    if (items[0]._id) {
+                        this.items = this.items.filter(
+                            (item) => item.data._id !== items[0]._id,
+                        )
+                    }
                     this.notification.error(items[0].title)
                     return
             }
@@ -99,7 +109,7 @@ class Importer extends A_List<T_Cloud_Item> {
 
         // Create & Assign ListItems
         this.items.forEach(({ data }) => {
-            const device = new ListItem(data.device)
+            const device = new ListItem(data.device || '')
             const row = new ListItem(data.title).setOnClick(() => {
                 if (!this.enable) {
                     return

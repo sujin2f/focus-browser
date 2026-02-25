@@ -5,16 +5,16 @@ import {
     navigate,
     ipcRenderer,
     commandSymbol,
-} from '@src/renderer/src/utils'
+} from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { H2 } from '@src/renderer/src/template-parts/h2'
-import { Card } from '@src/renderer/src/template-parts/card'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
-import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
+import { H1 } from '@home/template-parts/h1'
+import { H2 } from '@home/template-parts/h2'
+import { Card } from '@home/template-parts/card'
+import { UserInfo } from '@home/template-parts/user-info'
+import { getAddressBar } from '@home/template-parts/modules/address-bar'
 /* T_Types */
 import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
-import type { ListItem } from '@src/renderer/src/template-parts/list-item'
+import type { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,

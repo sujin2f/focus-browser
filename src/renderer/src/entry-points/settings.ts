@@ -1,23 +1,18 @@
-import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
+import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    byteToSize,
-} from '@src/renderer/src/utils'
+import { checkElectron, getSection, ipcRenderer, byteToSize } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { H2 } from '@src/renderer/src/template-parts/h2'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { Input } from '@src/renderer/src/template-parts/input'
-import { Checkbox } from '@src/renderer/src/template-parts/checkbox'
-import { Select } from '@src/renderer/src/template-parts/select'
-import { Option } from '@src/renderer/src/template-parts/option'
-import { Button } from '@src/renderer/src/template-parts/button'
-import { Card } from '@src/renderer/src/template-parts/card'
-import { Loading } from '@src/renderer/src/template-parts/loading'
-import { Notification } from '@src/renderer/src/template-parts/notification'
+import { H1 } from '@home/template-parts/h1'
+import { H2 } from '@home/template-parts/h2'
+import { BackButton } from '@home/template-parts/back-button'
+import { Input } from '@home/template-parts/input'
+import { Checkbox } from '@home/template-parts/checkbox'
+import { Select } from '@home/template-parts/select'
+import { Option } from '@home/template-parts/option'
+import { Button } from '@home/template-parts/button'
+import { Card } from '@home/template-parts/card'
+import { Loading } from '@home/template-parts/loading'
+import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import {
     EMOJI,

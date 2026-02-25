@@ -1,33 +1,34 @@
 import { A_List } from './abs-list'
 /* <HTML template-part /> */
-import { Input } from '@src/renderer/src/template-parts/input'
+import { Input } from '@home/template-parts/input'
 /* Utils */
-import { navigate, tagNameIs } from '@src/renderer/src/utils'
+import { navigate, tagNameIs } from '@home/utils'
 
-export abstract class A_ListSearch<T> extends A_List<T> {
-    private search: Input
+export abstract class A_TraitSearch<T> {
+    protected search: Input
+    public get element() {
+        return this.search
+    }
 
-    protected get searchKeyword() {
+    public get searchKeyword() {
         return this.search.value.toLowerCase()
     }
 
-    constructor(css: string = '') {
-        super(css)
+    constructor(protected parent: A_List<T>) {
         this.search = new Input('Search', 'search')
-            .appendTo('search')
-            .setOnInput(() => {
-                if (!this.isSearchActivated()) {
-                    return
-                }
-                this.filterSearch()
-            })
+        this.search.appendTo('search').setOnInput(() => {
+            if (!this.isSearchActivated()) {
+                return
+            }
+            this.filterSearch()
+        })
     }
 
     protected isSearchActivated() {
         return true
     }
 
-    protected callbackShortcut(e: KeyboardEvent) {
+    public callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             if (tagNameIs(document.activeElement, 'input')) {
                 ;(document.activeElement as HTMLInputElement).blur()
@@ -66,15 +67,15 @@ export abstract class A_ListSearch<T> extends A_List<T> {
     /**
      * Filter items
      */
-    protected filterSearch() {
+    public filterSearch() {
         if (!this.searchKeyword) {
-            this.items.forEach(({ items }) =>
+            this.parent.items.forEach(({ items }) =>
                 items.forEach((item) => item.show()),
             )
             return
         }
 
-        this.items.forEach(({ data, items }) => {
+        this.parent.items.forEach(({ data, items }) => {
             const filtered = this.filterList(data, this.searchKeyword)
             items.forEach((item) => {
                 if (filtered) {

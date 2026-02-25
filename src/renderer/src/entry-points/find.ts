@@ -1,14 +1,9 @@
-import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
+import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    navigate,
-} from '@src/renderer/src/utils'
+import { checkElectron, getSection, ipcRenderer, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { Input } from '@src/renderer/src/template-parts/input'
-import { Button } from '@src/renderer/src/template-parts/button'
+import { Input } from '@home/template-parts/input'
+import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 

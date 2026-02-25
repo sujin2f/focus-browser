@@ -1,13 +1,13 @@
-import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
+import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { Card } from '@src/renderer/src/template-parts/card'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { Input } from '@src/renderer/src/template-parts/input'
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
-import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
+import { Card } from '@home/template-parts/card'
+import { BackButton } from '@home/template-parts/back-button'
+import { Input } from '@home/template-parts/input'
+import { H1 } from '@home/template-parts/h1'
+import { UserInfo } from '@home/template-parts/user-info'
+import { getAddressBar } from '@home/template-parts/modules/address-bar'
 /* CONSTANTS */
 import {
     EMOJI,

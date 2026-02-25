@@ -1,16 +1,29 @@
-import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
+import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
+import { H1 } from '@home/template-parts/h1'
+import { BackButton } from '@home/template-parts/back-button'
+import { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
-class Popup extends A_ListSearch<PopupBlocker> {
+class Search extends A_TraitSearch<PopupBlocker> {
+    filterList(item: PopupBlocker, keyword: string): boolean {
+        return item.host.toLowerCase().includes(keyword)
+    }
+}
+
+class Popup extends A_List<PopupBlocker> {
+    // Search
+    private search = new Search(this)
+    protected callbackShortcut(e: KeyboardEvent) {
+        this.search.callbackShortcut(e)
+    }
+
     constructor() {
         super()
         this.requestStatus('title', 'url')
@@ -61,8 +74,8 @@ class Popup extends A_ListSearch<PopupBlocker> {
             }),
         )
 
-        if (this.searchKeyword) {
-            this.filterSearch()
+        if (this.search.searchKeyword) {
+            this.search.filterSearch()
         } else {
             this.renderList()
         }
@@ -84,10 +97,6 @@ class Popup extends A_ListSearch<PopupBlocker> {
                 })
             items.push(item)
         })
-    }
-
-    filterList(item: PopupBlocker, keyword: string): boolean {
-        return item.host.toLowerCase().includes(keyword)
     }
 }
 

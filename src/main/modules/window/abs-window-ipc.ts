@@ -231,6 +231,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 )
                 return
             case REQUEST_HANDLER.PUT: {
+                // TODO move to onCloud
+                Logger.getInstance().log('Cloud PUT request received.')
                 const userInfo = await this.getUserInfo()
                 if (!userInfo) {
                     this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
@@ -253,14 +255,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 const response = await net
                     .fetch(`${SUJINC_URL}/focus/bookmark`, {
                         body: JSON.stringify({
-                            _id: '',
                             title: bookmark.title,
                             device: `${os}(${version})`,
                             key: bookmark.url,
                             machineId,
                             message,
                             type: 'bookmark',
-                        } satisfies T_Cloud_Item),
+                        } satisfies Omit<T_Cloud_Item, '_id'>),
                         method: 'PUT',
                         headers: { authorization: `Bearer ${access}` },
                     })
@@ -274,6 +275,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
                 const result = await response.json()
                 if (result.result) {
+                    Logger.getInstance().log('Bookmark is exported.')
                     this.sendBookmarks(REQUEST_HANDLER.PUT, [
                         {
                             title: 'Your bookmark is exported. Please import from other Focus browser.',
@@ -282,6 +284,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     return
                 }
 
+                Logger.getInstance().error('Bookmark export is failed.')
                 this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
                     { title: 'Failed to export bookmark.' } as T_Bookmark,
                 ])

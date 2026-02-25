@@ -27,12 +27,13 @@ import {
     REQUEST_HANDLER,
     SUJINC_URL,
 } from '@src/common/constants'
+import { Logger } from '@src/renderer/logger'
 
 class Bookmarks extends A_Bookmarks {
     private modal = new BookmarkModal().appendTo('root')
 
     constructor() {
-        super('bookmark--bookmarks')
+        super('list--bookmarks')
         this.requestStatus('title', 'url', 'userInfo')
 
         // Title
@@ -136,9 +137,9 @@ class Bookmarks extends A_Bookmarks {
         )
         edit.clickable = false
 
+        // Shortcut
         let shortcut = new ListItem('')
         if (bookmark.shortcut) {
-            // Shortcut
             shortcut = new ListItem(
                 new Button(bookmark.shortcut.toUpperCase()).setOnClick(() => {
                     if (isDir) {
@@ -149,9 +150,9 @@ class Bookmarks extends A_Bookmarks {
             )
         }
 
+        // Cloud
         let send = new ListItem('')
         if (bookmark.url) {
-            // Shortcut
             send = new ListItem(
                 new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
                     if (!this.settings.userInfo) {
@@ -167,6 +168,10 @@ class Bookmarks extends A_Bookmarks {
                         return
                     }
 
+                    Logger.getInstance().log(
+                        'Sending Bookmark to Cloud',
+                        bookmark.title,
+                    )
                     ipcRenderer.send(
                         IPC_CHANNELS.BOOKMARK,
                         REQUEST_HANDLER.PUT,

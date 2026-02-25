@@ -11,13 +11,18 @@ export class UserInfo extends A_Element<HTMLElement> {
     }
 
     public set picture(picture: string) {
+        getSection('user-picture').innerHTML = ''
         if (picture) {
-            getSection('user-picture').setAttribute('src', picture)
+            const img = document.createElement('img')
+            img.width = 35
+            img.height = 35
+            img.src = picture
+            img.classList.add('w-8', 'h-8')
+
+            getSection('user-picture').append(img)
             this.loggedIn()
             return
         }
-
-        getSection('user-picture').removeAttribute('src')
         this.loggedOut()
     }
 

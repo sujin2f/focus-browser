@@ -11,8 +11,8 @@ export abstract class A_ListSearch<T> extends A_List<T> {
         return this.search.value.toLowerCase()
     }
 
-    constructor() {
-        super()
+    constructor(css: string = '') {
+        super(css)
         this.search = new Input('Search', 'search')
             .appendTo('search')
             .setOnInput(() => {

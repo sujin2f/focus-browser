@@ -35,17 +35,33 @@
     animation-duration: 2.5s;
 }
 
-.bookmark--welcome {
+.list--welcome {
     grid-template-columns: 40px minmax(200px, 1fr);
 }
 
-.bookmark--bookmarks {
+.list--bookmarks {
     grid-template-columns:
         max-content minmax(200px, 1fr)
         max-content max-content max-content;
 }
 
-.bookmark--bookmarks :nth-child(4n + 1) h3 {
+.list--bookmarks :nth-child(4n + 1) h3 {
+    margin-right: calc(var(--spacing) * 2);
+}
+
+.list--anchors {
+    grid-template-columns: minmax(200px, 1fr) max-content;
+}
+
+.list--anchors :nth-child(n + 1) h3 {
+    margin-right: calc(var(--spacing) * 2);
+}
+
+.list--history {
+    grid-template-columns: minmax(200px, 1fr) max-content;
+}
+
+.list--history :nth-child(n + 1) h3 {
     margin-right: calc(var(--spacing) * 2);
 }
 

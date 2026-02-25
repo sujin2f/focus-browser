@@ -26,6 +26,7 @@ import {
     CENTRE_PAGES,
     SUJINC_DOMAIN,
     SUJINC_URL,
+    EMOJI,
 } from '@src/common/constants'
 /* Utils */
 import { isBeta, isTest } from '@src/common/utils'
@@ -97,16 +98,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const [type, params] = arg
         switch (type) {
             case LogTypes.ERROR:
-                Logger.getInstance().error(...params)
+                Logger.getInstance().error(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.INFO:
-                Logger.getInstance().info(...params)
+                Logger.getInstance().info(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.LOG:
-                Logger.getInstance().log(...params)
+                Logger.getInstance().log(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.WARN:
-                Logger.getInstance().warn(...params)
+                Logger.getInstance().warn(EMOJI.CENTRE, ' ', ...params)
                 break
         }
     }

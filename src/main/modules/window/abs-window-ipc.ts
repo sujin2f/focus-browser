@@ -28,8 +28,8 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Utils */
-import { isBeta, isTest } from '@src/common/utils'
-import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
+import { isBeta, isTest } from '@src/common/utils/common'
+import { getCleanerSizes, removeIndexedDB } from '@src/main/lib/utils/process'
 /* T_Types */
 import type {
     T_Bookmark,
@@ -460,64 +460,43 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         { request: key }: T_Cleaner,
     ) {
-        const send = async (updated: boolean = false) => {
-            const cacheSize =
-                await this.browser.webContents.session.getCacheSize()
-            const anchors = Object.keys(new Anchors().get()).length
-            const history =
-                this.browser.webContents.navigationHistory.getAllEntries()
-                    .length
-            const popup = PopupBlocker.getInstance().get('blocked')
-            const indexedDB = getIndexedDBSize()
-
+        const responseSuccess = () => {
             this.centre.send(
                 IPC_CHANNELS.CLEANER,
-                updated
-                    ? REQUEST_HANDLER.RESPONSE_SUCCESS
-                    : REQUEST_HANDLER.RESPONSE,
-                {
-                    response: {
-                        cacheSize,
-                        anchors,
-                        history,
-                        popup: Array.from(popup).length,
-                        indexedDB,
-                    },
-                },
+                REQUEST_HANDLER.RESPONSE_SUCCESS,
             )
         }
-
         switch (handler) {
-            case REQUEST_HANDLER.REQUEST:
-                send()
+            case REQUEST_HANDLER.REQUEST: {
+                getCleanerSizes(
+                    this.browser,
+                    this.centre,
+                    REQUEST_HANDLER.RESPONSE,
+                )
                 return
+            }
             case REQUEST_HANDLER.REMOVE:
                 switch (key) {
                     case 'cacheSize':
                         await this.browser.webContents.session.clearCache()
-                        send(true)
+                        responseSuccess()
                         return
-
                     case 'indexedDB':
-                        removeIndexedDB()
-                        send(true)
+                        removeIndexedDB(this.centre)
                         return
-
                     case 'anchor': {
                         const anchors = new Anchors()
                         anchors.clear()
-                        send(true)
+                        responseSuccess()
                         return
                     }
-
                     case 'history':
                         this.browser.webContents.navigationHistory.clear()
-                        send(true)
+                        responseSuccess()
                         return
-
                     case 'popups':
                         PopupBlocker.getInstance().clear()
-                        send(true)
+                        responseSuccess()
                         return
                 }
                 return

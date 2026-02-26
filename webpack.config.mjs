@@ -57,6 +57,7 @@ const mainConfig = {
         preload: './src/preload.ts',
         'adblocker-preload':
             './node_modules/@ghostery/adblocker-electron-preload/dist/index.cjs',
+        'child-process': './src/child-process.ts',
     },
     output: {
         path: _resolve(__dirname, 'release', 'app', 'dist'),

@@ -5,7 +5,6 @@
  */
 
 import * as electron from 'electron'
-import { parse } from 'tldts-experimental'
 
 import {
     FiltersEngine,
@@ -13,7 +12,7 @@ import {
     type ElectronRequestType,
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
-import { adBlockerPreload } from '@src/main/utils'
+import { paths } from '@src/common/utils/fs'
 
 const { ipcMain } = electron
 
@@ -94,7 +93,7 @@ export class BlockingContext {
         if (this.blocker.config.loadCosmeticFilters === true) {
             this.preloadScriptId = this.session.registerPreloadScript({
                 type: 'frame',
-                filePath: adBlockerPreload,
+                filePath: paths.preloadAdBlocker,
             })
             ipcMain.handle(
                 '@ghostery/adblocker/inject-cosmetic-filters',
@@ -200,6 +199,8 @@ export class ElectronBlocker extends FiltersEngine {
         url: string,
         msg?: IBackgroundCallback,
     ): Promise<void> => {
+        // TODO Remove tldts-experimental : get domain from URL : www.google.com, account.google.com, account.google.co.kr...
+        const { parse } = await import('tldts-experimental')
         const parsed = parse(url)
         const hostname = parsed.hostname || ''
         const domain = parsed.domain || ''

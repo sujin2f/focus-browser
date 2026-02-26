@@ -1,6 +1,6 @@
 import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, getSection, ipcRenderer, byteToSize } from '@home/utils'
+import { checkElectron, getSection, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { H2 } from '@home/template-parts/h2'
@@ -21,7 +21,7 @@ import {
     SEARCH_ENGINES,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Status_Props } from '@src/common/types'
+import type { T_Cleaner_Response, T_Status_Props } from '@src/common/types'
 
 const request: (keyof T_Status_Props)[] = [
     'maxHistory',
@@ -30,81 +30,62 @@ const request: (keyof T_Status_Props)[] = [
     'searchEngine',
 ]
 
+const CARDS: { [key in keyof T_Cleaner_Response]: string } = {
+    cacheSize: 'Cache',
+    indexedDB: 'Indexed DB',
+    anchors: 'Anchors',
+    history: 'History',
+    popup: 'Blocked Popups',
+}
+type T_Cards = { [key in keyof T_Cleaner_Response]: Card }
+
 class Settings extends A_Entry {
     private notification: Notification = new Notification().appendTo('root')
     private form: HTMLFormElement = getSection<HTMLFormElement>('form-fields')
     private button?: Button
 
     private ready = false
-    private cache = new Card('Cache').appendTo('grid').setOnClick(() => {
-        if (!this.ready) {
-            return
-        }
-        this.ready = false
-        new Loading().appendTo(this.cache.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
-            request: 'cacheSize',
-        })
-    })
-    private indexedDB = new Card('IndexedDB')
-        .appendTo('grid')
-        .setOnClick(() => {
-            if (!this.ready) {
-                return
-            }
-            this.ready = false
-            new Loading().appendTo(this.indexedDB.description)
-            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
-                request: 'indexedDB',
-            })
-        })
-    private anchor = new Card('Anchor').appendTo('grid').setOnClick(() => {
-        if (!this.ready) {
-            return
-        }
-        this.ready = false
-        new Loading().appendTo(this.anchor.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
-            request: 'anchor',
-        })
-    })
-    private history = new Card('History').appendTo('grid').setOnClick(() => {
-        if (!this.ready) {
-            return
-        }
-        this.ready = false
-        new Loading().appendTo(this.history.description)
-        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
-            request: 'history',
-        })
-    })
-    private popups = new Card('Blocked Popups')
-        .appendTo('grid')
-        .setOnClick(() => {
-            if (!this.ready) {
-                return
-            }
-            this.ready = false
-            new Loading().appendTo(this.popups.description)
-            ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
-                request: 'popups',
-            })
-        })
+    // 🧼 Cleaner Cards
+    private cards: T_Cards = {} as T_Cards
 
     constructor() {
         super()
-        this.requestStatus(...request)
-        this.requestCleaner()
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))
 
         // Title
         new Title(`Settings ${EMOJI.SETTINGS}`)
-        new H2(`${EMOJI.CLEANER} Cleaner`).prependTo('cleaner-heading')
 
         // Version
         getSection('version').innerHTML = `Version: ${envVersion}`
+
+        // 🧼 Cleaner Title
+        new H2(`${EMOJI.CLEANER} Cleaner`).prependTo('cleaner-heading')
+
+        // 🧼 Cleaner Cards
+        Object.keys(CARDS).forEach((_key) => {
+            const key = _key as keyof T_Cleaner_Response
+            this.cards[key] = new Card(CARDS[key])
+                .appendTo('grid')
+                .setOnClick(() => {
+                    if (!this.ready) {
+                        return
+                    }
+                    this.ready = false
+                    new Loading().appendTo(this.cards[key].description)
+                    ipcRenderer.send(
+                        IPC_CHANNELS.CLEANER,
+                        REQUEST_HANDLER.REMOVE,
+                        {
+                            request: key,
+                        },
+                    )
+                })
+        })
+
+        this.requestStatus(...request)
+        this.requestCleanerSizes()
     }
 
     protected callbackUpdateStatus() {
@@ -176,24 +157,45 @@ class Settings extends A_Entry {
         this.button.type = 'submit'
     }
 
-    private requestCleaner(): void {
+    /**
+     * 🧼 Request Cleaner Size
+     */
+    private requestCleanerSizes(): void {
         ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST, {
             request: '',
         })
 
-        ipcRenderer.on(IPC_CHANNELS.CLEANER, (handler, arg) => {
-            const { response } = arg!
+        ipcRenderer.once(IPC_CHANNELS.CLEANER, (handler, arg) => {
+            if (handler === REQUEST_HANDLER.RESPONSE) {
+                const { response } = arg!
+                Object.keys(CARDS).forEach((_key) => {
+                    const key = _key as keyof T_Cleaner_Response
+                    this.cards[key].description = response![key]
+                })
+                this.ready = true
+            }
+        })
+    }
 
+    /**
+     * 🧼 Do Clean
+     */
+    private requestClean(key: keyof typeof CARDS) {
+        if (!this.ready) {
+            return
+        }
+        this.ready = false
+        new Loading().appendTo(this.cards[key].description)
+        ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
+            request: key,
+        })
+        ipcRenderer.once(IPC_CHANNELS.CLEANER, (handler) => {
             if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
-                this.notification.info('Cleaned!')
+                this.cards[key].description = '0'
+                this.ready = true
             }
 
-            this.cache.description = byteToSize(response!.cacheSize)
-            this.indexedDB.description = byteToSize(response!.indexedDB)
-            this.anchor.description = response!.anchors.toString()
-            this.history.description = response!.history.toString()
-            this.popups.description = response!.popup.toString()
-            this.ready = true
+            this.notification.info('Cleaned!')
         })
     }
 

@@ -18,7 +18,7 @@ import { Status } from '@main/modules/store/status'
 import { Keystrokes } from '@main/modules/store/keystrokes'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
-import { isNatural } from '@src/common/utils'
+import { isNatural } from '@src/common/utils/common'
 
 export class BrowserView extends WebContentsView {
     public get url(): T_Bookmark {

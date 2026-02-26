@@ -1,20 +1,21 @@
-import { A_Bookmarks } from './abstracts/abs-bookmarks'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
+import { A_TraitBookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
 import {
     checkElectron,
     navigate,
     ipcRenderer,
     commandSymbol,
-} from '@src/renderer/src/utils'
+} from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { H2 } from '@src/renderer/src/template-parts/h2'
-import { Card } from '@src/renderer/src/template-parts/card'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
-import { getAddressBar } from '@src/renderer/src/template-parts/modules/address-bar'
+import { H1 } from '@home/template-parts/h1'
+import { H2 } from '@home/template-parts/h2'
+import { Card } from '@home/template-parts/card'
+import { UserInfo } from '@home/template-parts/user-info'
+import { getAddressBar } from '@home/template-parts/modules/address-bar'
 /* T_Types */
 import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
-import type { ListItem } from '@src/renderer/src/template-parts/list-item'
+import type { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
@@ -24,10 +25,29 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 
-class Welcome extends A_Bookmarks {
+class Bookmarks extends A_TraitBookmarks {
+    protected callbackResponse(...args: unknown[]) {
+        this.parent.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            data: bookmark,
+            items: [] as ListItem[],
+        }))
+
+        if (this.parent.items.length) {
+            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
+                'bookmarks',
+            )
+        }
+        this.parent.renderList()
+    }
+}
+
+class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
+    private bookmarks = new Bookmarks(this)
+
     constructor() {
         super('list--welcome')
+
         this.requestStatus('userInfo')
         this.requestShortcuts()
 
@@ -61,20 +81,6 @@ class Welcome extends A_Bookmarks {
         })
     }
 
-    protected callbackResponse(...args: unknown[]) {
-        this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-            data: bookmark,
-            items: [] as ListItem[],
-        }))
-
-        if (this.items.length) {
-            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
-                'bookmarks',
-            )
-        }
-        this.renderList()
-    }
-
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             navigate({ lastVisit: true })
@@ -102,6 +108,11 @@ class Welcome extends A_Bookmarks {
             .setOnClick(() => {
                 window.location.href = CENTRE_PAGES.HOME
             })
+    }
+
+    renderList() {
+        super.renderList()
+        this.bookmarks.renderList()
     }
 }
 

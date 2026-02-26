@@ -1,6 +1,6 @@
 import { A_Element } from './abs-element'
 /* Utils */
-import { getSection, navigate } from '@src/renderer/src/utils'
+import { getSection, navigate } from '@home/utils'
 import { Button } from './button'
 import { BROWSER, EMOJI, SUJINC_URL } from '@src/common/constants'
 

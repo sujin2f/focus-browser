@@ -19,11 +19,10 @@ type T_Dir = {
     dir: ListItem[]
     items: ListItem[]
 }
-export abstract class A_Bookmarks extends A_List<T_Bookmark> {
-    protected dirs: Record<string, T_Dir> = {}
+export abstract class A_TraitBookmarks {
+    public dirs: Record<string, T_Dir> = {}
 
-    constructor(css: string = '') {
-        super(css)
+    constructor(protected parent: A_List<T_Bookmark>) {
         this.request()
     }
 
@@ -37,18 +36,16 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
 
     protected callbackResponse(_: REQUEST_HANDLER, bookmarks: T_Bookmark[]) {
         this.dirs = {}
-        this.items = bookmarks.map((bookmark) => ({
+        this.parent.items = bookmarks.map((bookmark) => ({
             data: bookmark,
             items: [] as ListItem[],
         }))
-        this.renderList()
+        this.parent.renderList()
     }
 
     renderList() {
-        super.renderList()
-
         // Create & Assign ListItems
-        this.items.forEach(({ data: bookmark, items }, index) => {
+        this.parent.items.forEach(({ data: bookmark, items }, index) => {
             const isDir = !bookmark.url
             const cols: ListItem[] = this.getListCols(bookmark, index)
 
@@ -70,8 +67,8 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
                 )
             } else {
                 // Append
-                this.items[index].data.parent = undefined
-                cols.forEach((col) => col.appendTo(this.list.element))
+                this.parent.items[index].data.parent = undefined
+                cols.forEach((col) => col.appendTo(this.parent.list.element))
             }
 
             items.push(...cols)
@@ -81,11 +78,11 @@ export abstract class A_Bookmarks extends A_List<T_Bookmark> {
         const reversedDir = Object.keys(this.dirs).reverse()
         reversedDir.forEach((dirKey) => {
             this.dirs[dirKey].items.forEach((item) => {
-                item.prependTo(this.list.element)
+                item.prependTo(this.parent.list.element)
                 item.hide()
             })
             this.dirs[dirKey].dir.forEach((item) => {
-                item.prependTo(this.list.element)
+                item.prependTo(this.parent.list.element)
             })
         })
 

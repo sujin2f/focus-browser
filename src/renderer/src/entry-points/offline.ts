@@ -1,9 +1,9 @@
-import { A_Entry } from '@src/renderer/src/entry-points/abstracts/abs-entry'
+import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { Button } from '@src/renderer/src/template-parts/button'
+import { H1 } from '@home/template-parts/h1'
+import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 

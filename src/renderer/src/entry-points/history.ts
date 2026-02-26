@@ -1,32 +1,30 @@
-import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
+import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
-import {
-    checkElectron,
-    getSection,
-    ipcRenderer,
-    navigate,
-} from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { Button } from '@src/renderer/src/template-parts/button'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
-import { UserInfo } from '@src/renderer/src/template-parts/user-info'
-import { Notification } from '@src/renderer/src/template-parts/notification'
+import { Title } from '@home/template-parts/modules/title'
+import { Button } from '@home/template-parts/button'
+import { ListItem } from '@home/template-parts/list-item'
+import { UserInfo } from '@home/template-parts/user-info'
+import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
+import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
-import {
-    BROWSER,
-    EMOJI,
-    IPC_CHANNELS,
-    REQUEST_HANDLER,
-    SUJINC_URL,
-} from '@src/common/constants'
+import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class History extends A_ListSearch<T_Bookmark> {
-    private notification: Notification = new Notification().appendTo('root')
-    private button: Button
+class History extends A_ListCloudPush<T_Bookmark> {
+    public notification: Notification = new Notification().appendTo('root')
+    private btnClear: Button
+    // (En/Dis)able
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.btnClear.enable()
+        } else {
+            this.btnClear.disable()
+        }
+    }
 
     constructor() {
         super('list--history')
@@ -34,19 +32,21 @@ class History extends A_ListSearch<T_Bookmark> {
         this.request()
 
         // Title
-        const h1 = new H1(`History ${EMOJI.HISTORY}`).prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title(`History ${EMOJI.HISTORY}`)
 
         // Clear History
-        this.button = new Button('Clear History')
+        this.btnClear = new Button('Clear History')
             .prependTo('buttons')
             .setOnClick(() => {
-                this.button.disable()
+                this.setEnabled(false)
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
             })
             .disable()
     }
 
+    /**
+     * User updated
+     */
     protected callbackUpdateStatus(): void {
         const userInfo = new UserInfo()
         if (this.settings.userInfo) {
@@ -60,7 +60,8 @@ class History extends A_ListSearch<T_Bookmark> {
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
         ipcRenderer.on(IPC_CHANNELS.HISTORY, (handler, history = []) => {
-            this.button.enable()
+            this.setEnabled(true)
+
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
                     this.handleResponse(history)
@@ -74,17 +75,6 @@ class History extends A_ListSearch<T_Bookmark> {
                     return
             }
         })
-        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, history = []) => {
-            this.button.enable()
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE_FAIL:
-                    this.notification.error(history[0].title)
-                    return
-                case REQUEST_HANDLER.PUT:
-                    this.notification.info(history[0].title)
-                    return
-            }
-        })
     }
 
     private handleResponse(history: T_Bookmark[]) {
@@ -93,6 +83,10 @@ class History extends A_ListSearch<T_Bookmark> {
             items: [] as ListItem[],
         }))
         this.renderList()
+    }
+
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
     }
 
     renderList() {
@@ -105,6 +99,10 @@ class History extends A_ListSearch<T_Bookmark> {
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
+                    if (!this.enabled) {
+                        return
+                    }
+                    this.setEnabled(false)
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
                         REQUEST_HANDLER.EXECUTE,
@@ -119,42 +117,27 @@ class History extends A_ListSearch<T_Bookmark> {
                 })
 
             // Cloud
-            const send = new ListItem(
-                new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    if (!this.settings.userInfo) {
-                        getSection('login-alert').classList.remove('hidden')
-                        getSection('login-alert')
-                            .querySelector('button')
-                            ?.addEventListener('click', () => {
-                                navigate({
-                                    scene: BROWSER,
-                                    address: SUJINC_URL,
-                                })
-                            })
-                        return
+            const button = new ButtonCloudPush(
+                {
+                    title: history.title,
+                    key: history.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(history),
+                },
+                () => this.settings.userInfo,
+                (button: ButtonCloudPush) => {
+                    const enabled = this.enabled
+                    if (enabled) {
+                        this.callbackCloudPush(button)
                     }
-
-                    ipcRenderer.send(
-                        IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.PUT,
-                        [
-                            {
-                                id: '',
-                                title: history.title,
-                                url: history.url,
-                            } satisfies T_Bookmark,
-                        ],
-                    )
-                }),
-            ).appendTo(this.list.element)
+                    return enabled
+                },
+            )
+            const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 
             items.push(item, send)
         })
-    }
-
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
     }
 }
 

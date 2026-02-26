@@ -1,12 +1,7 @@
 /* Utils */
-import {
-    navigate,
-    getSection,
-    ctrlOrComm,
-    commandSymbol,
-} from '@src/renderer/src/utils'
+import { navigate, getSection, ctrlOrComm, commandSymbol } from '@home/utils'
 /* <HTML template-part /> */
-import { Input } from '@src/renderer/src/template-parts/input'
+import { Input } from '@home/template-parts/input'
 
 export const getAddressBar = (shortcut = `${ctrlOrComm()}L`) => {
     const input = new Input(

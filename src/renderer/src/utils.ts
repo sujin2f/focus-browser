@@ -1,5 +1,6 @@
 import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 import type { T_IPC_Switch } from '@src/common/types'
+import { Logger } from '../logger'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -44,6 +45,7 @@ export const tagNameIs = (
 export const getSection = <T extends Element>(id: string) => {
     const element = document.querySelector<Element>(`#section-${id}`) as T
     if (!element) {
+        Logger.getInstance().error(`No #section-${id} element exist`)
         throw new Error(`No #section-${id} element exist`)
     }
     return element

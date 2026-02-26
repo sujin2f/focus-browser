@@ -1,8 +1,8 @@
-import { A_Element } from './abs-element'
+import { A_Element } from '../abs-element'
 /* Utils */
-import { navigate } from '@src/renderer/src/utils'
+import { navigate } from '@home/utils'
 
-export class BackButton extends A_Element<HTMLButtonElement> {
+export class ButtonBack extends A_Element<HTMLButtonElement> {
     constructor() {
         super('#back-button')
     }

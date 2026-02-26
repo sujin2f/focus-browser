@@ -1,10 +1,9 @@
-import { A_ListSearch } from '@src/renderer/src/entry-points/abstracts/abs-list-search'
+import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
+import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@src/renderer/src/template-parts/h1'
-import { BackButton } from '@src/renderer/src/template-parts/back-button'
-import { ListItem } from '@src/renderer/src/template-parts/list-item'
+import { Title } from '@home/template-parts/modules/title'
+import { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
@@ -17,10 +16,7 @@ class Popup extends A_ListSearch<PopupBlocker> {
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`).prependTo(
-            'title',
-        )
-        new BackButton().prependTo(h1.element)
+        new Title(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`)
     }
 
     private requestPopupBlockers(): void {
@@ -68,6 +64,10 @@ class Popup extends A_ListSearch<PopupBlocker> {
         }
     }
 
+    filterList(item: PopupBlocker, keyword: string): boolean {
+        return item.host.toLowerCase().includes(keyword)
+    }
+
     renderList() {
         super.renderList()
 
@@ -84,10 +84,6 @@ class Popup extends A_ListSearch<PopupBlocker> {
                 })
             items.push(item)
         })
-    }
-
-    filterList(item: PopupBlocker, keyword: string): boolean {
-        return item.host.toLowerCase().includes(keyword)
     }
 }
 

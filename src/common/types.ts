@@ -93,13 +93,13 @@ export type T_Shortcut_Store = {
  * @see https://github.com/sujin2f/Sujin/blob/trunk/%40lib/src/types/focus.ts
  */
 export type T_Cloud_Item = {
-    _id: string
+    _id?: string
     title: string
     key: string
-    device: string
-    machineId: string
-    type: 'bookmark' | 'keystroke'
-    message: string
+    type: 'bookmark' | 'keystroke' | 'return'
+    device?: string
+    machineId?: string
+    message?: string
 }
 
 export type Scenes = CENTRE_PAGES | typeof BROWSER

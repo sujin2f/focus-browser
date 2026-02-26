@@ -37,7 +37,7 @@ const commonConfig = {
         alias: {
             '@main': _resolve(__dirname, 'src', 'main'),
             '@src': _resolve(__dirname, 'src'),
-            '@home': _resolve(__dirname, 'src', 'renderer'),
+            '@home': _resolve(__dirname, 'src', 'renderer', 'src'),
         },
     },
     optimization: {

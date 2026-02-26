@@ -1,11 +1,11 @@
-import { A_List } from './abs-list'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
 /* <HTML template-part /> */
 import { Input } from '@src/renderer/src/template-parts/input'
 /* Utils */
 import { navigate, tagNameIs } from '@src/renderer/src/utils'
 
 export abstract class A_ListSearch<T> extends A_List<T> {
-    private search: Input
+    protected search: Input
 
     protected get searchKeyword() {
         return this.search.value.toLowerCase()

@@ -6,7 +6,7 @@ export class Button extends A_Element<HTMLButtonElement> {
     }
 
     constructor(
-        private _title: string,
+        protected _title: string,
         selector: string = 'button',
     ) {
         super(`#${selector}`)

@@ -11,7 +11,7 @@
             "@test/*": ["./.jest/*"],
             "@src/*": ["./src/*"],
             "@main/*": ["./src/main/*"],
-            "@home/*": ["./src/renderer/*"]
+            "@home/*": ["./src/renderer/src/*"]
         },
         "isolatedModules": true
     },

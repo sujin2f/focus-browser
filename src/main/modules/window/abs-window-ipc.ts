@@ -230,66 +230,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     storeBookmarks.get(),
                 )
                 return
-            case REQUEST_HANDLER.PUT: {
-                // TODO move to onCloud
-                Logger.getInstance().log('Cloud PUT request received.')
-                const userInfo = await this.getUserInfo()
-                if (!userInfo) {
-                    this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
-                        { title: 'You are not logged in.' } as T_Bookmark,
-                    ])
-                    return
-                }
-
-                const bookmark = bookmarks[0]
-                const os =
-                    process.platform === 'darwin' ? 'mac' : process.platform
-                const version = process.getSystemVersion()
-                const message = Buffer.from(
-                    JSON.stringify(bookmark),
-                    'utf8',
-                ).toString('base64')
-                const access = await this.getAccessToken()
-                const machineId = Status.getInstance().get('machineId')
-
-                const response = await net
-                    .fetch(`${SUJINC_URL}/focus/bookmark`, {
-                        body: JSON.stringify({
-                            title: bookmark.title,
-                            device: `${os}(${version})`,
-                            key: bookmark.url,
-                            machineId,
-                            message,
-                            type: 'bookmark',
-                        } satisfies Omit<T_Cloud_Item, '_id'>),
-                        method: 'PUT',
-                        headers: { authorization: `Bearer ${access}` },
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to PUT bookmark',
-                            e.message,
-                        )
-                        return { json: () => ({ result: false }) }
-                    })
-
-                const result = await response.json()
-                if (result.result) {
-                    Logger.getInstance().log('Bookmark is exported.')
-                    this.sendBookmarks(REQUEST_HANDLER.PUT, [
-                        {
-                            title: 'Your bookmark is exported. Please import from other Focus browser.',
-                        } as T_Bookmark,
-                    ])
-                    return
-                }
-
-                Logger.getInstance().error('Bookmark export is failed.')
-                this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
-                    { title: 'Failed to export bookmark.' } as T_Bookmark,
-                ])
-                return
-            }
             case REQUEST_HANDLER.ADD:
                 storeBookmarks.push(bookmarks[0])
                 storeBookmarks.save()
@@ -584,19 +524,34 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
+    private sendCloudMessage(
+        handler: REQUEST_HANDLER,
+        message: string,
+        _id?: string,
+    ) {
+        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
+            this.centre.send(IPC_CHANNELS.CLOUD, handler, [
+                { _id, title: message, key: '', type: 'return' },
+            ])
+            return
+        }
+        this.centre.send(IPC_CHANNELS.CLOUD, handler, [
+            { _id, title: message, key: '', type: 'return' },
+        ])
+    }
+
     private async onCloud(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
         items: T_Cloud_Item[],
     ) {
-        Logger.getInstance().log('onCloud')
         const token = await this.getAccessToken()
         const user = await this.getUserInfo()
         if (!token || !user) {
-            this.centre.send(
-                IPC_CHANNELS.CLOUD,
+            Logger.getInstance().error('The user is not logged in.')
+            this.sendCloudMessage(
                 REQUEST_HANDLER.RESPONSE_FAIL,
-                [{ title: 'You are not logged in.' } as T_Cloud_Item],
+                'You are not logged in.',
             )
             return
         }
@@ -604,60 +559,182 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                const response = await net
-                    .fetch(`${SUJINC_URL}/focus/bookmarks`, {
+                await net
+                    .fetch(`${SUJINC_URL}/focus/items`, {
                         method: 'GET',
                         headers: { authorization: `Bearer ${token}`, email },
                     })
+                    .then(async (response) => {
+                        Logger.getInstance().log(
+                            `${SUJINC_URL}/focus/items responded with ${response.status}`,
+                        )
+                        const body = await response.json()
+
+                        if (body.error) {
+                            Logger.getInstance().error(
+                                `${SUJINC_URL}/focus/items failed with ${body.error}`,
+                            )
+                            this.sendCloudMessage(
+                                REQUEST_HANDLER.RESPONSE_FAIL,
+                                body.error,
+                            )
+                            return
+                        }
+
+                        if (response.status === 404) {
+                            this.sendCloudMessage(
+                                REQUEST_HANDLER.RESPONSE_FAIL,
+                                `You don't have anything in the cloud.`,
+                            )
+                            return
+                        }
+
+                        Logger.getInstance().log(
+                            `Sending items to renderer: sample `,
+                            body.result[0],
+                        )
+                        this.centre.send(
+                            IPC_CHANNELS.CLOUD,
+                            REQUEST_HANDLER.RESPONSE,
+                            body.result,
+                        )
+                        return
+                    })
                     .catch((e) => {
                         Logger.getInstance().error(
-                            `Error to get bookmarks`,
+                            'Failed to GET cloud messages.',
                             e.message,
                         )
-                        return { json: () => [] as T_Bookmark[] }
+                        this.sendCloudMessage(
+                            REQUEST_HANDLER.RESPONSE_FAIL,
+                            e.message,
+                        )
                     })
-                const result = await response.json()
+                return
+            }
 
-                this.centre.send(
-                    IPC_CHANNELS.CLOUD,
-                    REQUEST_HANDLER.RESPONSE,
-                    result,
+            case REQUEST_HANDLER.PUT: {
+                const item = items[0]
+                if (!item.message || !item.key || !item.title || !item.type) {
+                    Logger.getInstance().error('The request is not valid.')
+                    this.sendCloudMessage(
+                        REQUEST_HANDLER.RESPONSE_FAIL,
+                        'The request is not valid.',
+                    )
+                    return
+                }
+                const os =
+                    process.platform === 'darwin' ? 'mac' : process.platform
+                const version = process.getSystemVersion()
+                const message = Buffer.from(item.message, 'utf8').toString(
+                    'base64',
                 )
+                const access = await this.getAccessToken()
+                const machineId = Status.getInstance().get('machineId')
+
+                await net
+                    .fetch(`${SUJINC_URL}/focus/item`, {
+                        body: JSON.stringify({
+                            ...item,
+                            device: `${os}(${version})`,
+                            machineId,
+                            message,
+                        } satisfies T_Cloud_Item),
+                        method: 'PUT',
+                        headers: { authorization: `Bearer ${access}` },
+                    })
+                    .then(async (response) => {
+                        Logger.getInstance().log(
+                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
+                        )
+                        const body = await response.json()
+                        const handler =
+                            response.status === 200
+                                ? REQUEST_HANDLER.RESPONSE_SUCCESS
+                                : REQUEST_HANDLER.RESPONSE_FAIL
+                        this.sendCloudMessage(
+                            handler,
+                            body.message || body.error,
+                            body.id,
+                        )
+                        return
+                    })
+                    .catch((e) => {
+                        Logger.getInstance().error(
+                            'Failed to PUT cloud message.',
+                            e.message,
+                        )
+                        this.sendCloudMessage(
+                            REQUEST_HANDLER.RESPONSE_FAIL,
+                            e.message,
+                        )
+                    })
                 return
             }
 
             case REQUEST_HANDLER.ADD: {
-                const buffer = Buffer.from(items[0].message, 'base64').toString(
-                    'utf-8',
-                )
+                if (!items[0].message || !items[0]._id) {
+                    Logger.getInstance().error(
+                        `Cloud item is invalid`,
+                        items[0],
+                    )
+                }
 
-                const response = await net
-                    .fetch(`${SUJINC_URL}/focus/bookmark`, {
+                await net
+                    .fetch(`${SUJINC_URL}/focus/item`, {
                         method: 'DELETE',
-                        body: JSON.stringify({ id: items[0]._id }),
+                        body: JSON.stringify({ _id: items[0]._id }),
                         headers: { authorization: `Bearer ${token}` },
+                    })
+                    .then(async (response) => {
+                        Logger.getInstance().log(
+                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
+                        )
+                        const body = await response.json()
+                        switch (response.status) {
+                            case 200: {
+                                const buffer = Buffer.from(
+                                    items[0].message!,
+                                    'base64',
+                                ).toString('utf-8')
+                                const bookmark = JSON.parse(buffer)
+                                const bookmarks = new Bookmarks()
+                                bookmarks.push(bookmark)
+                                bookmarks.save()
+
+                                this.sendCloudMessage(
+                                    REQUEST_HANDLER.RESPONSE_SUCCESS,
+                                    body.message,
+                                    items[0]._id,
+                                )
+                                return
+                            }
+                            case 404: {
+                                this.sendCloudMessage(
+                                    REQUEST_HANDLER.RESPONSE_FAIL,
+                                    body.error,
+                                    items[0]._id,
+                                )
+                                return
+                            }
+                            default:
+                                this.sendCloudMessage(
+                                    REQUEST_HANDLER.RESPONSE_FAIL,
+                                    body.error,
+                                )
+                        }
                     })
                     .catch((e) => {
                         Logger.getInstance().error(
-                            `Error to remove bookmarks`,
+                            'Failed to DELETE cloud message.',
                             e.message,
                         )
-                        return { json: () => [] as T_Bookmark[] }
+                        this.sendCloudMessage(
+                            REQUEST_HANDLER.RESPONSE_FAIL,
+                            e.message,
+                        )
                     })
-                const result = await response.json()
 
-                if (items[0].type === 'bookmark') {
-                    const bookmark = JSON.parse(buffer)
-                    const bookmarks = new Bookmarks()
-                    bookmarks.push(bookmark)
-                    bookmarks.save()
-                }
-
-                this.centre.send(
-                    IPC_CHANNELS.CLOUD,
-                    REQUEST_HANDLER.RESPONSE_SUCCESS,
-                    result,
-                )
                 return
             }
         }
@@ -715,50 +792,69 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     return ''
                 }
 
-                await this.browser.webContents.session.cookies.set({
-                    url: SUJINC_URL,
-                    name: 'sujinc.com/access',
-                    value: access.token,
-                    domain: SUJINC_DOMAIN,
-                    path: '/',
-                    secure: true,
-                    httpOnly: true,
-                    expirationDate: now + 3 * 60 * 60,
-                    sameSite: 'lax',
-                })
+                await this.browser.webContents.session.cookies
+                    .set({
+                        url: SUJINC_URL,
+                        name: 'sujinc.com/access',
+                        value: access.token,
+                        domain: SUJINC_DOMAIN,
+                        path: '/',
+                        secure: true,
+                        httpOnly: true,
+                        expirationDate: now + 3 * 60 * 60,
+                        sameSite: 'lax',
+                    })
+                    .catch(async (e) => {
+                        Logger.getInstance().error(
+                            'Failed to set cookie for access token: ',
+                            e.message,
+                        )
+                        await this.removeTokens()
+                    })
                 return access.token
             })
     }
 
     private async verifyToken(cookie?: Electron.Cookie) {
         if (cookie && cookie.value) {
-            return await import('jwt-decode').then((module) => {
-                const token = module.jwtDecode(cookie.value)
-                if (token && typeof token !== 'string' && token.exp) {
-                    const now = new Date().getTime() / 1000
-                    if (token.exp > now) {
-                        return cookie
+            return await import('jwt-decode')
+                .then((module) => {
+                    const token = module.jwtDecode(cookie.value)
+                    if (token && typeof token !== 'string' && token.exp) {
+                        const now = new Date().getTime() / 1000
+                        if (token.exp > now) {
+                            return cookie
+                        }
                     }
-                }
-                return
-            })
+                    return
+                })
+                .catch(async (e) => {
+                    Logger.getInstance().error(
+                        'Failed to verify token',
+                        e.message,
+                    )
+                })
         }
         return
     }
 
     private async removeTokens() {
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/refresh',
-        )
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/access',
-        )
-        await this.browser.webContents.session.cookies.remove(
-            SUJINC_URL,
-            'sujinc.com/user-info',
-        )
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/refresh')
+            .catch(async (e) => {
+                Logger.getInstance().error('Failed to remove cookie', e.message)
+            })
+
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/access')
+            .catch(async (e) => {
+                Logger.getInstance().error('Failed to remove cookie', e.message)
+            })
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/user-info')
+            .catch(async (e) => {
+                Logger.getInstance().error('Failed to remove cookie', e.message)
+            })
     }
 
     /**
@@ -767,18 +863,21 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
      * @returns
      */
     private async refreshTokens(token: string) {
-        Logger.getInstance().log('refreshTokens')
         const response = await net
             .fetch(`${SUJINC_URL}/auth/refresh`, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${token}` },
             })
+            .then((result) => {
+                Logger.getInstance().log('refreshTokens() attempted')
+                return result
+            })
             .catch((e) => {
                 Logger.getInstance().error(
-                    `Error to refresh access token`,
+                    'refreshTokens() failed: ',
                     e.message,
                 )
-                return { json: () => ({ result: false }) }
+                return { json: async () => ({ result: false }) }
             })
         return await response.json()
     }

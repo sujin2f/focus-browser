@@ -1,5 +1,5 @@
 /* Utils */
-import { getSection } from '@src/renderer/src/utils'
+import { getSection } from '@home/utils'
 
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node

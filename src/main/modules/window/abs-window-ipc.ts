@@ -33,6 +33,7 @@ import {
     fetchCloudItems,
     getCleanerSizes,
     removeIndexedDB,
+    uploadCloudItem,
 } from '@src/main/lib/utils/process'
 /* T_Types */
 import type {
@@ -547,61 +548,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             case REQUEST_HANDLER.PUT: {
-                const item = items[0]
-                if (!item.message || !item.key || !item.title || !item.type) {
-                    Logger.getInstance().error('The request is not valid.')
-                    this.sendCloudMessage(
-                        REQUEST_HANDLER.RESPONSE_FAIL,
-                        'The request is not valid.',
-                    )
-                    return
-                }
-                const os =
-                    process.platform === 'darwin' ? 'mac' : process.platform
-                const version = process.getSystemVersion()
-                const message = Buffer.from(item.message, 'utf8').toString(
-                    'base64',
-                )
-                const access = await this.getAccessToken()
-                const machineId = Status.getInstance().get('machineId')
-
-                await net
-                    .fetch(`${SUJINC_URL}/focus/item`, {
-                        body: JSON.stringify({
-                            ...item,
-                            device: `${os}(${version})`,
-                            machineId,
-                            message,
-                        } satisfies T_Cloud_Item),
-                        method: 'PUT',
-                        headers: { authorization: `Bearer ${access}` },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-                        const handler =
-                            response.status === 200
-                                ? REQUEST_HANDLER.RESPONSE_SUCCESS
-                                : REQUEST_HANDLER.RESPONSE_FAIL
-                        this.sendCloudMessage(
-                            handler,
-                            body.message || body.error,
-                            body.id,
-                        )
-                        return
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to PUT cloud message.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
+                const token = await this.getAccessToken()
+                uploadCloudItem(this.centre, items[0], token)
                 return
             }
 

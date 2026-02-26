@@ -5,10 +5,12 @@ import { byteToSize } from '@src/common/utils/common'
 /* Models */
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
+import { Status } from '@src/main/modules/store/status'
 import { Logger } from '@main/logger'
 /* T_Types */
 import type { CenterView } from '@src/main/modules/view/centre'
 import type { BrowserView } from '@src/main/modules/view/browser'
+import type { T_Cloud_Item } from '@src/common/types'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,
@@ -69,19 +71,9 @@ export const fetchCloudItems = (
             `${SUJINC_URL}/focus/items responded with ${message.status}`,
         )
 
-        if (message.status === 404) {
-            centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, [
-                {
-                    title: `You don't have anything in the cloud.`,
-                    key: '',
-                    type: 'return',
-                },
-            ])
-            return
-        }
-
         if (message.body.error) {
             Logger.getInstance().error(
+                '👶',
                 `${SUJINC_URL}/focus/items failed with ${message.body.error}`,
             )
             centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, [
@@ -91,6 +83,7 @@ export const fetchCloudItems = (
         }
 
         Logger.getInstance().log(
+            '👶',
             `Sending items to renderer: sample `,
             message.body.result[0],
         )
@@ -99,5 +92,34 @@ export const fetchCloudItems = (
             REQUEST_HANDLER.RESPONSE,
             message.body.result,
         )
+    })
+}
+
+export const uploadCloudItem = (
+    centre: CenterView,
+    item: T_Cloud_Item,
+    token: string,
+) => {
+    const child = utilityProcess.fork(paths.childProcess)
+    const machineId = Status.getInstance().get('machineId')
+    child.postMessage({ channel: 'upload-cloud-item', item, machineId, token })
+    child.once('message', (message) => {
+        Logger.getInstance().log(
+            '👶',
+            `${SUJINC_URL}/focus/item responded with ${message.status}`,
+        )
+        const handler =
+            message.status === 200
+                ? REQUEST_HANDLER.RESPONSE_SUCCESS
+                : REQUEST_HANDLER.RESPONSE_FAIL
+
+        centre.send(IPC_CHANNELS.CLOUD, handler, [
+            {
+                _id: message.body.id,
+                title: message.body.message || message.body.error,
+                key: '',
+                type: 'return',
+            },
+        ])
     })
 }

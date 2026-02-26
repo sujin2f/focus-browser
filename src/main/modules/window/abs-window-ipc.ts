@@ -32,6 +32,7 @@ import { isBeta, isTest } from '@src/common/utils/common'
 import {
     fetchCloudItems,
     getCleanerSizes,
+    removeCloudItem,
     removeIndexedDB,
     uploadCloudItem,
 } from '@src/main/lib/utils/process'
@@ -235,14 +236,24 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     storeBookmarks.get(),
                 )
                 return
-            case REQUEST_HANDLER.ADD:
-                storeBookmarks.push(bookmarks[0])
+            case REQUEST_HANDLER.ADD: {
+                let bookmark = bookmarks[0]
+                if (bookmark.id === 'from-cloud') {
+                    bookmark = JSON.parse(
+                        Buffer.from(bookmark.title!, 'base64').toString(
+                            'utf-8',
+                        ),
+                    )
+                }
+
+                storeBookmarks.push(bookmark)
                 storeBookmarks.save()
                 this.sendBookmarks(
                     REQUEST_HANDLER.RESPONSE_SUCCESS,
                     storeBookmarks.get(),
                 )
                 return
+            }
             case REQUEST_HANDLER.MODIFY:
                 storeBookmarks.update(bookmarks[0])
                 storeBookmarks.save()
@@ -508,22 +519,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private sendCloudMessage(
-        handler: REQUEST_HANDLER,
-        message: string,
-        _id?: string,
-    ) {
-        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
-            this.centre.send(IPC_CHANNELS.CLOUD, handler, [
-                { _id, title: message, key: '', type: 'return' },
-            ])
-            return
-        }
-        this.centre.send(IPC_CHANNELS.CLOUD, handler, [
-            { _id, title: message, key: '', type: 'return' },
-        ])
-    }
-
     private async onCloud(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
@@ -533,9 +528,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const user = await this.getUserInfo()
         if (!token || !user) {
             Logger.getInstance().error('The user is not logged in.')
-            this.sendCloudMessage(
+            this.centre.send(
+                IPC_CHANNELS.CLOUD,
                 REQUEST_HANDLER.RESPONSE_FAIL,
-                'You are not logged in.',
+                [
+                    {
+                        title: 'You are not logged in.',
+                        key: '',
+                        type: 'return',
+                    },
+                ],
             )
             return
         }
@@ -548,74 +550,26 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             case REQUEST_HANDLER.PUT: {
-                const token = await this.getAccessToken()
                 uploadCloudItem(this.centre, items[0], token)
                 return
             }
 
-            case REQUEST_HANDLER.ADD: {
-                if (!items[0].message || !items[0]._id) {
-                    Logger.getInstance().error(
-                        `Cloud item is invalid`,
-                        items[0],
+            case REQUEST_HANDLER.REMOVE: {
+                if (!items[0]._id) {
+                    this.centre.send(
+                        IPC_CHANNELS.CLOUD,
+                        REQUEST_HANDLER.RESPONSE_FAIL,
+                        [
+                            {
+                                title: 'Unknown error',
+                                key: '',
+                                type: 'return',
+                            },
+                        ],
                     )
+                    return
                 }
-
-                await net
-                    .fetch(`${SUJINC_URL}/focus/item`, {
-                        method: 'DELETE',
-                        body: JSON.stringify({ _id: items[0]._id }),
-                        headers: { authorization: `Bearer ${token}` },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-                        switch (response.status) {
-                            case 200: {
-                                const buffer = Buffer.from(
-                                    items[0].message!,
-                                    'base64',
-                                ).toString('utf-8')
-                                const bookmark = JSON.parse(buffer)
-                                const bookmarks = new Bookmarks()
-                                bookmarks.push(bookmark)
-                                bookmarks.save()
-
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_SUCCESS,
-                                    body.message,
-                                    items[0]._id,
-                                )
-                                return
-                            }
-                            case 404: {
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_FAIL,
-                                    body.error,
-                                    items[0]._id,
-                                )
-                                return
-                            }
-                            default:
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_FAIL,
-                                    body.error,
-                                )
-                        }
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to DELETE cloud message.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
-
+                removeCloudItem(this.centre, items[0]._id, token)
                 return
             }
         }

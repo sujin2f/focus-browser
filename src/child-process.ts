@@ -27,6 +27,10 @@ process.parentPort.once('message', (e) => {
         case 'upload-cloud-item':
             uploadCloudItem(e.data.item, e.data.machineId, e.data.token)
             return
+
+        case 'remove-cloud-item':
+            removeCloudItem(e.data._id, e.data.token)
+            return
     }
 })
 
@@ -88,5 +92,32 @@ const uploadCloudItem = async (
                 body: { error: e.message },
             })
         })
-    return
+}
+
+const removeCloudItem = async (_id: string, token: string) => {
+    await net
+        .fetch(`${SUJINC_URL}/focus/item`, {
+            method: 'DELETE',
+            body: JSON.stringify({ _id }),
+            headers: { authorization: `Bearer ${token}` },
+        })
+        .then(async (response) => {
+            const body = await response.json()
+            process.parentPort.postMessage({
+                status: response.status,
+                body: {
+                    ...body,
+                    id:
+                        response.status === 200 || response.status === 404
+                            ? _id
+                            : '',
+                },
+            })
+        })
+        .catch((e) => {
+            process.parentPort.postMessage({
+                status: 404,
+                body: { error: e.message },
+            })
+        })
 }

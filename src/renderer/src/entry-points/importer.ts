@@ -17,7 +17,7 @@ import {
     SUJINC_URL,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Cloud_Item } from '@src/common/types'
+import type { T_Bookmark, T_Cloud_Item } from '@src/common/types'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
@@ -129,9 +129,22 @@ class Importer extends A_List<T_Cloud_Item> {
                         return
                     }
                     this.currentRow = row
-                    ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.ADD, [
-                        data,
-                    ])
+                    ipcRenderer.send(
+                        IPC_CHANNELS.CLOUD,
+                        REQUEST_HANDLER.REMOVE,
+                        [data],
+                    )
+                    ipcRenderer.send(
+                        IPC_CHANNELS.BOOKMARK,
+                        REQUEST_HANDLER.ADD,
+                        [
+                            {
+                                id: 'from-cloud',
+                                url: '',
+                                title: data.message!,
+                            } satisfies T_Bookmark,
+                        ],
+                    )
                     this.setEnabled(false)
                 })
             }

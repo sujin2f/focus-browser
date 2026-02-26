@@ -123,3 +123,30 @@ export const uploadCloudItem = (
         ])
     })
 }
+
+export const removeCloudItem = (
+    centre: CenterView,
+    _id: string,
+    token: string,
+) => {
+    const child = utilityProcess.fork(paths.childProcess)
+    child.postMessage({ channel: 'remove-cloud-item', _id, token })
+    child.once('message', (message) => {
+        Logger.getInstance().log(
+            `${SUJINC_URL}/focus/item responded with ${message.status}`,
+        )
+        const handler =
+            message.status === 200
+                ? REQUEST_HANDLER.RESPONSE_SUCCESS
+                : REQUEST_HANDLER.RESPONSE_FAIL
+
+        centre.send(IPC_CHANNELS.CLOUD, handler, [
+            {
+                _id: message.body.id,
+                title: message.body.message || message.body.error,
+                key: '',
+                type: 'return',
+            },
+        ])
+    })
+}

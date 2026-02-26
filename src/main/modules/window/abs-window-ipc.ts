@@ -589,6 +589,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                             return
                         }
 
+                        Logger.getInstance().log(
+                            `Sending items to renderer: sample `,
+                            body.result[0],
+                        )
                         this.centre.send(
                             IPC_CHANNELS.CLOUD,
                             REQUEST_HANDLER.RESPONSE,

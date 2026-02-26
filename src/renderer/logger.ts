@@ -1,5 +1,5 @@
 import { IPC_CHANNELS, LogTypes, REQUEST_HANDLER } from '@src/common/constants'
-import { isBeta, isDev, isTest } from '@src/common/utils'
+import { isBeta, isDev, isTest } from '@src/common/utils/common'
 
 /**
  * on Linux: ~/.config/{app name}/logs/main.log

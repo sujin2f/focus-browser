@@ -5,7 +5,7 @@ import {
 
 import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
 
-import { resolveHtmlPath } from '@src/main/utils'
+import { resolveHtmlPath } from '@src/common/utils/fs'
 import { T_IPC_Message } from '@src/common/types'
 
 export class CenterView extends WebContentsView {

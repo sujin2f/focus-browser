@@ -1,7 +1,20 @@
 import { app } from 'electron'
+
 import * as path from 'path'
 import * as fs from 'fs'
 
+export const paths = {
+    preload: path.join(__dirname, 'preload.js'),
+    preloadAdBlocker: path.join(__dirname, 'adblocker-preload.js'),
+    childProcess: path.join(__dirname, 'child-process.js'),
+}
+
+/**
+ * Gets the renderer .html path
+ *
+ * @param htmlFileName
+ * @returns
+ */
 export function resolveHtmlPath(htmlFileName: string) {
     if (process.env.NODE_ENV === 'development') {
         const port = process.env.PORT || 1212
@@ -12,14 +25,7 @@ export function resolveHtmlPath(htmlFileName: string) {
     return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`
 }
 
-export const preload = path.join(__dirname, '..', 'preload.js')
-export const adBlockerPreload = path.join(
-    __dirname,
-    '..',
-    'adblocker-preload.js',
-)
-
-const getDirectorySize = (dir: string): number => {
+export const getDirectorySize = (dir: string): number => {
     const files = fs.readdirSync(dir, { withFileTypes: true }) // Get file entries with type info
     const paths = files.map((file) => {
         const fullPath = path.join(dir, file.name)
@@ -38,19 +44,7 @@ const getDirectorySize = (dir: string): number => {
         .reduce((accumulator, size) => accumulator + size, 0)
 }
 
-export const getIndexedDBPath = () => {
-    const userDataPath = app.getPath('userData')
-    return path.join(userDataPath, 'Partitions', 'my-partition', 'IndexedDB')
-}
-
-export const getIndexedDBSize = () => {
-    const size = getDirectorySize(getIndexedDBPath())
-    return size
-}
-
-// TODO #122 make async or child process
-export const removeIndexedDB = () => {
-    const dir = getIndexedDBPath()
+export const removeDirectory = (dir: string) => {
     const files = fs.readdirSync(dir, { withFileTypes: true })
     files.forEach((file) => {
         const dest = `${file.parentPath}/${file.name}`
@@ -60,4 +54,9 @@ export const removeIndexedDB = () => {
             fs.rmSync(dest)
         }
     })
+}
+
+export const getIndexedDBPath = () => {
+    const userDataPath = app.getPath('userData')
+    return path.join(userDataPath, 'Partitions', 'my-partition', 'IndexedDB')
 }

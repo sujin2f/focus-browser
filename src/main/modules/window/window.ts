@@ -4,7 +4,7 @@ import {
     type BaseWindowConstructorOptions,
 } from 'electron'
 
-import { preload } from '@src/main/utils'
+import { paths } from '@src/common/utils/fs'
 import type { T_IPC_Switch } from '@src/common/types'
 import { BROWSER } from '@src/common/constants'
 
@@ -65,7 +65,7 @@ export class BrowserWindow extends AbsWindowIPC {
     private initCentre() {
         this.centre = new CenterView({
             webPreferences: {
-                preload,
+                preload: paths.preload,
             },
         })
         this.contentView = this.centre

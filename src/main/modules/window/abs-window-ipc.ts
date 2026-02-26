@@ -28,8 +28,14 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Utils */
-import { isBeta, isTest } from '@src/common/utils'
-import { getIndexedDBSize, removeIndexedDB } from '@src/main/utils'
+import { isBeta, isTest } from '@src/common/utils/common'
+import {
+    fetchCloudItems,
+    getCleanerSizes,
+    removeCloudItem,
+    removeIndexedDB,
+    uploadCloudItem,
+} from '@src/main/lib/utils/process'
 /* T_Types */
 import type {
     T_Bookmark,
@@ -230,14 +236,24 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     storeBookmarks.get(),
                 )
                 return
-            case REQUEST_HANDLER.ADD:
-                storeBookmarks.push(bookmarks[0])
+            case REQUEST_HANDLER.ADD: {
+                let bookmark = bookmarks[0]
+                if (bookmark.id === 'from-cloud') {
+                    bookmark = JSON.parse(
+                        Buffer.from(bookmark.title!, 'base64').toString(
+                            'utf-8',
+                        ),
+                    )
+                }
+
+                storeBookmarks.push(bookmark)
                 storeBookmarks.save()
                 this.sendBookmarks(
                     REQUEST_HANDLER.RESPONSE_SUCCESS,
                     storeBookmarks.get(),
                 )
                 return
+            }
             case REQUEST_HANDLER.MODIFY:
                 storeBookmarks.update(bookmarks[0])
                 storeBookmarks.save()
@@ -460,84 +476,47 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         { request: key }: T_Cleaner,
     ) {
-        const send = async (updated: boolean = false) => {
-            const cacheSize =
-                await this.browser.webContents.session.getCacheSize()
-            const anchors = Object.keys(new Anchors().get()).length
-            const history =
-                this.browser.webContents.navigationHistory.getAllEntries()
-                    .length
-            const popup = PopupBlocker.getInstance().get('blocked')
-            const indexedDB = getIndexedDBSize()
-
+        const responseSuccess = () => {
             this.centre.send(
                 IPC_CHANNELS.CLEANER,
-                updated
-                    ? REQUEST_HANDLER.RESPONSE_SUCCESS
-                    : REQUEST_HANDLER.RESPONSE,
-                {
-                    response: {
-                        cacheSize,
-                        anchors,
-                        history,
-                        popup: Array.from(popup).length,
-                        indexedDB,
-                    },
-                },
+                REQUEST_HANDLER.RESPONSE_SUCCESS,
             )
         }
-
         switch (handler) {
-            case REQUEST_HANDLER.REQUEST:
-                send()
+            case REQUEST_HANDLER.REQUEST: {
+                getCleanerSizes(
+                    this.browser,
+                    this.centre,
+                    REQUEST_HANDLER.RESPONSE,
+                )
                 return
+            }
             case REQUEST_HANDLER.REMOVE:
                 switch (key) {
                     case 'cacheSize':
                         await this.browser.webContents.session.clearCache()
-                        send(true)
+                        responseSuccess()
                         return
-
                     case 'indexedDB':
-                        removeIndexedDB()
-                        send(true)
+                        removeIndexedDB(this.centre)
                         return
-
                     case 'anchor': {
                         const anchors = new Anchors()
                         anchors.clear()
-                        send(true)
+                        responseSuccess()
                         return
                     }
-
                     case 'history':
                         this.browser.webContents.navigationHistory.clear()
-                        send(true)
+                        responseSuccess()
                         return
-
                     case 'popups':
                         PopupBlocker.getInstance().clear()
-                        send(true)
+                        responseSuccess()
                         return
                 }
                 return
         }
-    }
-
-    private sendCloudMessage(
-        handler: REQUEST_HANDLER,
-        message: string,
-        _id?: string,
-    ) {
-        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
-            this.centre.send(IPC_CHANNELS.CLOUD, handler, [
-                { _id, title: message, key: '', type: 'return' },
-            ])
-            return
-        }
-        this.centre.send(IPC_CHANNELS.CLOUD, handler, [
-            { _id, title: message, key: '', type: 'return' },
-        ])
     }
 
     private async onCloud(
@@ -549,9 +528,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const user = await this.getUserInfo()
         if (!token || !user) {
             Logger.getInstance().error('The user is not logged in.')
-            this.sendCloudMessage(
+            this.centre.send(
+                IPC_CHANNELS.CLOUD,
                 REQUEST_HANDLER.RESPONSE_FAIL,
-                'You are not logged in.',
+                [
+                    {
+                        title: 'You are not logged in.',
+                        key: '',
+                        type: 'return',
+                    },
+                ],
             )
             return
         }
@@ -559,182 +545,31 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                await net
-                    .fetch(`${SUJINC_URL}/focus/items`, {
-                        method: 'GET',
-                        headers: { authorization: `Bearer ${token}`, email },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/items responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-
-                        if (body.error) {
-                            Logger.getInstance().error(
-                                `${SUJINC_URL}/focus/items failed with ${body.error}`,
-                            )
-                            this.sendCloudMessage(
-                                REQUEST_HANDLER.RESPONSE_FAIL,
-                                body.error,
-                            )
-                            return
-                        }
-
-                        if (response.status === 404) {
-                            this.sendCloudMessage(
-                                REQUEST_HANDLER.RESPONSE_FAIL,
-                                `You don't have anything in the cloud.`,
-                            )
-                            return
-                        }
-
-                        Logger.getInstance().log(
-                            `Sending items to renderer: sample `,
-                            body.result[0],
-                        )
-                        this.centre.send(
-                            IPC_CHANNELS.CLOUD,
-                            REQUEST_HANDLER.RESPONSE,
-                            body.result,
-                        )
-                        return
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to GET cloud messages.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
+                fetchCloudItems(this.centre, token, email)
                 return
             }
 
             case REQUEST_HANDLER.PUT: {
-                const item = items[0]
-                if (!item.message || !item.key || !item.title || !item.type) {
-                    Logger.getInstance().error('The request is not valid.')
-                    this.sendCloudMessage(
-                        REQUEST_HANDLER.RESPONSE_FAIL,
-                        'The request is not valid.',
-                    )
-                    return
-                }
-                const os =
-                    process.platform === 'darwin' ? 'mac' : process.platform
-                const version = process.getSystemVersion()
-                const message = Buffer.from(item.message, 'utf8').toString(
-                    'base64',
-                )
-                const access = await this.getAccessToken()
-                const machineId = Status.getInstance().get('machineId')
-
-                await net
-                    .fetch(`${SUJINC_URL}/focus/item`, {
-                        body: JSON.stringify({
-                            ...item,
-                            device: `${os}(${version})`,
-                            machineId,
-                            message,
-                        } satisfies T_Cloud_Item),
-                        method: 'PUT',
-                        headers: { authorization: `Bearer ${access}` },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-                        const handler =
-                            response.status === 200
-                                ? REQUEST_HANDLER.RESPONSE_SUCCESS
-                                : REQUEST_HANDLER.RESPONSE_FAIL
-                        this.sendCloudMessage(
-                            handler,
-                            body.message || body.error,
-                            body.id,
-                        )
-                        return
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to PUT cloud message.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
+                uploadCloudItem(this.centre, items[0], token)
                 return
             }
 
-            case REQUEST_HANDLER.ADD: {
-                if (!items[0].message || !items[0]._id) {
-                    Logger.getInstance().error(
-                        `Cloud item is invalid`,
-                        items[0],
+            case REQUEST_HANDLER.REMOVE: {
+                if (!items[0]._id) {
+                    this.centre.send(
+                        IPC_CHANNELS.CLOUD,
+                        REQUEST_HANDLER.RESPONSE_FAIL,
+                        [
+                            {
+                                title: 'Unknown error',
+                                key: '',
+                                type: 'return',
+                            },
+                        ],
                     )
+                    return
                 }
-
-                await net
-                    .fetch(`${SUJINC_URL}/focus/item`, {
-                        method: 'DELETE',
-                        body: JSON.stringify({ _id: items[0]._id }),
-                        headers: { authorization: `Bearer ${token}` },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/item responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-                        switch (response.status) {
-                            case 200: {
-                                const buffer = Buffer.from(
-                                    items[0].message!,
-                                    'base64',
-                                ).toString('utf-8')
-                                const bookmark = JSON.parse(buffer)
-                                const bookmarks = new Bookmarks()
-                                bookmarks.push(bookmark)
-                                bookmarks.save()
-
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_SUCCESS,
-                                    body.message,
-                                    items[0]._id,
-                                )
-                                return
-                            }
-                            case 404: {
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_FAIL,
-                                    body.error,
-                                    items[0]._id,
-                                )
-                                return
-                            }
-                            default:
-                                this.sendCloudMessage(
-                                    REQUEST_HANDLER.RESPONSE_FAIL,
-                                    body.error,
-                                )
-                        }
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to DELETE cloud message.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
-
+                removeCloudItem(this.centre, items[0]._id, token)
                 return
             }
         }

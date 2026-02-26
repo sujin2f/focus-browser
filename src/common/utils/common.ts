@@ -18,3 +18,15 @@ export const isTest = () => {
 export const isNatural = (arg: number) => {
     return arg >= 0
 }
+
+export const byteToSize = (byte: number): string => {
+    const mb = 1024 * 1024
+    if (byte < mb) {
+        return `${byte} bytes`
+    } else if (byte < mb * 1024) {
+        const size = byte / mb
+        return `${size.toFixed(2)} Mb`
+    }
+    const size = byte / (mb * 1024)
+    return `${size.toFixed(2)} Gb`
+}

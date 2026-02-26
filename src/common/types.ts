@@ -71,12 +71,12 @@ export type PopupBlocker = {
 /**
  * Cleaner
  */
-type T_Cleaner_Response = {
-    cacheSize: number
-    anchors: number
-    history: number
-    popup: number
-    indexedDB: number
+export type T_Cleaner_Response = {
+    cacheSize: string
+    anchors: string
+    history: string
+    popup: string
+    indexedDB: string
 }
 export type T_Cleaner = {
     request?: string
@@ -121,3 +121,5 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.CLEANER]: T_Cleaner
     [IPC_CHANNELS.CLOUD]: T_Cloud_Item[]
 }
+
+// export type

@@ -1,4 +1,4 @@
-import { isBeta, isDev, isTest } from '@src/common/utils'
+import { isBeta, isDev, isTest } from '@src/common/utils/common'
 
 interface I_Logger {
     error(...params: unknown[]): void

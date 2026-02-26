@@ -32,7 +32,7 @@ import { BrowserView } from '@src/main/modules/view/browser'
 import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@main/logger'
 /* Utils */
-import { isBeta, isDev, isTest } from '@src/common/utils'
+import { isBeta, isDev, isTest } from '@src/common/utils/common'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -586,7 +586,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        this.switch({ scene: CENTRE_PAGES.WELCOME })
     }
 
     abstract switch(request: T_IPC_Switch): void

@@ -29,7 +29,11 @@ import {
 } from '@src/common/constants'
 /* Utils */
 import { isBeta, isTest } from '@src/common/utils/common'
-import { getCleanerSizes, removeIndexedDB } from '@src/main/lib/utils/process'
+import {
+    fetchCloudItems,
+    getCleanerSizes,
+    removeIndexedDB,
+} from '@src/main/lib/utils/process'
 /* T_Types */
 import type {
     T_Bookmark,
@@ -538,57 +542,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                await net
-                    .fetch(`${SUJINC_URL}/focus/items`, {
-                        method: 'GET',
-                        headers: { authorization: `Bearer ${token}`, email },
-                    })
-                    .then(async (response) => {
-                        Logger.getInstance().log(
-                            `${SUJINC_URL}/focus/items responded with ${response.status}`,
-                        )
-                        const body = await response.json()
-
-                        if (body.error) {
-                            Logger.getInstance().error(
-                                `${SUJINC_URL}/focus/items failed with ${body.error}`,
-                            )
-                            this.sendCloudMessage(
-                                REQUEST_HANDLER.RESPONSE_FAIL,
-                                body.error,
-                            )
-                            return
-                        }
-
-                        if (response.status === 404) {
-                            this.sendCloudMessage(
-                                REQUEST_HANDLER.RESPONSE_FAIL,
-                                `You don't have anything in the cloud.`,
-                            )
-                            return
-                        }
-
-                        Logger.getInstance().log(
-                            `Sending items to renderer: sample `,
-                            body.result[0],
-                        )
-                        this.centre.send(
-                            IPC_CHANNELS.CLOUD,
-                            REQUEST_HANDLER.RESPONSE,
-                            body.result,
-                        )
-                        return
-                    })
-                    .catch((e) => {
-                        Logger.getInstance().error(
-                            'Failed to GET cloud messages.',
-                            e.message,
-                        )
-                        this.sendCloudMessage(
-                            REQUEST_HANDLER.RESPONSE_FAIL,
-                            e.message,
-                        )
-                    })
+                fetchCloudItems(this.centre, token, email)
                 return
             }
 

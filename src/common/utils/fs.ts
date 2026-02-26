@@ -4,9 +4,9 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 export const paths = {
-    preload: path.join(__dirname, '..', 'preload.js'),
-    preloadAdBlocker: path.join(__dirname, '..', 'adblocker-preload.js'),
-    childProcess: path.join(__dirname, '..', 'child-process.js'),
+    preload: path.join(__dirname, 'preload.js'),
+    preloadAdBlocker: path.join(__dirname, 'adblocker-preload.js'),
+    childProcess: path.join(__dirname, 'child-process.js'),
 }
 
 /**

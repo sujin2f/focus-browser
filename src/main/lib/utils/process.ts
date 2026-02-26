@@ -10,7 +10,11 @@ import { Logger } from '@main/logger'
 import type { CenterView } from '@src/main/modules/view/centre'
 import type { BrowserView } from '@src/main/modules/view/browser'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import {
+    IPC_CHANNELS,
+    REQUEST_HANDLER,
+    SUJINC_URL,
+} from '@src/common/constants'
 
 export const getCleanerSizes = (
     browser: BrowserView,
@@ -49,5 +53,51 @@ export const removeIndexedDB = (centre: CenterView): void => {
     child.postMessage({ channel: 'remove-directory', path: getIndexedDBPath() })
     child.once('message', () => {
         centre.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.RESPONSE_SUCCESS)
+    })
+}
+
+export const fetchCloudItems = (
+    centre: CenterView,
+    token: string,
+    email: string,
+) => {
+    const child = utilityProcess.fork(paths.childProcess)
+    child.postMessage({ channel: 'fetch-cloud-items', token, email })
+    child.once('message', (message) => {
+        Logger.getInstance().log(
+            '👶',
+            `${SUJINC_URL}/focus/items responded with ${message.status}`,
+        )
+
+        if (message.status === 404) {
+            centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, [
+                {
+                    title: `You don't have anything in the cloud.`,
+                    key: '',
+                    type: 'return',
+                },
+            ])
+            return
+        }
+
+        if (message.body.error) {
+            Logger.getInstance().error(
+                `${SUJINC_URL}/focus/items failed with ${message.body.error}`,
+            )
+            centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, [
+                { title: message.body.error, key: '', type: 'return' },
+            ])
+            return
+        }
+
+        Logger.getInstance().log(
+            `Sending items to renderer: sample `,
+            message.body.result[0],
+        )
+        centre.send(
+            IPC_CHANNELS.CLOUD,
+            REQUEST_HANDLER.RESPONSE,
+            message.body.result,
+        )
     })
 }

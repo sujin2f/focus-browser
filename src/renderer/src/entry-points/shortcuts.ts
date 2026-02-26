@@ -2,8 +2,7 @@ import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
+import { Title } from '@home/template-parts/modules/title'
 import { H2 } from '@home/template-parts/h2'
 import { Input } from '@home/template-parts/input'
 import { Button } from '@home/template-parts/button'
@@ -34,10 +33,8 @@ class Shortcuts extends A_Entry {
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))
-
         // Title
-        const h1 = new H1(`Shortcuts ${EMOJI.SHORTCUTS}`).prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title(`Shortcuts ${EMOJI.SHORTCUTS}`)
 
         document
             .getElementById('link--electron-shortcuts')!

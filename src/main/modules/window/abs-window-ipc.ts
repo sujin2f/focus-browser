@@ -611,13 +611,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
             case REQUEST_HANDLER.PUT: {
                 const item = items[0]
+                if (!item.message || !item.key || !item.title || !item.type) {
+                    Logger.getInstance().error('The request is not valid.')
+                    this.sendCloudMessage(
+                        REQUEST_HANDLER.RESPONSE_FAIL,
+                        'The request is not valid.',
+                    )
+                    return
+                }
                 const os =
                     process.platform === 'darwin' ? 'mac' : process.platform
                 const version = process.getSystemVersion()
-                const message = Buffer.from(
-                    JSON.stringify(item),
-                    'utf8',
-                ).toString('base64')
+                const message = Buffer.from(item.message, 'utf8').toString(
+                    'base64',
+                )
                 const access = await this.getAccessToken()
                 const machineId = Status.getInstance().get('machineId')
 

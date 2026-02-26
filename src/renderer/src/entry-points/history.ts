@@ -1,52 +1,30 @@
-import { A_List } from '@home/entry-points/abstracts/abs-list'
-import { A_TraitCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
-import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
-/* Models */
-import { Logger } from '@src/renderer/logger'
+import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
+import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
+import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class Search extends A_TraitSearch<T_Bookmark> {
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
-    }
-}
-
-class CloudPush extends A_TraitCloudPush<T_Bookmark> {
-    public sendCloudPush(bookmark: T_Bookmark): boolean {
-        if (!super.sendCloudPush(bookmark)) {
-            return false
-        }
-
-        Logger.getInstance().log('Sending Bookmark to Cloud', bookmark.title)
-        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, [
-            { title: bookmark.title, key: bookmark.url, type: 'bookmark' },
-        ])
-        return true
-    }
-}
-
-class History extends A_List<T_Bookmark> {
+class History extends A_ListCloudPush<T_Bookmark> {
     public notification: Notification = new Notification().appendTo('root')
-    private button: Button
-    // Search
-    private search = new Search(this)
-    protected callbackShortcut(e: KeyboardEvent) {
-        this.search.callbackShortcut(e)
+    private btnClear: Button
+    // (En/Dis)able
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.btnClear.enable()
+        } else {
+            this.btnClear.disable()
+        }
     }
-    // Push
-    private cloud = new CloudPush(this, this.notification)
 
     constructor() {
         super('list--history')
@@ -54,19 +32,21 @@ class History extends A_List<T_Bookmark> {
         this.request()
 
         // Title
-        const h1 = new H1(`History ${EMOJI.HISTORY}`).prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title(`History ${EMOJI.HISTORY}`)
 
         // Clear History
-        this.button = new Button('Clear History')
+        this.btnClear = new Button('Clear History')
             .prependTo('buttons')
             .setOnClick(() => {
-                this.button.disable()
+                this.setEnabled(false)
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
             })
             .disable()
     }
 
+    /**
+     * User updated
+     */
     protected callbackUpdateStatus(): void {
         const userInfo = new UserInfo()
         if (this.settings.userInfo) {
@@ -80,7 +60,8 @@ class History extends A_List<T_Bookmark> {
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
         ipcRenderer.on(IPC_CHANNELS.HISTORY, (handler, history = []) => {
-            this.button.enable()
+            this.setEnabled(true)
+
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
                     this.handleResponse(history)
@@ -104,6 +85,10 @@ class History extends A_List<T_Bookmark> {
         this.renderList()
     }
 
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
+    }
+
     renderList() {
         super.renderList()
 
@@ -114,6 +99,10 @@ class History extends A_List<T_Bookmark> {
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
+                    if (!this.enabled) {
+                        return
+                    }
+                    this.setEnabled(false)
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
                         REQUEST_HANDLER.EXECUTE,
@@ -128,11 +117,21 @@ class History extends A_List<T_Bookmark> {
                 })
 
             // Cloud
-            const send = new ListItem(
-                new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    this.cloud.sendCloudPush(history)
-                }),
-            ).appendTo(this.list.element)
+            const button = new ButtonCloudPush(
+                {
+                    title: history.title,
+                    key: history.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(history),
+                },
+                () => this.settings.userInfo,
+                (button: ButtonCloudPush) => {
+                    if (this.enabled) {
+                        this.callbackPush(button)
+                    }
+                },
+            )
+            const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 
             items.push(item, send)

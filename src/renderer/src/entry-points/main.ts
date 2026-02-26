@@ -2,10 +2,9 @@ import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
+import { Title } from '@home/template-parts/modules/title'
 import { Card } from '@home/template-parts/card'
-import { BackButton } from '@home/template-parts/back-button'
 import { Input } from '@home/template-parts/input'
-import { H1 } from '@home/template-parts/h1'
 import { UserInfo } from '@home/template-parts/user-info'
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
 /* CONSTANTS */
@@ -79,8 +78,7 @@ class Main extends A_Entry {
         this.requestShortcuts()
 
         // Title
-        const h1 = new H1('Press Esc to Browser Mode').prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title('Press Esc to Browser Mode')
 
         Object.values(cards).forEach((card) => {
             new Card(card.title, card.description)

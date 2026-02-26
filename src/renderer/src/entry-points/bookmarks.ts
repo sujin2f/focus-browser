@@ -1,155 +1,32 @@
-import { A_Bookmarks } from '@home/entry-points/abstracts/abs-bookmarks'
-import { A_TraitCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
-import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
-/* Models */
-import { Logger } from '@src/renderer/logger'
+import { A_TraitBookmarks } from './abstracts/abs-bookmarks'
+import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
-import { checkElectron, ipcRenderer, navigate, tagNameIs } from '@home/utils'
+import { checkElectron, navigate, tagNameIs } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
+import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
-import { BackButton } from '@home/template-parts/back-button'
 import { ListItem } from '@home/template-parts/list-item'
 import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
 import { UserInfo } from '@home/template-parts/user-info'
+import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
     EMOJI,
-    IPC_CHANNELS,
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
+import { Notification } from '../template-parts/notification'
 
-class Search extends A_TraitSearch<T_Bookmark> {
-    public modal?: BookmarkModal
-
+class TraitBookmarks extends A_TraitBookmarks {
     constructor(
         protected parent: Bookmarks,
-        private callbackFilterSearch: (keyword: string) => void,
+        private modal: BookmarkModal,
+        private getDirs: () => T_Bookmark[],
     ) {
         super(parent)
-    }
-
-    protected isSearchActivated() {
-        if (this.modal?.activated) {
-            return false
-        }
-        return true
-    }
-
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return (
-            item.shortcut?.toLowerCase().includes(keyword) ||
-            item.title.toLowerCase().includes(keyword)
-        )
-    }
-
-    filterSearch() {
-        this.callbackFilterSearch(this.searchKeyword)
-    }
-}
-
-class CloudPush extends A_TraitCloudPush<T_Bookmark> {
-    public sendCloudPush(bookmark: T_Bookmark): boolean {
-        if (!super.sendCloudPush(bookmark)) {
-            return false
-        }
-
-        Logger.getInstance().log('Sending Bookmark to Cloud', bookmark.title)
-        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, [
-            { title: bookmark.title, key: bookmark.url, type: 'bookmark' },
-        ])
-        return true
-    }
-}
-
-class Bookmarks extends A_Bookmarks {
-    public modal = new BookmarkModal().appendTo('root')
-    // shortcuts
-    private shortcuts: Record<string, string> = {}
-    private matchShortcut = ''
-    // Search
-    private search = new Search(this, this.filterSearch.bind(this))
-    // Push
-    private cloud = new CloudPush(this, this.modal.notification)
-
-    constructor() {
-        super('list--bookmarks')
-        this.requestStatus('title', 'url', 'userInfo')
-
-        this.search.modal = this.modal
-        this.search.element.setOnKeyUp((e) => {
-            // Allow standard location only
-            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
-                return
-            }
-
-            // For non-English keyboard, extract English key stroke from KeyboardEvent
-            if (e.code.startsWith('Key')) {
-                this.matchShortcut += e.code.charAt(3)
-            } else if (e.key.length === 1) {
-                this.matchShortcut += e.key
-            }
-
-            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
-            if (shortcut) {
-                navigate({ address: shortcut })
-                return true
-            }
-        })
-
-        // Title
-        const h1 = new H1(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`).prependTo(
-            'title',
-        )
-        new BackButton().prependTo(h1.element)
-
-        // Buttons >> Create Folder
-        new Button(`${EMOJI.FOLDER_OPEN} Create Folder`)
-            .appendTo('buttons')
-            .setOnClick(() => {
-                this.modal.open(this.getDirs(), { isDir: true })
-            })
-    }
-
-    renderList() {
-        super.renderList()
-        this.setShortcuts()
-    }
-
-    protected callbackUpdateStatus(): void {
-        const userInfo = new UserInfo()
-        if (this.settings.userInfo) {
-            const user = JSON.parse(this.settings.userInfo)
-            userInfo.picture = user.picture
-
-            // Buttons >> Import Bookmarks
-            new Button(`${EMOJI.GLOBE} Import Bookmarks`)
-                .appendTo('buttons')
-                .setOnClick(() => {
-                    window.location.href = CENTRE_PAGES.IMPORTER
-                })
-        } else {
-            userInfo.loggedOut()
-        }
-
-        if (this.settings.url) {
-            // Buttons >> Add Bookmark
-            new Button('💾 Add Bookmark')
-                .prependTo('buttons')
-                .setOnClick(() => {
-                    this.modal.open(this.getDirs(), {
-                        bookmark: {
-                            id: '',
-                            title: this.settings.title || '',
-                            url: this.settings.url || '',
-                        } satisfies T_Bookmark,
-                    })
-                })
-        }
     }
 
     protected callbackResponse(
@@ -215,15 +92,109 @@ class Bookmarks extends A_Bookmarks {
         // Cloud
         let send = new ListItem('')
         if (bookmark.url) {
-            send = new ListItem(
-                new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    this.cloud.sendCloudPush(bookmark)
-                }),
-            )
+            send = new ListItem(this.parent.createCloudPushButton(bookmark))
         }
         send.clickable = false
 
         return [icon, row, shortcut, send, edit]
+    }
+}
+
+class Bookmarks extends A_ListCloudPush<T_Bookmark> {
+    public modal = new BookmarkModal().appendTo('root')
+    protected notification: Notification = this.modal.notification
+    // shortcuts
+    private shortcuts: Record<string, string> = {}
+    private matchShortcut = ''
+    // Bookmark Trait
+    private bookmarks = new TraitBookmarks(
+        this,
+        this.modal,
+        this.getDirs.bind(this),
+    )
+    // Buttons
+    private createFolder: Button
+    private createItem: Button
+    // (En/Dis)able
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.createFolder.enable()
+            this.createItem.enable()
+        } else {
+            this.createFolder.disable()
+            this.createItem.disable()
+        }
+    }
+
+    constructor() {
+        super('list--bookmarks')
+        this.requestStatus('title', 'url', 'userInfo')
+
+        this.search.setOnKeyUp((e) => {
+            // Allow standard location only
+            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
+                return
+            }
+
+            // For non-English keyboard, extract English key stroke from KeyboardEvent
+            if (e.code.startsWith('Key')) {
+                this.matchShortcut += e.code.charAt(3)
+            } else if (e.key.length === 1) {
+                this.matchShortcut += e.key
+            }
+
+            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
+            if (shortcut) {
+                navigate({ address: shortcut })
+                return true
+            }
+        })
+
+        // Title
+        new Title(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`)
+
+        // Buttons >> Create Folder
+        this.createFolder = new Button(`${EMOJI.FOLDER_OPEN} Create Folder`)
+            .appendTo('buttons')
+            .setOnClick(() => {
+                this.modal.open(this.getDirs(), { isDir: true })
+            })
+        // Buttons >> Add Bookmark
+        this.createItem = new Button('💾 Add Bookmark')
+            .prependTo('buttons')
+            .setOnClick(() => {
+                this.modal.open(this.getDirs(), {
+                    bookmark: {
+                        id: '',
+                        title: this.settings.title || '',
+                        url: this.settings.url || '',
+                    } satisfies T_Bookmark,
+                })
+            })
+    }
+
+    renderList() {
+        super.renderList()
+        this.bookmarks.renderList()
+        this.setShortcuts()
+    }
+
+    protected callbackUpdateStatus(): void {
+        const userInfo = new UserInfo()
+        if (this.settings.userInfo) {
+            const user = JSON.parse(this.settings.userInfo)
+            userInfo.picture = user.picture
+
+            // Buttons >> Import Bookmarks
+            new Button(`${EMOJI.GLOBE} Import Bookmarks`)
+                .appendTo('buttons')
+                .setOnClick(() => {
+                    window.location.href = CENTRE_PAGES.IMPORTER
+                })
+        } else {
+            userInfo.loggedOut()
+        }
     }
 
     private getDirs() {
@@ -238,9 +209,9 @@ class Bookmarks extends A_Bookmarks {
                 const shortcut = item.data.shortcut.toLowerCase()
                 const parent = item.data.parent
 
-                if (parent && this.dirs[parent]) {
+                if (parent && this.bookmarks.dirs[parent]) {
                     const dirShortcut =
-                        this.dirs[parent].data.shortcut?.toLowerCase()
+                        this.bookmarks.dirs[parent].data.shortcut?.toLowerCase()
                     this.shortcuts[`${dirShortcut}${shortcut}`] = item.data.url
                 } else {
                     this.shortcuts[shortcut] = item.data.url
@@ -277,16 +248,30 @@ class Bookmarks extends A_Bookmarks {
         }
 
         // Focus Search
-        this.search.element.value = ''
+        this.search.value = ''
         this.matchShortcut = ''
-        this.search.element.focus()
+        this.search.focus()
     }
 
-    filterSearch(searchKeyword: string) {
-        if (!searchKeyword) {
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return (
+            item.shortcut?.toLowerCase().includes(keyword) ||
+            item.title.toLowerCase().includes(keyword)
+        )
+    }
+
+    protected isSearchActivated() {
+        if (this.modal?.activated) {
+            return false
+        }
+        return true
+    }
+
+    protected filterSearch() {
+        if (!this.searchKeyword) {
             this.items.forEach(({ data, items }) =>
                 items.forEach((item) => {
-                    if (data.parent) {
+                    if (data.parent && data.url) {
                         item.hide()
                     } else {
                         item.show()
@@ -298,7 +283,7 @@ class Bookmarks extends A_Bookmarks {
 
         // Item Has search keyword
         this.items.forEach(({ data, items }) => {
-            const show = this.search.filterList(data, searchKeyword)
+            const show = this.filterList(data, this.searchKeyword)
             items.forEach((item) => {
                 if (show) {
                     item.show()
@@ -309,19 +294,36 @@ class Bookmarks extends A_Bookmarks {
         })
 
         // Show items from matched Directory
-        Object.keys(this.dirs).forEach((id) => {
-            const show = this.search.filterList(
-                this.dirs[id].data,
-                searchKeyword,
+        Object.keys(this.bookmarks.dirs).forEach((id) => {
+            const show = this.filterList(
+                this.bookmarks.dirs[id].data,
+                this.searchKeyword,
             )
             if (!show) {
                 return
             }
 
-            this.dirs[id].items.forEach((item) => {
+            this.bookmarks.dirs[id].items.forEach((item) => {
                 item.show()
             })
         })
+    }
+
+    public createCloudPushButton(bookmark: T_Bookmark) {
+        return new ButtonCloudPush(
+            {
+                title: bookmark.title,
+                key: bookmark.url,
+                type: 'bookmark',
+                message: JSON.stringify(bookmark),
+            },
+            () => this.settings.userInfo,
+            (button: ButtonCloudPush) => {
+                if (this.enabled) {
+                    this.callbackPush(button)
+                }
+            },
+        )
     }
 }
 

@@ -8,21 +8,29 @@ import { ListItem } from '../../template-parts/list-item'
 type T_Items<T> = { data: T; items: ListItem[] }[]
 
 export abstract class A_List<T> extends A_Entry {
-    protected _items: T_Items<T> = []
-    public get items() {
-        return this._items
+    public items: T_Items<T> = []
+    public list!: List
+
+    // (En/Dis)able
+    private _enabled = false // Default is false
+    protected get enabled() {
+        return this._enabled
     }
-    protected set items(items: T_Items<T>) {
-        this._items = items
+    protected setEnabled(enabled: boolean) {
+        if (enabled) {
+            this.list.element.classList.remove('section-disabled')
+        } else {
+            this.list.element.classList.add('section-disabled')
+        }
+        this._enabled = enabled
     }
-    protected list!: List
 
     constructor(css: string = '') {
         super()
         this.list = new List(css)
     }
 
-    protected renderList() {
+    public renderList() {
         getSection('list').innerHTML = ''
     }
 }

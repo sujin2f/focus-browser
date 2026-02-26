@@ -1,39 +1,22 @@
-import { A_List } from '@home/entry-points/abstracts/abs-list'
-import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
+import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
+import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { PopupBlocker } from '@src/common/types'
 
-class Search extends A_TraitSearch<PopupBlocker> {
-    filterList(item: PopupBlocker, keyword: string): boolean {
-        return item.host.toLowerCase().includes(keyword)
-    }
-}
-
-class Popup extends A_List<PopupBlocker> {
-    // Search
-    private search = new Search(this)
-    protected callbackShortcut(e: KeyboardEvent) {
-        this.search.callbackShortcut(e)
-    }
-
+class Popup extends A_ListSearch<PopupBlocker> {
     constructor() {
         super()
         this.requestStatus('title', 'url')
         this.requestPopupBlockers()
 
         // Title
-        const h1 = new H1(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`).prependTo(
-            'title',
-        )
-        new BackButton().prependTo(h1.element)
+        new Title(`Popup Blocker ${EMOJI.POPUP_BLOCKER}`)
     }
 
     private requestPopupBlockers(): void {
@@ -74,11 +57,15 @@ class Popup extends A_List<PopupBlocker> {
             }),
         )
 
-        if (this.search.searchKeyword) {
-            this.search.filterSearch()
+        if (this.searchKeyword) {
+            this.filterSearch()
         } else {
             this.renderList()
         }
+    }
+
+    filterList(item: PopupBlocker, keyword: string): boolean {
+        return item.host.toLowerCase().includes(keyword)
     }
 
     renderList() {

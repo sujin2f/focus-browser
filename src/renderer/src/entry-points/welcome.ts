@@ -1,4 +1,5 @@
-import { A_Bookmarks } from './abstracts/abs-bookmarks'
+import { A_List } from '@home/entry-points/abstracts/abs-list'
+import { A_TraitBookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
 import {
     checkElectron,
@@ -24,10 +25,29 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 
-class Welcome extends A_Bookmarks {
+class Bookmarks extends A_TraitBookmarks {
+    protected callbackResponse(...args: unknown[]) {
+        this.parent.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
+            data: bookmark,
+            items: [] as ListItem[],
+        }))
+
+        if (this.parent.items.length) {
+            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
+                'bookmarks',
+            )
+        }
+        this.parent.renderList()
+    }
+}
+
+class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
+    private bookmarks = new Bookmarks(this)
+
     constructor() {
         super('list--welcome')
+
         this.requestStatus('userInfo')
         this.requestShortcuts()
 
@@ -61,20 +81,6 @@ class Welcome extends A_Bookmarks {
         })
     }
 
-    protected callbackResponse(...args: unknown[]) {
-        this.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-            data: bookmark,
-            items: [] as ListItem[],
-        }))
-
-        if (this.items.length) {
-            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
-                'bookmarks',
-            )
-        }
-        this.renderList()
-    }
-
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             navigate({ lastVisit: true })
@@ -102,6 +108,11 @@ class Welcome extends A_Bookmarks {
             .setOnClick(() => {
                 window.location.href = CENTRE_PAGES.HOME
             })
+    }
+
+    renderList() {
+        super.renderList()
+        this.bookmarks.renderList()
     }
 }
 

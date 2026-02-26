@@ -2,8 +2,7 @@ import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
 import { checkElectron, ipcRenderer, getSection } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
+import { Title } from '@home/template-parts/modules/title'
 import { Select } from '@home/template-parts/select'
 import { Option } from '@home/template-parts/option'
 import { Input } from '@home/template-parts/input'
@@ -32,10 +31,7 @@ class Keystrokes extends A_Entry {
         this.request()
 
         // Title
-        const h1 = new H1(
-            `Keystrokes ${EMOJI[Menu.PASTE_KEYSTROKE]}`,
-        ).prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title(`Keystrokes ${EMOJI[Menu.PASTE_KEYSTROKE]}`)
 
         // Form
         this.form.addEventListener('submit', this.onSubmit.bind(this))

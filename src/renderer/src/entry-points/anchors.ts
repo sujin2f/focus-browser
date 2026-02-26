@@ -1,17 +1,11 @@
-import { A_List } from '@home/entry-points/abstracts/abs-list'
-import { A_TraitCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
-import { A_TraitSearch } from '@home/entry-points/abstracts/abs-list-search'
-/* Models */
-import { Logger } from '@src/renderer/logger'
+import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
 import { checkElectron, ipcRenderer, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
-import { Button } from '@home/template-parts/button'
+import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
-import { Notification } from '@home/template-parts/notification'
+import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 /* CONSTANTS */
 import {
     EMOJI,
@@ -22,47 +16,17 @@ import {
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 
-class Search extends A_TraitSearch<T_Bookmark> {
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
-    }
-}
-
-class CloudPush extends A_TraitCloudPush<T_Bookmark> {
-    public sendCloudPush(bookmark: T_Bookmark): boolean {
-        if (!super.sendCloudPush(bookmark)) {
-            return false
-        }
-
-        Logger.getInstance().log('Sending Bookmark to Cloud', bookmark.title)
-        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, [
-            { title: bookmark.title, key: bookmark.url, type: 'bookmark' },
-        ])
-        return true
-    }
-}
-
-class Anchors extends A_List<T_Bookmark> {
-    public notification: Notification = new Notification().appendTo('root')
-
-    // Search
-    private search = new Search(this)
-    protected callbackShortcut(e: KeyboardEvent) {
-        this.search.callbackShortcut(e)
-    }
-    // Push
-    private cloud = new CloudPush(this, this.notification)
-
+class Anchors extends A_ListCloudPush<T_Bookmark> {
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
         this.requestAnchors()
-
         // Title
-        const h1 = new H1(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`).prependTo(
-            'title',
-        )
-        new BackButton().prependTo(h1.element)
+        new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
+    }
+
+    filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
     }
 
     protected callbackUpdateStatus(): void {
@@ -78,6 +42,7 @@ class Anchors extends A_List<T_Bookmark> {
     private requestAnchors(): void {
         ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.ANCHOR, (handler, anchors = []) => {
+            this.setEnabled(true)
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
                     this.items = anchors.map((bookmark) => ({
@@ -90,22 +55,37 @@ class Anchors extends A_List<T_Bookmark> {
         })
     }
 
-    protected renderList() {
+    renderList() {
         super.renderList()
 
         this.items.forEach(({ data: anchor, items }) => {
             const item = new ListItem(anchor.title, anchor.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
-                    navigate({ address: anchor.url }, REQUEST_HANDLER.REMOVE)
+                    if (this.enabled) {
+                        navigate(
+                            { address: anchor.url },
+                            REQUEST_HANDLER.REMOVE,
+                        )
+                    }
                 })
 
             // Cloud
-            const send = new ListItem(
-                new Button(EMOJI.GLOBE, 'button-clear').setOnClick(() => {
-                    this.cloud.sendCloudPush(anchor)
-                }),
-            ).appendTo(this.list.element)
+            const button = new ButtonCloudPush(
+                {
+                    title: anchor.title,
+                    key: anchor.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(anchor),
+                },
+                () => this.settings.userInfo,
+                (button: ButtonCloudPush) => {
+                    if (this.enabled) {
+                        this.callbackPush(button)
+                    }
+                },
+            )
+            const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 
             items.push(item, send)

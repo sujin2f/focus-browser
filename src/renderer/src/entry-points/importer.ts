@@ -2,8 +2,7 @@ import { A_List } from '@home/entry-points/abstracts/abs-list'
 /* Utils */
 import { checkElectron, getSection, ipcRenderer, navigate } from '@home/utils'
 /* <HTML template-part /> */
-import { H1 } from '@home/template-parts/h1'
-import { BackButton } from '@home/template-parts/back-button'
+import { Title } from '@home/template-parts/modules/title'
 import { Loading } from '@home/template-parts/loading'
 import { ListItem } from '@home/template-parts/list-item'
 import { Notification } from '@home/template-parts/notification'
@@ -23,8 +22,17 @@ import type { T_Cloud_Item } from '@src/common/types'
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
     private loading = new Loading().appendTo('loading').hide()
-    private enable = false
     private keys: string[] = []
+    private currentRow?: ListItem
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.loading.hide()
+            this.currentRow = undefined
+        } else {
+            this.loading.show()
+        }
+    }
 
     constructor() {
         super()
@@ -32,8 +40,7 @@ class Importer extends A_List<T_Cloud_Item> {
         this.request()
 
         // Title
-        const h1 = new H1(`Importer ${EMOJI.CLOUD}`).prependTo('title')
-        new BackButton().prependTo(h1.element)
+        new Title(`Importer ${EMOJI.CLOUD}`)
 
         getSection('list').classList.add('list--cloud-items')
     }
@@ -58,46 +65,43 @@ class Importer extends A_List<T_Cloud_Item> {
     }
 
     private request(): void {
-        this.loading.show()
+        this.setEnabled(false)
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (handler, items = []) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
-                    this.enable = true
+                    this.setEnabled(true)
                     this.keys.push(...items.map((item) => item.url))
-                    return
             }
+            ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
         })
 
-        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
         ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, items = []) => {
-            this.loading.hide()
-
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
-                    this.enable = true
                     this.items = items.map((item) => ({
                         data: item,
                         items: [] as ListItem[],
                     }))
                     this.renderList()
+                    this.setEnabled(true)
                     return
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    this.enable = true
                     this.items = this.items.filter(
                         (item) => item.data._id !== items[0]._id,
                     )
                     this.renderList()
                     this.notification.info(items[0].title)
+                    this.setEnabled(true)
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
-                    this.enable = true
                     if (items[0]._id) {
                         this.items = this.items.filter(
                             (item) => item.data._id !== items[0]._id,
                         )
                     }
                     this.notification.error(items[0].title)
+                    this.setEnabled(true)
                     return
             }
         })
@@ -105,26 +109,32 @@ class Importer extends A_List<T_Cloud_Item> {
 
     renderList() {
         super.renderList()
-        const list = getSection('list')
-
         // Create & Assign ListItems
         this.items.forEach(({ data }) => {
             const device = new ListItem(data.device || '')
-            const row = new ListItem(data.title).setOnClick(() => {
-                if (!this.enable) {
-                    return
-                }
-                ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.ADD, [
-                    data,
-                ])
-                this.enable = false
-            })
+            const row = new ListItem(data.title)
             const icon = new ListItem(
                 data.type === 'bookmark' ? EMOJI[Menu.ADD_BOOKMARK] : '',
             )
-            icon.appendTo(list)
-            device.appendTo(list)
-            row.appendTo(list)
+
+            icon.appendTo(this.list.element)
+            device.appendTo(this.list.element)
+            row.appendTo(this.list.element)
+
+            if (this.keys.includes(data.key)) {
+                row.element.classList.add('section-disabled')
+            } else {
+                row.setOnClick(() => {
+                    if (!this.enabled) {
+                        return
+                    }
+                    this.currentRow = row
+                    ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.ADD, [
+                        data,
+                    ])
+                    this.setEnabled(false)
+                })
+            }
         })
     }
 }

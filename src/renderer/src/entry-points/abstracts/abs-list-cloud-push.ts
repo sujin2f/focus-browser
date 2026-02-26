@@ -8,6 +8,8 @@ import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
+/* Models */
+import { Logger } from '@src/renderer/logger'
 
 export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     protected notification: Notification = new Notification().appendTo('root')
@@ -40,6 +42,7 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     }
 
     protected callbackCloudResponseFail(_: T_Cloud_Item[]) {
+        Logger.getInstance().log(`callbackCloudResponseFail()`)
         if (this.currentButton) {
             this.currentButton.disable()
         }
@@ -47,13 +50,15 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     }
 
     protected callbackCloudResponseSuccess(_: T_Cloud_Item[]) {
+        Logger.getInstance().log(`callbackCloudResponseSuccess()`)
         if (this.currentButton) {
             this.currentButton.disable()
         }
         this.setEnabled(true)
     }
 
-    protected callbackPush(button: ButtonCloudPush) {
+    protected callbackCloudPush(button: ButtonCloudPush) {
+        Logger.getInstance().log(`callbackCloudPush()`)
         this.currentButton = button
         this.setEnabled(false)
     }

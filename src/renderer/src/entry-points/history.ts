@@ -126,9 +126,11 @@ class History extends A_ListCloudPush<T_Bookmark> {
                 },
                 () => this.settings.userInfo,
                 (button: ButtonCloudPush) => {
-                    if (this.enabled) {
-                        this.callbackPush(button)
+                    const enabled = this.enabled
+                    if (enabled) {
+                        this.callbackCloudPush(button)
                     }
+                    return enabled
                 },
             )
             const send = new ListItem(button).appendTo(this.list.element)

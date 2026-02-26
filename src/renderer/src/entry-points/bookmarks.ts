@@ -9,6 +9,7 @@ import { ListItem } from '@home/template-parts/list-item'
 import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
 import { UserInfo } from '@home/template-parts/user-info'
 import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
+import { Notification } from '@home/template-parts/notification'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 /* CONSTANTS */
@@ -18,13 +19,13 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
-import { Notification } from '../template-parts/notification'
+/* Models */
+import { Logger } from '@src/renderer/logger'
 
 class TraitBookmarks extends A_TraitBookmarks {
     constructor(
         protected parent: Bookmarks,
         private modal: BookmarkModal,
-        private getDirs: () => T_Bookmark[],
     ) {
         super(parent)
     }
@@ -34,6 +35,7 @@ class TraitBookmarks extends A_TraitBookmarks {
         bookmarks: T_Bookmark[],
     ) {
         this.modal.hide()
+        this.parent.setEnabled(true)
         switch (handler) {
             case REQUEST_HANDLER.RESPONSE:
                 super.callbackResponse(handler, bookmarks)
@@ -51,52 +53,7 @@ class TraitBookmarks extends A_TraitBookmarks {
     }
 
     protected getListCols(bookmark: T_Bookmark, index: number) {
-        const isDir = !bookmark.url
-
-        const icon = new ListItem(
-            isDir
-                ? '📁'
-                : bookmark.parent && this.dirs[bookmark.parent]
-                  ? '⋯'
-                  : '',
-        )
-        const row = new ListItem(bookmark.title, bookmark.url).setOnClick(
-            (e: PointerEvent) => {
-                if (isDir || tagNameIs(e.target, 'button')) {
-                    return
-                }
-                navigate({ address: bookmark.url })
-            },
-        )
-
-        const edit = new ListItem(
-            new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
-                this.modal.open(this.getDirs(), { isDir, bookmark, index })
-            }),
-        )
-        edit.clickable = false
-
-        // Shortcut
-        let shortcut = new ListItem('')
-        if (bookmark.shortcut) {
-            shortcut = new ListItem(
-                new Button(bookmark.shortcut.toUpperCase()).setOnClick(() => {
-                    if (isDir) {
-                        return
-                    }
-                    navigate({ address: bookmark.url })
-                }),
-            )
-        }
-
-        // Cloud
-        let send = new ListItem('')
-        if (bookmark.url) {
-            send = new ListItem(this.parent.createCloudPushButton(bookmark))
-        }
-        send.clickable = false
-
-        return [icon, row, shortcut, send, edit]
+        return this.parent.getListCols(bookmark, index)
     }
 }
 
@@ -107,16 +64,12 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
     private shortcuts: Record<string, string> = {}
     private matchShortcut = ''
     // Bookmark Trait
-    private bookmarks = new TraitBookmarks(
-        this,
-        this.modal,
-        this.getDirs.bind(this),
-    )
+    private bookmarks = new TraitBookmarks(this, this.modal)
     // Buttons
     private createFolder: Button
     private createItem: Button
     // (En/Dis)able
-    protected setEnabled(enabled: boolean) {
+    public setEnabled(enabled: boolean) {
         super.setEnabled(enabled)
         if (enabled) {
             this.createFolder.enable()
@@ -178,6 +131,76 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         super.renderList()
         this.bookmarks.renderList()
         this.setShortcuts()
+    }
+
+    getListCols(bookmark: T_Bookmark, index: number) {
+        const isDir = !bookmark.url
+
+        const icon = new ListItem(
+            isDir
+                ? '📁'
+                : bookmark.parent && this.bookmarks.dirs[bookmark.parent]
+                  ? '⋯'
+                  : '',
+        )
+        const row = new ListItem(bookmark.title, bookmark.url).setOnClick(
+            (e: PointerEvent) => {
+                if (isDir || tagNameIs(e.target, 'button')) {
+                    return
+                }
+                navigate({ address: bookmark.url })
+            },
+        )
+
+        const edit = new ListItem(
+            new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
+                this.modal.open(this.getDirs(), { isDir, bookmark, index })
+            }),
+        )
+        edit.clickable = false
+
+        // Shortcut
+        let shortcut = new ListItem('')
+        if (bookmark.shortcut) {
+            shortcut = new ListItem(
+                new Button(bookmark.shortcut.toUpperCase()).setOnClick(() => {
+                    if (isDir) {
+                        return
+                    }
+                    navigate({ address: bookmark.url })
+                }),
+            )
+        }
+
+        // Cloud
+        let send = new ListItem('')
+        if (bookmark.url) {
+            const button = new ButtonCloudPush(
+                {
+                    title: bookmark.title,
+                    key: bookmark.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(bookmark),
+                },
+                () => this.settings.userInfo,
+                (button: ButtonCloudPush) => {
+                    Logger.getInstance().log(
+                        `Cloud push button clicked.`,
+                        this.enabled,
+                        this.callbackCloudPush.toString(),
+                    )
+                    const enabled = this.enabled
+                    if (enabled) {
+                        this.callbackCloudPush(button)
+                    }
+                    return enabled
+                },
+            )
+            send = new ListItem(button)
+        }
+        send.clickable = false
+
+        return [icon, row, shortcut, send, edit]
     }
 
     protected callbackUpdateStatus(): void {
@@ -307,23 +330,6 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 item.show()
             })
         })
-    }
-
-    public createCloudPushButton(bookmark: T_Bookmark) {
-        return new ButtonCloudPush(
-            {
-                title: bookmark.title,
-                key: bookmark.url,
-                type: 'bookmark',
-                message: JSON.stringify(bookmark),
-            },
-            () => this.settings.userInfo,
-            (button: ButtonCloudPush) => {
-                if (this.enabled) {
-                    this.callbackPush(button)
-                }
-            },
-        )
     }
 }
 

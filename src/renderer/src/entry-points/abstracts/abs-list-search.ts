@@ -61,7 +61,9 @@ export abstract class A_ListSearch<T> extends A_List<T> {
      * @param keyword
      * @returns {boolean} true to show
      */
-    abstract filterList(item: T, keyword: string): boolean
+    protected filterList(_: T, __: string): boolean {
+        throw new Error('Not implemented.')
+    }
 
     /**
      * Filter items

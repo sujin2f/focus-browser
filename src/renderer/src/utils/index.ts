@@ -1,6 +1,6 @@
 import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 import type { T_IPC_Switch } from '@src/common/types'
-import { Logger } from '../logger'
+import { Logger } from '@home/utils/logger'
 
 export const checkElectron = () => {
     if (!window.electron) {

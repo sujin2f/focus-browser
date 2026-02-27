@@ -26,7 +26,7 @@ export class ListItem extends A_Element<HTMLDivElement> {
         super('#list-item')
     }
 
-    protected init() {
+    protected afterAppend() {
         if (typeof this._title === 'string') {
             this.element.querySelector('h3')!.textContent = this._title
         } else {

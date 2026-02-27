@@ -1,5 +1,10 @@
 /* Utils */
-import { navigate, getSection, ctrlOrComm, commandSymbol } from '@home/utils'
+import {
+    navigate,
+    getSection,
+    ctrlOrComm,
+    commandSymbol,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Input } from '@home/template-parts/input'
 

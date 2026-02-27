@@ -1,6 +1,6 @@
 import { A_Element } from './abs-element'
 /* Utils */
-import { getSection } from '@home/utils'
+import { getSection } from '@src/renderer/src/utils'
 
 export class List extends A_Element<HTMLElement> {
     public get element(): HTMLElement {

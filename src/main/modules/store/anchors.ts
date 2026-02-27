@@ -5,9 +5,13 @@ import type { T_Bookmark } from '@src/common/types'
 type Props = { anchors: T_Bookmark[] }
 
 export class Anchors extends Store<Props> {
+    protected fileName = 'anchors'
+    protected defaults = { anchors: [] } as Props
+
     constructor() {
-        super('anchors', { anchors: [] })
+        super()
         this.parse()
+        this.mergeDefault()
     }
 
     get() {

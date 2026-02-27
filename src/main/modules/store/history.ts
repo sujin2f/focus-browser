@@ -2,16 +2,14 @@ import type { NavigationEntry, NavigationHistory } from 'electron'
 import { Store } from '@main/modules/store/store'
 import { MAX_HISTORY } from '@src/common/constants'
 
-export class History extends Store<{
+type Props = {
     index: number
     history: NavigationEntry[]
-}> {
-    constructor() {
-        super('history', {
-            index: NaN,
-            history: [],
-        })
-    }
+}
+
+export class History extends Store<Props> {
+    protected fileName = 'history'
+    protected defaults = { index: NaN, history: [] } as Props
 
     public get current() {
         if (this._data.history.length) {
@@ -19,6 +17,11 @@ export class History extends Store<{
         }
 
         return
+    }
+
+    parse() {
+        super.parse()
+        super.mergeDefault()
     }
 
     /**

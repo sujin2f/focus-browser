@@ -1,111 +1,146 @@
 import { randomUUID } from 'crypto'
-
+/* Models */
 import { Store } from '@main/modules/store/store'
-import { Logger } from '@main/logger'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
+import { getSafeUrl } from '@src/common/utils/common'
 
-export class Bookmarks extends Store<{ bookmarks: T_Bookmark[] }> {
-    constructor() {
-        super('bookmarks', { bookmarks: [] })
-        this.parse()
-    }
+type T_Store = T_Bookmark_Store & {
+    version: number
+}
 
-    private get bookmarkIndex() {
-        for (let i = 0; i < this._data.bookmarks.length; i++) {
-            if (this._data.bookmarks[i].url) {
-                return i
-            }
-        }
-        return NaN
-    }
+export class Bookmarks extends Store<T_Store> {
+    protected fileName = 'bookmarks'
+    protected defaults = { version: 1, dirs: {}, items: {} }
 
-    private findById(
-        id: string,
-    ): { bookmark: T_Bookmark; index: number } | void {
-        for (const [index, bookmark] of this._data.bookmarks.entries()) {
-            if (bookmark.id === id) {
-                return { bookmark, index }
-            }
+    public get ipc(): T_Bookmark_Store {
+        return {
+            dirs: this.data.dirs,
+            items: this.data.items,
         }
     }
 
-    get() {
-        return super.get('bookmarks')
+    constructor(path?: string) {
+        super(path)
+        this.migrate()
     }
 
-    update(value: T_Bookmark) {
-        for (const [index, bookmark] of this._data.bookmarks.entries()) {
-            if (bookmark.id === value.id) {
-                this._data.bookmarks[index] = value
+    public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
+        // 🤬 Title is empty
+        if (!bookmark.title) return false
 
-                Logger.getInstance().log(
-                    'Bookmark edited from: ',
-                    bookmark,
-                    ' to: ',
-                    value,
-                )
-                return
-            }
+        if (isDir) {
+            // 🤬 Directory Not exist
+            if (!this.data.dirs[bookmark.id]) return false
+            this.data.dirs[bookmark.id] = bookmark
+            return bookmark
         }
+
+        // 🤬 URL is invalid
+        const url = getSafeUrl(bookmark.url)
+        if (!url) return false
+
+        // 🤬 Not exist
+        if (!this.data.items[bookmark.id]) return false
+
+        this.data.items[bookmark.id] = { ...bookmark, url: url.toString() }
+        return { ...bookmark, url: url.toString() }
     }
 
     /**
-     * Add bookmark into index 0
+     * Add bookmark / dir
      * @param bookmark
      * @returns
      */
-    push(bookmark: T_Bookmark): string {
+    public push(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
+        // 🤬 Title is empty
+        if (!bookmark.title) return false
+
         bookmark.id = randomUUID().toString()
 
         // Directory
-        if (!bookmark.url) {
-            this._data.bookmarks.unshift(bookmark)
-            return bookmark.id
-        }
-
-        // URL duplicated
-        for (const item of this._data.bookmarks) {
-            if (item.url === bookmark.url) {
-                return item.id
+        if (isDir) {
+            this._data.dirs = {
+                ...this._data.dirs,
+                [bookmark.id]: bookmark,
             }
+            return bookmark
         }
 
-        // Empty list
-        if (isNaN(this.bookmarkIndex)) {
-            // Empty
-            this._data.bookmarks.unshift(bookmark)
-            return bookmark.id
+        // 🤬 URL is invalid
+        const url = getSafeUrl(bookmark.url)
+        if (!url) return false
+
+        // 🤬 URL duplicated
+        for (const item of Object.values(this.data.items)) {
+            if (item.url === bookmark.url) return false
         }
 
-        // Insert after Directories
-        this._data.bookmarks.splice(this.bookmarkIndex, 0, bookmark)
-        return bookmark.id
+        this._data.items = {
+            [bookmark.id]: { ...bookmark, url: url.toString() },
+            ...this._data.items,
+        }
+        return { ...bookmark, url: url.toString() }
     }
 
-    remove(id: string): boolean {
-        const bookmark = this.findById(id)
-        if (!bookmark) return false
-
-        this._data.bookmarks.splice(bookmark.index, 1)
-
-        // Removing Folder
-        if (!bookmark.bookmark.url) {
-            this._data.bookmarks.forEach((item) => {
-                if (item.parent === bookmark.bookmark.id) {
-                    delete item.parent
+    public remove(id: string, isDir = false) {
+        if (isDir) {
+            delete this.data.dirs[id]
+            Object.values(this.data.items).forEach((bookmark) => {
+                if (bookmark.parent === id) {
+                    delete bookmark.parent
                 }
             })
+            return
         }
-        return true
+
+        delete this.data.items[id]
     }
 
-    parse() {
-        super.parse()
-        this._data.bookmarks.forEach((bookmark) => {
-            if (!bookmark.id) {
-                bookmark.id = randomUUID().toString()
-            }
-        })
+    public parse() {
+        return
+    }
+
+    private migrate() {
+        const fileContent = this.getFileContent()
+
+        // 🤬 File is empty
+        if (!fileContent) {
+            this._data = this.defaults
+            return
+        }
+
+        let data = JSON.parse(fileContent)
+
+        if (!data.version) {
+            const dirs = {} as Record<string, T_Bookmark>
+            const items = {} as Record<string, T_Bookmark>
+            const dirIndex = [] as string[]
+
+            ;(data.bookmarks as T_Bookmark[])
+                .filter((item) => !item.url)
+                .forEach((item) => {
+                    const id = item.id || randomUUID().toString()
+                    dirIndex.push(id)
+                    dirs[id] = { ...item, id } satisfies T_Bookmark
+                })
+            ;(data.bookmarks as T_Bookmark[])
+                .filter((item) => item.url)
+                .forEach((item) => {
+                    const id = item.id || randomUUID().toString()
+                    if (typeof item.parent === 'number') {
+                        item.parent = dirIndex[item.parent]
+                    }
+                    items[id] = { ...item, id } satisfies T_Bookmark
+                })
+
+            data = {
+                version: 1,
+                dirs,
+                items,
+            } satisfies T_Store
+        }
+
+        this._data = data
     }
 }

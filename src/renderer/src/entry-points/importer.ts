@@ -1,6 +1,11 @@
 import { A_List } from '@home/entry-points/abstracts/abs-list'
 /* Utils */
-import { checkElectron, getSection, ipcRenderer, navigate } from '@home/utils'
+import {
+    checkElectron,
+    getSection,
+    ipcRenderer,
+    navigate,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Loading } from '@home/template-parts/loading'
@@ -67,16 +72,24 @@ class Importer extends A_List<T_Cloud_Item> {
     private request(): void {
         this.setEnabled(false)
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (handler, items = []) => {
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE:
+        ipcRenderer.once(
+            IPC_CHANNELS.BOOKMARKS_RESPONSE,
+            (handler, response) => {
+                if (response) {
+                    // TODO
                     this.setEnabled(true)
-                    this.keys.push(...items.map((item) => item.url))
-            }
-            ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
-        })
+                    const bookmarks = [
+                        ...Object.values(response.dirs),
+                        ...Object.values(response.items),
+                    ]
+                    this.keys.push(...bookmarks.map((item) => item.url))
+                }
+                this.setEnabled(true)
+                ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
+            },
+        )
 
-        ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, items = []) => {
+        ipcRenderer.once(IPC_CHANNELS.CLOUD_RESPONSE, (handler, items = []) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
                     this.items = items.map((item) => ({
@@ -107,8 +120,8 @@ class Importer extends A_List<T_Cloud_Item> {
         })
     }
 
-    renderList() {
-        super.renderList()
+    private renderList() {
+        this.list.element.innerHTML = ''
         // Create & Assign ListItems
         this.items.forEach(({ data }) => {
             const device = new ListItem(data.device || '')
@@ -132,18 +145,18 @@ class Importer extends A_List<T_Cloud_Item> {
                     ipcRenderer.send(
                         IPC_CHANNELS.CLOUD,
                         REQUEST_HANDLER.REMOVE,
-                        [data],
+                        { item: data },
                     )
                     ipcRenderer.send(
                         IPC_CHANNELS.BOOKMARK,
                         REQUEST_HANDLER.ADD,
-                        [
-                            {
+                        {
+                            item: {
                                 id: 'from-cloud',
                                 url: '',
                                 title: data.message!,
                             } satisfies T_Bookmark,
-                        ],
+                        },
                     )
                     this.setEnabled(false)
                 })

@@ -8,6 +8,7 @@ import {
     IPC_CHANNELS,
     LogTypes,
 } from '@src/common/constants'
+import type { ListItem } from '@src/renderer/src/template-parts/list-item'
 
 /**
  * Status
@@ -60,6 +61,11 @@ export interface T_Bookmark extends NavigationEntry {
     parent?: string
 }
 
+export type T_Bookmark_Store = {
+    dirs: Record<string, T_Bookmark>
+    items: Record<string, T_Bookmark>
+}
+
 /**
  * Popup Blocker
  */
@@ -107,9 +113,16 @@ export type Scenes = CENTRE_PAGES | typeof BROWSER
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
 
+export type T_IPC_Data<T> = {
+    message?: string
+    item?: T
+    meta?: unknown
+}
+
 export type T_IPC_Message = {
     [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
-    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[]
+    [IPC_CHANNELS.BOOKMARK]: T_IPC_Data<T_Bookmark>
+    [IPC_CHANNELS.BOOKMARKS_RESPONSE]: T_Bookmark_Store
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
     [IPC_CHANNELS.HISTORY]: T_Bookmark[]
@@ -119,7 +132,17 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.KEYSTROKES]: Record<string, string>
     [IPC_CHANNELS.SHORTCUTS]: T_Shortcut_Store
     [IPC_CHANNELS.CLEANER]: T_Cleaner
-    [IPC_CHANNELS.CLOUD]: T_Cloud_Item[]
+    [IPC_CHANNELS.CLOUD]: T_IPC_Data<T_Cloud_Item>
+    [IPC_CHANNELS.CLOUD_RESPONSE]: T_Cloud_Item[]
 }
 
-// export type
+export type T_Items<T> = { data: T; items: ListItem[] }[]
+export type T_Dir<T> = Record<
+    string,
+    {
+        data: T
+        hidden: boolean
+        dir: ListItem[]
+        items: ListItem[]
+    }
+>

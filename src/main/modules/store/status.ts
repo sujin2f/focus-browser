@@ -11,11 +11,14 @@ export class Status extends Store<T_Status_Store_Props> {
     static instance: Status
     static getInstance(): Status {
         if (!Status.instance) {
-            Status.instance = new Status('status', DEFAULT_STATUS)
+            Status.instance = new Status()
             Status.instance.parse()
         }
         return Status.instance
     }
+
+    protected fileName = 'status'
+    protected defaults = DEFAULT_STATUS
 
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
         const bounds = {
@@ -65,5 +68,7 @@ export class Status extends Store<T_Status_Store_Props> {
         if (this._data.machineId === 'N/A') {
             this.set('machineId', randomUUID())
         }
+
+        super.mergeDefault()
     }
 }

@@ -1,4 +1,6 @@
 import { A_Element } from './abs-element'
+/* Models */
+import { Logger } from '@home/utils/logger'
 
 export class Notification extends A_Element<HTMLElement> {
     constructor() {
@@ -6,12 +8,13 @@ export class Notification extends A_Element<HTMLElement> {
     }
 
     private showNotification(message: string) {
+        Logger.getInstance().log(message)
         const notification = this.select('notification')
         notification.innerHTML = message
         notification.classList.remove('notification')
         setTimeout(() => {
             notification.classList.add('notification')
-        }, 1)
+        }, 2)
     }
 
     public info(message: string) {

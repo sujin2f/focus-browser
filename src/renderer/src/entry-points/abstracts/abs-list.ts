@@ -1,15 +1,18 @@
 import { A_Entry } from './abs-entry'
 /* <HTML template-part /> */
 import { List } from '@home/template-parts/list'
-/* Utils */
-import { getSection } from '@home/utils'
-import { ListItem } from '../../template-parts/list-item'
-
-type T_Items<T> = { data: T; items: ListItem[] }[]
+/* Models */
+import { Logger } from '@src/renderer/src/utils/logger'
+/* CONSTANTS */
+import { EMOJI } from '@src/common/constants'
+/* T_Types */
+import type { T_Dir, T_Items } from '@src/common/types'
 
 export abstract class A_List<T> extends A_Entry {
-    public items: T_Items<T> = []
-    public list!: List
+    protected items: T_Items<T> = []
+    protected dirs: T_Dir<T> = {}
+    protected list!: List
+    protected folderIndex!: number
 
     // (En/Dis)able
     private _enabled = false // Default is false
@@ -30,7 +33,26 @@ export abstract class A_List<T> extends A_Entry {
         this.list = new List(css)
     }
 
-    public renderList() {
-        getSection('list').innerHTML = ''
+    protected onDirectoryClick(id: string) {
+        const data = this.dirs[id]
+        if (!data) {
+            Logger.getInstance().error('Clicked Dir does not exist.')
+            return
+        }
+
+        const { hidden, items, dir } = data
+
+        dir[this.folderIndex].title = hidden
+            ? EMOJI.FOLDER_OPEN
+            : EMOJI.FOLDER_CLOSE
+
+        items.forEach((item) => {
+            if (hidden) {
+                item.show()
+            } else {
+                item.hide()
+            }
+        })
+        data.hidden = !hidden
     }
 }

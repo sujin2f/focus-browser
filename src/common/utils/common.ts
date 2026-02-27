@@ -30,3 +30,31 @@ export const byteToSize = (byte: number): string => {
     const size = byte / (mb * 1024)
     return `${size.toFixed(2)} Gb`
 }
+
+/**
+ *
+ * @param url
+ * @returns {URL | false | undefined} undefined: empty, false: not URL
+ */
+export const getSafeUrl = (text: string): URL | false | undefined => {
+    const trimmed = text.trim()
+    if (!text || !trimmed) {
+        return
+    }
+
+    // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
+    const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
+
+    let url
+    try {
+        url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
+    } catch {
+        // Not URL
+        return false
+    }
+
+    if (!url.hostname.includes('localhost') && !url.hostname.includes('.')) {
+        return false
+    }
+    return url
+}

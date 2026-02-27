@@ -1,17 +1,20 @@
 /* Utils */
-import { getSection } from '@home/utils'
+import { getSection } from '@src/renderer/src/utils'
+/* Models */
+import { Logger } from '@src/renderer/src/utils/logger'
 
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node
     protected _element?: T
     public get element(): T {
         if (!this._element) {
-            throw new Error('Cannot find _element')
+            Logger.getInstance().error(`Cannot find _element ${this.selector}`)
+            return null as unknown as T // it will trigger an error anyway
         }
         return this._element
     }
 
-    constructor(selector: string = '') {
+    constructor(private selector: string = '') {
         if (!selector) {
             return
         }
@@ -22,7 +25,7 @@ export abstract class A_Element<T extends HTMLElement> {
         this.node = template.content.cloneNode(true) as T
     }
 
-    protected init() {}
+    protected afterAppend() {}
 
     /**
      * @param parent HTML Element or #id
@@ -35,7 +38,7 @@ export abstract class A_Element<T extends HTMLElement> {
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         dest.append(this.node)
         this._element = dest.lastElementChild! as T
-        this.init()
+        this.afterAppend()
         return this
     }
 
@@ -50,7 +53,7 @@ export abstract class A_Element<T extends HTMLElement> {
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         dest.prepend(this.node)
         this._element = dest.firstElementChild! as T
-        this.init()
+        this.afterAppend()
         return this
     }
 

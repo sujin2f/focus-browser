@@ -1,12 +1,11 @@
 import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@home/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
-import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
@@ -82,15 +81,8 @@ class History extends A_ListCloudPush<T_Bookmark> {
             data: bookmark,
             items: [] as ListItem[],
         }))
-        this.renderList()
-    }
 
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
-    }
-
-    renderList() {
-        super.renderList()
+        this.list.element.innerHTML = ''
 
         const reversed = this.items.reverse()
         const length = this.items.length
@@ -117,27 +109,21 @@ class History extends A_ListCloudPush<T_Bookmark> {
                 })
 
             // Cloud
-            const button = new ButtonCloudPush(
-                {
-                    title: history.title,
-                    key: history.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(history),
-                },
-                () => this.settings.userInfo,
-                (button: ButtonCloudPush) => {
-                    const enabled = this.enabled
-                    if (enabled) {
-                        this.callbackCloudPush(button)
-                    }
-                    return enabled
-                },
-            )
+            const button = this.createCloudPushButton({
+                title: history.title,
+                key: history.url,
+                type: 'bookmark',
+                message: JSON.stringify(history),
+            })
             const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 
             items.push(item, send)
         })
+    }
+
+    protected filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
     }
 }
 

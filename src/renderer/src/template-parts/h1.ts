@@ -5,7 +5,7 @@ export class H1 extends A_Element<HTMLHeadingElement> {
         super('#h1')
     }
 
-    protected init() {
+    protected afterAppend() {
         this.element.textContent = this.title
     }
 }

@@ -10,13 +10,16 @@ export class PopupBlocker extends Store<T_Popup> {
     static instance: PopupBlocker
     static getInstance(): PopupBlocker {
         if (!PopupBlocker.instance) {
-            PopupBlocker.instance = new PopupBlocker('popup-blocker', {
-                blocked: new Set<string>(),
-                allowed: new Set<string>(),
-            })
+            PopupBlocker.instance = new PopupBlocker()
             PopupBlocker.instance.parse()
         }
         return PopupBlocker.instance
+    }
+
+    protected fileName = 'popup-blocker'
+    protected defaults = {
+        blocked: new Set<string>(),
+        allowed: new Set<string>(),
     }
 
     public toggle(host: string) {
@@ -64,6 +67,8 @@ export class PopupBlocker extends Store<T_Popup> {
         } catch {
             this._data = this.defaults
         }
+
+        super.mergeDefault()
     }
 
     clear() {

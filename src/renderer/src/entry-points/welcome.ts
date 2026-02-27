@@ -1,21 +1,21 @@
 import { A_List } from '@home/entry-points/abstracts/abs-list'
-import { A_TraitBookmarks } from './abstracts/abs-bookmarks'
 /* Utils */
 import {
     checkElectron,
     navigate,
     ipcRenderer,
     commandSymbol,
-} from '@home/utils'
+} from '@src/renderer/src/utils'
+import { callbackRequestBookmarks } from '@home/utils/bookmark'
 /* <HTML template-part /> */
 import { H1 } from '@home/template-parts/h1'
 import { H2 } from '@home/template-parts/h2'
 import { Card } from '@home/template-parts/card'
 import { UserInfo } from '@home/template-parts/user-info'
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
+import { ListItem } from '@home/template-parts/list-item'
 /* T_Types */
 import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
-import type { ListItem } from '@home/template-parts/list-item'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
@@ -25,31 +25,12 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 
-class Bookmarks extends A_TraitBookmarks {
-    protected callbackResponse(...args: unknown[]) {
-        this.parent.items = (args[1] as T_Bookmark[]).map((bookmark) => ({
-            data: bookmark,
-            items: [] as ListItem[],
-        }))
-
-        if (this.parent.items.length) {
-            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
-                'bookmarks',
-            )
-        }
-        this.parent.renderList()
-    }
-}
-
 class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
-    private bookmarks = new Bookmarks(this)
+    protected folderIndex = 0
 
     constructor() {
         super('list--welcome')
-
-        this.requestStatus('userInfo')
-        this.requestShortcuts()
 
         new H1(`${EMOJI.FOCUS} Welcome to Focus!`).prependTo('root')
 
@@ -66,6 +47,75 @@ class Welcome extends A_List<T_Bookmark> {
             .setOnClick(() => {
                 navigate({ searchEngine: true })
             })
+
+        this.requestStatus('userInfo')
+        this.requestBookmarks()
+        this.requestShortcuts()
+    }
+
+    private requestBookmarks(): void {
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
+            if (response) {
+                const { dirs, items } = callbackRequestBookmarks(response)
+                this.dirs = dirs
+                this.items = items
+                this.callbackRequestBookmarks()
+            }
+        })
+    }
+    private callbackRequestBookmarks(): void {
+        this.list.element.innerHTML = ''
+
+        if (this.items.length || Object.keys(this.dirs).length) {
+            new H2(`${EMOJI[Menu.ADD_BOOKMARK]} Your Bookmarks`).prependTo(
+                'bookmarks',
+            )
+        }
+
+        // Dir
+        Object.values(this.dirs).forEach((dir) => {
+            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
+                this.onDirectoryClick(dir.data.id)
+            })
+            const row = new ListItem(dir.data.title).setOnClick(() => {
+                this.onDirectoryClick(dir.data.id)
+            })
+            dir.dir.push(icon, row)
+        })
+
+        // Items
+        this.items.forEach((item) => {
+            const parent =
+                item.data.parent && this.dirs[item.data.parent]
+                    ? item.data.parent
+                    : false
+            const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
+                navigate({ address: item.data.url })
+            })
+            const row = new ListItem(item.data.title).setOnClick(() => {
+                navigate({ address: item.data.url })
+            })
+            item.items.push(icon, row)
+            if (parent) {
+                this.dirs[parent].items.push(icon, row)
+            }
+        })
+
+        // Render
+        Object.values(this.dirs).forEach((dir) => {
+            dir.dir.forEach((item) => item.appendTo(this.list.element))
+            dir.items.forEach((item) => item.appendTo(this.list.element).hide())
+        })
+
+        this.items.forEach((bookmark) => {
+            bookmark.items.forEach((listItem) => {
+                if (bookmark.data.parent) {
+                    return
+                }
+                listItem.appendTo(this.list.element)
+            })
+        })
     }
 
     private requestShortcuts(): void {
@@ -74,28 +124,13 @@ class Welcome extends A_List<T_Bookmark> {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE: {
                     this.shortcuts = shortcuts
-                    this.render()
+                    this.callbackRequestShortcut()
                     return
                 }
             }
         })
     }
-
-    protected callbackShortcut(e: KeyboardEvent) {
-        if (e.key === 'Escape') {
-            navigate({ lastVisit: true })
-        }
-    }
-
-    protected callbackUpdateStatus() {
-        if (!this.settings.userInfo) {
-            return
-        }
-        const userInfo = JSON.parse(this.settings.userInfo)
-        new UserInfo().picture = userInfo.picture
-    }
-
-    private render(): void {
+    private callbackRequestShortcut(): void {
         getAddressBar(this.shortcuts[Menu.ADDRESS]).focus()
         const shortcut = this.shortcuts[Menu.CENTRE]
             ? `(${commandSymbol(this.shortcuts[Menu.CENTRE])})`
@@ -110,9 +145,18 @@ class Welcome extends A_List<T_Bookmark> {
             })
     }
 
-    renderList() {
-        super.renderList()
-        this.bookmarks.renderList()
+    protected callbackShortcut(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            navigate({ lastVisit: true })
+        }
+    }
+
+    protected callbackUpdateStatus() {
+        if (!this.settings.userInfo) {
+            return
+        }
+        const userInfo = JSON.parse(this.settings.userInfo)
+        new UserInfo().picture = userInfo.picture
     }
 }
 

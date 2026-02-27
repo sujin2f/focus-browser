@@ -4,6 +4,7 @@ import {
     type WebContentsViewConstructorOptions,
     ipcMain,
 } from 'electron'
+/* CONSTANTS */
 import {
     IPC_CHANNELS,
     MainEventTypes,
@@ -18,7 +19,7 @@ import { Status } from '@main/modules/store/status'
 import { Keystrokes } from '@main/modules/store/keystrokes'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
-import { isNatural } from '@src/common/utils/common'
+import { getSafeUrl, isNatural } from '@src/common/utils/common'
 
 export class BrowserView extends WebContentsView {
     public get url(): T_Bookmark {
@@ -118,34 +119,17 @@ export class BrowserView extends WebContentsView {
     public async loadURL(keyword: string) {
         Logger.getInstance().log('loadURL', keyword)
 
-        const trimmed = keyword.trim()
-        if (!keyword || !trimmed) {
+        const url = getSafeUrl(keyword)
+        if (typeof url === 'undefined') {
+            return
+        }
+        if (!url) {
+            this.searchKeyword(keyword.trim())
             return
         }
 
         this.webContents.stop()
         await this.setAdBlocker()
-
-        // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
-        const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
-
-        let url: URL
-        try {
-            url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
-        } catch {
-            // Not URL
-            this.searchKeyword(trimmed)
-            return
-        }
-
-        // Search Keyword
-        if (
-            !url.hostname.includes('localhost') &&
-            !url.hostname.includes('.')
-        ) {
-            this.searchKeyword(trimmed)
-            return
-        }
 
         this.title = 'Loading...'
         await this.webContents.loadURL(url.toString()).catch((e) => {
@@ -162,7 +146,7 @@ export class BrowserView extends WebContentsView {
                 return
             }
 
-            this.searchKeyword(trimmed)
+            this.searchKeyword(keyword)
         })
     }
 

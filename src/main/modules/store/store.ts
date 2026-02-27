@@ -1,6 +1,7 @@
-import { safeStorage, app } from 'electron'
+import { app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
+import { encrypt, decrypt } from '@src/common/utils/security'
 
 type JsonObject = { [key: string]: unknown }
 
@@ -13,29 +14,21 @@ type JsonObject = { [key: string]: unknown }
  * Linux: $XDG_CONFIG_HOME/[YourAppName] or ~/.config/[YourAppName]
  */
 export class Store<T extends JsonObject> {
+    protected fileName: string = ''
+    protected defaults!: T
+
     protected _data: T = {} as T
     public get data() {
         return this._data
     }
     protected isSecure = false
 
-    protected path: string = ''
-
-    constructor(
-        protected configName: string,
-        protected defaults: T,
-    ) {
-        this.init()
-        this._data = defaults
+    protected get path() {
+        const userDataPath = this.userDataPath || app.getPath('userData')
+        return path.join(userDataPath, `${this.fileName}.json`)
     }
 
-    protected init() {
-        // app.getPath('userData') will return a string of the user's app data directory path.
-        const userDataPath = app.getPath('userData')
-
-        // We'll use the `configName` property to set the file name and path.join to bring it all together as a string
-        this.path = path.join(userDataPath, `${this.configName}.json`)
-    }
+    constructor(private userDataPath?: string) {}
 
     /**
      * Get value by key
@@ -71,33 +64,44 @@ export class Store<T extends JsonObject> {
         })
     }
 
-    parse() {
-        // TODO #122 make async or child process / Not to here directly, but its reference
+    protected getFileContent() {
         // We'll try/catch it in case the file doesn't exist yet, which will be the case on the first application run.
         // `fs.readFileSync` will return a JSON string which we then parse into a Javascript object
         try {
-            let fileContent = fs.readFileSync(this.path, 'utf-8')
-
-            // Decrypt buffer
-            if (fileContent && this.isSecure) {
-                fileContent = this.decrypt(fileContent)
-            }
-
-            this._data = {
-                ...this.defaults,
-                ...JSON.parse(fileContent),
-            }
+            return fs.readFileSync(this.path, 'utf-8')
         } catch {
-            // if there was some kind of error, return the passed in defaults instead.
+            return ''
+        }
+    }
+
+    parse() {
+        let fileContent = this.getFileContent()
+
+        if (!fileContent) {
             this._data = this.defaults
+            return
+        }
+
+        // Decrypt buffer
+        if (fileContent && this.isSecure) {
+            fileContent = this.decrypt(fileContent)
+        }
+
+        this._data = JSON.parse(fileContent)
+    }
+
+    mergeDefault() {
+        this._data = {
+            ...this.defaults,
+            ...this._data,
         }
     }
 
     protected encrypt(text: string) {
-        return safeStorage.encryptString(text).toString('base64')
+        return encrypt(text)
     }
 
     protected decrypt(text: string) {
-        return safeStorage.decryptString(Buffer.from(text, 'base64'))
+        return decrypt(text)
     }
 }

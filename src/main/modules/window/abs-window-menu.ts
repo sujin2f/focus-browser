@@ -25,7 +25,6 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Models */
-import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Anchors } from '@main/modules/store/anchors'
 import { Shortcut } from '@main/modules/store/shortcut'
 import { BrowserView } from '@src/main/modules/view/browser'
@@ -33,6 +32,8 @@ import { CenterView } from '@src/main/modules/view/centre'
 import { Logger } from '@main/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
+import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
+import { test } from '@src/child-process/entries/test-util'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -528,31 +529,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * only when the push succeeds. Notification click switches to bookmark page.
      */
     private addBookmark() {
-        Logger.getInstance().log('addBookmark')
-        const bookmarks = new Bookmarks()
-        const added = bookmarks.push({
-            id: '',
-            url: this.browser.webContents.getURL(),
-            title: this.browser.webContents.getTitle(),
-        })
-        bookmarks.save()
-        Logger.getInstance().log('addBookmark', added)
-
-        if (!added) {
-            return
-        }
-
-        const notification = new Notification({
-            title: 'Focus',
-            body: 'New Bookmark Added',
-            silent: true,
-        })
-        // Clicking the notification navigates to the bookmark page
-        notification.addListener('click', () => {
-            this.switch({ scene: CENTRE_PAGES.BOOKMARK })
-        })
-        notification.show()
-        Logger.getInstance().log('addBookmark >> notification should be shown.')
+        addBookmarkFromBrowser(
+            this,
+            this.browser.webContents.getURL(),
+            this.browser.webContents.getTitle(),
+        )
     }
 
     /**
@@ -586,6 +567,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
+        test()
     }
 
     abstract switch(request: T_IPC_Switch): void

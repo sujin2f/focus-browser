@@ -7,7 +7,7 @@ jest.resetModules()
 jest.doMock('electron', electron)
 jest.doMock('fs', fs)
 
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 
 class TestSecureStore extends Store<{ foo: string }> {
     protected fileName = 'test'

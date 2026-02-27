@@ -8,12 +8,12 @@ import { paths } from '@src/common/utils/fs'
 import type { T_IPC_Switch } from '@src/common/types'
 import { BROWSER } from '@src/common/constants'
 
-import { History } from '@main/modules/store/history'
-import { Status } from '@main/modules/store/status'
+import { History } from '@main/store/history'
+import { Status } from '@main/store/status'
 
-import { BrowserView } from '@src/main/modules/view/browser'
-import { CenterView } from '@src/main/modules/view/centre'
-import { Logger } from '@main/logger'
+import { BrowserView } from '@main/modules/view/browser'
+import { CenterView } from '@main/modules/view/centre'
+import { Logger } from '@main/lib/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
 /**

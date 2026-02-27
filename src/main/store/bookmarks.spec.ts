@@ -8,7 +8,7 @@ import { electron } from '@test/mock-electron'
 jest.resetModules()
 jest.doMock('electron', electron)
 
-import { Bookmarks } from '@main/modules/store/bookmarks'
+import { Bookmarks } from '@main/store/bookmarks'
 import type { T_Bookmark } from '@src/common/types'
 
 describe('🔖 Bookmarks store (module)', () => {

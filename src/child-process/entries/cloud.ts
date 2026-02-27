@@ -2,10 +2,10 @@ import { utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Status } from '@src/main/modules/store/status'
-import { Logger } from '@main/logger'
+import { Status } from '@main/store/status'
+import { Logger } from '@main/lib/logger'
 /* T_Types */
-import type { CenterView } from '@src/main/modules/view/centre'
+import type { CenterView } from '@main/modules/view/centre'
 import type { T_Cloud_Item } from '@src/common/types'
 /* CONSTANTS */
 import {

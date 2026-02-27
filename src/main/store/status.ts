@@ -1,7 +1,7 @@
 import { type Rectangle } from 'electron'
 import { randomUUID } from 'crypto'
 /* Models */
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 /* T_Types */
 import type { T_Status_Props, T_Status_Store_Props } from '@src/common/types'
 /* CONSTANTS */

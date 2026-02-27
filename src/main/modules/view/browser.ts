@@ -4,6 +4,7 @@ import {
     type WebContentsViewConstructorOptions,
     ipcMain,
 } from 'electron'
+import { ElectronBlocker } from '@main/lib/adblocker-electron'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,
@@ -11,15 +12,16 @@ import {
     CENTRE_PAGES,
     SEARCH_ENGINES,
 } from '@src/common/constants'
-import { Logger } from '@main/logger'
-
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { History } from '@main/modules/store/history'
-import { Status } from '@main/modules/store/status'
-import { Keystrokes } from '@main/modules/store/keystrokes'
+/* Models */
+import { Logger } from '@main/lib/logger'
+import { PopupBlocker } from '@main/store/popup-blocker'
+import { History } from '@main/store/history'
+import { Status } from '@main/store/status'
+import { Keystrokes } from '@main/store/keystrokes'
+/* Utils */
+import { getSafeUrl, isNatural } from '@src/common/utils/common'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
-import { getSafeUrl, isNatural } from '@src/common/utils/common'
 
 export class BrowserView extends WebContentsView {
     public get url(): T_Bookmark {
@@ -220,68 +222,58 @@ export class BrowserView extends WebContentsView {
             fetch.name,
         )
 
-        await import('@main/modules/adblocker-electron')
-            .then(async (module) => {
-                await module.ElectronBlocker.fromPrebuiltAdsAndTracking(
-                    fetch,
-                ).then((blocker) => {
-                    blocker.enableBlockingInSession(this.webContents.session)
-                    this._blocker = blocker
-                    Logger.getInstance().log('🚦AdBlocker is enabled.')
+        ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+            .then((blocker) => {
+                blocker.enableBlockingInSession(this.webContents.session)
+                this._blocker = blocker
+                Logger.getInstance().log('🚦AdBlocker is enabled.')
 
-                    // For debug or future usage
-                    blocker.on('request-blocked', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: blocked',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('request-redirected', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: redirected',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('request-whitelisted', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: whitelisted',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('csp-injected', (request, csps) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: csp',
-                            request.url,
-                            csps,
-                        )
-                    })
-
-                    blocker.on(
-                        'script-injected',
-                        (script: string, url: string) => {
-                            Logger.getInstance().log(
-                                '🚦AdBlocker: script',
-                                script.length,
-                                url,
-                            )
-                        },
+                // For debug or future usage
+                blocker.on('request-blocked', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: blocked',
+                        request.tabId,
+                        request.url,
                     )
+                })
 
-                    blocker.on(
-                        'style-injected',
-                        (style: string, url: string) => {
-                            Logger.getInstance().log(
-                                '🚦AdBlocker: style',
-                                style.length,
-                                url,
-                            )
-                        },
+                blocker.on('request-redirected', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: redirected',
+                        request.tabId,
+                        request.url,
+                    )
+                })
+
+                blocker.on('request-whitelisted', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: whitelisted',
+                        request.tabId,
+                        request.url,
+                    )
+                })
+
+                blocker.on('csp-injected', (request, csps) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: csp',
+                        request.url,
+                        csps,
+                    )
+                })
+
+                blocker.on('script-injected', (script: string, url: string) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: script',
+                        script.length,
+                        url,
+                    )
+                })
+
+                blocker.on('style-injected', (style: string, url: string) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: style',
+                        style.length,
+                        url,
                     )
                 })
             })

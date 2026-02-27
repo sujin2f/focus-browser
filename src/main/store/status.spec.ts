@@ -5,7 +5,7 @@ jest.resetModules()
 jest.doMock('electron', electron)
 jest.doMock('fs', fs)
 
-import { Status } from '@main/modules/store/status'
+import { Status } from '@main/store/status'
 
 describe('Status store (module)', () => {
     test('get/set exist and persist to disk', () => {

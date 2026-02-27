@@ -12,7 +12,7 @@ import type {
     T_IPC_Data,
 } from '@src/common/types'
 /* Models */
-import { Bookmarks } from '@src/main/modules/store/bookmarks'
+import { Bookmarks } from '@main/store/bookmarks'
 
 process.parentPort.once('message', (e) => {
     switch (e.data.channel) {

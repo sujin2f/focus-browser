@@ -25,11 +25,11 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Models */
-import { Anchors } from '@main/modules/store/anchors'
-import { Shortcut } from '@main/modules/store/shortcut'
-import { BrowserView } from '@src/main/modules/view/browser'
-import { CenterView } from '@src/main/modules/view/centre'
-import { Logger } from '@main/logger'
+import { Anchors } from '@main/store/anchors'
+import { Shortcut } from '@main/store/shortcut'
+import { BrowserView } from '@main/modules/view/browser'
+import { CenterView } from '@main/modules/view/centre'
+import { Logger } from '@main/lib/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
 import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'

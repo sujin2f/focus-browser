@@ -25,15 +25,15 @@ jest.resetModules()
 jest.doMock('electron', electron)
 jest.doMock('fs', fs)
 
-jest.doMock('@main/modules/store/status', status)
-jest.doMock('@main/modules/store/shortcut', shortcut)
-jest.doMock('@main/modules/store/anchors', anchors)
-jest.doMock('@main/modules/store/popup-blocker', popupBlocker)
-jest.doMock('@main/modules/store/bookmarks', bookmarks)
+jest.doMock('@main/store/status', status)
+jest.doMock('@main/store/shortcut', shortcut)
+jest.doMock('@main/store/anchors', anchors)
+jest.doMock('@main/store/popup-blocker', popupBlocker)
+jest.doMock('@main/store/bookmarks', bookmarks)
 
 jest.doMock('@main/modules/view/browser', browser)
 
-import { BrowserView } from '@src/main/modules/view/browser'
+import { BrowserView } from '@main/modules/view/browser'
 import {
     REQUEST_HANDLER,
     IPC_CHANNELS,
@@ -41,7 +41,7 @@ import {
     BROWSER,
 } from '@src/common/constants'
 
-import { AbsWindowIPC } from '@src/main/modules/window/abs-window-ipc'
+import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { CenterView } from '../view/centre'
 import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
 

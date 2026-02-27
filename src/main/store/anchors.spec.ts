@@ -11,7 +11,7 @@ readMock.mockReturnValue({
     ],
 })
 
-import { Anchors } from '@main/modules/store/anchors'
+import { Anchors } from '@main/store/anchors'
 
 describe('Anchors store (module)', () => {
     test('singleton exists and push calls fs.writeFileSync', () => {

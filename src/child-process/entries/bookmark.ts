@@ -2,7 +2,7 @@ import { app, utilityProcess, Notification } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/logger'
+import { Logger } from '@main/lib/logger'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
@@ -10,8 +10,8 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 /* T_Types */
-import type { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
-import type { CenterView } from '@src/main/modules/view/centre'
+import type { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
+import type { CenterView } from '@main/modules/view/centre'
 import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 
 export const responseBookmarks = (centre: CenterView) => {

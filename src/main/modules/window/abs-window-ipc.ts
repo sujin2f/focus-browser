@@ -7,12 +7,12 @@ import {
 } from 'electron'
 /* Models */
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
-import { Logger } from '@main/logger'
-import { Status } from '@main/modules/store/status'
-import { Anchors } from '@main/modules/store/anchors'
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Shortcut } from '@main/modules/store/shortcut'
-import { Keystrokes } from '@main/modules/store/keystrokes'
+import { Logger } from '@main/lib/logger'
+import { Status } from '@main/store/status'
+import { Anchors } from '@main/store/anchors'
+import { PopupBlocker } from '@main/store/popup-blocker'
+import { Shortcut } from '@main/store/shortcut'
+import { Keystrokes } from '@main/store/keystrokes'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,

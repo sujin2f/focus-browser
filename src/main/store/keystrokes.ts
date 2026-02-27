@@ -1,4 +1,4 @@
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 
 type KeystrokesStore = {
     version: string

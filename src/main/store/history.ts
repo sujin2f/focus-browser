@@ -1,5 +1,5 @@
 import type { NavigationEntry, NavigationHistory } from 'electron'
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 import { MAX_HISTORY } from '@src/common/constants'
 
 type Props = {

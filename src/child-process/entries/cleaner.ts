@@ -3,12 +3,12 @@ import { utilityProcess } from 'electron'
 import { paths, getIndexedDBPath } from '@src/common/utils/fs'
 import { byteToSize } from '@src/common/utils/common'
 /* Models */
-import { Anchors } from '@main/modules/store/anchors'
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Logger } from '@main/logger'
+import { Anchors } from '@main/store/anchors'
+import { PopupBlocker } from '@main/store/popup-blocker'
+import { Logger } from '@main/lib/logger'
 /* T_Types */
-import type { CenterView } from '@src/main/modules/view/centre'
-import type { BrowserView } from '@src/main/modules/view/browser'
+import type { CenterView } from '@main/modules/view/centre'
+import type { BrowserView } from '@main/modules/view/browser'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 

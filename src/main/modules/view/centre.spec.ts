@@ -8,7 +8,7 @@ jest.resetModules()
 jest.doMock('electron', electron)
 jest.doMock('@main/modules/window/window', window)
 
-import { CenterView } from '@src/main/modules/view/centre'
+import { CenterView } from '@main/modules/view/centre'
 
 describe('Web Browser View (browser.ts)', () => {
     test('construction', async () => {

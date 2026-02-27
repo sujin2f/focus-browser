@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 
 type T_Popup = {
     blocked: Set<string>

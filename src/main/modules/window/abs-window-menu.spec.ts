@@ -18,15 +18,15 @@ import { anchors, bookmarks, shortcut, anchorPush } from '@test/mock-store'
 
 jest.resetModules()
 jest.doMock('electron', electron)
-jest.doMock('@main/modules/store/anchors', anchors)
-jest.doMock('@main/modules/store/shortcut', shortcut)
-jest.doMock('@main/modules/store/bookmarks', bookmarks)
+jest.doMock('@main/store/anchors', anchors)
+jest.doMock('@main/store/shortcut', shortcut)
+jest.doMock('@main/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
-import { BrowserView } from '@src/main/modules/view/browser'
+import { BrowserView } from '@main/modules/view/browser'
 import { CENTRE_PAGES, BROWSER } from '@src/common/constants'
 
-import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
+import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()

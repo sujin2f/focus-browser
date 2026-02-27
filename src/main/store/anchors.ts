@@ -1,4 +1,4 @@
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
 

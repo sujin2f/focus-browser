@@ -29,7 +29,6 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
 
     protected setIpcCloudHandler() {
         ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, message) => {
-            console.log(handler, message)
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE_FAIL:
                     this.callbackCloudResponseFail(message)

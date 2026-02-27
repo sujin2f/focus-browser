@@ -85,7 +85,7 @@
             "^@main/(.*)$": "<rootDir>/src/main/$1",
             "^@home/(.*)$": "<rootDir>/src/renderer/src/$1"
         },
-        "setupFiles": [
+        "setupFilesAfterEnv": [
             "<rootDir>/.jest/setup.jest.cjs"
         ],
         "testMatch": [

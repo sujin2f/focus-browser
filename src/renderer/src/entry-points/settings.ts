@@ -1,6 +1,6 @@
 import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, getSection, ipcRenderer } from '@home/utils'
+import { checkElectron, getSection, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { H2 } from '@home/template-parts/h2'

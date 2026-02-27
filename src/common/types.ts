@@ -60,6 +60,17 @@ export interface T_Bookmark extends NavigationEntry {
     parent?: string
 }
 
+export type T_Bookmark_Store = {
+    dirs: Record<string, T_Bookmark>
+    items: Record<string, T_Bookmark>
+}
+
+export type T_IPC_Bookmark = {
+    message?: string
+    bookmark?: T_Bookmark
+    isDir?: string
+}
+
 /**
  * Popup Blocker
  */
@@ -109,7 +120,8 @@ export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
 
 export type T_IPC_Message = {
     [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
-    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[]
+    [IPC_CHANNELS.BOOKMARK]: T_IPC_Bookmark
+    [IPC_CHANNELS.BOOKMARK_RESPONSE]: T_Bookmark_Store
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
     [IPC_CHANNELS.HISTORY]: T_Bookmark[]

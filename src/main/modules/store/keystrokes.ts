@@ -9,15 +9,17 @@ export class Keystrokes extends Store<KeystrokesStore> {
     static instance: Keystrokes
     static getInstance(): Keystrokes {
         if (!Keystrokes.instance) {
-            Keystrokes.instance = new Keystrokes('keystrokes', {
-                version: '1',
-                keystrokes: {},
-            })
+            Keystrokes.instance = new Keystrokes()
             Keystrokes.instance.parse()
         }
         return Keystrokes.instance
     }
 
+    protected fileName = 'keystrokes'
+    protected defaults = {
+        version: '1',
+        keystrokes: {},
+    }
     protected isSecure = true
 
     parse() {
@@ -29,6 +31,8 @@ export class Keystrokes extends Store<KeystrokesStore> {
                 keystrokes: {},
             }
         }
+
+        super.mergeDefault()
     }
 
     update(host: string, keystroke: string) {

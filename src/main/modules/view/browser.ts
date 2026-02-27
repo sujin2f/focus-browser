@@ -4,6 +4,7 @@ import {
     type WebContentsViewConstructorOptions,
     ipcMain,
 } from 'electron'
+/* CONSTANTS */
 import {
     IPC_CHANNELS,
     MainEventTypes,

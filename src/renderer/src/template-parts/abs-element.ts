@@ -1,17 +1,17 @@
 /* Utils */
-import { getSection } from '@home/utils'
+import { getSection } from '@src/renderer/src/utils'
 
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node
     protected _element?: T
     public get element(): T {
         if (!this._element) {
-            throw new Error('Cannot find _element')
+            throw new Error(`Cannot find _element ${this.selector}`)
         }
         return this._element
     }
 
-    constructor(selector: string = '') {
+    constructor(private selector: string = '') {
         if (!selector) {
             return
         }

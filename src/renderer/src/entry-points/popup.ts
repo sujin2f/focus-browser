@@ -1,6 +1,6 @@
 import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@home/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
@@ -64,12 +64,12 @@ class Popup extends A_ListSearch<PopupBlocker> {
         }
     }
 
-    filterList(item: PopupBlocker, keyword: string): boolean {
+    protected filterList(item: PopupBlocker, keyword: string): boolean {
         return item.host.toLowerCase().includes(keyword)
     }
 
-    renderList() {
-        super.renderList()
+    private renderList() {
+        this.list.element.innerHTML = ''
 
         this.items.forEach(({ data: popup, items }) => {
             const content = `${popup.allowed ? `${EMOJI.CHECKED} ` : ''}${popup.host}`

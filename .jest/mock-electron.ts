@@ -88,4 +88,10 @@ export const electron = () => ({
         encryptString: mockEncryptString,
         decryptString: mockDecryptString,
     },
+    utilityProcess: {
+        fork: () => ({
+            postMessage: jest.fn(),
+            once: jest.fn(),
+        }),
+    },
 })

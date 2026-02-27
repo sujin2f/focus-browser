@@ -83,7 +83,7 @@
             "^@test/(.*)$": "<rootDir>/.jest/$1",
             "^@src/(.*)$": "<rootDir>/src/$1",
             "^@main/(.*)$": "<rootDir>/src/main/$1",
-            "^@home/(.*)$": "<rootDir>/src/renderer/$1"
+            "^@home/(.*)$": "<rootDir>/src/renderer/src/$1"
         },
         "setupFiles": [
             "<rootDir>/.jest/setup.jest.cjs"

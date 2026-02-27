@@ -1,6 +1,6 @@
 import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
-import { checkElectron, ipcRenderer, navigate } from '@home/utils'
+import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
@@ -25,7 +25,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
     }
 
-    filterList(item: T_Bookmark, keyword: string): boolean {
+    protected filterList(item: T_Bookmark, keyword: string): boolean {
         return item.title.toLowerCase().includes(keyword)
     }
 
@@ -55,8 +55,8 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         })
     }
 
-    renderList() {
-        super.renderList()
+    private renderList() {
+        this.list.element.innerHTML = ''
 
         this.items.forEach(({ data: anchor, items }) => {
             const item = new ListItem(anchor.title, anchor.url)

@@ -1,6 +1,6 @@
 import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
 /* Utils */
-import { checkElectron, ipcRenderer } from '@home/utils'
+import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
@@ -82,15 +82,8 @@ class History extends A_ListCloudPush<T_Bookmark> {
             data: bookmark,
             items: [] as ListItem[],
         }))
-        this.renderList()
-    }
 
-    filterList(item: T_Bookmark, keyword: string): boolean {
-        return item.title.toLowerCase().includes(keyword)
-    }
-
-    renderList() {
-        super.renderList()
+        this.list.element.innerHTML = ''
 
         const reversed = this.items.reverse()
         const length = this.items.length
@@ -138,6 +131,10 @@ class History extends A_ListCloudPush<T_Bookmark> {
 
             items.push(item, send)
         })
+    }
+
+    protected filterList(item: T_Bookmark, keyword: string): boolean {
+        return item.title.toLowerCase().includes(keyword)
     }
 }
 

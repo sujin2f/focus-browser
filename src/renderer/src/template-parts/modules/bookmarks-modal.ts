@@ -1,5 +1,5 @@
 /* Utils */
-import { ipcRenderer } from '@home/utils'
+import { ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Button } from '@home/template-parts/button'
 import { Notification } from '@home/template-parts/notification'
@@ -64,7 +64,7 @@ export class BookmarkModal extends Modal {
                 ipcRenderer.send(
                     IPC_CHANNELS.BOOKMARK,
                     REQUEST_HANDLER.REMOVE,
-                    [this.bookmark],
+                    { bookmark: this.bookmark },
                 )
             })
 
@@ -155,27 +155,27 @@ export class BookmarkModal extends Modal {
             }
 
             // Edit
-            ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, [
-                {
+            ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, {
+                bookmark: {
                     id: this.bookmark.id,
                     title: this.title.value,
                     url,
                     parent,
                     shortcut: this.shortcut.value,
                 },
-            ])
+            })
             return
         }
 
         // Add
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, [
-            {
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
+            bookmark: {
                 id: '',
                 title: this.title.value,
                 url,
                 parent,
                 shortcut: this.shortcut.value,
             },
-        ])
+        })
     }
 }

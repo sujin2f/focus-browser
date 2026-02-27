@@ -17,11 +17,14 @@ type ShortcutStore = {
 }
 
 export class Shortcut extends Store<ShortcutStore> {
+    protected fileName = 'shortcut'
+    protected defaults = {
+        version: '1',
+        shortcuts: {},
+    }
+
     constructor() {
-        super('shortcut', {
-            version: '1',
-            shortcuts: {},
-        })
+        super()
         this.parse()
     }
 
@@ -34,6 +37,7 @@ export class Shortcut extends Store<ShortcutStore> {
                 shortcuts: {},
             }
         }
+        super.mergeDefault()
     }
 
     update(shortcuts: T_Shortcut_Store) {

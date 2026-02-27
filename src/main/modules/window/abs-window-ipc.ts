@@ -5,14 +5,12 @@ import {
     type IpcMainEvent,
     type ContextMenuParams,
 } from 'electron'
-
-import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 /* Models */
+import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { Logger } from '@main/logger'
 import { Status } from '@main/modules/store/status'
 import { Anchors } from '@main/modules/store/anchors'
 import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Bookmarks } from '@main/modules/store/bookmarks'
 import { Shortcut } from '@main/modules/store/shortcut'
 import { Keystrokes } from '@main/modules/store/keystrokes'
 /* CONSTANTS */
@@ -30,12 +28,14 @@ import {
 /* Utils */
 import { isBeta, isTest } from '@src/common/utils/common'
 import {
-    fetchCloudItems,
     getCleanerSizes,
-    removeCloudItem,
     removeIndexedDB,
+} from '@src/child-process/entries/cleaner'
+import {
+    fetchCloudItems,
+    removeCloudItem,
     uploadCloudItem,
-} from '@src/main/lib/utils/process'
+} from '@src/child-process/entries/cloud'
 /* T_Types */
 import type {
     T_Bookmark,
@@ -45,7 +45,12 @@ import type {
     T_IPC_Switch,
     T_IPC_Message,
     T_Cloud_Item,
+    T_IPC_Bookmark,
 } from '@src/common/types'
+import {
+    modifyBookmark,
+    responseBookmarks,
+} from '@src/child-process/entries/bookmark'
 
 /**
  * All starts with here
@@ -57,7 +62,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.STATUS, this.onStatus.bind(this))
         ipcMain.on(IPC_CHANNELS.SWITCH, this.onSwitch.bind(this))
         ipcMain.on(IPC_CHANNELS.HISTORY, this.onHistory.bind(this))
-        ipcMain.on(IPC_CHANNELS.BOOKMARK, this.onBookmarks.bind(this))
+        ipcMain.on(IPC_CHANNELS.BOOKMARK, (_, handler, arg) => {
+            this.onBookmarks(handler, arg)
+        })
         ipcMain.on(IPC_CHANNELS.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(IPC_CHANNELS.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
         ipcMain.on(IPC_CHANNELS.FIND, this.onFind.bind(this))
@@ -222,73 +229,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async onBookmarks(
-        _: IpcMainEvent,
-        handler: REQUEST_HANDLER,
-        bookmarks: T_Bookmark[],
-    ) {
-        const storeBookmarks = new Bookmarks()
-
-        switch (handler) {
-            case REQUEST_HANDLER.REQUEST:
-                this.sendBookmarks(
-                    REQUEST_HANDLER.RESPONSE,
-                    storeBookmarks.get(),
-                )
-                return
-            case REQUEST_HANDLER.ADD: {
-                let bookmark = bookmarks[0]
-                if (bookmark.id === 'from-cloud') {
-                    bookmark = JSON.parse(
-                        Buffer.from(bookmark.title!, 'base64').toString(
-                            'utf-8',
-                        ),
-                    )
-                }
-
-                storeBookmarks.push(bookmark)
-                storeBookmarks.save()
-                this.sendBookmarks(
-                    REQUEST_HANDLER.RESPONSE_SUCCESS,
-                    storeBookmarks.get(),
-                )
-                return
-            }
-            case REQUEST_HANDLER.MODIFY:
-                storeBookmarks.update(bookmarks[0])
-                storeBookmarks.save()
-                this.sendBookmarks(
-                    REQUEST_HANDLER.RESPONSE_SUCCESS,
-                    storeBookmarks.get(),
-                )
-                return
-            case REQUEST_HANDLER.REMOVE: {
-                if (!bookmarks[0].id) {
-                    this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
-                        { title: 'Failed to remove bookmark.' } as T_Bookmark,
-                    ])
-                    return
-                }
-                const result = storeBookmarks.remove(bookmarks[0].id)
-                if (result) {
-                    storeBookmarks.save()
-                    this.sendBookmarks(
-                        REQUEST_HANDLER.RESPONSE_SUCCESS,
-                        storeBookmarks.get(),
-                    )
-                    return
-                }
-                this.sendBookmarks(REQUEST_HANDLER.RESPONSE_FAIL, [
-                    { title: 'Failed to remove bookmark.' } as T_Bookmark,
-                ])
-                return
-            }
+    private async onBookmarks(handler: REQUEST_HANDLER, args: T_IPC_Bookmark) {
+        if (handler === REQUEST_HANDLER.REQUEST) {
+            responseBookmarks(this.centre)
+            return
         }
-    }
 
-    protected sendBookmarks(handler: REQUEST_HANDLER, bookmarks: T_Bookmark[]) {
-        Logger.getInstance().info(`IPC sendBookmarks: ${bookmarks.length}`)
-        this.centre.send(IPC_CHANNELS.BOOKMARK, handler, bookmarks)
+        modifyBookmark(handler, this.centre, args)
     }
 
     private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {

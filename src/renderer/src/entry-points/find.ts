@@ -1,6 +1,11 @@
 import { A_Entry } from '@home/entry-points/abstracts/abs-entry'
 /* Utils */
-import { checkElectron, getSection, ipcRenderer, navigate } from '@home/utils'
+import {
+    checkElectron,
+    getSection,
+    ipcRenderer,
+    navigate,
+} from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Input } from '@home/template-parts/input'
 import { Button } from '@home/template-parts/button'

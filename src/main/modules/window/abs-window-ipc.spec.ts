@@ -16,11 +16,8 @@ import {
     popupBlockerToggle,
     shortcut,
     status,
-    bookmarkPush,
     statusMerge,
     anchorRemove,
-    bookmarkUpdate,
-    bookmarkRemove,
 } from '@test/mock-store'
 import { fs } from '@test/mock-fs'
 
@@ -155,30 +152,6 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     test('onHistory > clear', () => {
         ipc[2][1](null, REQUEST_HANDLER.REMOVE)
         expect(historyClear).toHaveBeenCalled()
-    })
-
-    test('onBookmarks > request', () => {
-        ipc[3][1](null, REQUEST_HANDLER.REQUEST)
-        expect(send).toHaveBeenCalledWith(
-            IPC_CHANNELS.BOOKMARK,
-            REQUEST_HANDLER.RESPONSE,
-            [],
-        )
-    })
-
-    test('onBookmarks > add', () => {
-        ipc[3][1](null, REQUEST_HANDLER.ADD, [{ url: '1' }])
-        expect(bookmarkPush).toHaveBeenCalledWith({ url: '1' })
-    })
-
-    test('onBookmarks > update', () => {
-        ipc[3][1](null, REQUEST_HANDLER.MODIFY, [{ url: '1' }])
-        expect(bookmarkUpdate).toHaveBeenCalledWith({ url: '1' })
-    })
-
-    test('onBookmarks > remove', () => {
-        ipc[3][1](null, REQUEST_HANDLER.REMOVE, [{ id: 'id' }])
-        expect(bookmarkRemove).toHaveBeenCalledWith('id')
     })
 
     test('onAnchors > request', () => {

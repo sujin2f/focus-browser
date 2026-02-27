@@ -8,9 +8,9 @@ import {
     SUJINC_URL,
 } from '@src/common/constants'
 /* Utils */
-import { getSection, ipcRenderer, navigate } from '@home/utils'
+import { getSection, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* Models */
-import { Logger } from '@src/renderer/logger'
+import { Logger } from '@src/renderer/src/utils/logger'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
 /* <HTML template-part /> */

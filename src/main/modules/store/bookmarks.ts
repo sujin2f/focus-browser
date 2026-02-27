@@ -13,14 +13,6 @@ export class Bookmarks extends Store<T_Store> {
     protected fileName = 'bookmarks'
     protected defaults = { version: 1, dirs: {}, items: {} }
 
-    public get dirs() {
-        return Object.values(this.data.dirs)
-    }
-
-    public get items() {
-        return Object.values(this.data.items)
-    }
-
     public get ipc(): T_Bookmark_Store {
         return {
             dirs: this.data.dirs,
@@ -34,23 +26,25 @@ export class Bookmarks extends Store<T_Store> {
     }
 
     public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
-        if (isDir && this.data.dirs[bookmark.id]) {
+        // 🤬 Title is empty
+        if (!bookmark.title) return false
+
+        if (isDir) {
+            // 🤬 Directory Not exist
+            if (!this.data.dirs[bookmark.id]) return false
             this.data.dirs[bookmark.id] = bookmark
             return bookmark
         }
 
-        // URL is invalid
+        // 🤬 URL is invalid
         const url = getSafeUrl(bookmark.url)
-        if (!url) {
-            return false
-        }
+        if (!url) return false
 
-        if (this.data.items[bookmark.id]) {
-            this.data.items[bookmark.id] = { ...bookmark, url: url.toString() }
-            return { ...bookmark, url: url.toString() }
-        }
+        // 🤬 Not exist
+        if (!this.data.items[bookmark.id]) return false
 
-        return false
+        this.data.items[bookmark.id] = { ...bookmark, url: url.toString() }
+        return { ...bookmark, url: url.toString() }
     }
 
     /**
@@ -59,6 +53,9 @@ export class Bookmarks extends Store<T_Store> {
      * @returns
      */
     public push(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
+        // 🤬 Title is empty
+        if (!bookmark.title) return false
+
         bookmark.id = randomUUID().toString()
 
         // Directory
@@ -70,17 +67,13 @@ export class Bookmarks extends Store<T_Store> {
             return bookmark
         }
 
-        // URL is invalid
+        // 🤬 URL is invalid
         const url = getSafeUrl(bookmark.url)
-        if (!url) {
-            return false
-        }
+        if (!url) return false
 
-        // URL duplicated
-        for (const item of this.items) {
-            if (item.url === bookmark.url) {
-                return false
-            }
+        // 🤬 URL duplicated
+        for (const item of Object.values(this.data.items)) {
+            if (item.url === bookmark.url) return false
         }
 
         this._data.items = {
@@ -93,7 +86,7 @@ export class Bookmarks extends Store<T_Store> {
     public remove(id: string, isDir = false) {
         if (isDir) {
             delete this.data.dirs[id]
-            this.items.forEach((bookmark) => {
+            Object.values(this.data.items).forEach((bookmark) => {
                 if (bookmark.parent === id) {
                     delete bookmark.parent
                 }
@@ -110,6 +103,8 @@ export class Bookmarks extends Store<T_Store> {
 
     private migrate() {
         const fileContent = this.getFileContent()
+
+        // 🤬 File is empty
         if (!fileContent) {
             this._data = this.defaults
             return

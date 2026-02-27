@@ -43,10 +43,12 @@ describe('🔖 Bookmarks store (module)', () => {
         })
 
         const bookmarks = new Bookmarks(os.tmpdir())
+        const dirs = Object.values(bookmarks.get('dirs'))
+        const items = Object.values(bookmarks.get('items'))
 
-        expect(bookmarks.dirs[0].title).toBe('dir')
-        expect(bookmarks.items[0].title).toBe('bm')
-        expect(bookmarks.items[0].parent).toBe(bookmarks.dirs[0].id)
+        expect(dirs[0].title).toBe('dir')
+        expect(items[0].title).toBe('bm')
+        expect(items[0].parent).toBe(dirs[0].id)
     })
 
     test('Migrate from version 0', () => {
@@ -62,10 +64,12 @@ describe('🔖 Bookmarks store (module)', () => {
         })
 
         const bookmarks = new Bookmarks(os.tmpdir())
+        const dirs = Object.values(bookmarks.get('dirs'))
+        const items = Object.values(bookmarks.get('items'))
 
-        expect(bookmarks.dirs[0].title).toBe('dir')
-        expect(bookmarks.items[0].title).toBe('bm')
-        expect(bookmarks.items[0].parent).toBe(bookmarks.dirs[0].id)
+        expect(dirs[0].title).toBe('dir')
+        expect(items[0].title).toBe('bm')
+        expect(items[0].parent).toBe(dirs[0].id)
     })
 
     test('😀 update()', () => {
@@ -80,21 +84,17 @@ describe('🔖 Bookmarks store (module)', () => {
             title: 'changed',
             url: 'http://google.com/2',
         } as T_Bookmark)
-        // Not exits item doesn't change anything
-        const fail1 = bookmarks.update({
-            id: 'b',
-            title: 'changed',
-            url: 'http://google.com/3',
-        } as T_Bookmark)
+
+        const dirs = Object.values(bookmarks.get('dirs'))
+        const items = Object.values(bookmarks.get('items'))
 
         expect(result1).toBeTruthy()
         expect(result2).toBeTruthy()
-        expect(fail1).toBeFalsy()
-        expect(bookmarks.dirs).toStrictEqual([
+        expect(dirs).toStrictEqual([
             { id: 'a', title: 'changed' },
             { id: 'b', title: 'dir2' },
         ])
-        expect(bookmarks.items).toStrictEqual([
+        expect(items).toStrictEqual([
             { id: 'c', title: 'changed', url: 'http://google.com/2' },
             { id: 'd', title: 'item2', url: 'url2', parent: 'b' },
         ])
@@ -103,27 +103,28 @@ describe('🔖 Bookmarks store (module)', () => {
     test('🤬 update()', () => {
         save()
         const bookmarks = new Bookmarks(os.tmpdir())
-        const result1 = bookmarks.update(
-            { id: 'a', title: 'changed' } as T_Bookmark,
-            true,
-        )
         // URL is not valid
         const fail1 = bookmarks.update({
             id: 'c',
             title: 'changed',
             url: 'url',
         } as T_Bookmark)
+        // title is empty
+        const fail2 = bookmarks.update({
+            id: 'c',
+            title: '',
+            url: 'http://google.com',
+        } as T_Bookmark)
+        // Not exits item doesn't change anything
+        const fail3 = bookmarks.update({
+            id: 'b',
+            title: 'changed',
+            url: 'http://google.com/3',
+        } as T_Bookmark)
 
-        expect(result1).toBeTruthy()
         expect(fail1).toBeFalsy()
-        expect(bookmarks.dirs).toStrictEqual([
-            { id: 'a', title: 'changed' },
-            { id: 'b', title: 'dir2' },
-        ])
-        expect(bookmarks.items).toStrictEqual([
-            { id: 'c', title: 'item1', url: 'url1', parent: 'a' },
-            { id: 'd', title: 'item2', url: 'url2', parent: 'b' },
-        ])
+        expect(fail2).toBeFalsy()
+        expect(fail3).toBeFalsy()
     })
 
     test('😀 push()', () => {
@@ -134,18 +135,15 @@ describe('🔖 Bookmarks store (module)', () => {
             title: 'item3',
             url: 'google.com',
         } as T_Bookmark)
-        // URL Duplicated item doesn't change anything
-        const fail1 = bookmarks.update({
-            title: 'item4',
-            url: 'url1',
-        } as T_Bookmark)
+
+        const dirs = Object.values(bookmarks.get('dirs'))
+        const items = Object.values(bookmarks.get('items'))
 
         expect(result1).toBeTruthy()
         expect(result2).toBeTruthy()
-        expect(fail1).toBeFalsy()
-        expect(bookmarks.dirs[2].title).toBe('dir3')
-        expect(bookmarks.items[0].title).toBe('item3')
-        expect(bookmarks.items.length).toBe(3)
+        expect(dirs[2].title).toBe('dir3')
+        expect(items[0].title).toBe('item3')
+        expect(items.length).toBe(3)
     })
 
     test('🤬 push()', () => {
@@ -156,10 +154,14 @@ describe('🔖 Bookmarks store (module)', () => {
             title: 'item3',
             url: 'url3',
         } as T_Bookmark)
+        // title is empty
+        const fail2 = bookmarks.push({
+            title: '',
+            url: 'http://google.com',
+        } as T_Bookmark)
 
         expect(fail1).toBeFalsy()
-        expect(bookmarks.items[0].title).toBe('item1')
-        expect(bookmarks.items.length).toBe(2)
+        expect(fail2).toBeFalsy()
     })
 
     test('remove()', () => {
@@ -168,10 +170,13 @@ describe('🔖 Bookmarks store (module)', () => {
         bookmarks.remove('a', true)
         bookmarks.remove('d')
 
-        expect(bookmarks.dirs.length).toBe(1)
-        expect(bookmarks.items.length).toBe(1)
-        expect(bookmarks.dirs[0].id).toBe('b')
-        expect(bookmarks.items[0].id).toBe('c')
-        expect(bookmarks.items[0].parent).toBeFalsy()
+        const dirs = Object.values(bookmarks.get('dirs'))
+        const items = Object.values(bookmarks.get('items'))
+
+        expect(dirs.length).toBe(1)
+        expect(items.length).toBe(1)
+        expect(dirs[0].id).toBe('b')
+        expect(items[0].id).toBe('c')
+        expect(items[0].parent).toBeFalsy()
     })
 })

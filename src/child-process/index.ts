@@ -5,7 +5,12 @@ import { base64decode, base64encode } from '@src/common/utils/security'
 /* CONSTANTS */
 import { REQUEST_HANDLER, SUJINC_URL } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark, T_Cloud_Item, T_IPC_Data } from '@src/common/types'
+import type {
+    T_Bookmark,
+    T_Bookmark_Store,
+    T_Cloud_Item,
+    T_IPC_Data,
+} from '@src/common/types'
 /* Models */
 import { Bookmarks } from '@src/main/modules/store/bookmarks'
 
@@ -37,7 +42,10 @@ process.parentPort.once('message', (e) => {
 
         case 'list-bookmark': {
             const store = new Bookmarks(e.data.path)
-            process.parentPort.postMessage(store.ipc)
+            process.parentPort.postMessage({
+                dirs: store.get('dirs'),
+                items: store.get('items'),
+            } satisfies T_Bookmark_Store)
             return
         }
 

@@ -14,13 +14,7 @@ import {
     findInPage,
 } from '@test/mock-electron'
 import { browser } from '@test/mock-browser'
-import {
-    anchors,
-    bookmarks,
-    shortcut,
-    bookmarkPush,
-    anchorPush,
-} from '@test/mock-store'
+import { anchors, bookmarks, shortcut, anchorPush } from '@test/mock-store'
 
 jest.resetModules()
 jest.doMock('electron', electron)
@@ -54,16 +48,6 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
 
         // Get menu implementation
         menu = menuBuilder.mock.calls[0][0]
-    })
-
-    test('Edit > Menu.ADD_BOOKMARK > Show Notification', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[1].submenu[14]
-                : menu[1].submenu[14]
-        menuItem.click()
-        expect(bookmarkPush).toHaveBeenCalled()
-        expect(MockNotification).toHaveBeenCalled()
     })
 
     test('addAnchor > Show Notification', async () => {

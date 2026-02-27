@@ -1,11 +1,16 @@
-import { app, utilityProcess } from 'electron'
+import { app, utilityProcess, Notification } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
 import { Logger } from '@main/logger'
 /* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
+import {
+    CENTRE_PAGES,
+    IPC_CHANNELS,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
 /* T_Types */
+import type { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
 import type { CenterView } from '@src/main/modules/view/centre'
 import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 
@@ -63,6 +68,43 @@ export const modifyBookmark = (
         } else {
             Logger.getInstance().error('👶', `Child process ${channel} failed.`)
         }
+
+        child.kill()
+    })
+}
+
+export const addBookmarkFromBrowser = (
+    window: AbsWindowMenu,
+    url: string,
+    title: string,
+) => {
+    const child = utilityProcess.fork(paths.childProcess)
+    const channel = getChannel(REQUEST_HANDLER.ADD)
+    child.postMessage({
+        channel,
+        path: app.getPath('userData'),
+        args: { items: { id: '', url, title } },
+    })
+    child.once('message', (message) => {
+        if (message.handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
+            Logger.getInstance().log('👶', `Child process ${channel} finished.`)
+        } else {
+            Logger.getInstance().error('👶', `Child process ${channel} failed.`)
+            child.kill()
+            return
+        }
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        })
+        // Clicking the notification navigates to the bookmark page
+        notification.addListener('click', () => {
+            window.switch({ scene: CENTRE_PAGES.BOOKMARK })
+        })
+        notification.show()
+        Logger.getInstance().log('addBookmark >> notification should be shown.')
 
         child.kill()
     })

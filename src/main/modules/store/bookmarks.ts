@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { Store } from '@main/modules/store/store'
 /* T_Types */
 import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
+import { getSafeUrl } from '@src/common/utils/common'
 
 type T_Store = T_Bookmark_Store & {
     version: number
@@ -32,14 +33,24 @@ export class Bookmarks extends Store<T_Store> {
         this.migrate()
     }
 
-    public update(value: T_Bookmark, isDir = false) {
-        if (isDir && this.data.dirs[value.id]) {
-            this.data.dirs[value.id] = value
-            return
+    public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
+        if (isDir && this.data.dirs[bookmark.id]) {
+            this.data.dirs[bookmark.id] = bookmark
+            return bookmark
         }
-        if (this.data.items[value.id]) {
-            this.data.items[value.id] = value
+
+        // URL is invalid
+        const url = getSafeUrl(bookmark.url)
+        if (!url) {
+            return false
         }
+
+        if (this.data.items[bookmark.id]) {
+            this.data.items[bookmark.id] = { ...bookmark, url: url.toString() }
+            return { ...bookmark, url: url.toString() }
+        }
+
+        return false
     }
 
     /**
@@ -47,7 +58,7 @@ export class Bookmarks extends Store<T_Store> {
      * @param bookmark
      * @returns
      */
-    public push(bookmark: T_Bookmark, isDir = false): string | false {
+    public push(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
         bookmark.id = randomUUID().toString()
 
         // Directory
@@ -56,7 +67,13 @@ export class Bookmarks extends Store<T_Store> {
                 ...this._data.dirs,
                 [bookmark.id]: bookmark,
             }
-            return bookmark.id
+            return bookmark
+        }
+
+        // URL is invalid
+        const url = getSafeUrl(bookmark.url)
+        if (!url) {
+            return false
         }
 
         // URL duplicated
@@ -67,17 +84,20 @@ export class Bookmarks extends Store<T_Store> {
         }
 
         this._data.items = {
-            [bookmark.id]: bookmark,
+            [bookmark.id]: { ...bookmark, url: url.toString() },
             ...this._data.items,
         }
-        return bookmark.id
+        return { ...bookmark, url: url.toString() }
     }
 
-    public remove(id: string) {
-        const dir = this.data.dirs[id]
-        if (dir) {
+    public remove(id: string, isDir = false) {
+        if (isDir) {
             delete this.data.dirs[id]
-            this.items.forEach((bookmark) => delete bookmark.parent)
+            this.items.forEach((bookmark) => {
+                if (bookmark.parent === id) {
+                    delete bookmark.parent
+                }
+            })
             return
         }
 

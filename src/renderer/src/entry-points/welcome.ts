@@ -55,7 +55,7 @@ class Welcome extends A_List<T_Bookmark> {
 
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARK_RESPONSE, (_, response) => {
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
             if (response) {
                 const { dirs, items } = callbackRequestBookmarks(response)
                 this.dirs = dirs

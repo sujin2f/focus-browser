@@ -5,7 +5,7 @@ export class Modal extends A_Element<HTMLElement> {
         super('#modal')
     }
 
-    protected init() {
+    protected afterAppend() {
         this.select('close').addEventListener('click', () => this.hide())
     }
 

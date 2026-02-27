@@ -73,7 +73,7 @@ class Importer extends A_List<T_Cloud_Item> {
         this.setEnabled(false)
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(
-            IPC_CHANNELS.BOOKMARK_RESPONSE,
+            IPC_CHANNELS.BOOKMARKS_RESPONSE,
             (handler, response) => {
                 if (response) {
                     // TODO
@@ -89,7 +89,7 @@ class Importer extends A_List<T_Cloud_Item> {
             },
         )
 
-        ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, items = []) => {
+        ipcRenderer.once(IPC_CHANNELS.CLOUD_RESPONSE, (handler, items = []) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
                     this.items = items.map((item) => ({
@@ -145,13 +145,13 @@ class Importer extends A_List<T_Cloud_Item> {
                     ipcRenderer.send(
                         IPC_CHANNELS.CLOUD,
                         REQUEST_HANDLER.REMOVE,
-                        [data],
+                        { item: data },
                     )
                     ipcRenderer.send(
                         IPC_CHANNELS.BOOKMARK,
                         REQUEST_HANDLER.ADD,
                         {
-                            bookmark: {
+                            item: {
                                 id: 'from-cloud',
                                 url: '',
                                 title: data.message!,

@@ -5,11 +5,7 @@ import { base64decode, base64encode } from '@src/common/utils/security'
 /* CONSTANTS */
 import { REQUEST_HANDLER, SUJINC_URL } from '@src/common/constants'
 /* T_Types */
-import type {
-    T_Bookmark,
-    T_Cloud_Item,
-    T_IPC_Bookmark,
-} from '@src/common/types'
+import type { T_Bookmark, T_Cloud_Item, T_IPC_Data } from '@src/common/types'
 /* Models */
 import { Bookmarks } from '@src/main/modules/store/bookmarks'
 
@@ -46,34 +42,51 @@ process.parentPort.once('message', (e) => {
         }
 
         case 'add-bookmark': {
-            const { bookmark, isDir } = e.data.arg as T_IPC_Bookmark
-            addBookmark(e.data.path, bookmark!, Boolean(isDir))
+            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
+            addBookmark(e.data.path, item!, Boolean(meta))
             return
         }
 
         case 'update-bookmark': {
-            const { bookmark, isDir } = e.data.arg as T_IPC_Bookmark
-            if (!bookmark) {
+            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
+            if (!item) {
                 process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_FAIL)
                 return
             }
+            const isDir = Boolean(meta)
             const store = new Bookmarks(e.data.path)
-            store.update(bookmark, Boolean(isDir))
+            const result = store.update(item, Boolean(meta))
             store.save()
-            process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_SUCCESS)
+
+            const handler = !result
+                ? REQUEST_HANDLER.RESPONSE_FAIL
+                : REQUEST_HANDLER.RESPONSE_SUCCESS
+
+            process.parentPort.postMessage({
+                handler,
+                item,
+                meta: { isDir, action: 'updated' },
+            })
             return
         }
 
         case 'remove-bookmark': {
-            const { bookmark } = e.data.arg as T_IPC_Bookmark
-            if (!bookmark || !bookmark?.id) {
-                process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_FAIL)
+            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
+            if (!item || !item?.id) {
+                process.parentPort.postMessage({
+                    handler: REQUEST_HANDLER.RESPONSE_FAIL,
+                })
                 return
             }
+            const isDir = Boolean(meta)
             const store = new Bookmarks(e.data.path)
-            store.remove(bookmark.id)
+            store.remove(item.id, isDir)
             store.save()
-            process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_SUCCESS)
+            process.parentPort.postMessage({
+                handler: REQUEST_HANDLER.RESPONSE_SUCCESS,
+                item,
+                meta: { isDir, action: 'removed' },
+            })
             return
         }
 
@@ -190,5 +203,9 @@ const addBookmark = (path: string, bookmark: T_Bookmark, isDir: boolean) => {
         ? REQUEST_HANDLER.RESPONSE_FAIL
         : REQUEST_HANDLER.RESPONSE_SUCCESS
 
-    process.parentPort.postMessage(handler)
+    process.parentPort.postMessage({
+        handler,
+        item: result,
+        meta: { isDir, action: 'added' },
+    })
 }

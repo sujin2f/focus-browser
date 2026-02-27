@@ -21,7 +21,7 @@ export class Card extends A_Element<HTMLAnchorElement> {
         super('#card')
     }
 
-    protected init() {
+    protected afterAppend() {
         this.element.querySelector('h2')!.textContent = this._title
         if (this._description) {
             this.element.querySelector('p')!.textContent = this._description

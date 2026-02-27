@@ -45,7 +45,7 @@ import type {
     T_IPC_Switch,
     T_IPC_Message,
     T_Cloud_Item,
-    T_IPC_Bookmark,
+    T_IPC_Data,
 } from '@src/common/types'
 import {
     modifyBookmark,
@@ -229,7 +229,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async onBookmarks(handler: REQUEST_HANDLER, args: T_IPC_Bookmark) {
+    private async onBookmarks(
+        handler: REQUEST_HANDLER,
+        args: T_IPC_Data<T_Bookmark>,
+    ) {
         if (handler === REQUEST_HANDLER.REQUEST) {
             responseBookmarks(this.centre)
             return
@@ -469,7 +472,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     private async onCloud(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
-        items: T_Cloud_Item[],
+        data: T_IPC_Data<T_Cloud_Item>,
     ) {
         const token = await this.getAccessToken()
         const user = await this.getUserInfo()
@@ -478,13 +481,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             this.centre.send(
                 IPC_CHANNELS.CLOUD,
                 REQUEST_HANDLER.RESPONSE_FAIL,
-                [
-                    {
-                        title: 'You are not logged in.',
-                        key: '',
-                        type: 'return',
-                    },
-                ],
+                { message: 'You are not logged in.' },
             )
             return
         }
@@ -497,26 +494,22 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             case REQUEST_HANDLER.PUT: {
-                uploadCloudItem(this.centre, items[0], token)
+                if (data.item) {
+                    uploadCloudItem(this.centre, data.item, token)
+                }
                 return
             }
 
             case REQUEST_HANDLER.REMOVE: {
-                if (!items[0]._id) {
+                if (!data.item?._id) {
                     this.centre.send(
                         IPC_CHANNELS.CLOUD,
                         REQUEST_HANDLER.RESPONSE_FAIL,
-                        [
-                            {
-                                title: 'Unknown error',
-                                key: '',
-                                type: 'return',
-                            },
-                        ],
+                        { message: 'You are not logged in.' },
                     )
                     return
                 }
-                removeCloudItem(this.centre, items[0]._id, token)
+                removeCloudItem(this.centre, data.item._id, token)
                 return
             }
         }

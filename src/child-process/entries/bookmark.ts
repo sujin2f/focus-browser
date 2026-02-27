@@ -7,7 +7,7 @@ import { Logger } from '@main/logger'
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { CenterView } from '@src/main/modules/view/centre'
-import type { T_IPC_Bookmark } from '@src/common/types'
+import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 
 export const responseBookmarks = (centre: CenterView) => {
     const child = utilityProcess.fork(paths.childProcess)
@@ -17,7 +17,7 @@ export const responseBookmarks = (centre: CenterView) => {
     })
     child.once('message', (message) => {
         centre.send(
-            IPC_CHANNELS.BOOKMARK_RESPONSE,
+            IPC_CHANNELS.BOOKMARKS_RESPONSE,
             REQUEST_HANDLER.RESPONSE_SUCCESS,
             message,
         )
@@ -43,7 +43,7 @@ const getChannel = (request: REQUEST_HANDLER) => {
 export const modifyBookmark = (
     request: REQUEST_HANDLER,
     centre: CenterView,
-    args: T_IPC_Bookmark,
+    args: T_IPC_Data<T_Bookmark>,
 ) => {
     const child = utilityProcess.fork(paths.childProcess)
     const channel = getChannel(request)
@@ -52,10 +52,13 @@ export const modifyBookmark = (
         path: app.getPath('userData'),
         args,
     })
-    child.once('message', (handler) => {
-        centre.send(IPC_CHANNELS.BOOKMARK, handler)
+    child.once('message', (message) => {
+        centre.send(IPC_CHANNELS.BOOKMARK, message.handler, {
+            item: message.item,
+            meta: message.meta,
+        })
 
-        if (handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
+        if (message.handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
             Logger.getInstance().log('👶', `Child process ${channel} finished.`)
         } else {
             Logger.getInstance().error('👶', `Child process ${channel} failed.`)

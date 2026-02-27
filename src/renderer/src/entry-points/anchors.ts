@@ -5,7 +5,6 @@ import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
-import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 /* CONSTANTS */
 import {
     EMOJI,
@@ -71,22 +70,12 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                 })
 
             // Cloud
-            const button = new ButtonCloudPush(
-                {
-                    title: anchor.title,
-                    key: anchor.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(anchor),
-                },
-                () => this.settings.userInfo,
-                (button: ButtonCloudPush) => {
-                    const enabled = this.enabled
-                    if (enabled) {
-                        this.callbackCloudPush(button)
-                    }
-                    return enabled
-                },
-            )
+            const button = this.createCloudPushButton({
+                title: anchor.title,
+                key: anchor.url,
+                type: 'bookmark',
+                message: JSON.stringify(anchor),
+            })
             const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 

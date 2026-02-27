@@ -6,7 +6,6 @@ import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
-import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
@@ -110,22 +109,12 @@ class History extends A_ListCloudPush<T_Bookmark> {
                 })
 
             // Cloud
-            const button = new ButtonCloudPush(
-                {
-                    title: history.title,
-                    key: history.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(history),
-                },
-                () => this.settings.userInfo,
-                (button: ButtonCloudPush) => {
-                    const enabled = this.enabled
-                    if (enabled) {
-                        this.callbackCloudPush(button)
-                    }
-                    return enabled
-                },
-            )
+            const button = this.createCloudPushButton({
+                title: history.title,
+                key: history.url,
+                type: 'bookmark',
+                message: JSON.stringify(history),
+            })
             const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 

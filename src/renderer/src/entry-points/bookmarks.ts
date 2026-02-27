@@ -6,17 +6,16 @@ import {
     navigate,
     tagNameIs,
 } from '@src/renderer/src/utils'
-import { callbackRequestBookmarks } from '@home/utils/bookmark'
+import { callbackRequestBookmarks, updateBookmarks } from '@home/utils/bookmark'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
 import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
 import { UserInfo } from '@home/template-parts/user-info'
-import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 import { Notification } from '@home/template-parts/notification'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark, T_Dir, T_Items } from '@src/common/types'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
@@ -25,8 +24,6 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
-/* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
 
 class Bookmarks extends A_ListCloudPush<T_Bookmark> {
     protected folderIndex = 0
@@ -103,13 +100,109 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARK_RESPONSE, (_, response) => {
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
             if (response) {
                 const { dirs, items } = callbackRequestBookmarks(response)
                 this.dirs = dirs
                 this.items = items
                 this.setShortcuts()
                 this.callbackRequestBookmarks()
+                this.setEnabled(true)
+            }
+        })
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, response) => {
+            switch (handler) {
+                case REQUEST_HANDLER.RESPONSE_SUCCESS: {
+                    this.modal.hide()
+                    this.setEnabled(true)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const action = (response?.meta as any).action as string
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const isDir = (response?.meta as any).isDir as boolean
+                    const bookmark = response?.item
+                    if (!action || !bookmark) {
+                        this.notification.error('Something went wrong!')
+                        return
+                    }
+                    this.notification.info('Your bookmark is successfully ')
+
+                    const refresh = (
+                        _dirs: T_Dir<T_Bookmark>,
+                        _items: T_Items<T_Bookmark>,
+                    ) => {
+                        const { dirs, items } = updateBookmarks(_items, _dirs)
+                        this.dirs = dirs
+                        this.items = items
+                        this.callbackRequestBookmarks()
+                    }
+
+                    switch (action) {
+                        case 'added': {
+                            if (isDir) {
+                                refresh(
+                                    {
+                                        ...this.dirs,
+                                        [bookmark.id]: {
+                                            data: bookmark,
+                                            hidden: false,
+                                            dir: [],
+                                            items: [],
+                                        },
+                                    },
+                                    this.items,
+                                )
+                                return
+                            }
+
+                            this.items.unshift({ data: bookmark, items: [] })
+                            refresh(this.dirs, this.items)
+                            return
+                        }
+
+                        case 'removed': {
+                            if (isDir) {
+                                delete this.dirs[bookmark.id]
+                                refresh(this.dirs, this.items)
+                                return
+                            }
+
+                            refresh(
+                                this.dirs,
+                                this.items.filter(
+                                    (item) => item.data.id !== bookmark.id,
+                                ),
+                            )
+                            return
+                        }
+                        case 'updated': {
+                            if (isDir) {
+                                this.dirs[bookmark.id].data = bookmark
+                                refresh(this.dirs, this.items)
+                                return
+                            }
+
+                            refresh(
+                                this.dirs,
+                                this.items.map((item) => {
+                                    if (item.data.id !== bookmark.id) {
+                                        return item
+                                    }
+                                    return {
+                                        ...item,
+                                        data: bookmark,
+                                    }
+                                }),
+                            )
+                            return
+                        }
+                    }
+                    return
+                }
+                case REQUEST_HANDLER.RESPONSE_FAIL:
+                    this.modal.hide()
+                    this.notification.error('Something went wrong!')
+                    this.setEnabled(true)
+                    return
             }
         })
     }
@@ -168,27 +261,12 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             // ☁️ Cloud
             let cloud = new ListItem('')
             if (item.data.url) {
-                const button = new ButtonCloudPush(
-                    {
-                        title: item.data.title,
-                        key: item.data.url,
-                        type: 'bookmark',
-                        message: JSON.stringify(item.data),
-                    },
-                    () => this.settings.userInfo,
-                    (button: ButtonCloudPush) => {
-                        Logger.getInstance().log(
-                            `Cloud push button clicked.`,
-                            this.enabled,
-                            this.callbackCloudPush.toString(),
-                        )
-                        const enabled = this.enabled
-                        if (enabled) {
-                            this.callbackCloudPush(button)
-                        }
-                        return enabled
-                    },
-                )
+                const button = this.createCloudPushButton({
+                    title: item.data.title,
+                    key: item.data.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(item.data),
+                })
                 cloud = new ListItem(button)
             }
             cloud.clickable = false
@@ -197,7 +275,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                     this.modal.open(this.getDirs(), {
                         isDir: false,
                         bookmark: item.data,
-                    }) // TODO check this
+                    })
                 }),
             )
             edit.clickable = false

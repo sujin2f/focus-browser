@@ -32,9 +32,9 @@ export const fetchCloudItems = (
                 '👶',
                 `${SUJINC_URL}/focus/items failed with ${message.body.error}`,
             )
-            centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, [
-                { title: message.body.error, key: '', type: 'return' },
-            ])
+            centre.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.RESPONSE_FAIL, {
+                message: message.body.error,
+            })
             return
         }
 
@@ -57,6 +57,8 @@ export const uploadCloudItem = (
     item: T_Cloud_Item,
     token: string,
 ) => {
+    Logger.getInstance().log('👶', `uploadCloudItem() triggered`)
+
     const child = utilityProcess.fork(paths.childProcess)
     const machineId = Status.getInstance().get('machineId')
     child.postMessage({ channel: 'upload-cloud-item', item, machineId, token })
@@ -70,14 +72,10 @@ export const uploadCloudItem = (
                 ? REQUEST_HANDLER.RESPONSE_SUCCESS
                 : REQUEST_HANDLER.RESPONSE_FAIL
 
-        centre.send(IPC_CHANNELS.CLOUD, handler, [
-            {
-                _id: message.body.id,
-                title: message.body.message || message.body.error,
-                key: '',
-                type: 'return',
-            },
-        ])
+        centre.send(IPC_CHANNELS.CLOUD, handler, {
+            message: message.body.message || message.body.error,
+            item: { _id: message.body.id } as T_Cloud_Item,
+        })
         child.kill()
     })
 }
@@ -99,14 +97,10 @@ export const removeCloudItem = (
                 ? REQUEST_HANDLER.RESPONSE_SUCCESS
                 : REQUEST_HANDLER.RESPONSE_FAIL
 
-        centre.send(IPC_CHANNELS.CLOUD, handler, [
-            {
-                _id: message.body.id,
-                title: message.body.message || message.body.error,
-                key: '',
-                type: 'return',
-            },
-        ])
+        centre.send(IPC_CHANNELS.CLOUD, handler, {
+            message: message.body.message || message.body.error,
+            item: { _id: message.body.id } as T_Cloud_Item,
+        })
         child.kill()
     })
 }

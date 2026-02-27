@@ -1,22 +1,16 @@
 import { A_Entry } from './abs-entry'
 /* <HTML template-part /> */
 import { List } from '@home/template-parts/list'
-/* Utils */
-import { ListItem } from '@home/template-parts//list-item'
+/* Models */
 import { Logger } from '@src/renderer/src/utils/logger'
+/* CONSTANTS */
 import { EMOJI } from '@src/common/constants'
-
-type T_Items<T> = { data: T; items: ListItem[] }[]
-type T_Dir<T> = {
-    data: T
-    hidden: boolean
-    dir: ListItem[]
-    items: ListItem[]
-}
+/* T_Types */
+import type { T_Dir, T_Items } from '@src/common/types'
 
 export abstract class A_List<T> extends A_Entry {
     protected items: T_Items<T> = []
-    protected dirs: Record<string, T_Dir<T>> = {}
+    protected dirs: T_Dir<T> = {}
     protected list!: List
     protected folderIndex!: number
 

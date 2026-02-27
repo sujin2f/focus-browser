@@ -7,7 +7,7 @@ export class ButtonBack extends A_Element<HTMLButtonElement> {
         super('#back-button')
     }
 
-    protected init() {
+    protected afterAppend() {
         this.element.addEventListener('click', () => {
             navigate({})
         })

@@ -13,7 +13,6 @@ import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 import type { T_Bookmark } from '@src/common/types'
 
 export class BookmarkModal extends Modal {
-    public index = NaN
     private bookmark?: T_Bookmark
 
     public notification: Notification = new Notification().appendTo('root')
@@ -26,9 +25,7 @@ export class BookmarkModal extends Modal {
     private submit: Button
     private remove: Button
 
-    private get isDir() {
-        return !this.bookmark?.url
-    }
+    private isDir = false
 
     constructor() {
         super()
@@ -47,24 +44,18 @@ export class BookmarkModal extends Modal {
         this.submit = new Button('Save Changes').appendTo(formButtons)
         this.submit.type = 'submit'
 
-        // Remove
+        // 🗑️ Remove
         this.remove = new Button('🗑️', 'button-clear')
             .appendTo(formButtons)
             .setOnClick(() => {
-                if (isNaN(this.index)) {
-                    return
-                }
-                if (!this.bookmark) {
-                    return
-                }
-                if (!this.bookmark.id) {
+                if (!this.bookmark || !this.bookmark.id) {
                     return
                 }
 
                 ipcRenderer.send(
                     IPC_CHANNELS.BOOKMARK,
                     REQUEST_HANDLER.REMOVE,
-                    { bookmark: this.bookmark },
+                    { item: this.bookmark, meta: this.isDir },
                 )
             })
 
@@ -74,8 +65,8 @@ export class BookmarkModal extends Modal {
         })
     }
 
-    protected init() {
-        super.init()
+    protected afterAppend() {
+        super.afterAppend()
         this.content.append(this.form)
     }
 
@@ -84,22 +75,20 @@ export class BookmarkModal extends Modal {
         {
             isDir = false,
             bookmark,
-            index = NaN,
         }: {
             isDir?: boolean
             bookmark?: T_Bookmark
-            index?: number
         },
     ) {
-        this.index = index
         this.bookmark = bookmark
+        this.isDir = isDir
 
         this.title.value = bookmark ? bookmark.title : ''
         this.url.value = bookmark ? bookmark.url : ''
         this.shortcut.value = bookmark ? bookmark.shortcut : ''
         this.folder.value = bookmark ? bookmark.shortcut : ''
 
-        if (!isNaN(index)) {
+        if (bookmark?.id) {
             this.remove.show()
         } else {
             this.remove.hide()
@@ -114,7 +103,7 @@ export class BookmarkModal extends Modal {
         }
 
         this.folder.input.innerHTML = ''
-        new Option('== Select Folder ==', '-1').appendTo(this.folder.input)
+        new Option('== Select Folder ==', '').appendTo(this.folder.input)
 
         dirs.forEach((dir) => {
             new Option(dir.title, dir.id).appendTo(this.folder.input)
@@ -146,36 +135,31 @@ export class BookmarkModal extends Modal {
         const url = !this.isDir ? this.url.value : ''
         const parent = this.folder.value
 
-        if (!isNaN(this.index)) {
-            if (!this.bookmark) {
-                return
-            }
-            if (!this.bookmark.id) {
-                return
-            }
-
+        if (this.bookmark?.id) {
             // Edit
             ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, {
-                bookmark: {
+                item: {
                     id: this.bookmark.id,
                     title: this.title.value,
                     url,
                     parent,
                     shortcut: this.shortcut.value,
                 },
+                meta: this.isDir,
             })
             return
         }
 
         // Add
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
-            bookmark: {
+            item: {
                 id: '',
                 title: this.title.value,
                 url,
                 parent,
                 shortcut: this.shortcut.value,
             },
+            meta: this.isDir,
         })
     }
 }

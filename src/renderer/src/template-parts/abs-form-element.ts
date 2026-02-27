@@ -62,7 +62,7 @@ export abstract class A_FormElement<
         super(`#${tagName}`)
     }
 
-    protected init() {
+    protected afterAppend() {
         this.element.querySelector('[data-selector="label"]')!.textContent =
             this._label
         this.element

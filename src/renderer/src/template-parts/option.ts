@@ -12,7 +12,7 @@ export class Option extends A_Element<HTMLOptionElement> {
         super('#option')
     }
 
-    protected init() {
+    protected afterAppend() {
         this.element.textContent = this.label
         this.element.value = this.value
         this.element.selected = this.selected

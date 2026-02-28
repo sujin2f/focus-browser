@@ -7,18 +7,12 @@ import {
     type ContextMenuParams,
 } from 'electron'
 /* T_Types */
-import type {
-    Scenes,
-    MenuBlock,
-    MenuItems,
-    T_IPC_Switch,
-} from '@src/common/types'
+import type { MenuBlock, MenuItems, T_IPC_Switch } from '@src/common/types'
 /* CONSTANTS */
 import {
     MenuCategory,
     Menu,
     CENTRE_PAGES,
-    BROWSER,
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
@@ -27,11 +21,10 @@ import {
 import { Shortcut } from '@main/store/shortcut'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
+import { FindView } from '@main/modules/view/find'
 import { Logger } from '@main/lib/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
-import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
-import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -48,14 +41,7 @@ import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
-    protected _current: Scenes = CENTRE_PAGES.WELCOME
-    protected get isBrowser() {
-        return this._current === BROWSER
-    }
-    // Returns the current WebContentsView
-    protected get current() {
-        return this.isBrowser ? this.browser : this.centre
-    }
+    protected find!: FindView
     protected findText = ''
 
     private get menuItems(): MenuBlock {
@@ -89,7 +75,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.DEVTOOLS]: {
                 accelerator: this.getShortcut(Menu.DEVTOOLS),
                 click: () => {
-                    this.current.webContents.toggleDevTools()
+                    this.toggleDevTools()
                 },
             },
         }
@@ -118,9 +104,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.PASTE_KEYSTROKE]: {
                 accelerator: this.getShortcut(Menu.PASTE_KEYSTROKE),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.browser.pasteKeystrokes()
-                    }
+                    this.browser.pasteKeystrokes()
                 },
             },
             [Menu.SELECT_ALL]: {
@@ -177,17 +161,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADD_BOOKMARK]: {
                 accelerator: this.getShortcut(Menu.ADD_BOOKMARK),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.addBookmark()
-                    }
+                    this.browser.addBookmark(this)
                 },
             },
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.addAnchor()
-                    }
+                    this.browser.addAnchor(this)
                 },
             },
         }
@@ -208,7 +188,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.BACK]: {
                 accelerator: this.getShortcut(Menu.BACK),
                 click: () => {
-                    this.current.webContents.navigationHistory.goBack()
+                    this.goBack()
                 },
             },
             [Menu.BACK_HIDDEN]: {
@@ -223,7 +203,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                                 tagName.toLowerCase() !== 'input' &&
                                 tagName.toLowerCase() !== 'textarea'
                             ) {
-                                this.current.webContents.navigationHistory.goBack()
+                                this.goBack()
                             }
                         })
                         .catch((e) => {
@@ -236,7 +216,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FORWARD]: {
                 accelerator: this.getShortcut(Menu.FORWARD),
                 click: () => {
-                    this.current.webContents.navigationHistory.goForward()
+                    this.goForward()
                 },
             },
             [Menu.FORWARD_HIDDEN]: {
@@ -251,7 +231,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                                 tagName.toLowerCase() !== 'input' &&
                                 tagName.toLowerCase() !== 'textarea'
                             ) {
-                                this.current.webContents.navigationHistory.goForward()
+                                this.goForward()
                             }
                         })
                         .catch((e) => {
@@ -265,7 +245,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.STOP]: {
                 accelerator: this.getShortcut(Menu.STOP),
                 click: () => {
-                    this.current.webContents.stop()
+                    this.stop()
                 },
             },
             [Menu.RELOAD]: {
@@ -400,14 +380,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         ElectronMenu.setApplicationMenu(built)
     }
 
-    protected toggleMaximize() {
-        if (this.isMaximized()) {
-            this.unmaximize()
-            return
-        }
-        this.maximize()
-    }
-
     /**
      * Compose a context menu based on provided ContextMenuParams from Electron.
      *
@@ -448,11 +420,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             { type: 'separator' },
             {
                 label: 'Add Bookmark',
-                click: () => this.addBookmark(),
+                click: () => this.browser.addBookmark(this),
             },
             {
                 label: 'Add Anchor',
-                click: () => this.addAnchor(),
+                click: () => this.browser.addAnchor(this),
             },
             {
                 label: 'Control Centre',
@@ -522,34 +494,15 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    /**
-     * Persist a bookmark using the Bookmarks store and show a Notification
-     * only when the push succeeds. Notification click switches to bookmark page.
-     */
-    private addBookmark() {
-        addBookmarkFromBrowser(
-            this,
-            this.browser.webContents.getURL(),
-            this.browser.webContents.getTitle(),
-        )
-    }
-
-    /**
-     * Persist an anchor (user-saved position) and notify. Mirrors addBookmark
-     * behavior but switches to the Anchor page on notification click.
-     */
-    private addAnchor() {
-        addAnchorFromBrowser(
-            this,
-            this.browser.webContents.getURL(),
-            this.browser.webContents.getTitle(),
-        )
-    }
-
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
         this.browser.webContents.reload()
     }
 
     abstract switch(request: T_IPC_Switch): void
+    abstract toggleDevTools(): void
+    abstract goBack(): void
+    abstract goForward(): void
+    abstract stop(): void
+    abstract toggleMaximize(): void
 }

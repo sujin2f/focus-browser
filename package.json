@@ -99,7 +99,10 @@
         "transform": {
             "^.+\\.(ts|tsx)?$": "ts-jest",
             "^.+\\.(js|jsx)$": "babel-jest"
-        }
+        },
+        "coveragePathIgnorePatterns": [
+            "<rootDir>/.jest/"
+        ]
     },
     "prettier": {
         "arrowParens": "always",

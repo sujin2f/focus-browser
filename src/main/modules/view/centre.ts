@@ -1,20 +1,16 @@
-import {
-    WebContentsView,
-    type WebContentsViewConstructorOptions,
-} from 'electron'
-
+/* CONSTANTS */
 import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
 
+/* Utils */
 import { resolveHtmlPath } from '@src/common/utils/fs'
-import { T_IPC_Message } from '@src/common/types'
+import { paths } from '@src/common/utils/fs'
+/* T_Types */
+import type { T_IPC_Message } from '@src/common/types'
+/* Models */
+import { AbsView } from '@main/modules/view/abs-view'
 
-export class CenterView extends WebContentsView {
-    constructor(options: WebContentsViewConstructorOptions) {
-        super(options)
-        this.loadScene(CENTRE_PAGES.WELCOME)
-    }
-
-    public loadScene(scene: CENTRE_PAGES) {
+export class CenterView extends AbsView {
+    public set scene(scene: CENTRE_PAGES) {
         switch (scene) {
             case CENTRE_PAGES.WELCOME:
                 this.loadURL(CENTRE_PAGES.WELCOME)
@@ -43,6 +39,15 @@ export class CenterView extends WebContentsView {
             default:
                 this.loadURL(CENTRE_PAGES.HOME)
         }
+    }
+
+    constructor() {
+        super({
+            webPreferences: {
+                preload: paths.preload,
+            },
+        })
+        this.scene = CENTRE_PAGES.WELCOME
     }
 
     public send<T extends keyof T_IPC_Message>(

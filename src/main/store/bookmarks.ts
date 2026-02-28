@@ -8,7 +8,6 @@ import { getSafeUrl } from '@src/common/utils/common'
 type T_Store = T_Bookmark_Store & {
     version: number
 }
-
 export class Bookmarks extends Store<T_Store> {
     protected fileName = 'bookmarks'
     protected defaults = { version: 1, dirs: {}, items: {} }
@@ -21,6 +20,8 @@ export class Bookmarks extends Store<T_Store> {
     public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
         // 🤬 Title is empty
         if (!bookmark.title) return false
+
+        bookmark.title = bookmark.title.trim()
 
         if (isDir) {
             // 🤬 Directory Not exist
@@ -50,6 +51,7 @@ export class Bookmarks extends Store<T_Store> {
         if (!bookmark.title) return false
 
         bookmark.id = randomUUID().toString()
+        bookmark.title = bookmark.title.trim()
 
         // Directory
         if (isDir) {
@@ -104,7 +106,13 @@ export class Bookmarks extends Store<T_Store> {
         }
 
         let data = JSON.parse(fileContent)
+        // 😃 Current version
+        if (data.version === this.defaults) {
+            this._data = data
+            return
+        }
 
+        // Older than 1 => 1
         if (!data.version) {
             const dirs = {} as Record<string, T_Bookmark>
             const items = {} as Record<string, T_Bookmark>

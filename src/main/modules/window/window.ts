@@ -1,35 +1,59 @@
-import {
-    session,
-    nativeTheme,
-    type BaseWindowConstructorOptions,
-} from 'electron'
-
-import { paths } from '@src/common/utils/fs'
-import type { T_IPC_Switch } from '@src/common/types'
+import { nativeTheme, type BaseWindowConstructorOptions } from 'electron'
+/* CONSTANTS */
 import { BROWSER } from '@src/common/constants'
-
+/* Models */
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
-
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@main/lib/logger'
-import { AbsWindowIPC } from './abs-window-ipc'
+import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
+/* T_Types */
+import type { T_IPC_Switch } from '@src/common/types'
 
+enum VIEWS {
+    BROWSER,
+    CENTRE,
+}
 /**
  * All starts with here
  */
 export class BrowserWindow extends AbsWindowIPC {
+    // mode
+    private _view!: VIEWS
+    private get view(): BrowserView | CenterView {
+        return this._view === VIEWS.CENTRE ? this.centre : this.browser
+    }
+    private set view(view: VIEWS) {
+        // 😃 Nothing changed
+        if (this._view === view) return
+
+        this._view = view
+        switch (view) {
+            case VIEWS.CENTRE:
+                this.contentView = this.centre
+                this.browser.hide()
+                this.centre.show()
+                return
+            case VIEWS.BROWSER:
+                this.centre.hide()
+                this.browser.show()
+                this.contentView = this.browser
+                return
+        }
+    }
+
     constructor(options?: BaseWindowConstructorOptions) {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
 
+        this.browser = new BrowserView()
+        this.centre = new CenterView()
+        this.view = VIEWS.CENTRE
+
         const status = Status.getInstance()
         const bounds = status.getBounds(this.getBounds())
         this.setBounds(bounds)
-
-        this.initBrowser()
-        this.initCentre()
 
         // Events
         this.addListener('close', () => this.saveStatus()).addListener(
@@ -51,37 +75,15 @@ export class BrowserWindow extends AbsWindowIPC {
         }
     }
 
-    private initBrowser() {
-        this.browser = new BrowserView({
-            webPreferences: {
-                session: session.fromPartition('persist:my-partition'),
-                partition: 'persist:my-partition',
-                navigateOnDragDrop: true,
-                contextIsolation: false,
-            },
-        })
-    }
-
-    private initCentre() {
-        this.centre = new CenterView({
-            webPreferences: {
-                preload: paths.preload,
-            },
-        })
-        this.contentView = this.centre
-        this.centre.webContents.focus()
-    }
-
     /**
      * Switch Scene
      */
-    public async switch(request: T_IPC_Switch) {
+    public switch(request: T_IPC_Switch) {
         Logger.getInstance().log('Switch: ', request)
-        this._current = request.scene
 
         if (request.scene !== BROWSER) {
-            this.contentView = this.centre
-            this.centre.loadScene(request.scene)
+            this.view = VIEWS.CENTRE
+            this.centre.scene = request.scene
             return
         }
 
@@ -91,7 +93,7 @@ export class BrowserWindow extends AbsWindowIPC {
             request,
         )
 
-        this.contentView = this.browser
+        this.view = VIEWS.BROWSER
 
         if (request.searchEngine || !this.browser.url) {
             this.browser.searchKeyword('')
@@ -100,7 +102,7 @@ export class BrowserWindow extends AbsWindowIPC {
         } else if (request.reloading || this.browser.failedUrl) {
             this.browser.reload()
         } else if (!request.address) {
-            await this.browser.backToBrowser()
+            this.browser.backToBrowser()
         }
     }
 
@@ -131,15 +133,35 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     reload() {
-        if (!this.isBrowser) {
-            super.reload()
-            return
-        }
         this.browser.reload()
     }
 
     show() {
         super.show()
-        this.current.webContents.focus()
+        this.view.webContents.focus()
+    }
+
+    toggleDevTools() {
+        this.view.webContents.toggleDevTools()
+    }
+
+    goBack() {
+        this.view.webContents.navigationHistory.goBack()
+    }
+
+    goForward() {
+        this.view.webContents.navigationHistory.goForward()
+    }
+
+    stop() {
+        this.view.webContents.stop()
+    }
+
+    toggleMaximize() {
+        if (this.isMaximized()) {
+            this.unmaximize()
+            return
+        }
+        this.maximize()
     }
 }

@@ -12,7 +12,7 @@ import {
     stopFindInPage,
     findInPage,
 } from '@test/mock-electron'
-import { browser } from '@test/mock-browser'
+import { browser, addAnchor } from '@test/mock-browser'
 import { anchors, bookmarks, shortcut } from '@test/mock-store'
 
 jest.resetModules()
@@ -30,18 +30,27 @@ import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()
 class Menu extends AbsWindowMenu {
+    toggleDevTools(): void {
+        this.browser.webContents.toggleDevTools()
+    }
+    goBack(): void {
+        this.browser.webContents.navigationHistory.goBack()
+    }
+    goForward(): void {
+        this.browser.webContents.navigationHistory.goForward()
+    }
+    stop(): void {
+        this.browser.webContents.stop()
+    }
+    toggleMaximize(): void {}
     switch = switchFn
     protected findText: string = 'search'
-    protected _current: Scenes = BROWSER
+    protected _scene: Scenes = BROWSER
     constructor() {
         super()
-        this.browser = new BrowserView({})
+        this.browser = new BrowserView()
     }
 }
-import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
-jest.mock('@src/child-process/entries/anchor', () => ({
-    addAnchorFromBrowser: jest.fn(),
-}))
 
 describe('Window: Menu (abs-window-menu.ts)', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +69,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[1].submenu[15]
 
         menuItem.click()
-        expect(addAnchorFromBrowser).toHaveBeenCalled()
+        expect(addAnchor).toHaveBeenCalled()
     })
 
     test('find > switch', async () => {

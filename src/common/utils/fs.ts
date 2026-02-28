@@ -22,7 +22,7 @@ export function resolveHtmlPath(htmlFileName: string) {
         url.pathname = htmlFileName
         return url.href
     }
-    return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`
+    return `file://${path.resolve(__dirname, 'renderer', htmlFileName)}`
 }
 
 export const getDirectorySize = (dir: string): number => {

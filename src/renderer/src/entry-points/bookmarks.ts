@@ -67,7 +67,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
             const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
             if (shortcut) {
-                navigate({ address: shortcut })
+                navigate(shortcut)
                 return true
             }
         })
@@ -245,16 +245,16 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                     ? item.data.parent
                     : false
             const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate({ address: item.data.url })
+                navigate(item.data.url)
             })
             const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate({ address: item.data.url })
+                navigate(item.data.url)
             })
             let shortcut = new ListItem('')
             if (item.data.shortcut) {
                 shortcut = new ListItem(
                     new Button(item.data.shortcut.toUpperCase()).setOnClick(
-                        () => navigate({ address: item.data.url }),
+                        () => navigate(item.data.url),
                     ),
                 )
             }
@@ -318,7 +318,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 ;(document.activeElement as HTMLInputElement).blur()
                 return
             }
-            navigate({})
+            navigate()
             return
         }
 

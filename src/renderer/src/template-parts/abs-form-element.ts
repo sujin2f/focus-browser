@@ -68,6 +68,7 @@ export abstract class A_FormElement<
         this.element
             .querySelector('[data-selector="input"]')!
             .setAttribute('name', this._name)
+        super.afterAppend()
     }
 
     public setOnInput(callback: ((e: Event) => void) | (() => void)) {

@@ -11,7 +11,7 @@ readMock.mockReturnValue({
     ],
 })
 
-import { Anchors } from '@main/modules/store/anchors'
+import { Anchors } from '@main/store/anchors'
 
 describe('Anchors store (module)', () => {
     test('singleton exists and push calls fs.writeFileSync', () => {
@@ -24,7 +24,7 @@ describe('Anchors store (module)', () => {
         ])
 
         // Push
-        anchors.push({ id: '', url: '-1', title: '-1' })
+        anchors.push('-1', '-1')
         expect(anchors.get()[0]).toStrictEqual({
             id: '',
             url: '-1',

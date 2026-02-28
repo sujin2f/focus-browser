@@ -78,7 +78,16 @@ export const status = () => ({
 
 class MockHistory {
     parse = jest.fn()
-    get = jest.fn()
+    get = (arg: string): unknown => {
+        if (arg === 'index') {
+            return -1
+        }
+        if (arg === 'history') {
+            return []
+        }
+
+        return
+    }
     current = {
         url: 'http://example.com',
     }

@@ -2,7 +2,7 @@ import { app, utilityProcess, Notification } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/logger'
+import { Logger } from '@main/lib/logger'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,
@@ -10,8 +10,8 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 /* T_Types */
-import type { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
-import type { CenterView } from '@src/main/modules/view/centre'
+import type { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
+import type { CenterView } from '@main/modules/view/centre'
 import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 
 export const responseBookmarks = (centre: CenterView) => {
@@ -21,12 +21,16 @@ export const responseBookmarks = (centre: CenterView) => {
         path: app.getPath('userData'),
     })
     child.once('message', (message) => {
+        Logger.getInstance().log(
+            '👶',
+            'Bookmark list request finished',
+            message.length,
+        )
         centre.send(
             IPC_CHANNELS.BOOKMARKS_RESPONSE,
             REQUEST_HANDLER.RESPONSE_SUCCESS,
             message,
         )
-        Logger.getInstance().log('👶', 'Bookmark list request finished')
         child.kill()
     })
 }
@@ -58,16 +62,16 @@ export const modifyBookmark = (
         args,
     })
     child.once('message', (message) => {
-        centre.send(IPC_CHANNELS.BOOKMARK, message.handler, {
-            item: message.item,
-            meta: message.meta,
-        })
-
         if (message.handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {
             Logger.getInstance().log('👶', `Child process ${channel} finished.`)
         } else {
             Logger.getInstance().error('👶', `Child process ${channel} failed.`)
         }
+
+        centre.send(IPC_CHANNELS.BOOKMARK, message.handler, {
+            item: message.item,
+            meta: message.meta,
+        })
 
         child.kill()
     })
@@ -83,7 +87,7 @@ export const addBookmarkFromBrowser = (
     child.postMessage({
         channel,
         path: app.getPath('userData'),
-        args: { items: { id: '', url, title } },
+        args: { item: { id: '', url, title } } satisfies T_IPC_Data<T_Bookmark>,
     })
     child.once('message', (message) => {
         if (message.handler === REQUEST_HANDLER.RESPONSE_SUCCESS) {

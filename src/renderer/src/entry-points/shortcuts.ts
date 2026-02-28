@@ -14,7 +14,6 @@ import { Button } from '@home/template-parts/button'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import {
-    BROWSER,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -44,11 +43,9 @@ class Shortcuts extends A_Entry {
         document
             .getElementById('link--electron-shortcuts')!
             .addEventListener('click', () => {
-                navigate({
-                    scene: BROWSER,
-                    address:
-                        'https://www.electronjs.org/docs/latest/tutorial/keyboard-shortcuts',
-                })
+                navigate(
+                    'https://www.electronjs.org/docs/latest/tutorial/keyboard-shortcuts',
+                )
             })
     }
 

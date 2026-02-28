@@ -73,14 +73,9 @@ class Settings extends A_Entry {
                         return
                     }
                     this.ready = false
+                    this.cards[key].description.innerHTML = ''
                     new Loading().appendTo(this.cards[key].description)
-                    ipcRenderer.send(
-                        IPC_CHANNELS.CLEANER,
-                        REQUEST_HANDLER.REMOVE,
-                        {
-                            request: key,
-                        },
-                    )
+                    this.requestClean(key)
                 })
         })
 
@@ -181,11 +176,8 @@ class Settings extends A_Entry {
      * 🧼 Do Clean
      */
     private requestClean(key: keyof typeof CARDS) {
-        if (!this.ready) {
-            return
-        }
         this.ready = false
-        new Loading().appendTo(this.cards[key].description)
+
         ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REMOVE, {
             request: key,
         })

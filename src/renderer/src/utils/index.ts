@@ -1,5 +1,4 @@
 import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
-import type { T_IPC_Switch } from '@src/common/types'
 import { Logger } from '@home/utils/logger'
 
 export const checkElectron = () => {
@@ -14,13 +13,10 @@ export const ipcRenderer = {
     once: window.electron.ipcRenderer.once,
 }
 
-export const navigate = (
-    request: Partial<T_IPC_Switch>,
-    handler: REQUEST_HANDLER = REQUEST_HANDLER.EXECUTE,
-) => {
-    ipcRenderer.send(IPC_CHANNELS.SWITCH, handler, {
-        ...request,
-        scene: request.scene || BROWSER,
+export const navigate = (address = '') => {
+    ipcRenderer.send(IPC_CHANNELS.SWITCH, REQUEST_HANDLER.EXECUTE, {
+        scene: BROWSER,
+        address,
     })
     window.location.href = 'loading.html'
 }

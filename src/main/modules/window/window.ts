@@ -8,12 +8,12 @@ import { paths } from '@src/common/utils/fs'
 import type { T_IPC_Switch } from '@src/common/types'
 import { BROWSER } from '@src/common/constants'
 
-import { History } from '@main/modules/store/history'
-import { Status } from '@main/modules/store/status'
+import { History } from '@main/store/history'
+import { Status } from '@main/store/status'
 
-import { BrowserView } from '@src/main/modules/view/browser'
-import { CenterView } from '@src/main/modules/view/centre'
-import { Logger } from '@main/logger'
+import { BrowserView } from '@main/modules/view/browser'
+import { CenterView } from '@main/modules/view/centre'
+import { Logger } from '@main/lib/logger'
 import { AbsWindowIPC } from './abs-window-ipc'
 
 /**
@@ -79,29 +79,29 @@ export class BrowserWindow extends AbsWindowIPC {
         Logger.getInstance().log('Switch: ', request)
         this._current = request.scene
 
-        if (request.scene === BROWSER) {
-            this.contentView = this.browser
-
-            await this.browser.restoreHistory()
-            Logger.getInstance().log('Switched to Browser: ', this.browser.url)
-
-            if (request.reloading) {
-                this.browser.reload()
-            } else if (request.lastVisit) {
-                await this.browser.loadLastVisit()
-            } else if (request.searchEngine || !this.browser.url.url) {
-                this.browser.searchKeyword('')
-            } else if (request.address) {
-                this.browser.loadURL(request.address)
-            } else if (this.browser.failedUrl) {
-                this.browser.reload()
-            }
-
+        if (request.scene !== BROWSER) {
+            this.contentView = this.centre
+            this.centre.loadScene(request.scene)
             return
         }
 
-        this.contentView = this.centre
-        this.centre.loadScene(request.scene)
+        Logger.getInstance().log(
+            'Switched to Browser: ',
+            this.browser.url,
+            request,
+        )
+
+        this.contentView = this.browser
+
+        if (request.searchEngine || !this.browser.url) {
+            this.browser.searchKeyword('')
+        } else if (request.address) {
+            this.browser.loadURL(request.address)
+        } else if (request.reloading || this.browser.failedUrl) {
+            this.browser.reload()
+        } else if (!request.address) {
+            await this.browser.backToBrowser()
+        }
     }
 
     /**
@@ -117,11 +117,7 @@ export class BrowserWindow extends AbsWindowIPC {
         status.save()
 
         // Save history
-        if (
-            this.browser &&
-            this.browser.webContents &&
-            this.browser.initialized
-        ) {
+        if (this.browser && this.browser.webContents) {
             Logger.getInstance().log('Save history')
 
             const entries = this.browser.webContents.navigationHistory

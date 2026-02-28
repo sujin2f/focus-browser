@@ -12,6 +12,7 @@ import {
     type ElectronRequestType,
 } from '@ghostery/adblocker'
 import type { IBackgroundCallback } from '@ghostery/adblocker-electron-preload'
+import { parse } from 'tldts-experimental'
 import { paths } from '@src/common/utils/fs'
 
 const { ipcMain } = electron
@@ -199,8 +200,6 @@ export class ElectronBlocker extends FiltersEngine {
         url: string,
         msg?: IBackgroundCallback,
     ): Promise<void> => {
-        // TODO Remove tldts-experimental : get domain from URL : www.google.com, account.google.com, account.google.co.kr...
-        const { parse } = await import('tldts-experimental')
         const parsed = parse(url)
         const hostname = parsed.hostname || ''
         const domain = parsed.domain || ''

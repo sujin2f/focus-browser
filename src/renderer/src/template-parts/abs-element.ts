@@ -1,14 +1,11 @@
 /* Utils */
 import { getSection } from '@src/renderer/src/utils'
-/* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
 
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node
     protected _element?: T
     public get element(): T {
         if (!this._element) {
-            Logger.getInstance().error(`Cannot find _element ${this.selector}`)
             return null as unknown as T // it will trigger an error anyway
         }
         return this._element
@@ -25,7 +22,21 @@ export abstract class A_Element<T extends HTMLElement> {
         this.node = template.content.cloneNode(true) as T
     }
 
-    protected afterAppend() {}
+    protected afterAppend() {
+        if (this.onClickCallback) {
+            this.setOnClick(this.onClickCallback)
+        }
+    }
+
+    private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
+    public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
+        if (!this.element && !this.onClickCallback) {
+            this.onClickCallback = callback
+            return this
+        }
+        this.element.addEventListener('click', callback.bind(this))
+        return this
+    }
 
     /**
      * @param parent HTML Element or #id

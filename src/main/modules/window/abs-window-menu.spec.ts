@@ -5,7 +5,6 @@ import {
     goBack,
     goForward,
     menuBuilder,
-    MockNotification,
     setFullScreen,
     stop,
     toggleDevTools,
@@ -14,19 +13,19 @@ import {
     findInPage,
 } from '@test/mock-electron'
 import { browser } from '@test/mock-browser'
-import { anchors, bookmarks, shortcut, anchorPush } from '@test/mock-store'
+import { anchors, bookmarks, shortcut } from '@test/mock-store'
 
 jest.resetModules()
 jest.doMock('electron', electron)
-jest.doMock('@main/modules/store/anchors', anchors)
-jest.doMock('@main/modules/store/shortcut', shortcut)
-jest.doMock('@main/modules/store/bookmarks', bookmarks)
+jest.doMock('@main/store/anchors', anchors)
+jest.doMock('@main/store/shortcut', shortcut)
+jest.doMock('@main/store/bookmarks', bookmarks)
 jest.doMock('@main/modules/view/browser', browser)
 
-import { BrowserView } from '@src/main/modules/view/browser'
+import { BrowserView } from '@main/modules/view/browser'
 import { CENTRE_PAGES, BROWSER } from '@src/common/constants'
 
-import { AbsWindowMenu } from '@src/main/modules/window/abs-window-menu'
+import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { Scenes } from '@src/common/types'
 
 const switchFn = jest.fn()
@@ -39,6 +38,10 @@ class Menu extends AbsWindowMenu {
         this.browser = new BrowserView({})
     }
 }
+import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
+jest.mock('@src/child-process/entries/anchor', () => ({
+    addAnchorFromBrowser: jest.fn(),
+}))
 
 describe('Window: Menu (abs-window-menu.ts)', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,15 +53,14 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         menu = menuBuilder.mock.calls[0][0]
     })
 
-    test('addAnchor > Show Notification', async () => {
+    test('⚓️ addAnchor > child-process', async () => {
         const menuItem =
             process.platform === 'darwin'
                 ? menu[1].submenu[15]
                 : menu[1].submenu[15]
 
         menuItem.click()
-        expect(anchorPush).toHaveBeenCalled()
-        expect(MockNotification).toHaveBeenCalled()
+        expect(addAnchorFromBrowser).toHaveBeenCalled()
     })
 
     test('find > switch', async () => {

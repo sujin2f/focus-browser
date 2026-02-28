@@ -4,6 +4,7 @@ import {
     type WebContentsViewConstructorOptions,
     ipcMain,
 } from 'electron'
+import { ElectronBlocker } from '@main/lib/adblocker-electron'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,
@@ -11,27 +12,21 @@ import {
     CENTRE_PAGES,
     SEARCH_ENGINES,
 } from '@src/common/constants'
-import { Logger } from '@main/logger'
-
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { History } from '@main/modules/store/history'
-import { Status } from '@main/modules/store/status'
-import { Keystrokes } from '@main/modules/store/keystrokes'
-/* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+/* Models */
+import { Logger } from '@main/lib/logger'
+import { PopupBlocker } from '@main/store/popup-blocker'
+import { History } from '@main/store/history'
+import { Status } from '@main/store/status'
+import { Keystrokes } from '@main/store/keystrokes'
+/* Utils */
 import { getSafeUrl, isNatural } from '@src/common/utils/common'
 
 export class BrowserView extends WebContentsView {
-    public get url(): T_Bookmark {
-        return {
-            id: '',
-            title: this.webContents.getTitle(),
-            url: this.webContents.getURL(),
-        }
+    public get url(): string {
+        return this.webContents.getURL()
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _blocker: any = undefined
+    private _blocker?: ElectronBlocker = undefined
     public get blocker() {
         return this._blocker
     }
@@ -41,13 +36,7 @@ export class BrowserView extends WebContentsView {
         return this._failedUrl
     }
 
-    private _initialized = false
-    public get initialized() {
-        return this._initialized
-    }
-    private set initialized(initialized: boolean) {
-        this._initialized = initialized
-    }
+    private initialized = false
 
     private set title(title: string) {
         ipcMain.emit(
@@ -57,11 +46,6 @@ export class BrowserView extends WebContentsView {
             title,
         )
     }
-
-    /**
-     * Constants
-     */
-    private readonly DEFAULT_URL = 'https://duckduckgo.com/'
 
     constructor(options: WebContentsViewConstructorOptions) {
         super(options)
@@ -75,6 +59,7 @@ export class BrowserView extends WebContentsView {
 
         this.setPopupBlocker()
         this.setAdBlocker()
+        this.restoreHistory()
 
         // Events
         this.webContents
@@ -105,10 +90,19 @@ export class BrowserView extends WebContentsView {
         this.webContents.setZoomFactor(1)
     }
 
-    public async loadLastVisit() {
-        if (this.url.url) {
+    public backToBrowser() {
+        Logger.getInstance().log('backToBrowser()', this.url)
+
+        if (!this.initialized && this.url) {
+            this.initialized = true
+            this.webContents.reload()
             return
         }
+
+        if (this.url) {
+            return
+        }
+
         this.searchKeyword('')
     }
 
@@ -119,6 +113,7 @@ export class BrowserView extends WebContentsView {
     public async loadURL(keyword: string) {
         Logger.getInstance().log('loadURL', keyword)
 
+        this.initialized = true
         const url = getSafeUrl(keyword)
         if (typeof url === 'undefined') {
             return
@@ -151,21 +146,18 @@ export class BrowserView extends WebContentsView {
     }
 
     public searchKeyword(keyword: string) {
+        this.initialized = true
+        this._failedUrl = undefined
         const status = Status.getInstance()
         const searchEngine = status.get('searchEngine')
-        this._failedUrl = undefined
         this.loadURL(`${SEARCH_ENGINES[searchEngine]}${keyword}`)
     }
 
     /**
-     * Restore history from storage
+     * 📝 Restore history from storage
      */
-    public async restoreHistory() {
-        if (this.initialized) {
-            return
-        }
+    private restoreHistory() {
         Logger.getInstance().log('restoreHistory')
-        this.initialized = true
 
         const history = new History()
         history.parse()
@@ -181,7 +173,7 @@ export class BrowserView extends WebContentsView {
                 title: entries[index].title,
             })
 
-            await this.webContents.navigationHistory
+            this.webContents.navigationHistory
                 .restore({
                     index,
                     entries: history.get('history'),
@@ -189,12 +181,17 @@ export class BrowserView extends WebContentsView {
                 .catch((e) => {
                     Logger.getInstance().error('restoring history', e)
                 })
+            // Immediate stop for loading other location like bookmark
+            this.webContents.stop()
 
             return true
         }
         return false
     }
 
+    /**
+     *  👮 Ad Blocker
+     */
     public async setAdBlocker() {
         const status = Status.getInstance()
         const enabled = status.get('adBlocker')
@@ -205,13 +202,13 @@ export class BrowserView extends WebContentsView {
         }
         // Disabled and UnSet
         if (!enabled && !this._blocker) {
-            this._blocker = false
+            this._blocker = undefined
             return
         }
         // Disabled and Set : remove blocker
         if (!enabled && this._blocker) {
             this._blocker.disableBlockingInSession(this.webContents.session)
-            this._blocker = false
+            this._blocker = undefined
             return
         }
         // Enabled and UnSet : Init
@@ -220,68 +217,58 @@ export class BrowserView extends WebContentsView {
             fetch.name,
         )
 
-        await import('@main/modules/adblocker-electron')
-            .then(async (module) => {
-                await module.ElectronBlocker.fromPrebuiltAdsAndTracking(
-                    fetch,
-                ).then((blocker) => {
-                    blocker.enableBlockingInSession(this.webContents.session)
-                    this._blocker = blocker
-                    Logger.getInstance().log('🚦AdBlocker is enabled.')
+        ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+            .then((blocker) => {
+                blocker.enableBlockingInSession(this.webContents.session)
+                this._blocker = blocker
+                Logger.getInstance().log('🚦AdBlocker is enabled.')
 
-                    // For debug or future usage
-                    blocker.on('request-blocked', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: blocked',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('request-redirected', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: redirected',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('request-whitelisted', (request) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: whitelisted',
-                            request.tabId,
-                            request.url,
-                        )
-                    })
-
-                    blocker.on('csp-injected', (request, csps) => {
-                        Logger.getInstance().log(
-                            '🚦AdBlocker: csp',
-                            request.url,
-                            csps,
-                        )
-                    })
-
-                    blocker.on(
-                        'script-injected',
-                        (script: string, url: string) => {
-                            Logger.getInstance().log(
-                                '🚦AdBlocker: script',
-                                script.length,
-                                url,
-                            )
-                        },
+                // For debug or future usage
+                blocker.on('request-blocked', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: blocked',
+                        request.tabId,
+                        request.url,
                     )
+                })
 
-                    blocker.on(
-                        'style-injected',
-                        (style: string, url: string) => {
-                            Logger.getInstance().log(
-                                '🚦AdBlocker: style',
-                                style.length,
-                                url,
-                            )
-                        },
+                blocker.on('request-redirected', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: redirected',
+                        request.tabId,
+                        request.url,
+                    )
+                })
+
+                blocker.on('request-whitelisted', (request) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: whitelisted',
+                        request.tabId,
+                        request.url,
+                    )
+                })
+
+                blocker.on('csp-injected', (request, csps) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: csp',
+                        request.url,
+                        csps,
+                    )
+                })
+
+                blocker.on('script-injected', (script: string, url: string) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: script',
+                        script.length,
+                        url,
+                    )
+                })
+
+                blocker.on('style-injected', (style: string, url: string) => {
+                    Logger.getInstance().log(
+                        '🚦AdBlocker: style',
+                        style.length,
+                        url,
                     )
                 })
             })
@@ -305,6 +292,9 @@ export class BrowserView extends WebContentsView {
             })
     }
 
+    /**
+     *  👮 Popup Blocker
+     */
     private setPopupBlocker() {
         this.webContents.setWindowOpenHandler((data) => {
             if (data.url.startsWith('file:')) {
@@ -394,6 +384,7 @@ export class BrowserView extends WebContentsView {
      * For preventing blank screen when ERR_INTERNET_DISCONNECTED happened
      */
     public reload() {
+        this.initialized = true
         this.title = 'Reloading...'
         if (this._failedUrl) {
             this.loadURL(this._failedUrl)

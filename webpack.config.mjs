@@ -87,6 +87,7 @@ const renderer = {
         new webpack.DefinePlugin({
             envVersion: '"' + process.env.npm_package_version + '"',
             envBeta: process.env.npm_package_version.includes('beta'),
+            envDev: process.env.NODE_ENV === 'development',
         }),
     ],
     devServer:

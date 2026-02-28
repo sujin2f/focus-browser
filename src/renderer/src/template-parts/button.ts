@@ -14,19 +14,7 @@ export class Button extends A_Element<HTMLButtonElement> {
 
     protected afterAppend() {
         this.element.textContent = this._title
-        if (this.onClickCallback) {
-            this.setOnClick(this.onClickCallback)
-        }
-    }
-
-    private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
-    public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
-        if (!this.element && !this.onClickCallback) {
-            this.onClickCallback = callback
-            return this
-        }
-        this.element.addEventListener('click', callback.bind(this))
-        return this
+        super.afterAppend()
     }
 
     public disable() {

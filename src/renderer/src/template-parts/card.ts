@@ -10,7 +10,7 @@ export class Card extends A_Element<HTMLAnchorElement> {
         paragraph.append(description)
     }
 
-    public get description() {
+    public get description(): HTMLElement {
         return this.element.querySelector('p')! as HTMLParagraphElement
     }
 
@@ -26,6 +26,7 @@ export class Card extends A_Element<HTMLAnchorElement> {
         if (this._description) {
             this.element.querySelector('p')!.textContent = this._description
         }
+        super.afterAppend()
     }
 
     public setOnClick(callback: () => void) {

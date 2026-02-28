@@ -13,7 +13,7 @@ readMock.mockReturnValue({
     ],
 })
 
-import { History } from '@main/modules/store/history'
+import { History } from '@main/store/history'
 
 describe('History store (module)', () => {
     test('push updates storage', () => {

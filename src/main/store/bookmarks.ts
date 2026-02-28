@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 /* Models */
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 /* T_Types */
 import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
 import { getSafeUrl } from '@src/common/utils/common'
@@ -12,13 +12,6 @@ type T_Store = T_Bookmark_Store & {
 export class Bookmarks extends Store<T_Store> {
     protected fileName = 'bookmarks'
     protected defaults = { version: 1, dirs: {}, items: {} }
-
-    public get ipc(): T_Bookmark_Store {
-        return {
-            dirs: this.data.dirs,
-            items: this.data.items,
-        }
-    }
 
     constructor(path?: string) {
         super(path)

@@ -1,5 +1,5 @@
 /* Models */
-import { Store } from '@main/modules/store/store'
+import { Store } from '@main/store/store'
 /* CONSTANTS */
 import {
     DEFAULT_SHORTCUTS,

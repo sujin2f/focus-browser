@@ -13,11 +13,11 @@ import {
 
 jest.resetModules()
 jest.doMock('electron', electron)
-jest.doMock('@main/modules/adblocker-electron', adBlocker)
-jest.doMock('@main/modules/store/popup-blocker', popupBlocker)
-jest.doMock('@main/modules/store/history', history)
-jest.doMock('@main/modules/store/status', status)
-jest.doMock('@main/modules/store/keystrokes', keystrokes)
+jest.doMock('@main/lib/adblocker-electron', adBlocker)
+jest.doMock('@main/store/popup-blocker', popupBlocker)
+jest.doMock('@main/store/history', history)
+jest.doMock('@main/store/status', status)
+jest.doMock('@main/store/keystrokes', keystrokes)
 jest.doMock('@main/modules/window/window', window)
 
 statusGet.mockImplementation((arg) => {
@@ -27,7 +27,7 @@ statusGet.mockImplementation((arg) => {
     return 'GOOGLE'
 })
 
-import { BrowserView } from '@src/main/modules/view/browser'
+import { BrowserView } from '@main/modules/view/browser'
 
 describe('Web Browser View (browser.ts)', () => {
     test('loadURL > failure', async () => {

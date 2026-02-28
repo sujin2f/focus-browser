@@ -7,12 +7,11 @@ import {
 } from 'electron'
 /* Models */
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
-import { Logger } from '@main/logger'
-import { Status } from '@main/modules/store/status'
-import { Anchors } from '@main/modules/store/anchors'
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
-import { Shortcut } from '@main/modules/store/shortcut'
-import { Keystrokes } from '@main/modules/store/keystrokes'
+import { Logger } from '@main/lib/logger'
+import { Status } from '@main/store/status'
+import { PopupBlocker } from '@main/store/popup-blocker'
+import { Shortcut } from '@main/store/shortcut'
+import { Keystrokes } from '@main/store/keystrokes'
 /* CONSTANTS */
 import {
     IPC_CHANNELS,
@@ -51,6 +50,11 @@ import {
     modifyBookmark,
     responseBookmarks,
 } from '@src/child-process/entries/bookmark'
+import {
+    clearAnchor,
+    removeAnchor,
+    responseAnchors,
+} from '@src/child-process/entries/anchor'
 
 /**
  * All starts with here
@@ -180,20 +184,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             `IPC onSwitch: ${handler}, ${JSON.stringify(request)}`,
         )
 
-        if (
-            handler !== REQUEST_HANDLER.REMOVE &&
-            handler !== REQUEST_HANDLER.EXECUTE
-        ) {
-            return
-        }
-
-        // Visit Anchor
-        if (handler === REQUEST_HANDLER.REMOVE && request.address) {
-            const anchors = new Anchors()
-            anchors.remove(request.address)
-            anchors.save()
-        }
-
         this.switch(request)
     }
 
@@ -204,9 +194,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     ) {
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                const response = this.browser.initialized
-                    ? (this.browser.webContents.navigationHistory.getAllEntries() as T_Bookmark[])
-                    : []
+                const response =
+                    this.browser.webContents.navigationHistory.getAllEntries() as T_Bookmark[]
                 this.centre.send(
                     IPC_CHANNELS.HISTORY,
                     REQUEST_HANDLER.RESPONSE,
@@ -241,16 +230,23 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         modifyBookmark(handler, this.centre, args)
     }
 
-    private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {
-        const anchors = new Anchors()
+    private onAnchors(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        arg: T_IPC_Data<T_Bookmark>,
+    ) {
         switch (handler) {
             case REQUEST_HANDLER.REQUEST:
-                this.centre.send(
-                    IPC_CHANNELS.ANCHOR,
-                    REQUEST_HANDLER.RESPONSE,
-                    anchors.get(),
-                )
+                responseAnchors(this.centre)
                 return
+            case REQUEST_HANDLER.REMOVE: {
+                const url = arg.item && arg.item.url
+                // 🤬 URL is empty
+                if (!url) return
+
+                removeAnchor(url)
+                return
+            }
         }
     }
 
@@ -426,6 +422,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         { request: key }: T_Cleaner,
     ) {
+        Logger.getInstance().log(
+            `${EMOJI.CLEANER} Cleaner request accepted. ${handler} ${key}`,
+        )
+
         const responseSuccess = () => {
             this.centre.send(
                 IPC_CHANNELS.CLEANER,
@@ -447,19 +447,17 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                         await this.browser.webContents.session.clearCache()
                         responseSuccess()
                         return
-                    case 'indexedDB':
-                        removeIndexedDB(this.centre)
-                        return
-                    case 'anchor': {
-                        const anchors = new Anchors()
-                        anchors.clear()
-                        responseSuccess()
-                        return
-                    }
                     case 'history':
                         this.browser.webContents.navigationHistory.clear()
                         responseSuccess()
                         return
+                    case 'indexedDB':
+                        removeIndexedDB(this.centre)
+                        return
+                    case 'anchor': {
+                        clearAnchor(this.centre)
+                        return
+                    }
                     case 'popups':
                         PopupBlocker.getInstance().clear()
                         responseSuccess()

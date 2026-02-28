@@ -6,7 +6,7 @@ jest.doMock('electron', electron)
 jest.doMock('fs', fs)
 readMock.mockReturnValue({ blocked: [], allowed: ['toggle'] })
 
-import { PopupBlocker } from '@src/main/modules/store/popup-blocker'
+import { PopupBlocker } from '@main/store/popup-blocker'
 
 describe('Popup store (module)', () => {
     test('store loads and set/get functions exist', () => {

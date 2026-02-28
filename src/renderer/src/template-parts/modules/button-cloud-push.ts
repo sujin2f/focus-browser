@@ -1,7 +1,6 @@
 import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import {
-    BROWSER,
     EMOJI,
     IPC_CHANNELS,
     REQUEST_HANDLER,
@@ -46,10 +45,7 @@ export class ButtonCloudPush extends Button {
             getSection('login-alert')
                 .querySelector('button')
                 ?.addEventListener('click', () => {
-                    navigate({
-                        scene: BROWSER,
-                        address: SUJINC_URL,
-                    })
+                    navigate(SUJINC_URL)
                 })
             return
         }

@@ -2,10 +2,10 @@ import { utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Status } from '@src/main/modules/store/status'
-import { Logger } from '@main/logger'
+import { Status } from '@main/store/status'
+import { Logger } from '@main/lib/logger'
 /* T_Types */
-import type { CenterView } from '@src/main/modules/view/centre'
+import type { CenterView } from '@main/modules/view/centre'
 import type { T_Cloud_Item } from '@src/common/types'
 /* CONSTANTS */
 import {
@@ -40,11 +40,11 @@ export const fetchCloudItems = (
 
         Logger.getInstance().log(
             '👶',
-            `Sending items to renderer: sample `,
+            `Sending items to renderer: (${message.body.result.length}) sample `,
             message.body.result[0],
         )
         centre.send(
-            IPC_CHANNELS.CLOUD,
+            IPC_CHANNELS.CLOUD_RESPONSE,
             REQUEST_HANDLER.RESPONSE,
             message.body.result,
         )

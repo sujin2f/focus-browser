@@ -37,21 +37,6 @@ export class ListItem extends A_Element<HTMLDivElement> {
         } else {
             this.element.querySelector('p')!.remove()
         }
-
-        if (this.onClickCallback) {
-            this.setOnClick(this.onClickCallback)
-        }
-    }
-
-    private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
-    public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
-        if (this._clickable) {
-            try {
-                this.element.addEventListener('click', callback.bind(this))
-            } catch {
-                this.onClickCallback = callback
-            }
-        }
-        return this
+        super.afterAppend()
     }
 }

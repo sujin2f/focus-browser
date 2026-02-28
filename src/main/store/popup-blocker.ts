@@ -8,9 +8,9 @@ type T_Popup = {
 
 export class PopupBlocker extends Store<T_Popup> {
     static instance: PopupBlocker
-    static getInstance(): PopupBlocker {
+    static getInstance(userDataPath?: string): PopupBlocker {
         if (!PopupBlocker.instance) {
-            PopupBlocker.instance = new PopupBlocker()
+            PopupBlocker.instance = new PopupBlocker(userDataPath)
             PopupBlocker.instance.parse()
         }
         return PopupBlocker.instance

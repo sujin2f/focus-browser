@@ -24,7 +24,7 @@ describe('Anchors store (module)', () => {
         ])
 
         // Push
-        anchors.push({ id: '', url: '-1', title: '-1' })
+        anchors.push('-1', '-1')
         expect(anchors.get()[0]).toStrictEqual({
             id: '',
             url: '-1',

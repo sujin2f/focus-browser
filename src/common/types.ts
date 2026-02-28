@@ -46,7 +46,6 @@ export type T_IPC_Switch = {
     scene: Scenes
     address?: string
     reloading?: boolean
-    lastVisit?: boolean
     searchEngine?: boolean
 }
 
@@ -120,7 +119,8 @@ export type T_IPC_Data<T> = {
 }
 
 export type T_IPC_Message = {
-    [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
+    [IPC_CHANNELS.ANCHOR]: T_IPC_Data<T_Bookmark>
+    [IPC_CHANNELS.ANCHOR_RESPONSE]: T_Bookmark[]
     [IPC_CHANNELS.BOOKMARK]: T_IPC_Data<T_Bookmark>
     [IPC_CHANNELS.BOOKMARKS_RESPONSE]: T_Bookmark_Store
     [IPC_CHANNELS.STATUS]: T_IPC_Status

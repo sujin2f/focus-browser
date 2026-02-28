@@ -6,9 +6,13 @@ export const isBeta = () => {
 }
 
 export const isDev = () => {
-    return (
-        typeof process !== 'undefined' && process.env.NODE_ENV === 'development'
-    )
+    if (typeof window !== 'object') {
+        return (
+            typeof process !== 'undefined' &&
+            process.env.NODE_ENV === 'development'
+        )
+    }
+    return typeof envDev !== 'undefined' && envDev
 }
 
 export const isTest = () => {

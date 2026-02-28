@@ -14,7 +14,6 @@ import { Notification } from '@home/template-parts/notification'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
-    BROWSER,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -61,10 +60,7 @@ class Importer extends A_List<T_Cloud_Item> {
             getSection('login-alert')
                 .querySelector('button')
                 ?.addEventListener('click', () => {
-                    navigate({
-                        scene: BROWSER,
-                        address: SUJINC_URL,
-                    })
+                    navigate(SUJINC_URL)
                 })
         }
     }
@@ -99,22 +95,28 @@ class Importer extends A_List<T_Cloud_Item> {
                     this.renderList()
                     this.setEnabled(true)
                     return
+            }
+        })
+
+        ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, response) => {
+            switch (handler) {
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    this.items = this.items.filter(
-                        (item) => item.data._id !== items[0]._id,
-                    )
-                    this.renderList()
-                    this.notification.info(items[0].title)
                     this.setEnabled(true)
+
+                    if (!response?.item) {
+                        // Fail
+                        return
+                    }
+                    this.items = this.items
+                        .filter((item) => item.data._id !== response.item!._id)
+                        .map((item) => ({ ...item, items: [] as ListItem[] }))
+                    this.renderList()
+                    this.notification.info(
+                        `${response.item!.title} is imported.`,
+                    )
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
-                    if (items[0]._id) {
-                        this.items = this.items.filter(
-                            (item) => item.data._id !== items[0]._id,
-                        )
-                    }
-                    this.notification.error(items[0].title)
-                    this.setEnabled(true)
+                    // TODO
                     return
             }
         })

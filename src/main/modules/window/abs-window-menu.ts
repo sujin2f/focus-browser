@@ -1,7 +1,6 @@
 import {
     BrowserWindow as ElectronBrowserWindow,
     Menu as ElectronMenu,
-    Notification,
     clipboard,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
@@ -25,7 +24,6 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Models */
-import { Anchors } from '@main/store/anchors'
 import { Shortcut } from '@main/store/shortcut'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
@@ -33,7 +31,7 @@ import { Logger } from '@main/lib/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
 import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
-import { test } from '@src/child-process/entries/test-util'
+import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -541,33 +539,16 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
      * behavior but switches to the Anchor page on notification click.
      */
     private addAnchor() {
-        const anchors = new Anchors()
-        const added = anchors.push({
-            id: '',
-            url: this.browser.webContents.getURL(),
-            title: this.browser.webContents.getTitle(),
-        })
-        anchors.save()
-
-        if (!added) {
-            return
-        }
-
-        const notification = new Notification({
-            title: 'Focus',
-            body: 'New Anchor Added',
-            silent: true,
-        })
-        // Clicking the notification navigates to the anchor page
-        notification.addListener('click', () => {
-            this.switch({ scene: CENTRE_PAGES.ANCHOR })
-        })
-        notification.show()
+        addAnchorFromBrowser(
+            this,
+            this.browser.webContents.getURL(),
+            this.browser.webContents.getTitle(),
+        )
     }
 
     private async runTest() {
         Logger.getInstance().log(`TEST RUN`)
-        test()
+        this.browser.webContents.reload()
     }
 
     abstract switch(request: T_IPC_Switch): void

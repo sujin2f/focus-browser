@@ -18,6 +18,7 @@ import { ListItem } from '@home/template-parts/list-item'
 import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
 /* CONSTANTS */
 import {
+    BROWSER,
     CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
@@ -40,12 +41,15 @@ class Welcome extends A_List<T_Bookmark> {
         )
             .appendTo('grid')
             .setOnClick(() => {
-                navigate({ lastVisit: true })
+                navigate()
             })
         new Card(`${EMOJI.SETTINGS} Search Engine`, 'Search Web')
             .appendTo('grid')
             .setOnClick(() => {
-                navigate({ searchEngine: true })
+                ipcRenderer.send(IPC_CHANNELS.SWITCH, REQUEST_HANDLER.EXECUTE, {
+                    searchEngine: true,
+                    scene: BROWSER,
+                })
             })
 
         this.requestStatus('userInfo')
@@ -91,10 +95,10 @@ class Welcome extends A_List<T_Bookmark> {
                     ? item.data.parent
                     : false
             const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate({ address: item.data.url })
+                navigate(item.data.url)
             })
             const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate({ address: item.data.url })
+                navigate(item.data.url)
             })
             item.items.push(icon, row)
             if (parent) {
@@ -147,7 +151,7 @@ class Welcome extends A_List<T_Bookmark> {
 
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
-            navigate({ lastVisit: true })
+            navigate()
         }
     }
 

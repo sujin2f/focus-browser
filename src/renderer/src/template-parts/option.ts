@@ -16,5 +16,6 @@ export class Option extends A_Element<HTMLOptionElement> {
         this.element.textContent = this.label
         this.element.value = this.value
         this.element.selected = this.selected
+        super.afterAppend()
     }
 }

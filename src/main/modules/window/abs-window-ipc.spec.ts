@@ -17,7 +17,6 @@ import {
     shortcut,
     status,
     statusMerge,
-    anchorRemove,
 } from '@test/mock-store'
 import { fs } from '@test/mock-fs'
 
@@ -32,6 +31,11 @@ jest.doMock('@main/store/popup-blocker', popupBlocker)
 jest.doMock('@main/store/bookmarks', bookmarks)
 
 jest.doMock('@main/modules/view/browser', browser)
+
+import { responseAnchors } from '@src/child-process/entries/anchor'
+jest.mock('@src/child-process/entries/anchor', () => ({
+    responseAnchors: jest.fn(),
+}))
 
 import { BrowserView } from '@main/modules/view/browser'
 import {
@@ -122,18 +126,6 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         })
     })
 
-    test('onSwitch > click anchor', () => {
-        ipc[1][1](null, REQUEST_HANDLER.REMOVE, {
-            scene: BROWSER,
-            address: 'test-url',
-        })
-        expect(switchFn).toHaveBeenCalledWith({
-            address: 'test-url',
-            scene: BROWSER,
-        })
-        expect(anchorRemove).toHaveBeenCalled()
-    })
-
     test('onHistory > request', () => {
         ipc[2][1](null, REQUEST_HANDLER.REQUEST)
         expect(send).toHaveBeenCalledWith(
@@ -154,13 +146,9 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         expect(historyClear).toHaveBeenCalled()
     })
 
-    test('onAnchors > request', () => {
+    test('⚓️ onAnchors > child-process', () => {
         ipc[4][1](null, REQUEST_HANDLER.REQUEST)
-        expect(send).toHaveBeenCalledWith(
-            IPC_CHANNELS.ANCHOR,
-            REQUEST_HANDLER.RESPONSE,
-            [],
-        )
+        expect(responseAnchors).toHaveBeenCalled()
     })
 
     test('onPopupBlocker > request', () => {

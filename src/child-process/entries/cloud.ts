@@ -40,11 +40,11 @@ export const fetchCloudItems = (
 
         Logger.getInstance().log(
             '👶',
-            `Sending items to renderer: sample `,
+            `Sending items to renderer: (${message.body.result.length}) sample `,
             message.body.result[0],
         )
         centre.send(
-            IPC_CHANNELS.CLOUD,
+            IPC_CHANNELS.CLOUD_RESPONSE,
             REQUEST_HANDLER.RESPONSE,
             message.body.result,
         )

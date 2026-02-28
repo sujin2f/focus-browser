@@ -28,7 +28,7 @@ export class Store<T extends JsonObject> {
         return path.join(userDataPath, `${this.fileName}.json`)
     }
 
-    constructor(private userDataPath?: string) {}
+    constructor(protected userDataPath?: string) {}
 
     /**
      * Get value by key

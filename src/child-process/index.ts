@@ -1,32 +1,38 @@
 import { net } from 'electron'
 /* Utils */
-import { getDirectorySize, removeDirectory } from '@src/common/utils/fs'
-import { base64decode, base64encode } from '@src/common/utils/security'
-/* CONSTANTS */
-import { REQUEST_HANDLER, SUJINC_URL } from '@src/common/constants'
+import { removeDirectory } from '@src/common/utils/fs'
 /* T_Types */
-import type {
-    T_Bookmark,
-    T_Bookmark_Store,
-    T_Cloud_Item,
-    T_IPC_Data,
-} from '@src/common/types'
+import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 /* Models */
-import { Bookmarks } from '@main/store/bookmarks'
+import { getCleanerData } from '@src/child-process/process/cleaner'
+import {
+    getAnchors,
+    removeAnchor,
+    addAnchor,
+    clearAnchor,
+} from '@src/child-process/process/anchor'
+import {
+    addBookmark,
+    getBookmarks,
+    removeBookmark,
+    updateBookmark,
+} from '@src/child-process/process/bookmark'
+import {
+    fetchCloudItems,
+    removeCloudItem,
+    uploadCloudItem,
+} from '@src/child-process/process/cloud'
 
 process.parentPort.once('message', (e) => {
     switch (e.data.channel) {
-        case 'directory-size': {
-            const size = getDirectorySize(e.data.path)
-            process.parentPort.postMessage(size)
+        case 'cleaner-data':
+            getCleanerData(e.data.indexedDB, e.data.userData)
             return
-        }
 
-        case 'remove-directory': {
+        case 'remove-directory':
             removeDirectory(e.data.path)
             process.parentPort.postMessage(true)
             return
-        }
 
         case 'fetch-cloud-items':
             fetchCloudItems(e.data.token, e.data.email)
@@ -41,11 +47,7 @@ process.parentPort.once('message', (e) => {
             return
 
         case 'list-bookmark': {
-            const store = new Bookmarks(e.data.path)
-            process.parentPort.postMessage({
-                dirs: store.get('dirs'),
-                items: store.get('items'),
-            } satisfies T_Bookmark_Store)
+            getBookmarks(e.data.path)
             return
         }
 
@@ -57,46 +59,30 @@ process.parentPort.once('message', (e) => {
 
         case 'update-bookmark': {
             const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
-            if (!item) {
-                process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_FAIL)
-                return
-            }
-            const isDir = Boolean(meta)
-            const store = new Bookmarks(e.data.path)
-            const result = store.update(item, Boolean(meta))
-            store.save()
-
-            const handler = !result
-                ? REQUEST_HANDLER.RESPONSE_FAIL
-                : REQUEST_HANDLER.RESPONSE_SUCCESS
-
-            process.parentPort.postMessage({
-                handler,
-                item,
-                meta: { isDir, action: 'updated' },
-            })
+            updateBookmark(e.data.path, item!, Boolean(meta))
             return
         }
 
         case 'remove-bookmark': {
             const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
-            if (!item || !item?.id) {
-                process.parentPort.postMessage({
-                    handler: REQUEST_HANDLER.RESPONSE_FAIL,
-                })
-                return
-            }
-            const isDir = Boolean(meta)
-            const store = new Bookmarks(e.data.path)
-            store.remove(item.id, isDir)
-            store.save()
-            process.parentPort.postMessage({
-                handler: REQUEST_HANDLER.RESPONSE_SUCCESS,
-                item,
-                meta: { isDir, action: 'removed' },
-            })
+            removeBookmark(e.data.path, item!, Boolean(meta))
             return
         }
+        case 'list-anchor':
+            getAnchors(e.data.path)
+            return
+
+        case 'remove-anchor':
+            removeAnchor(e.data.path, e.data.url)
+            return
+
+        case 'add-anchor':
+            addAnchor(e.data.path, e.data.url, e.data.title)
+            return
+
+        case 'clear-anchor':
+            clearAnchor(e.data.path)
+            return
 
         case 'test': {
             console.log(net)
@@ -106,114 +92,3 @@ process.parentPort.once('message', (e) => {
         }
     }
 })
-
-const fetchCloudItems = async (token: string, email: string) => {
-    await net
-        .fetch(`${SUJINC_URL}/focus/items`, {
-            method: 'GET',
-            headers: { authorization: `Bearer ${token}`, email },
-        })
-        .then(async (response) => {
-            const body =
-                response.status === 404
-                    ? { error: `You don't have anything in the cloud.` }
-                    : await response.json()
-            process.parentPort.postMessage({ status: response.status, body })
-        })
-        .catch((e) => {
-            process.parentPort.postMessage({
-                status: 400,
-                body: { error: e.message },
-            })
-        })
-}
-
-const uploadCloudItem = async (
-    item: T_Cloud_Item,
-    machineId: string,
-    token: string,
-) => {
-    if (!item.message || !item.key || !item.title || !item.type) {
-        process.parentPort.postMessage({
-            status: 404,
-            body: { error: 'The request is not valid.' },
-        })
-        return
-    }
-    const os = process.platform === 'darwin' ? 'mac' : process.platform
-    const version = process.getSystemVersion()
-    const message = base64encode(item.message)
-
-    await net
-        .fetch(`${SUJINC_URL}/focus/item`, {
-            body: JSON.stringify({
-                ...item,
-                device: `${os}(${version})`,
-                machineId,
-                message,
-            } satisfies T_Cloud_Item),
-            method: 'PUT',
-            headers: { authorization: `Bearer ${token}` },
-        })
-        .then(async (response) => {
-            const body = await response.json()
-            process.parentPort.postMessage({ status: response.status, body })
-        })
-        .catch((e) => {
-            process.parentPort.postMessage({
-                status: 404,
-                body: { error: e.message },
-            })
-        })
-}
-
-const removeCloudItem = async (_id: string, token: string) => {
-    await net
-        .fetch(`${SUJINC_URL}/focus/item`, {
-            method: 'DELETE',
-            body: JSON.stringify({ _id }),
-            headers: { authorization: `Bearer ${token}` },
-        })
-        .then(async (response) => {
-            const body = await response.json()
-            process.parentPort.postMessage({
-                status: response.status,
-                body: {
-                    ...body,
-                    id:
-                        response.status === 200 || response.status === 404
-                            ? _id
-                            : '',
-                },
-            })
-        })
-        .catch((e) => {
-            process.parentPort.postMessage({
-                status: 404,
-                body: { error: e.message },
-            })
-        })
-}
-
-const addBookmark = (path: string, bookmark: T_Bookmark, isDir: boolean) => {
-    if (bookmark.id === 'from-cloud') {
-        bookmark = JSON.parse(base64decode(bookmark.title))
-    }
-    if (!bookmark) {
-        process.parentPort.postMessage(REQUEST_HANDLER.RESPONSE_FAIL)
-        return
-    }
-
-    const store = new Bookmarks(path)
-    const result = store.push(bookmark, isDir)
-    store.save()
-    const handler = !result
-        ? REQUEST_HANDLER.RESPONSE_FAIL
-        : REQUEST_HANDLER.RESPONSE_SUCCESS
-
-    process.parentPort.postMessage({
-        handler,
-        item: result,
-        meta: { isDir, action: 'added' },
-    })
-}

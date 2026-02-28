@@ -8,8 +8,8 @@ export class Anchors extends Store<Props> {
     protected fileName = 'anchors'
     protected defaults = { anchors: [] } as Props
 
-    constructor() {
-        super()
+    constructor(protected userDataPath?: string) {
+        super(userDataPath)
         this.parse()
         this.mergeDefault()
     }
@@ -18,7 +18,9 @@ export class Anchors extends Store<Props> {
         return super.get('anchors')
     }
 
-    push(anchor: T_Bookmark) {
+    push(url: string, title: string) {
+        const anchor = { url, title, id: '' } satisfies T_Bookmark
+
         for (const item of this._data.anchors) {
             if (item.url === anchor.url) {
                 return false

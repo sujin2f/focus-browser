@@ -7,6 +7,7 @@ export class Modal extends A_Element<HTMLElement> {
 
     protected afterAppend() {
         this.select('close').addEventListener('click', () => this.hide())
+        super.afterAppend()
     }
 
     public show() {

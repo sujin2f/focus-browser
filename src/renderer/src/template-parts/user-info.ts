@@ -2,7 +2,7 @@ import { A_Element } from './abs-element'
 /* Utils */
 import { getSection, navigate } from '@src/renderer/src/utils'
 import { Button } from './button'
-import { BROWSER, EMOJI, SUJINC_URL } from '@src/common/constants'
+import { EMOJI, SUJINC_URL } from '@src/common/constants'
 
 export class UserInfo extends A_Element<HTMLElement> {
     protected _element: HTMLElement = getSection('user-info')
@@ -31,10 +31,10 @@ export class UserInfo extends A_Element<HTMLElement> {
         new Button(`${EMOJI.LOGIN} Log In`)
             .appendTo(this.select('log-in'))
             .setOnClick(() => {
-                navigate({ scene: BROWSER, address: SUJINC_URL })
+                navigate(SUJINC_URL)
             })
         this.select('logged-in').addEventListener('click', () => {
-            navigate({ scene: BROWSER, address: SUJINC_URL })
+            navigate(SUJINC_URL)
         })
     }
 

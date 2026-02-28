@@ -21,7 +21,7 @@ export abstract class A_Entry {
 
     protected callbackShortcut(e: KeyboardEvent) {
         if (e.key === 'Escape') {
-            navigate({})
+            navigate()
         }
     }
 

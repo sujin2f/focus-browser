@@ -9,7 +9,7 @@ export class ButtonBack extends A_Element<HTMLButtonElement> {
 
     protected afterAppend() {
         this.element.addEventListener('click', () => {
-            navigate({})
+            navigate()
         })
     }
 }

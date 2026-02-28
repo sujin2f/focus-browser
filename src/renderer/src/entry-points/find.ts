@@ -30,7 +30,7 @@ class Find extends A_Entry {
                 REQUEST_HANDLER.REQUEST,
                 input.value,
             )
-            navigate({})
+            navigate()
         })
     }
 }

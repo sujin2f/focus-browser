@@ -18,7 +18,7 @@ export const getAddressBar = (shortcut = `${ctrlOrComm()}L`) => {
         if (!input.value) {
             return
         }
-        navigate({ address: input.value })
+        navigate(input.value)
     })
 
     return input

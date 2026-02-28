@@ -14,6 +14,7 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types'
+import { Logger } from '../utils/logger'
 
 class Anchors extends A_ListCloudPush<T_Bookmark> {
     constructor() {
@@ -40,47 +41,55 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
 
     private requestAnchors(): void {
         ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (handler, anchors = []) => {
-            this.setEnabled(true)
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE:
-                    this.items = anchors.map((bookmark) => ({
-                        data: bookmark,
-                        items: [] as ListItem[],
-                    }))
-                    this.renderList()
-                    return
-            }
-        })
+        ipcRenderer.once(
+            IPC_CHANNELS.ANCHOR_RESPONSE,
+            (handler, anchors = []) => {
+                Logger.getInstance().info('Anchor list response got', anchors)
+                this.setEnabled(true)
+                switch (handler) {
+                    case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                        this.items = anchors.map((bookmark) => ({
+                            data: bookmark,
+                            items: [] as ListItem[],
+                        }))
+                        this.renderList()
+                        return
+                }
+            },
+        )
     }
 
     private renderList() {
         this.list.element.innerHTML = ''
 
-        this.items.forEach(({ data: anchor, items }) => {
-            const item = new ListItem(anchor.title, anchor.url)
-                .appendTo(this.list.element)
-                .setOnClick(() => {
-                    if (this.enabled) {
-                        navigate(
-                            { address: anchor.url },
-                            REQUEST_HANDLER.REMOVE,
-                        )
-                    }
+        this.items
+            .filter((item) => item.data.url && item.data.title)
+            .forEach(({ data: anchor, items }) => {
+                const item = new ListItem(anchor.title, anchor.url)
+                    .appendTo(this.list.element)
+                    .setOnClick(() => {
+                        if (this.enabled) {
+                            ipcRenderer.send(
+                                IPC_CHANNELS.ANCHOR,
+                                REQUEST_HANDLER.REMOVE,
+                                { item: anchor },
+                            )
+                            navigate(anchor.url)
+                        }
+                    })
+
+                // Cloud
+                const button = this.createCloudPushButton({
+                    title: anchor.title,
+                    key: anchor.url,
+                    type: 'bookmark',
+                    message: JSON.stringify(anchor),
                 })
+                const send = new ListItem(button).appendTo(this.list.element)
+                send.clickable = false
 
-            // Cloud
-            const button = this.createCloudPushButton({
-                title: anchor.title,
-                key: anchor.url,
-                type: 'bookmark',
-                message: JSON.stringify(anchor),
+                items.push(item, send)
             })
-            const send = new ListItem(button).appendTo(this.list.element)
-            send.clickable = false
-
-            items.push(item, send)
-        })
     }
 }
 

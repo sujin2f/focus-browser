@@ -78,7 +78,7 @@ export const status = () => ({
 
 class MockHistory {
     parse = jest.fn()
-    get = (arg: string) => {
+    get = (arg: string): unknown => {
         if (arg === 'index') {
             return -1
         }

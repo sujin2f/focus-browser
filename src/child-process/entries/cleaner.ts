@@ -3,8 +3,6 @@ import { app, utilityProcess } from 'electron'
 import { paths, getIndexedDBPath } from '@src/common/utils/fs'
 import { byteToSize } from '@src/common/utils/common'
 /* Models */
-// import { Anchors } from '@main/store/anchors'
-// import { PopupBlocker } from '@main/store/popup-blocker'
 import { Logger } from '@main/lib/logger'
 /* T_Types */
 import type { CenterView } from '@main/modules/view/centre'

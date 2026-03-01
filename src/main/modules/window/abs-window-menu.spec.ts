@@ -6,11 +6,8 @@ import {
     goForward,
     menuBuilder,
     setFullScreen,
-    stop,
     toggleDevTools,
     winReload,
-    stopFindInPage,
-    findInPage,
 } from '@test/mock-electron'
 import { browser, addAnchor } from '@test/mock-browser'
 import { anchors, bookmarks, shortcut } from '@test/mock-store'
@@ -28,8 +25,18 @@ import { CENTRE_PAGES, BROWSER } from '@src/common/constants'
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { Scenes } from '@src/common/types'
 
-const switchFn = jest.fn()
+const mockSwitch = jest.fn()
+const mockFocusFindInPage = jest.fn()
+const mockFindInPage = jest.fn()
+const mockStopFindInPage = jest.fn()
+const mockStop = jest.fn()
 class Menu extends AbsWindowMenu {
+    focusFindInPage = mockFocusFindInPage
+    findInPage = mockFindInPage
+    stopFindInPage = mockStopFindInPage
+    stop = mockStop
+    switch = mockSwitch
+
     toggleDevTools(): void {
         this.browser.webContents.toggleDevTools()
     }
@@ -39,11 +46,7 @@ class Menu extends AbsWindowMenu {
     goForward(): void {
         this.browser.webContents.navigationHistory.goForward()
     }
-    stop(): void {
-        this.browser.webContents.stop()
-    }
     toggleMaximize(): void {}
-    switch = switchFn
     protected findText: string = 'search'
     protected _scene: Scenes = BROWSER
     constructor() {
@@ -72,49 +75,46 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         expect(addAnchor).toHaveBeenCalled()
     })
 
-    test('find > switch', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[1].submenu[9]
-                : menu[1].submenu[9]
+    describe('🔍 Find', () => {
+        test('🔍 find > switch', async () => {
+            const menuItem =
+                process.platform === 'darwin'
+                    ? menu[1].submenu[9]
+                    : menu[1].submenu[9]
 
-        menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.FIND })
-    })
-
-    test('find next', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[1].submenu[10]
-                : menu[1].submenu[10]
-
-        menuItem.click()
-        expect(findInPage).toHaveBeenCalledWith('search', {
-            findNext: true,
+            menuItem.click()
+            expect(mockFocusFindInPage).toHaveBeenCalledWith('', true)
         })
-    })
 
-    test('find prev', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[1].submenu[11]
-                : menu[1].submenu[11]
+        test('🔍 find next', async () => {
+            const menuItem =
+                process.platform === 'darwin'
+                    ? menu[1].submenu[10]
+                    : menu[1].submenu[10]
 
-        menuItem.click()
-        expect(findInPage).toHaveBeenCalledWith('search', {
-            forward: false,
-            findNext: true,
+            menuItem.click()
+            expect(mockFindInPage).toHaveBeenCalledWith('', true)
         })
-    })
 
-    test('stop', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[1].submenu[12]
-                : menu[1].submenu[12]
+        test('🔍 find prev', async () => {
+            const menuItem =
+                process.platform === 'darwin'
+                    ? menu[1].submenu[11]
+                    : menu[1].submenu[11]
 
-        menuItem.click()
-        expect(stopFindInPage).toHaveBeenCalled()
+            menuItem.click()
+            expect(mockFindInPage).toHaveBeenCalledWith('', false)
+        })
+
+        test('🔍 stop', async () => {
+            const menuItem =
+                process.platform === 'darwin'
+                    ? menu[1].submenu[12]
+                    : menu[1].submenu[12]
+
+            menuItem.click()
+            expect(mockStop).toHaveBeenCalled()
+        })
     })
 
     test('stop', async () => {
@@ -124,7 +124,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[8]
 
         menuItem.click()
-        expect(stop).toHaveBeenCalled()
+        expect(mockStop).toHaveBeenCalled()
     })
 
     test('full screen', async () => {
@@ -154,7 +154,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[0]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.ADDRESS })
+        expect(mockSwitch).toHaveBeenCalledWith({ scene: CENTRE_PAGES.ADDRESS })
     })
 
     test('centre', async () => {
@@ -164,7 +164,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[3].submenu[1]
 
         menuItem.click()
-        expect(switchFn).toHaveBeenCalledWith({ scene: CENTRE_PAGES.HOME })
+        expect(mockSwitch).toHaveBeenCalledWith({ scene: CENTRE_PAGES.HOME })
     })
 
     test('back', async () => {
@@ -193,7 +193,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 ? menu[3].submenu[8]
                 : menu[3].submenu[8]
         menuItem.click()
-        expect(stop).toHaveBeenCalled()
+        expect(mockStop).toHaveBeenCalled()
     })
 
     test('reload', async () => {

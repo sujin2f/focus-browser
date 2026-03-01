@@ -1,6 +1,6 @@
 import { WebContentsView } from 'electron'
 
-export abstract class AbsView extends WebContentsView {
+export abstract class AbsContentsView extends WebContentsView {
     protected active: boolean = false
 
     public show() {

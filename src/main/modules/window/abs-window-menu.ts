@@ -21,7 +21,6 @@ import {
 import { Shortcut } from '@main/store/shortcut'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
-import { FindView } from '@main/modules/view/find'
 import { Logger } from '@main/lib/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
@@ -41,8 +40,6 @@ import { isBeta, isDev, isTest } from '@src/common/utils/common'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
-    protected find!: FindView
-    protected findText = ''
 
     private get menuItems(): MenuBlock {
         const view: MenuItems = {
@@ -115,46 +112,25 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
-                    // TODO #121 Find to child view
-                    // const find = new WebContentsView()
-                    // find.webContents.loadURL('https://google.com')
-                    // find.setBounds({ x: 400, y: 0, width: 400, height: 400 })
-                    // find.setVisible(true)
-                    // this.contentView = new WebContentsView()
-                    // this.contentView.addChildView(this.browser)
-                    // this.contentView.addChildView(find)
-                    // this.contentView.removeChildView(view)
-
-                    this.switch({ scene: CENTRE_PAGES.FIND })
+                    this.focusFindInPage('', true)
                 },
             },
             [Menu.FIND_NEXT]: {
                 accelerator: this.getShortcut(Menu.FIND_NEXT),
                 click: () => {
-                    if (!this.findText) {
-                        return
-                    }
-                    this.browser.webContents.findInPage(this.findText, {
-                        findNext: true,
-                    })
+                    this.findInPage('', true)
                 },
             },
             [Menu.FIND_PREV]: {
                 accelerator: this.getShortcut(Menu.FIND_PREV),
                 click: () => {
-                    if (!this.findText) {
-                        return
-                    }
-                    this.browser.webContents.findInPage(this.findText, {
-                        forward: false,
-                        findNext: true,
-                    })
+                    this.findInPage('', false)
                 },
             },
             [Menu.STOP]: {
                 accelerator: this.getShortcut(Menu.STOP),
                 click: () => {
-                    this.browser.webContents.stopFindInPage('clearSelection')
+                    this.stop()
                 },
             },
             [Menu.s0003]: {},
@@ -505,4 +481,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract goForward(): void
     abstract stop(): void
     abstract toggleMaximize(): void
+    abstract focusFindInPage(text: string, forward: boolean): void
+    abstract findInPage(text: string, forward: boolean, reset?: boolean): void
 }

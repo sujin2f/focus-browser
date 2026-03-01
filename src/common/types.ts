@@ -7,6 +7,7 @@ import {
     SEARCH_ENGINES,
     IPC_CHANNELS,
     LogTypes,
+    FIND,
 } from '@src/common/constants'
 import type { ListItem } from '@src/renderer/src/template-parts/list-item'
 
@@ -107,7 +108,7 @@ export type T_Cloud_Item = {
     message?: string
 }
 
-export type Scenes = CENTRE_PAGES | typeof BROWSER
+export type Scenes = CENTRE_PAGES | typeof BROWSER | typeof FIND
 
 export type MenuItems = Partial<Record<Menu, MenuItemConstructorOptions>>
 export type MenuBlock = Partial<Record<MenuCategory, MenuItems>>
@@ -127,7 +128,15 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
     [IPC_CHANNELS.HISTORY]: T_Bookmark[]
     [IPC_CHANNELS.POPUP_BLOCKER]: [string[], string[]]
-    [IPC_CHANNELS.FIND]: string
+    [IPC_CHANNELS.FIND]: {
+        text: string
+        forward?: boolean
+        stop?: boolean
+        reset?: boolean
+        focus?: boolean
+        matches?: number
+        activeMatchOrdinal?: number
+    }
     [IPC_CHANNELS.LOG]: [LogTypes, unknown[]]
     [IPC_CHANNELS.KEYSTROKES]: Record<string, string>
     [IPC_CHANNELS.SHORTCUTS]: T_Shortcut_Store

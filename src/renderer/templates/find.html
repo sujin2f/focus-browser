@@ -9,20 +9,40 @@
         />
     </head>
 
-    <body
-        class="dark:bg-gray-950 dark:text-white min-h-dvh pt-10 pb-10 pr-2 pl-2"
-    >
-        <section class="container mx-auto pt-5">
-            <%=require('html-loader!./template-parts/input.html').default %>
-            <%=require('html-loader!./template-parts/button.html').default %>
-            <%=require('html-loader!./template-parts/button-hollow.html').default
-            %>
-            <form
-                class="flex flex-col h-dvh justify-center items-center"
-                id="section-form"
-            >
-                <div class="flex flex-row gap-2" id="section-button"></div>
-            </form>
+    <body>
+        <section
+            class="view--find h-dvh flex justify-center items-center dark:bg-gray-950 dark:text-white rounded-xl px-3 grid-cols-5 border-slate-400 dark:border-gray-950"
+        >
+            <input
+                class="w-full h-7 outline-none"
+                id="input"
+                style="--tw-outline-style: none; outline-style: none"
+            />
+            <div class="px-3" id="found"></div>
+            <button class="relative w-7 aspect-square h-7" id="prev">
+                <div
+                    class="absolute w-1 bg-white rotate-45 top-2.5 h-2 right-3.5"
+                ></div>
+                <div
+                    class="absolute w-1 bg-white -rotate-45 top-2.5 h-2 right-2.5"
+                ></div>
+            </button>
+            <button class="relative w-7 aspect-square h-7" id="next">
+                <div
+                    class="absolute w-1 bg-white rotate-45 top-2.5 h-2 right-2.5"
+                ></div>
+                <div
+                    class="absolute w-1 bg-white -rotate-45 top-2.5 h-2 right-3.5"
+                ></div>
+            </button>
+            <button class="relative w-7 aspect-square h-7" id="cancel">
+                <div
+                    class="absolute w-1 h-4 bg-white rotate-45 right-3 top-1.5"
+                ></div>
+                <div
+                    class="absolute w-1 h-4 bg-white -rotate-45 right-3 top-1.5"
+                ></div>
+            </button>
         </section>
     </body>
 </html>

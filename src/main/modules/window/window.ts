@@ -1,6 +1,6 @@
-import { nativeTheme, type BaseWindowConstructorOptions } from 'electron'
+import { nativeTheme, View, type BaseWindowConstructorOptions } from 'electron'
 /* CONSTANTS */
-import { BROWSER } from '@src/common/constants'
+import { BROWSER, FIND } from '@src/common/constants'
 /* Models */
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
@@ -8,18 +8,25 @@ import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@main/lib/logger'
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
+import { FindView } from '@main/modules/view/find'
 /* T_Types */
 import type { T_IPC_Switch } from '@src/common/types'
 
-enum VIEWS {
-    BROWSER,
-    CENTRE,
+const VIEWS = {
+    BROWSER: BROWSER,
+    FIND: FIND,
+    CENTRE: 'centre',
 }
+type VIEWS = (typeof VIEWS)[keyof typeof VIEWS]
 /**
  * All starts with here
  */
 export class BrowserWindow extends AbsWindowIPC {
-    // mode
+    // 🔍 Find
+    private parentView?: View
+    protected find: FindView
+
+    // 👁️ Views
     private _view!: VIEWS
     private get view(): BrowserView | CenterView {
         return this._view === VIEWS.CENTRE ? this.centre : this.browser
@@ -29,6 +36,9 @@ export class BrowserWindow extends AbsWindowIPC {
         if (this._view === view) return
 
         this._view = view
+        this.parentView = undefined
+        this.find.setVisible(false)
+
         switch (view) {
             case VIEWS.CENTRE:
                 this.contentView = this.centre
@@ -40,19 +50,39 @@ export class BrowserWindow extends AbsWindowIPC {
                 this.browser.show()
                 this.contentView = this.browser
                 return
+            case VIEWS.FIND: {
+                this.centre.hide()
+                this.browser.show()
+
+                this.parentView = new View()
+                this.contentView = this.parentView
+                this.contentView.addChildView(this.browser)
+                this.contentView.addChildView(this.find)
+                this.find.setVisible(true)
+
+                const bounds = this.getContentBounds()
+                this.find.resize(bounds)
+                this.find.webContents.focus()
+
+                return
+            }
         }
     }
 
     constructor(options?: BaseWindowConstructorOptions) {
         Logger.getInstance().log('BrowserWindow::constructor()')
         super(options)
+        const status = Status.getInstance()
+        const bounds = status.getBounds(this.getBounds())
 
         this.browser = new BrowserView()
         this.centre = new CenterView()
-        this.view = VIEWS.CENTRE
+        this.find = new FindView()
 
-        const status = Status.getInstance()
-        const bounds = status.getBounds(this.getBounds())
+        this.view = VIEWS.CENTRE
+        this.find.setBounds(bounds)
+        this.find.setVisible(false)
+
         this.setBounds(bounds)
 
         // Events
@@ -60,14 +90,18 @@ export class BrowserWindow extends AbsWindowIPC {
             'resize',
             () => {
                 const bounds = this.getContentBounds()
-                this.browser.setBounds({
-                    x: 0,
-                    y: 0,
-                    width: bounds.width,
-                    height: bounds.height,
-                })
+                this.browser.resize(bounds)
+
+                // 😃 Replace find view
+                if (this._view !== VIEWS.FIND) return
+                this.find.resize(bounds)
             },
         )
+
+        this.browser.webContents.on('found-in-page', (_, result) => {
+            Logger.getInstance().log('found-in-page result', result)
+            this.find.setMatched(result.matches, result.activeMatchOrdinal)
+        })
 
         if (nativeTheme.shouldUseDarkColors) {
             this.browser.setBackgroundColor('#030712')
@@ -81,7 +115,10 @@ export class BrowserWindow extends AbsWindowIPC {
     public switch(request: T_IPC_Switch) {
         Logger.getInstance().log('Switch: ', request)
 
-        if (request.scene !== BROWSER) {
+        // 🤬 Find cannot set in Centre mode
+        if (this._view === VIEWS.CENTRE && request.scene === FIND) return
+
+        if (request.scene !== BROWSER && request.scene !== FIND) {
             this.view = VIEWS.CENTRE
             this.centre.scene = request.scene
             return
@@ -93,8 +130,6 @@ export class BrowserWindow extends AbsWindowIPC {
             request,
         )
 
-        this.view = VIEWS.BROWSER
-
         if (request.searchEngine || !this.browser.url) {
             this.browser.searchKeyword('')
         } else if (request.address) {
@@ -104,6 +139,8 @@ export class BrowserWindow extends AbsWindowIPC {
         } else if (!request.address) {
             this.browser.backToBrowser()
         }
+
+        this.view = request.scene
     }
 
     /**
@@ -134,6 +171,7 @@ export class BrowserWindow extends AbsWindowIPC {
 
     reload() {
         this.browser.reload()
+        this.find.webContents.reload()
     }
 
     show() {
@@ -154,6 +192,7 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     stop() {
+        this.stopFindInPage()
         this.view.webContents.stop()
     }
 
@@ -163,5 +202,53 @@ export class BrowserWindow extends AbsWindowIPC {
             return
         }
         this.maximize()
+    }
+
+    focusFindInPage(text: string, forward: boolean) {
+        Logger.getInstance().log(`focusFindInPage('${text}', ${forward})`)
+        this.find.focus()
+        this.findInPage(text, forward)
+    }
+
+    findInPage(text: string, forward: boolean, reset?: boolean) {
+        Logger.getInstance().log(`findInPage('${text}', ${forward})`)
+        if (this._view !== VIEWS.FIND) {
+            this.find.focus()
+        }
+
+        this.view = VIEWS.FIND
+
+        if (reset) {
+            this.find.keyword = ''
+            this.browser.webContents.stopFindInPage('clearSelection')
+            return
+        }
+
+        if (text) {
+            this.find.keyword = text
+            this.browser.webContents.findInPage(this.find.keyword, {
+                forward,
+                findNext: true,
+            })
+            return
+        }
+
+        if (this.find.keyword) {
+            this.browser.webContents.findInPage(this.find.keyword, {
+                forward,
+                findNext: true,
+            })
+            return
+        }
+    }
+
+    stopFindInPage() {
+        // 🤬 Only from Find mode
+        if (this._view !== VIEWS.FIND) return
+
+        this.browser.webContents.stopFindInPage('clearSelection')
+        this.find.keyword = ''
+        this.find.reset()
+        this.view = VIEWS.BROWSER
     }
 }

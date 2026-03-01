@@ -1,15 +1,14 @@
 /* CONSTANTS */
 import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
-
 /* Utils */
 import { resolveHtmlPath } from '@src/common/utils/fs'
 import { paths } from '@src/common/utils/fs'
 /* T_Types */
 import type { T_IPC_Message } from '@src/common/types'
 /* Models */
-import { AbsView } from '@main/modules/view/abs-view'
+import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 
-export class CenterView extends AbsView {
+export class CenterView extends AbsContentsView {
     public set scene(scene: CENTRE_PAGES) {
         switch (scene) {
             case CENTRE_PAGES.WELCOME:
@@ -29,9 +28,6 @@ export class CenterView extends AbsView {
                 return
             case CENTRE_PAGES.POPUP_BLOCKER:
                 this.loadURL(CENTRE_PAGES.POPUP_BLOCKER)
-                return
-            case CENTRE_PAGES.FIND:
-                this.loadURL(CENTRE_PAGES.FIND)
                 return
             case CENTRE_PAGES.OFFLINE:
                 this.loadURL(CENTRE_PAGES.OFFLINE)

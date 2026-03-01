@@ -1,4 +1,4 @@
-import { Notification, session, ipcMain } from 'electron'
+import { Notification, session, ipcMain, type Rectangle } from 'electron'
 import { ElectronBlocker } from '@main/lib/adblocker-electron'
 /* CONSTANTS */
 import {
@@ -13,7 +13,7 @@ import { PopupBlocker } from '@main/store/popup-blocker'
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
 import { Keystrokes } from '@main/store/keystrokes'
-import { AbsView } from '@main/modules/view/abs-view'
+import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 /* Utils */
 import { getSafeUrl, isNatural } from '@src/common/utils/common'
 import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
@@ -21,7 +21,7 @@ import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
 import type { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 
-export class BrowserView extends AbsView {
+export class BrowserView extends AbsContentsView {
     public get url(): string {
         return this.webContents.getURL()
     }
@@ -98,7 +98,7 @@ export class BrowserView extends AbsView {
     }
 
     public backToBrowser() {
-        Logger.getInstance().log('backToBrowser()', this.url)
+        Logger.getInstance().log('backToBrowser()', this.initialized, this.url)
 
         if (!this.initialized && this.url) {
             this.initialized = true
@@ -431,5 +431,14 @@ export class BrowserView extends AbsView {
             this.webContents.getURL(),
             this.webContents.getTitle(),
         )
+    }
+
+    public resize(bounds: Rectangle) {
+        this.setBounds({
+            x: 0,
+            y: 0,
+            width: bounds.width,
+            height: bounds.height,
+        })
     }
 }

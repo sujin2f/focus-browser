@@ -8,7 +8,7 @@
         "build": "yarn run clean && concurrently \"yarn run build:main\" \"yarn run build:webpack\"",
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
-        "package": "yarn build && yarn run package:-mac --ignore && yarn run package:-linux --ignore && yarn run package:-win --ignore && yarn run rename",
+        "package": "yarn build && yarn run package:-mac && yarn run package:-linux && yarn run package:-win && yarn run rename",
         "package:mac": "yarn build && yarn run package:-mac && yarn run rename",
         "package:linux": "yarn build && yarn run package:-linux && yarn run rename",
         "package:win": "yarn build && yarn run package:-win && yarn run rename",

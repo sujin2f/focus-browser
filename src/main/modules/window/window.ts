@@ -46,9 +46,9 @@ export class BrowserWindow extends AbsWindowIPC {
                 this.centre.show()
                 return
             case VIEWS.BROWSER:
+                this.contentView = this.browser
                 this.centre.hide()
                 this.browser.show()
-                this.contentView = this.browser
                 return
             case VIEWS.FIND: {
                 this.centre.hide()
@@ -89,11 +89,11 @@ export class BrowserWindow extends AbsWindowIPC {
         this.addListener('close', () => this.saveStatus()).addListener(
             'resize',
             () => {
+                // 😃 Find mode only
+                if (this._view === VIEWS.FIND) return
+
                 const bounds = this.getContentBounds()
                 this.browser.resize(bounds)
-
-                // 😃 Replace find view
-                if (this._view !== VIEWS.FIND) return
                 this.find.resize(bounds)
             },
         )
@@ -192,8 +192,16 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     stop() {
-        this.stopFindInPage()
-        this.view.webContents.stop()
+        switch (this._view) {
+            case VIEWS.BROWSER:
+                this.view.webContents.stop()
+                return
+            case VIEWS.CENTRE:
+                return
+            case VIEWS.FIND:
+                this.stopFindInPage()
+                return
+        }
     }
 
     toggleMaximize() {

@@ -470,10 +470,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    private async runTest() {
-        Logger.getInstance().log(`TEST RUN`)
-        this.browser.webContents.reload()
-    }
+    private async runTest() {}
 
     abstract switch(request: T_IPC_Switch): void
     abstract toggleDevTools(): void
@@ -483,4 +480,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract toggleMaximize(): void
     abstract focusFindInPage(text: string, forward: boolean): void
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
+    abstract stopFindInPage(): void
 }

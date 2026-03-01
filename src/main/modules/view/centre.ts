@@ -1,20 +1,15 @@
-import {
-    WebContentsView,
-    type WebContentsViewConstructorOptions,
-} from 'electron'
-
+/* CONSTANTS */
 import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
-
+/* Utils */
 import { resolveHtmlPath } from '@src/common/utils/fs'
-import { T_IPC_Message } from '@src/common/types'
+import { paths } from '@src/common/utils/fs'
+/* T_Types */
+import type { T_IPC_Message } from '@src/common/types'
+/* Models */
+import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 
-export class CenterView extends WebContentsView {
-    constructor(options: WebContentsViewConstructorOptions) {
-        super(options)
-        this.loadScene(CENTRE_PAGES.WELCOME)
-    }
-
-    public loadScene(scene: CENTRE_PAGES) {
+export class CenterView extends AbsContentsView {
+    public set scene(scene: CENTRE_PAGES) {
         switch (scene) {
             case CENTRE_PAGES.WELCOME:
                 this.loadURL(CENTRE_PAGES.WELCOME)
@@ -34,15 +29,21 @@ export class CenterView extends WebContentsView {
             case CENTRE_PAGES.POPUP_BLOCKER:
                 this.loadURL(CENTRE_PAGES.POPUP_BLOCKER)
                 return
-            case CENTRE_PAGES.FIND:
-                this.loadURL(CENTRE_PAGES.FIND)
-                return
             case CENTRE_PAGES.OFFLINE:
                 this.loadURL(CENTRE_PAGES.OFFLINE)
                 return
             default:
                 this.loadURL(CENTRE_PAGES.HOME)
         }
+    }
+
+    constructor() {
+        super({
+            webPreferences: {
+                preload: paths.preload,
+            },
+        })
+        this.scene = CENTRE_PAGES.WELCOME
     }
 
     public send<T extends keyof T_IPC_Message>(

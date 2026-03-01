@@ -85,3 +85,10 @@
 .section-disabled {
     opacity: 0.5;
 }
+
+.view--find {
+    grid-template-columns: minmax(
+            200px,
+            1fr
+        ) max-content max-content max-content max-content;
+}

@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.3.7-beta1",
+    "version": "0.3.7",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
@@ -9,9 +9,9 @@
         "lint": "eslint -c eslint.config.mjs --ext .ts ./src",
         "clean": "rimraf ./release/app/dist ./release/build",
         "package": "yarn build && yarn run package:-mac --ignore && yarn run package:-linux --ignore && yarn run package:-win --ignore && yarn run rename",
-        "package:mac": "yarn build && yarn run package:-mac",
-        "package:linux": "yarn build && yarn run package:-linux",
-        "package:win": "yarn build && yarn run package:-win",
+        "package:mac": "yarn build && yarn run package:-mac && yarn run rename",
+        "package:linux": "yarn build && yarn run package:-linux && yarn run rename",
+        "package:win": "yarn build && yarn run package:-win && yarn run rename",
         "test": "jest --no-cache --forceExit --coverage",
         "analyze": "webpack --profile --json > ./release/stats.json && webpack-bundle-analyzer ./release/stats.json",
         "prepare": "husky",
@@ -20,9 +20,9 @@
         "dev:electron": "electronmon ./release/app/dist/main/index.js",
         "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.mjs --config-name=main",
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.mjs --config-name=renderer",
-        "package:-mac": "electron-builder build --publish never --mac && yarn run rename",
-        "package:-linux": "electron-builder build --publish never --linux && yarn run rename",
-        "package:-win": "electron-builder build --publish never --win && yarn run rename",
+        "package:-mac": "electron-builder build --publish never --mac",
+        "package:-linux": "electron-builder build --publish never --linux",
+        "package:-win": "electron-builder build --publish never --win",
         "rename": "node ./release/rename-packages.mjs"
     },
     "author": "Sujin Choi",
@@ -99,7 +99,10 @@
         "transform": {
             "^.+\\.(ts|tsx)?$": "ts-jest",
             "^.+\\.(js|jsx)$": "babel-jest"
-        }
+        },
+        "coveragePathIgnorePatterns": [
+            "<rootDir>/.jest/"
+        ]
     },
     "prettier": {
         "arrowParens": "always",

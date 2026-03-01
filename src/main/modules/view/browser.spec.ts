@@ -29,9 +29,14 @@ statusGet.mockImplementation((arg) => {
 
 import { BrowserView } from '@main/modules/view/browser'
 
+import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
+jest.mock('@src/child-process/entries/anchor', () => ({
+    addAnchorFromBrowser: jest.fn(),
+}))
+
 describe('Web Browser View (browser.ts)', () => {
     test('loadURL > failure', async () => {
-        const view = new BrowserView({})
+        const view = new BrowserView()
         await view.loadURL('hey')
         await loadURL.withImplementation(
             async () => {},
@@ -51,7 +56,7 @@ describe('Web Browser View (browser.ts)', () => {
     test('loadURL > failure > internet connection', async () => {
         // set failure case
         loadURL.mockRejectedValue({ code: 'ERR_INTERNET_DISCONNECTED' })
-        const view = new BrowserView({})
+        const view = new BrowserView()
         await view.loadURL('hey.com')
         await loadURL.withImplementation(
             async () => {},
@@ -67,7 +72,8 @@ describe('Web Browser View (browser.ts)', () => {
     })
 
     test('Keystroke', async () => {
-        const view = new BrowserView({})
+        const view = new BrowserView()
+        view.show()
         view.pasteKeystrokes()
         expect(sendInputEvent).toHaveBeenCalledTimes(18)
         expect(sendInputEvent).toHaveBeenNthCalledWith(5, {
@@ -78,5 +84,12 @@ describe('Web Browser View (browser.ts)', () => {
             keyCode: 'Space',
             type: 'keyUp',
         })
+    })
+
+    test('addAnchor', async () => {
+        const view = new BrowserView()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.addAnchor(window as any)
+        expect(addAnchorFromBrowser).toHaveBeenCalled()
     })
 })

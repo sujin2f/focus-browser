@@ -7,18 +7,12 @@ import {
     type ContextMenuParams,
 } from 'electron'
 /* T_Types */
-import type {
-    Scenes,
-    MenuBlock,
-    MenuItems,
-    T_IPC_Switch,
-} from '@src/common/types'
+import type { MenuBlock, MenuItems, T_IPC_Switch } from '@src/common/types'
 /* CONSTANTS */
 import {
     MenuCategory,
     Menu,
     CENTRE_PAGES,
-    BROWSER,
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
@@ -30,8 +24,6 @@ import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@main/lib/logger'
 /* Utils */
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
-import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
-import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -48,15 +40,6 @@ import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
-    protected _current: Scenes = CENTRE_PAGES.WELCOME
-    protected get isBrowser() {
-        return this._current === BROWSER
-    }
-    // Returns the current WebContentsView
-    protected get current() {
-        return this.isBrowser ? this.browser : this.centre
-    }
-    protected findText = ''
 
     private get menuItems(): MenuBlock {
         const view: MenuItems = {
@@ -89,7 +72,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.DEVTOOLS]: {
                 accelerator: this.getShortcut(Menu.DEVTOOLS),
                 click: () => {
-                    this.current.webContents.toggleDevTools()
+                    this.toggleDevTools()
                 },
             },
         }
@@ -118,9 +101,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.PASTE_KEYSTROKE]: {
                 accelerator: this.getShortcut(Menu.PASTE_KEYSTROKE),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.browser.pasteKeystrokes()
-                    }
+                    this.browser.pasteKeystrokes()
                 },
             },
             [Menu.SELECT_ALL]: {
@@ -131,63 +112,38 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FIND]: {
                 accelerator: this.getShortcut(Menu.FIND),
                 click: () => {
-                    // TODO #121 Find to child view
-                    // const find = new WebContentsView()
-                    // find.webContents.loadURL('https://google.com')
-                    // find.setBounds({ x: 400, y: 0, width: 400, height: 400 })
-                    // find.setVisible(true)
-                    // this.contentView = new WebContentsView()
-                    // this.contentView.addChildView(this.browser)
-                    // this.contentView.addChildView(find)
-                    // this.contentView.removeChildView(view)
-
-                    this.switch({ scene: CENTRE_PAGES.FIND })
+                    this.focusFindInPage('', true)
                 },
             },
             [Menu.FIND_NEXT]: {
                 accelerator: this.getShortcut(Menu.FIND_NEXT),
                 click: () => {
-                    if (!this.findText) {
-                        return
-                    }
-                    this.browser.webContents.findInPage(this.findText, {
-                        findNext: true,
-                    })
+                    this.findInPage('', true)
                 },
             },
             [Menu.FIND_PREV]: {
                 accelerator: this.getShortcut(Menu.FIND_PREV),
                 click: () => {
-                    if (!this.findText) {
-                        return
-                    }
-                    this.browser.webContents.findInPage(this.findText, {
-                        forward: false,
-                        findNext: true,
-                    })
+                    this.findInPage('', false)
                 },
             },
             [Menu.STOP]: {
                 accelerator: this.getShortcut(Menu.STOP),
                 click: () => {
-                    this.browser.webContents.stopFindInPage('clearSelection')
+                    this.stop()
                 },
             },
             [Menu.s0003]: {},
             [Menu.ADD_BOOKMARK]: {
                 accelerator: this.getShortcut(Menu.ADD_BOOKMARK),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.addBookmark()
-                    }
+                    this.browser.addBookmark(this)
                 },
             },
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    if (this.isBrowser) {
-                        this.addAnchor()
-                    }
+                    this.browser.addAnchor(this)
                 },
             },
         }
@@ -208,7 +164,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.BACK]: {
                 accelerator: this.getShortcut(Menu.BACK),
                 click: () => {
-                    this.current.webContents.navigationHistory.goBack()
+                    this.goBack()
                 },
             },
             [Menu.BACK_HIDDEN]: {
@@ -223,7 +179,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                                 tagName.toLowerCase() !== 'input' &&
                                 tagName.toLowerCase() !== 'textarea'
                             ) {
-                                this.current.webContents.navigationHistory.goBack()
+                                this.goBack()
                             }
                         })
                         .catch((e) => {
@@ -236,7 +192,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.FORWARD]: {
                 accelerator: this.getShortcut(Menu.FORWARD),
                 click: () => {
-                    this.current.webContents.navigationHistory.goForward()
+                    this.goForward()
                 },
             },
             [Menu.FORWARD_HIDDEN]: {
@@ -251,7 +207,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                                 tagName.toLowerCase() !== 'input' &&
                                 tagName.toLowerCase() !== 'textarea'
                             ) {
-                                this.current.webContents.navigationHistory.goForward()
+                                this.goForward()
                             }
                         })
                         .catch((e) => {
@@ -265,7 +221,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.STOP]: {
                 accelerator: this.getShortcut(Menu.STOP),
                 click: () => {
-                    this.current.webContents.stop()
+                    this.stop()
                 },
             },
             [Menu.RELOAD]: {
@@ -400,14 +356,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         ElectronMenu.setApplicationMenu(built)
     }
 
-    protected toggleMaximize() {
-        if (this.isMaximized()) {
-            this.unmaximize()
-            return
-        }
-        this.maximize()
-    }
-
     /**
      * Compose a context menu based on provided ContextMenuParams from Electron.
      *
@@ -448,11 +396,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             { type: 'separator' },
             {
                 label: 'Add Bookmark',
-                click: () => this.addBookmark(),
+                click: () => this.browser.addBookmark(this),
             },
             {
                 label: 'Add Anchor',
-                click: () => this.addAnchor(),
+                click: () => this.browser.addAnchor(this),
             },
             {
                 label: 'Control Centre',
@@ -522,34 +470,15 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    /**
-     * Persist a bookmark using the Bookmarks store and show a Notification
-     * only when the push succeeds. Notification click switches to bookmark page.
-     */
-    private addBookmark() {
-        addBookmarkFromBrowser(
-            this,
-            this.browser.webContents.getURL(),
-            this.browser.webContents.getTitle(),
-        )
-    }
-
-    /**
-     * Persist an anchor (user-saved position) and notify. Mirrors addBookmark
-     * behavior but switches to the Anchor page on notification click.
-     */
-    private addAnchor() {
-        addAnchorFromBrowser(
-            this,
-            this.browser.webContents.getURL(),
-            this.browser.webContents.getTitle(),
-        )
-    }
-
-    private async runTest() {
-        Logger.getInstance().log(`TEST RUN`)
-        this.browser.webContents.reload()
-    }
+    private async runTest() {}
 
     abstract switch(request: T_IPC_Switch): void
+    abstract toggleDevTools(): void
+    abstract goBack(): void
+    abstract goForward(): void
+    abstract stop(): void
+    abstract toggleMaximize(): void
+    abstract focusFindInPage(text: string, forward: boolean): void
+    abstract findInPage(text: string, forward: boolean, reset?: boolean): void
+    abstract stopFindInPage(): void
 }

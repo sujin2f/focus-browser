@@ -16,7 +16,6 @@ export enum CENTRE_PAGES {
     SHORTCUT,
     KEYSTROKES,
     OFFLINE = 'offline.html',
-    FIND = 'find.html',
     POPUP_BLOCKER = 'popup.html',
     ANCHOR = 'anchors.html',
     BOOKMARK = 'bookmarks.html',
@@ -26,6 +25,7 @@ export enum CENTRE_PAGES {
 }
 
 export const BROWSER = 'scene-browser'
+export const FIND = 'scene-find'
 
 export enum IPC_CHANNELS {
     STATUS = 'STATUS',

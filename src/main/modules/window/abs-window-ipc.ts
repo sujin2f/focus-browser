@@ -128,17 +128,28 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private onFind(_: IpcMainEvent, handler: REQUEST_HANDLER, text: string) {
-        if (handler !== REQUEST_HANDLER.REQUEST) {
+    private onFind(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        {
+            text,
+            forward,
+            stop,
+            reset,
+        }: { text: string; forward?: boolean; stop?: boolean; reset?: boolean },
+    ) {
+        if (handler === REQUEST_HANDLER.RESPONSE) return
+
+        if (stop) {
+            this.stopFindInPage()
+            return
+        }
+        if (reset) {
+            this.findInPage('', false, true)
             return
         }
 
-        this.findText = text
-        if (this.findText) {
-            this.browser.webContents.findInPage(this.findText, {
-                findNext: true,
-            })
-        }
+        this.findInPage(text, Boolean(forward))
     }
 
     private async onStatus(

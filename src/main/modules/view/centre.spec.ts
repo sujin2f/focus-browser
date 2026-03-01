@@ -12,7 +12,7 @@ import { CenterView } from '@main/modules/view/centre'
 
 describe('Web Browser View (browser.ts)', () => {
     test('construction', async () => {
-        new CenterView({})
+        new CenterView()
         await loadURL.withImplementation(
             async () => {},
             async () => {},

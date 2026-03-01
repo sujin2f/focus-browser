@@ -18,6 +18,8 @@ export const navigate = (address = '') => {
         scene: BROWSER,
         address,
     })
+
+    // 😃 Prevent flicker
     window.location.href = 'loading.html'
 }
 

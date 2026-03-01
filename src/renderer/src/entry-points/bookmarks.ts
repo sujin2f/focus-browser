@@ -214,9 +214,14 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
                 this.onDirectoryClick(dir.data.id)
             })
-            const row = new ListItem(dir.data.title).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
+            const title = new ListItem(dir.data.title)
+                .setOnClick(() => {
+                    this.onDirectoryClick(dir.data.id)
+                })
+                .addClass(
+                    'list--bookmarks__title',
+                    'list--bookmarks__title--dir',
+                )
             let shortcut = new ListItem('')
             if (dir.data.shortcut) {
                 shortcut = new ListItem(
@@ -235,7 +240,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             )
             edit.clickable = false
 
-            dir.dir.push(icon, row, shortcut, new ListItem(''), edit)
+            dir.dir.push(icon, title, shortcut, new ListItem(''), edit)
         })
 
         // Items
@@ -244,12 +249,39 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 item.data.parent && this.dirs[item.data.parent]
                     ? item.data.parent
                     : false
-            const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate(item.data.url)
-            })
-            const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate(item.data.url)
-            })
+            let favicon: string | HTMLImageElement = ''
+            const columns: ListItem[] = []
+
+            if (item.data.favicon) {
+                favicon = document.createElement('img')
+                favicon.src = `data:image/png;base64,${item.data.favicon}`
+                favicon.width = 20
+                favicon.height = 20
+            }
+
+            const title = new ListItem(item.data.title)
+                .setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                .addClass('list--bookmarks__title')
+
+            if (!parent) {
+                const icon = new ListItem(favicon).setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                title.addClass('list--bookmarks__title--dir')
+                columns.push(icon, title)
+            } else {
+                const icon1 = new ListItem('').setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                const icon2 = new ListItem(favicon).setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                // icon2.title = favicon
+                columns.push(icon1, icon2, title)
+            }
+
             let shortcut = new ListItem('')
             if (item.data.shortcut) {
                 shortcut = new ListItem(
@@ -280,9 +312,9 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             )
             edit.clickable = false
 
-            item.items.push(icon, row, shortcut, cloud, edit)
+            item.items.push(...columns, shortcut, cloud, edit)
             if (parent) {
-                this.dirs[parent].items.push(icon, row, shortcut, cloud, edit)
+                this.dirs[parent].items.push(...columns, shortcut, cloud, edit)
             }
         })
 

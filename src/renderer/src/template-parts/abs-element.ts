@@ -26,6 +26,9 @@ export abstract class A_Element<T extends HTMLElement> {
         if (this.onClickCallback) {
             this.setOnClick(this.onClickCallback)
         }
+        if (this.classes) {
+            this.addClass(...this.classes)
+        }
     }
 
     private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
@@ -101,7 +104,13 @@ export abstract class A_Element<T extends HTMLElement> {
         return this.element.classList.contains('hidden')
     }
 
+    private classes: string[] = []
     public addClass(...classes: string[]) {
+        if (!this.element) {
+            this.classes.push(...classes)
+            return this
+        }
+
         this.element.classList.add(...classes)
         return this
     }

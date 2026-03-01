@@ -62,6 +62,7 @@
         "rimraf": "^6.0.1",
         "sass": "^1.91.0",
         "sass-loader": "^16.0.5",
+        "style-loader": "^4.0.0",
         "tailwindcss": "^4.1.12",
         "ts-jest": "^29.4.4",
         "ts-loader": "^9.5.4",

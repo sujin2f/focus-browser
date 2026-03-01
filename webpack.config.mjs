@@ -23,7 +23,9 @@ const commonConfig = {
             {
                 test: /\.s?css$/,
                 use: [
-                    MiniCssExtractPlugin.loader,
+                    process.env.NODE_ENV === 'development'
+                        ? 'style-loader'
+                        : MiniCssExtractPlugin.loader,
                     'css-loader',
                     'sass-loader',
                     'postcss-loader',

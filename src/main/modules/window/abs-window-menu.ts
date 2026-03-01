@@ -40,6 +40,7 @@ import { isBeta, isDev, isTest } from '@src/common/utils/common'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
+    private shortcuts?: Shortcut
 
     private get menuItems(): MenuBlock {
         const view: MenuItems = {
@@ -301,8 +302,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     }
 
     private getShortcut(menu: Menu): string {
-        const store = new Shortcut()
-        const shortcut = store.getShortcut(menu)
+        const shortcut = this.shortcuts && this.shortcuts.getShortcut(menu)
         if (shortcut) {
             return shortcut
         }
@@ -323,11 +323,14 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
         this.resetMenu()
+
+        this.shortcuts = new Shortcut()
     }
 
     protected resetMenu() {
         // Retrieve persisted menu config and attach callbacks for actions
         const data = this.menuItems
+        this.shortcuts = undefined
         const menu: MenuItemConstructorOptions[] = []
 
         // Convert stored MenuBlock into Electron MenuItemConstructorOptions[]
@@ -470,7 +473,16 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    private async runTest() {}
+    private async runTest() {
+        fetch(
+            'https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://manatoki469.net&size=32',
+        ).then(async (response) => {
+            const bytes = await response.bytes()
+            const buffer = Buffer.from(bytes)
+            // const image = nativeImage.createFromBuffer(buffer)
+            return buffer.toString('base64')
+        })
+    }
 
     abstract switch(request: T_IPC_Switch): void
     abstract toggleDevTools(): void

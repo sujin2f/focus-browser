@@ -41,12 +41,16 @@
 
 .list--bookmarks {
     grid-template-columns:
-        max-content minmax(200px, 1fr)
+        max-content max-content minmax(200px, 1fr)
         max-content max-content max-content;
 }
 
-.list--bookmarks :nth-child(4n + 1) h3 {
-    margin-right: calc(var(--spacing) * 2);
+.list--bookmarks__title h3 {
+    margin-left: calc(var(--spacing) * 2);
+}
+
+.list--bookmarks__title--dir {
+    grid-column: 2 / span 2;
 }
 
 .list--anchors {
@@ -87,8 +91,7 @@
 }
 
 .view--find {
-    grid-template-columns: minmax(
-            200px,
-            1fr
-        ) max-content max-content max-content max-content;
+    grid-template-columns:
+        minmax(200px, 1fr)
+        max-content max-content max-content max-content;
 }

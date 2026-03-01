@@ -62,3 +62,15 @@ export const getSafeUrl = (text: string): URL | false | undefined => {
     }
     return url
 }
+
+export const fetchFavicon = async (url: string) => {
+    return fetch(
+        `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${url}&size=32`,
+    )
+        .then(async (response) => {
+            const bytes = await response.bytes()
+            const buffer = Buffer.from(bytes)
+            return buffer.toString('base64')
+        })
+        .catch(() => '')
+}

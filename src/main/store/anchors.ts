@@ -18,8 +18,8 @@ export class Anchors extends Store<Props> {
         return super.get('anchors')
     }
 
-    push(url: string, title: string) {
-        const anchor = { url, title, id: '' } satisfies T_Bookmark
+    push(url: string, title: string, favicon: string) {
+        const anchor = { url, title, id: '', favicon } satisfies T_Bookmark
 
         for (const item of this._data.anchors) {
             if (item.url === anchor.url) {

@@ -13,7 +13,7 @@ readMock.mockReturnValue({
 
 import { Anchors } from '@main/store/anchors'
 
-describe('Anchors store (module)', () => {
+describe('⚓️ Anchors store (module)', () => {
     test('singleton exists and push calls fs.writeFileSync', () => {
         const anchors = new Anchors()
 
@@ -24,17 +24,23 @@ describe('Anchors store (module)', () => {
         ])
 
         // Push
-        anchors.push('-1', '-1')
+        anchors.push('test-url', 'test-title', 'test-favicon')
         expect(anchors.get()[0]).toStrictEqual({
             id: '',
-            url: '-1',
-            title: '-1',
+            url: 'test-url',
+            title: 'test-title',
+            favicon: 'test-favicon',
         })
 
         // Remove
         anchors.remove('0')
         expect(anchors.get()).toStrictEqual([
-            { id: '', url: '-1', title: '-1' },
+            {
+                id: '',
+                url: 'test-url',
+                title: 'test-title',
+                favicon: 'test-favicon',
+            },
             { url: '1', title: '1' },
         ])
     })

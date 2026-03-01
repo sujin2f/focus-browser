@@ -6,6 +6,7 @@ import { REQUEST_HANDLER } from '@src/common/constants'
 import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
 /* Utils */
 import { base64decode } from '@src/common/utils/security'
+import { fetchFavicon } from '@src/common/utils/common'
 
 export const getBookmarks = (path: string) => {
     const store = new Bookmarks(path)
@@ -15,7 +16,7 @@ export const getBookmarks = (path: string) => {
     } satisfies T_Bookmark_Store)
 }
 
-export const addBookmark = (
+export const addBookmark = async (
     path: string,
     bookmark: T_Bookmark,
     isDir: boolean,
@@ -28,6 +29,10 @@ export const addBookmark = (
     }
     if (bookmark.id === 'from-cloud') {
         bookmark = JSON.parse(base64decode(bookmark.title))
+    }
+
+    if (!bookmark.favicon) {
+        bookmark.favicon = await fetchFavicon(bookmark.url)
     }
 
     const store = new Bookmarks(path)

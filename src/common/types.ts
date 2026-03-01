@@ -59,6 +59,7 @@ export interface T_Bookmark extends NavigationEntry {
     title: string
     shortcut?: string
     parent?: string
+    favicon?: string
 }
 
 export type T_Bookmark_Store = {

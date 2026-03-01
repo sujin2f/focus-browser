@@ -17,7 +17,10 @@ export class Store<T extends JsonObject> {
     protected fileName: string = ''
     protected defaults!: T
 
-    protected _data: T = {} as T
+    private _data: T = {} as T
+    protected set data(data: T) {
+        this._data = data
+    }
     public get data() {
         return this._data
     }
@@ -37,11 +40,16 @@ export class Store<T extends JsonObject> {
      * @param {K} key only accepts a key of T
      * @returns {T[K]} returns the right type from the key
      */
-    get<K extends keyof T>(key: K): T[K] {
+    get<R>(key: string): R | void
+    get<K extends keyof T>(key: K): T[K]
+    get<K extends keyof T>(key?: K): T[K] {
+        if (!key) throw new Error()
         return this._data[key]
     }
 
-    set<K extends keyof T>(key: K, value: T[K]) {
+    set(arg: unknown): unknown
+    set<K extends keyof T>(key: K, value?: T[K]): void {
+        if (!value) return
         this._data[key] = value
     }
 

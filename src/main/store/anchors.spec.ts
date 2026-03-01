@@ -24,12 +24,11 @@ describe('⚓️ Anchors store (module)', () => {
         ])
 
         // Push
-        anchors.push('test-url', 'test-title', 'test-favicon')
+        anchors.push('test-url', 'test-title')
         expect(anchors.get()[0]).toStrictEqual({
             id: '',
             url: 'test-url',
             title: 'test-title',
-            favicon: 'test-favicon',
         })
 
         // Remove
@@ -39,7 +38,6 @@ describe('⚓️ Anchors store (module)', () => {
                 id: '',
                 url: 'test-url',
                 title: 'test-title',
-                favicon: 'test-favicon',
             },
             { url: '1', title: '1' },
         ])

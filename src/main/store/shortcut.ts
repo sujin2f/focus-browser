@@ -32,7 +32,7 @@ export class Shortcut extends Store<ShortcutStore> {
         super.parse()
 
         if (!this.data.version) {
-            this._data = {
+            this.data = {
                 version: '1',
                 shortcuts: {},
             }
@@ -41,8 +41,8 @@ export class Shortcut extends Store<ShortcutStore> {
     }
 
     update(shortcuts: T_Shortcut_Store) {
-        this._data.shortcuts = {
-            ...this._data.shortcuts,
+        this.data.shortcuts = {
+            ...this.data.shortcuts,
             ...shortcuts,
         }
     }

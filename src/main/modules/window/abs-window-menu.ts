@@ -473,16 +473,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    private async runTest() {
-        fetch(
-            'https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://manatoki469.net&size=32',
-        ).then(async (response) => {
-            const bytes = await response.bytes()
-            const buffer = Buffer.from(bytes)
-            // const image = nativeImage.createFromBuffer(buffer)
-            return buffer.toString('base64')
-        })
-    }
+    private async runTest() {}
 
     abstract switch(request: T_IPC_Switch): void
     abstract toggleDevTools(): void

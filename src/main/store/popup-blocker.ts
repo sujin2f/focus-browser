@@ -23,7 +23,7 @@ export class PopupBlocker extends Store<T_Popup> {
     }
 
     public toggle(host: string) {
-        if (this._data.blocked.has(host)) {
+        if (this.data.blocked.has(host)) {
             this.allow(host)
         } else {
             this.block(host)
@@ -31,25 +31,25 @@ export class PopupBlocker extends Store<T_Popup> {
     }
 
     public block(host: string) {
-        this._data.blocked.add(host)
-        this._data.allowed.delete(host)
+        this.data.blocked.add(host)
+        this.data.allowed.delete(host)
     }
 
     public allow(host: string) {
-        this._data.blocked.delete(host)
-        this._data.allowed.add(host)
+        this.data.blocked.delete(host)
+        this.data.allowed.add(host)
     }
 
     public isAllowed(host: string) {
-        return this._data.allowed.has(host)
+        return this.data.allowed.has(host)
     }
 
     save() {
         fs.writeFileSync(
             this.path,
             JSON.stringify({
-                blocked: Array.from(this._data.blocked).filter((v) => v),
-                allowed: Array.from(this._data.allowed).filter((v) => v),
+                blocked: Array.from(this.data.blocked).filter((v) => v),
+                allowed: Array.from(this.data.allowed).filter((v) => v),
             }),
             {
                 encoding: 'utf-8',
@@ -60,12 +60,12 @@ export class PopupBlocker extends Store<T_Popup> {
     parse() {
         try {
             const parsed = JSON.parse(fs.readFileSync(this.path, 'utf-8'))
-            this._data = {
+            this.data = {
                 blocked: new Set(parsed.blocked),
                 allowed: new Set(parsed.allowed),
             }
         } catch {
-            this._data = this.defaults
+            this.data = this.defaults
         }
 
         super.mergeDefault()

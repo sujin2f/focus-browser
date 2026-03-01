@@ -14,34 +14,34 @@ export class Anchors extends Store<Props> {
         this.mergeDefault()
     }
 
-    get() {
-        return super.get('anchors')
+    get(): T_Bookmark[] {
+        return super.get('anchors') || []
     }
 
-    push(url: string, title: string, favicon: string) {
-        const anchor = { url, title, id: '', favicon } satisfies T_Bookmark
+    push(url: string, title: string) {
+        const anchor = { url, title, id: '' } satisfies T_Bookmark
 
-        for (const item of this._data.anchors) {
+        for (const item of this.data.anchors) {
             if (item.url === anchor.url) {
                 return false
             }
         }
 
-        this._data.anchors.unshift(anchor)
+        this.data.anchors.unshift(anchor)
         return true
     }
 
     remove(url: string) {
-        for (const [index, item] of this._data.anchors.entries()) {
+        for (const [index, item] of this.data.anchors.entries()) {
             if (item.url === url) {
-                this._data.anchors.splice(index, 1)
+                this.data.anchors.splice(index, 1)
                 return
             }
         }
     }
 
     clear() {
-        this._data = { anchors: [] }
+        this.data = { anchors: [] }
         this.save()
     }
 }

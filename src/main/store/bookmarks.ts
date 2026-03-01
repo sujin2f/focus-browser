@@ -17,6 +17,10 @@ export class Bookmarks extends Store<T_Store> {
         this.migrate()
     }
 
+    get<K extends keyof T_Bookmark_Store>(key: K): T_Bookmark_Store[K] {
+        return this.data[key]
+    }
+
     public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
         // 🤬 Title is empty
         if (!bookmark.title) return false
@@ -55,8 +59,8 @@ export class Bookmarks extends Store<T_Store> {
 
         // Directory
         if (isDir) {
-            this._data.dirs = {
-                ...this._data.dirs,
+            this.data.dirs = {
+                ...this.data.dirs,
                 [bookmark.id]: bookmark,
             }
             return bookmark
@@ -71,9 +75,9 @@ export class Bookmarks extends Store<T_Store> {
             if (item.url === bookmark.url) return false
         }
 
-        this._data.items = {
+        this.data.items = {
             [bookmark.id]: { ...bookmark, url: url.toString() },
-            ...this._data.items,
+            ...this.data.items,
         }
         return { ...bookmark, url: url.toString() }
     }
@@ -101,14 +105,14 @@ export class Bookmarks extends Store<T_Store> {
 
         // 🤬 File is empty
         if (!fileContent) {
-            this._data = this.defaults
+            this.data = this.defaults
             return
         }
 
         let data = JSON.parse(fileContent)
         // 😃 Current version
         if (data.version === this.defaults) {
-            this._data = data
+            this.data = data
             return
         }
 
@@ -142,6 +146,6 @@ export class Bookmarks extends Store<T_Store> {
             } satisfies T_Store
         }
 
-        this._data = data
+        this.data = data
     }
 }

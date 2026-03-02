@@ -6,7 +6,7 @@ import {
     ipcRenderer,
     navigate,
 } from '@src/renderer/src/utils'
-import { base64decode } from '@src/common/utils/security'
+import { base64decode } from '@src/common/utils/security-common'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Loading } from '@home/template-parts/loading'

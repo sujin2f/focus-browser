@@ -1,6 +1,6 @@
 // yarn test security.spec.ts
 
-import { base64encode, base64decode } from './security'
+import { base64encode, base64decode } from './security-common'
 
 describe('security.ts', () => {
     test('base64', () => {

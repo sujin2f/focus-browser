@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
-import { encrypt, decrypt } from '@src/common/utils/security'
+import { encrypt, decrypt } from '@src/common/utils/security-electron'
 
 type JsonObject = { [key: string]: unknown }
 

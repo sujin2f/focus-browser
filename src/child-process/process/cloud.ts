@@ -1,6 +1,6 @@
 import { net } from 'electron'
 /* Utils */
-import { base64encode } from '@src/common/utils/security'
+import { base64encode } from '@src/common/utils/security-common'
 /* CONSTANTS */
 import { SUJINC_URL } from '@src/common/constants'
 /* T_Types */

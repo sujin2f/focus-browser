@@ -14,16 +14,39 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
-/* Models */
-import { Logger } from '@src/common/logger'
 
 class Anchors extends A_ListCloudPush<T_Bookmark> {
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
-        this.requestAnchors()
+        // this.requestAnchors()
+        this.initStore()
         // Title
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
+    }
+
+    private initStore() {
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll('anchor', (anchors) => {
+                if (!anchors || !anchors.length) {
+                    this.requestAnchors()
+                    return
+                }
+
+                this.arrangeAnchors(anchors.reverse())
+            })
+        })
+    }
+
+    private arrangeAnchors(anchors: T_Bookmark[]) {
+        this.items = []
+
+        anchors.forEach((anchor) => {
+            this.items.push({ data: anchor, items: [] })
+        })
+
+        this.renderList()
+        this.setEnabled(true)
     }
 
     protected filterList(item: T_Bookmark, keyword: string): boolean {
@@ -40,24 +63,32 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         }
     }
 
+    /**
+     * @deprecated
+     */
     private requestAnchors(): void {
         ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(
-            IPC_CHANNELS.ANCHOR_RESPONSE,
-            (handler, anchors = []) => {
-                Logger.getInstance().info('Anchor list response got', anchors)
-                this.setEnabled(true)
-                switch (handler) {
-                    case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                        this.items = anchors.map((bookmark) => ({
-                            data: bookmark,
-                            items: [] as ListItem[],
-                        }))
-                        this.renderList()
-                        return
-                }
-            },
-        )
+        ipcRenderer.once(IPC_CHANNELS.ANCHOR, (_, anchors = []) => {
+            if (anchors && Array.isArray(anchors)) {
+                const reverse = [...anchors].reverse()
+                reverse.forEach((anchor) => this.bookmarkStore.add(anchor))
+                this.bookmarkStore.getAll('anchor', (anchors) => {
+                    this.arrangeAnchors(anchors)
+                })
+            }
+
+            // Logger.getInstance().info('Anchor list response got', anchors)
+            //     this.setEnabled(true)
+            //     switch (handler) {
+            //         case REQUEST_HANDLER.RESPONSE_SUCCESS:
+            //             this.items = anchors.map((bookmark) => ({
+            //                 data: bookmark,
+            //                 items: [] as ListItem[],
+            //             }))
+            //             this.renderList()
+            //             return
+            //     }
+        })
     }
 
     private renderList() {
@@ -73,12 +104,8 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                 const title = new ListItem(anchor.title, anchor.url)
                     .appendTo(this.list.element)
                     .setOnClick(() => {
-                        if (this.enabled) {
-                            ipcRenderer.send(
-                                IPC_CHANNELS.ANCHOR,
-                                REQUEST_HANDLER.REMOVE,
-                                { item: anchor },
-                            )
+                        if (this.enabled && anchor.uid) {
+                            this.bookmarkStore.remove(anchor.uid)
                             navigate(anchor.url)
                         }
                     })

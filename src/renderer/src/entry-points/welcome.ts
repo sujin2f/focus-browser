@@ -96,7 +96,9 @@ class Welcome extends A_List<T_Bookmark> {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
                 reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
-                this.arrangeBookmarks(response)
+                this.bookmarkStore.getAll('bookmark', (bookmarks) => {
+                    this.arrangeBookmarks(bookmarks)
+                })
             }
         })
     }

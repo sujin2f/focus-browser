@@ -51,6 +51,7 @@ import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
+    addAnchor(): void {}
     addBookmark(): void {}
     focusFindInPage(_: string, __: boolean): void {}
     findInPage(_: string, __: boolean): void {}

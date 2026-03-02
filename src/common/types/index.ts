@@ -105,8 +105,7 @@ export type T_IPC_Data<T> = {
 }
 
 export type T_IPC_Message = {
-    [IPC_CHANNELS.ANCHOR]: T_IPC_Data<T_Bookmark>
-    [IPC_CHANNELS.ANCHOR_RESPONSE]: T_Bookmark[]
+    [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
     [IPC_CHANNELS.BOOKMARK]: T_Bookmark[] | T_Bookmark
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch

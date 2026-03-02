@@ -39,20 +39,11 @@ process.parentPort.once('message', (e) => {
             return
         }
 
+        /**
+         * @deprecated
+         */
         case 'list-anchor':
             anchor.getAnchors(e.data.path)
-            return
-
-        case 'remove-anchor':
-            anchor.removeAnchor(e.data.path, e.data.url)
-            return
-
-        case 'add-anchor':
-            anchor.addAnchor(e.data.path, e.data.url, e.data.title)
-            return
-
-        case 'clear-anchor':
-            anchor.clearAnchor(e.data.path)
             return
 
         case 'fetch-favicon': {

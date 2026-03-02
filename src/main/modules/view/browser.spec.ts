@@ -29,11 +29,6 @@ statusGet.mockImplementation((arg) => {
 
 import { BrowserView } from '@main/modules/view/browser'
 
-import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
-jest.mock('@src/child-process/entries/anchor', () => ({
-    addAnchorFromBrowser: jest.fn(),
-}))
-
 describe('Web Browser View (browser.ts)', () => {
     test('loadURL > failure', async () => {
         const view = new BrowserView()
@@ -84,12 +79,5 @@ describe('Web Browser View (browser.ts)', () => {
             keyCode: 'Space',
             type: 'keyUp',
         })
-    })
-
-    test('addAnchor', async () => {
-        const view = new BrowserView()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        view.addAnchor(window as any)
-        expect(addAnchorFromBrowser).toHaveBeenCalled()
     })
 })

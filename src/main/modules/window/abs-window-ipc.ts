@@ -36,11 +36,7 @@ import {
     uploadCloudItem,
 } from '@src/child-process/entries/cloud'
 import { responseBookmarks } from '@src/child-process/entries/bookmark'
-import {
-    clearAnchor,
-    removeAnchor,
-    responseAnchors,
-} from '@src/child-process/entries/anchor'
+import { responseAnchors } from '@src/child-process/entries/anchor'
 import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 /* T_Types */
 import type {
@@ -238,23 +234,11 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         if (handler === REQUEST_HANDLER.REQUEST) responseBookmarks(this.centre)
     }
 
-    private onAnchors(
-        _: IpcMainEvent,
-        handler: REQUEST_HANDLER,
-        arg: T_IPC_Data<T_Bookmark>,
-    ) {
+    private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {
         switch (handler) {
             case REQUEST_HANDLER.REQUEST:
                 responseAnchors(this.centre)
                 return
-            case REQUEST_HANDLER.REMOVE: {
-                const url = arg.item && arg.item.url
-                // 🤬 URL is empty
-                if (!url) return
-
-                removeAnchor(url)
-                return
-            }
         }
     }
 
@@ -464,10 +448,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     case 'indexedDB':
                         removeIndexedDB(this.centre)
                         return
-                    case 'anchors': {
-                        clearAnchor(this.centre)
-                        return
-                    }
                     case 'popups':
                         PopupBlocker.getInstance().clear()
                         responseSuccess()

@@ -16,9 +16,6 @@ import { Keystrokes } from '@main/store/keystrokes'
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 /* Utils */
 import { getSafeUrl, isNatural } from '@src/common/utils/common'
-/* T_Types */
-import type { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
-import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
 
 export class BrowserView extends AbsContentsView {
     public get url(): string {
@@ -403,18 +400,6 @@ export class BrowserView extends AbsContentsView {
             return
         }
         this.webContents.reload()
-    }
-
-    /**
-     * Persist an anchor (user-saved position) and notify. Mirrors addBookmark
-     * behavior but switches to the Anchor page on notification click.
-     */
-    public addAnchor(window: AbsWindowMenu) {
-        addAnchorFromBrowser(
-            window,
-            this.webContents.getURL(),
-            this.webContents.getTitle(),
-        )
     }
 
     public resize(bounds: Rectangle) {

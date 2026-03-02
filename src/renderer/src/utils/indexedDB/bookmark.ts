@@ -81,7 +81,7 @@ export class Bookmark extends Abs_Database<'bookmark'> {
         }
     }
 
-    public remove(id: number, callback: (result: boolean) => void): void {
+    public remove(id: number, callback?: (result: boolean) => void): void {
         Logger.getInstance().info(`indexedDB::Bookmark::remove(${id})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist

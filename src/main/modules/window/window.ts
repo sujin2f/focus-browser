@@ -280,11 +280,7 @@ export class BrowserWindow extends AbsWindowIPC {
         this.view = VIEWS.BROWSER
     }
 
-    /**
-     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
-     * only when the push succeeds. Notification click switches to bookmark page.
-     */
-    public addBookmark() {
+    private addCentreItems(type: 'bookmark' | 'anchor') {
         // 🤬 Not Active
         if (this._view === VIEWS.CENTRE) return
 
@@ -292,19 +288,34 @@ export class BrowserWindow extends AbsWindowIPC {
             id: '',
             title: this.browser.webContents.getTitle(),
             url: this.browser.webContents.getURL(),
-            type: 'bookmark',
+            type,
         } satisfies T_Bookmark)
 
         const notification = new Notification({
             title: 'Focus',
-            body: 'New Bookmark Added',
+            body: 'Bookmarked',
             silent: true,
         })
         // Clicking the notification navigates to the bookmark page
         notification.addListener('click', () => {
-            this.switch({ scene: CENTRE_PAGES.BOOKMARK })
+            this.switch({
+                scene:
+                    type === 'bookmark'
+                        ? CENTRE_PAGES.BOOKMARK
+                        : CENTRE_PAGES.ANCHOR,
+            })
         })
         notification.show()
-        Logger.getInstance().log('addBookmark >> notification should be shown.')
+    }
+
+    /**
+     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
+     * only when the push succeeds. Notification click switches to bookmark page.
+     */
+    public addBookmark() {
+        this.addCentreItems('bookmark')
+    }
+    public addAnchor() {
+        this.addCentreItems('anchor')
     }
 }

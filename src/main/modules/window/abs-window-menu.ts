@@ -144,7 +144,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    this.browser.addAnchor(this)
+                    this.addAnchor()
                 },
             },
         }
@@ -403,7 +403,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             },
             {
                 label: 'Add Anchor',
-                click: () => this.browser.addAnchor(this),
+                click: () => this.addAnchor(),
             },
             {
                 label: 'Control Centre',
@@ -487,4 +487,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
     abstract stopFindInPage(): void
     abstract addBookmark(): void
+    abstract addAnchor(): void
 }

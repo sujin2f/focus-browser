@@ -1,4 +1,6 @@
 import type { MenuItemConstructorOptions } from 'electron'
+import type { ListItem } from '@src/renderer/src/template-parts/list-item'
+import type { T_Bookmark } from './store'
 import {
     Menu,
     MenuCategory,
@@ -9,8 +11,6 @@ import {
     LogTypes,
     FIND,
 } from '@src/common/constants'
-import type { ListItem } from '@src/renderer/src/template-parts/list-item'
-import { T_Bookmark } from './store'
 
 /**
  * Status
@@ -49,15 +49,6 @@ export type T_IPC_Switch = {
     address?: string
     reloading?: boolean
     searchEngine?: boolean
-}
-
-/**
- * Bookmark
- * @deprecated
- */
-export type T_Bookmark_Store = {
-    dirs: Record<string, T_Bookmark>
-    items: Record<string, T_Bookmark>
 }
 
 /**

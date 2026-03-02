@@ -35,6 +35,13 @@ import {
     removeCloudItem,
     uploadCloudItem,
 } from '@src/child-process/entries/cloud'
+import { responseBookmarks } from '@src/child-process/entries/bookmark'
+import {
+    clearAnchor,
+    removeAnchor,
+    responseAnchors,
+} from '@src/child-process/entries/anchor'
+import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 /* T_Types */
 import type {
     T_Status_Props,
@@ -46,13 +53,6 @@ import type {
     T_IPC_Data,
 } from '@src/common/types'
 import type { T_Bookmark } from '@src/common/types/store'
-import { responseBookmarks } from '@src/child-process/entries/bookmark'
-import {
-    clearAnchor,
-    removeAnchor,
-    responseAnchors,
-} from '@src/child-process/entries/anchor'
-import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 
 /**
  * All starts with here

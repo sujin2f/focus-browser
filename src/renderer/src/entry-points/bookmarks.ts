@@ -142,7 +142,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
      */
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response) {
                 Object.keys(response.dirs).forEach((dir) => {
                     this.store.add({

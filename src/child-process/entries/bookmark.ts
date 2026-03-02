@@ -24,7 +24,7 @@ export const responseBookmarks = (centre: CenterView) => {
             message.length,
         )
         centre.send(
-            IPC_CHANNELS.BOOKMARKS_RESPONSE,
+            IPC_CHANNELS.BOOKMARK,
             REQUEST_HANDLER.RESPONSE_SUCCESS,
             message,
         )

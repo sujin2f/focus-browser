@@ -234,16 +234,8 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     /**
      * @deprecated
      */
-    private async onBookmarks(
-        handler: REQUEST_HANDLER,
-        // args: T_IPC_Data<T_Bookmark>,
-    ) {
-        if (handler === REQUEST_HANDLER.REQUEST) {
-            responseBookmarks(this.centre)
-            return
-        }
-
-        // modifyBookmark(handler, this.centre, args)
+    private async onBookmarks(handler: REQUEST_HANDLER) {
+        if (handler === REQUEST_HANDLER.REQUEST) responseBookmarks(this.centre)
     }
 
     private onAnchors(

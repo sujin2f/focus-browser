@@ -119,11 +119,7 @@ export type T_IPC_Message = {
     /**
      * @deprecated
      */
-    [IPC_CHANNELS.BOOKMARK]: T_IPC_Data<T_Bookmark>
-    /**
-     * @deprecated
-     */
-    [IPC_CHANNELS.BOOKMARKS_RESPONSE]: T_Bookmark_Store
+    [IPC_CHANNELS.BOOKMARK]: T_Bookmark_Store
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
     [IPC_CHANNELS.HISTORY]: T_Bookmark[]

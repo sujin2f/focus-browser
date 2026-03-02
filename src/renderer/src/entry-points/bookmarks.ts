@@ -130,13 +130,6 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             }
         })
 
-        this.items.forEach((item) => {
-            if (item.data.parent && !this.dirs[item.data.parent]) {
-                delete item.data.parent
-                this.bookmarkStore.update(item.data)
-            }
-        })
-
         this.setShortcuts()
         this.callbackRequestBookmarks()
         this.setEnabled(true)
@@ -150,13 +143,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
-                reverse.forEach((bookmark) => {
-                    this.bookmarkStore.add({
-                        ...bookmark,
-                        dir: Boolean(!bookmark.url),
-                        type: 'bookmark',
-                    })
-                })
+                reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
                 this.arrangeBookmarks(response)
             }
         })

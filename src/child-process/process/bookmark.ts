@@ -8,12 +8,32 @@ import type { T_Bookmark } from '@src/common/types/store'
  */
 export const getBookmarks = (path: string) => {
     const store = new Bookmarks(path)
-    const dirs = store.get('dirs')
-    const items = store.get('items')
+    const dirKeys = Object.keys(store.get('dirs')).filter((v) => v)
     const bookmarks = [
-        ...Object.keys(dirs).map((id) => dirs[id]),
-        ...Object.keys(items).map((id) => items[id]),
-    ] satisfies T_Bookmark[]
+        ...Object.values(store.get('dirs')).map(
+            (item) =>
+                ({
+                    ...item,
+                    dir: true,
+                    parent: '',
+                    url: '',
+                    type: 'bookmark',
+                }) satisfies T_Bookmark,
+        ),
+        ...Object.values(store.get('items'))
+            .filter((item) => item.url)
+            .map(
+                (item) =>
+                    ({
+                        ...item,
+                        type: 'bookmark',
+                        dir: false,
+                        parent: dirKeys.includes(item.parent || '')
+                            ? item.parent
+                            : '',
+                    }) satisfies T_Bookmark,
+            ),
+    ]
 
     process.parentPort.postMessage(bookmarks)
 }

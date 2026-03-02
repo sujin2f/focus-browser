@@ -21,7 +21,8 @@ import {
     SUJINC_URL,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark, T_Cloud_Item } from '@src/common/types'
+import type { T_Cloud_Item } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')

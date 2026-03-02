@@ -9,8 +9,11 @@ jest.resetModules()
 jest.doMock('electron', electron)
 
 import { Bookmarks } from '@main/store/bookmarks'
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
+/**
+ * @deprecated moving to centre
+ */
 describe('🔖 Bookmarks store (module)', () => {
     const file = path.join(os.tmpdir(), 'bookmarks.json')
     const save = () => {

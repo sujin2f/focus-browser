@@ -1,7 +1,13 @@
-import { nativeTheme, View, type BaseWindowConstructorOptions } from 'electron'
+import {
+    nativeTheme,
+    View,
+    Notification,
+    type BaseWindowConstructorOptions,
+} from 'electron'
 /* CONSTANTS */
 import {
     BROWSER,
+    CENTRE_PAGES,
     FIND,
     IPC_CHANNELS,
     REQUEST_HANDLER,
@@ -271,5 +277,35 @@ export class BrowserWindow extends AbsWindowIPC {
         this.find.keyword = ''
         this.find.reset()
         this.view = VIEWS.BROWSER
+    }
+
+    /**
+     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
+     * only when the push succeeds. Notification click switches to bookmark page.
+     */
+    public addBookmark() {
+        // 🤬 Not Active
+        if (this._view === VIEWS.CENTRE) return
+
+        this.centre.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
+            item: {
+                id: '',
+                title: this.browser.webContents.getTitle(),
+                url: this.browser.webContents.getURL(),
+                type: 'bookmark',
+            },
+        })
+
+        const notification = new Notification({
+            title: 'Focus',
+            body: 'New Bookmark Added',
+            silent: true,
+        })
+        // Clicking the notification navigates to the bookmark page
+        notification.addListener('click', () => {
+            this.switch({ scene: CENTRE_PAGES.BOOKMARK })
+        })
+        notification.show()
+        Logger.getInstance().log('addBookmark >> notification should be shown.')
     }
 }

@@ -1,8 +1,6 @@
 import { net } from 'electron'
 /* Utils */
 import { removeDirectory } from '@src/common/utils/fs'
-/* T_Types */
-import type { T_Bookmark, T_IPC_Data } from '@src/common/types'
 /* Models */
 import { getCleanerData } from '@src/child-process/process/cleaner'
 import {
@@ -11,12 +9,7 @@ import {
     addAnchor,
     clearAnchor,
 } from '@src/child-process/process/anchor'
-import {
-    addBookmark,
-    getBookmarks,
-    removeBookmark,
-    updateBookmark,
-} from '@src/child-process/process/bookmark'
+import { getBookmarks } from '@src/child-process/process/bookmark'
 import {
     fetchCloudItems,
     removeCloudItem,
@@ -47,28 +40,14 @@ process.parentPort.once('message', (e) => {
             removeCloudItem(e.data._id, e.data.token)
             return
 
+        /**
+         * @deprecated
+         */
         case 'list-bookmark': {
             getBookmarks(e.data.path)
             return
         }
 
-        case 'add-bookmark': {
-            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
-            addBookmark(e.data.path, item!, Boolean(meta))
-            return
-        }
-
-        case 'update-bookmark': {
-            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
-            updateBookmark(e.data.path, item!, Boolean(meta))
-            return
-        }
-
-        case 'remove-bookmark': {
-            const { item, meta } = e.data.args as T_IPC_Data<T_Bookmark>
-            removeBookmark(e.data.path, item!, Boolean(meta))
-            return
-        }
         case 'list-anchor':
             getAnchors(e.data.path)
             return

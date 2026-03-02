@@ -10,7 +10,7 @@ import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 class History extends A_ListCloudPush<T_Bookmark> {
     public notification: Notification = new Notification().appendTo('root')

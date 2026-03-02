@@ -15,7 +15,8 @@ import { UserInfo } from '@home/template-parts/user-info'
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
 import { ListItem } from '@home/template-parts/list-item'
 /* T_Types */
-import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
+import type { T_Shortcut_Store } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
     BROWSER,
@@ -25,13 +26,38 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
+/* Models */
+import { Bookmark } from '@home/utils/indexedDB/bookmark'
 
 class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
     protected folderIndex = 0
+    private store: Bookmark
 
     constructor() {
         super('list--welcome')
+        this.store = new Bookmark().ready(() => {
+            this.store.getAll('bookmark', (bookmarks) => {
+                if (!bookmarks || !bookmarks.length) {
+                    this.requestBookmarks()
+                    return
+                }
+
+                bookmarks.reverse().forEach((bookmark) => {
+                    if (bookmark.dir) {
+                        this.dirs[bookmark.id] = {
+                            data: bookmark,
+                            hidden: true,
+                            dir: [],
+                            items: [],
+                        }
+                    } else {
+                        this.items.push({ data: bookmark, items: [] })
+                    }
+                })
+                this.callbackRequestBookmarks()
+            })
+        })
 
         new H1(`${EMOJI.FOCUS} Welcome to Focus!`).prependTo('root')
 
@@ -53,14 +79,33 @@ class Welcome extends A_List<T_Bookmark> {
             })
 
         this.requestStatus('userInfo')
-        this.requestBookmarks()
         this.requestShortcuts()
     }
 
+    /**
+     * @deprecated
+     */
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
             if (response) {
+                Object.keys(response.dirs).forEach((dir) => {
+                    this.store.add({
+                        ...response.dirs[dir],
+                        dir: true,
+                        type: 'bookmark',
+                    })
+                })
+                const reverse = Object.keys(response.items)
+                    .map((id) => response.items[id])
+                    .reverse()
+                reverse.forEach((item) => {
+                    this.store.add({
+                        ...item,
+                        dir: false,
+                        type: 'bookmark',
+                    })
+                })
                 const { dirs, items } = callbackRequestBookmarks(response)
                 this.dirs = dirs
                 this.items = items

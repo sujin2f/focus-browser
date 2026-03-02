@@ -2,12 +2,16 @@ import { randomUUID } from 'crypto'
 /* Models */
 import { Store } from '@main/store/store'
 /* T_Types */
-import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
+import type { T_Bookmark_Store } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 import { getSafeUrl } from '@src/common/utils/common'
 
 type T_Store = T_Bookmark_Store & {
     version: number
 }
+/**
+ * @deprecated moving to centre
+ */
 export class Bookmarks extends Store<T_Store> {
     protected fileName = 'bookmarks'
     protected defaults = { version: 1, dirs: {}, items: {} }

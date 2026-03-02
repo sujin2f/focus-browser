@@ -31,6 +31,7 @@ const mockFindInPage = jest.fn()
 const mockStopFindInPage = jest.fn()
 const mockStop = jest.fn()
 class Menu extends AbsWindowMenu {
+    addBookmark(): void {}
     focusFindInPage = mockFocusFindInPage
     findInPage = mockFindInPage
     stopFindInPage = mockStopFindInPage

@@ -16,7 +16,6 @@ import { Keystrokes } from '@main/store/keystrokes'
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 /* Utils */
 import { getSafeUrl, isNatural } from '@src/common/utils/common'
-import { addBookmarkFromBrowser } from '@src/child-process/entries/bookmark'
 /* T_Types */
 import type { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
 import { addAnchorFromBrowser } from '@src/child-process/entries/anchor'
@@ -404,21 +403,6 @@ export class BrowserView extends AbsContentsView {
             return
         }
         this.webContents.reload()
-    }
-
-    /**
-     * Persist a bookmark using the Bookmarks store and show a Notification
-     * only when the push succeeds. Notification click switches to bookmark page.
-     */
-    public addBookmark(window: AbsWindowMenu) {
-        // 🤬 Not Active
-        if (!this.active) return
-
-        addBookmarkFromBrowser(
-            window,
-            this.webContents.getURL(),
-            this.webContents.getTitle(),
-        )
     }
 
     /**

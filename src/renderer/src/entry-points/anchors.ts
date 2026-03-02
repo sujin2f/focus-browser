@@ -13,7 +13,7 @@ import {
     REQUEST_HANDLER,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 import { Logger } from '../utils/logger'
 
 class Anchors extends A_ListCloudPush<T_Bookmark> {

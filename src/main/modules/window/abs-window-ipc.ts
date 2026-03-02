@@ -37,7 +37,6 @@ import {
 } from '@src/child-process/entries/cloud'
 /* T_Types */
 import type {
-    T_Bookmark,
     T_Status_Props,
     T_Cleaner,
     T_IPC_Status,
@@ -46,10 +45,8 @@ import type {
     T_Cloud_Item,
     T_IPC_Data,
 } from '@src/common/types'
-import {
-    modifyBookmark,
-    responseBookmarks,
-} from '@src/child-process/entries/bookmark'
+import type { T_Bookmark } from '@src/common/types/store'
+import { responseBookmarks } from '@src/child-process/entries/bookmark'
 import {
     clearAnchor,
     removeAnchor,
@@ -67,8 +64,11 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.STATUS, this.onStatus.bind(this))
         ipcMain.on(IPC_CHANNELS.SWITCH, this.onSwitch.bind(this))
         ipcMain.on(IPC_CHANNELS.HISTORY, this.onHistory.bind(this))
-        ipcMain.on(IPC_CHANNELS.BOOKMARK, (_, handler, arg) => {
-            this.onBookmarks(handler, arg)
+        /**
+         * @deprecated
+         */
+        ipcMain.on(IPC_CHANNELS.BOOKMARK, (_, handler) => {
+            this.onBookmarks(handler)
         })
         ipcMain.on(IPC_CHANNELS.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(IPC_CHANNELS.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
@@ -231,16 +231,19 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
+    /**
+     * @deprecated
+     */
     private async onBookmarks(
         handler: REQUEST_HANDLER,
-        args: T_IPC_Data<T_Bookmark>,
+        // args: T_IPC_Data<T_Bookmark>,
     ) {
         if (handler === REQUEST_HANDLER.REQUEST) {
             responseBookmarks(this.centre)
             return
         }
 
-        modifyBookmark(handler, this.centre, args)
+        // modifyBookmark(handler, this.centre, args)
     }
 
     private onAnchors(

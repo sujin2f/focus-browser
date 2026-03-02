@@ -58,15 +58,12 @@ export class Logger {
     }
 
     sendToMain(type: LogTypes, ...params: unknown[]) {
-        console.log('sendToMain 1')
         if (!this.isActive) {
             return
         }
-        console.log('sendToMain 2')
         ipcRenderer.send(IPC_CHANNELS.LOG, REQUEST_HANDLER.EXECUTE, [
             type,
             params,
         ])
-        console.log('sendToMain 3')
     }
 }

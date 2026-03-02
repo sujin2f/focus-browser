@@ -2,7 +2,8 @@
 import { ipcRenderer, navigate } from '@home/utils'
 /* Models */
 import { Logger } from '@home/utils/logger'
-import { Favicon } from '@home/utils/favicon'
+import { Favicon } from '@home/utils/indexedDB/favicon'
+import { Bookmark } from '@home/utils/indexedDB/bookmark'
 /* T_Types */
 import type { T_Status_Props } from '@src/common/types'
 /* CONSTANTS */
@@ -19,11 +20,12 @@ export abstract class A_Entry {
         this._settings = settings
         this.callbackUpdateStatus()
     }
-    protected favicon = new Favicon()
+    protected faviconStore = new Favicon()
+    protected bookmarkStore = new Bookmark()
 
     constructor() {
         document.addEventListener('keydown', this.callbackShortcut.bind(this))
-        this.setFaviconUpdater()
+        this.initIpcHandler()
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
@@ -55,13 +57,14 @@ export abstract class A_Entry {
 
     protected callbackUpdateStatus() {}
 
-    private setFaviconUpdater() {
+    private initIpcHandler() {
+        // 🅕 Favicon
         ipcRenderer.on(IPC_CHANNELS.FAVICON, (handler, response = ['', '']) => {
             switch (handler) {
                 case REQUEST_HANDLER.REQUEST:
-                    this.favicon.get(response[0], (image) => {
+                    this.faviconStore.get(response[0], (image) => {
                         if (image) {
-                            this.favicon.update(image)
+                            this.faviconStore.update(image)
                             return
                         }
                         ipcRenderer.send(
@@ -77,8 +80,23 @@ export abstract class A_Entry {
                         response,
                     )
                     if (!response[0] || !response[1]) return
-                    this.favicon.set(response[0], response[1])
+                    this.faviconStore.add({
+                        host: response[0],
+                        image: response[1],
+                        timestamp: 0,
+                    })
                     return
+            }
+        })
+
+        // 🔖 Bookmark
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, response) => {
+            switch (handler) {
+                case REQUEST_HANDLER.ADD: {
+                    if (!response?.item) return
+                    this.bookmarkStore.add(response.item)
+                    return
+                }
             }
         })
     }

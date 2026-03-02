@@ -59,7 +59,7 @@ export abstract class A_List<T> extends A_Entry {
 
     protected getFaviconColumn(url: string) {
         const icon = new ListItem('')
-        this.favicon.get(url, (favicon) => {
+        this.faviconStore.get(url, (favicon) => {
             if (!favicon) return
             const image = document.createElement('img')
             image.src = favicon.image

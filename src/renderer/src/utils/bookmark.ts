@@ -1,6 +1,6 @@
 /* T_Types */
-import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
-/* T_Types */
+import type { T_Bookmark_Store } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 import type { T_Dir, T_Items } from '@src/common/types'
 
 export const callbackRequestBookmarks = (response: T_Bookmark_Store) => {

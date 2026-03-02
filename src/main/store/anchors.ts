@@ -1,6 +1,6 @@
 import { Store } from '@main/store/store'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 type Props = { anchors: T_Bookmark[] }
 

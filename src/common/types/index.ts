@@ -1,4 +1,4 @@
-import type { MenuItemConstructorOptions, NavigationEntry } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
 import {
     Menu,
     MenuCategory,
@@ -10,6 +10,7 @@ import {
     FIND,
 } from '@src/common/constants'
 import type { ListItem } from '@src/renderer/src/template-parts/list-item'
+import { T_Bookmark } from './store'
 
 /**
  * Status
@@ -52,15 +53,8 @@ export type T_IPC_Switch = {
 
 /**
  * Bookmark
+ * @deprecated
  */
-export interface T_Bookmark extends NavigationEntry {
-    id: string
-    url: string
-    title: string
-    shortcut?: string
-    parent?: string
-}
-
 export type T_Bookmark_Store = {
     dirs: Record<string, T_Bookmark>
     items: Record<string, T_Bookmark>
@@ -122,7 +116,13 @@ export type T_IPC_Data<T> = {
 export type T_IPC_Message = {
     [IPC_CHANNELS.ANCHOR]: T_IPC_Data<T_Bookmark>
     [IPC_CHANNELS.ANCHOR_RESPONSE]: T_Bookmark[]
+    /**
+     * @deprecated
+     */
     [IPC_CHANNELS.BOOKMARK]: T_IPC_Data<T_Bookmark>
+    /**
+     * @deprecated
+     */
     [IPC_CHANNELS.BOOKMARKS_RESPONSE]: T_Bookmark_Store
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch

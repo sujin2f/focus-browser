@@ -65,7 +65,11 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         this.items
             .filter((item) => item.data.url && item.data.title)
             .forEach(({ data: anchor, items }) => {
-                const item = new ListItem(anchor.title, anchor.url)
+                const icon = this.getFaviconColumn(anchor.url).appendTo(
+                    this.list.element,
+                )
+
+                const title = new ListItem(anchor.title, anchor.url)
                     .appendTo(this.list.element)
                     .setOnClick(() => {
                         if (this.enabled) {
@@ -77,6 +81,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                             navigate(anchor.url)
                         }
                     })
+                    .addClass('list--bookmarks__title')
 
                 // Cloud
                 const button = this.createCloudPushButton({
@@ -88,7 +93,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                 const send = new ListItem(button).appendTo(this.list.element)
                 send.clickable = false
 
-                items.push(item, send)
+                items.push(icon, title, send)
             })
     }
 }

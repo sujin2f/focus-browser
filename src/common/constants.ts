@@ -44,6 +44,7 @@ export enum IPC_CHANNELS {
     CLEANER = 'CLEANER',
     CLOUD = 'CLOUD',
     CLOUD_RESPONSE = 'CLOUD_RESPONSE',
+    FAVICON = 'FAVICON',
 }
 
 export enum REQUEST_HANDLER {

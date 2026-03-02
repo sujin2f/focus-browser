@@ -28,6 +28,10 @@ export class Status extends Store<T_Status_Store_Props> {
         this.data[key] = value
     }
 
+    get<K extends keyof T_Status_Store_Props>(key: K): T_Status_Store_Props[K] {
+        return this.data[key]
+    }
+
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
         const bounds = {
             ...current,

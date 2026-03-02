@@ -473,7 +473,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    private async runTest() {}
+    private async runTest() {
+        this.switch({ scene: CENTRE_PAGES.WELCOME })
+    }
 
     abstract switch(request: T_IPC_Switch): void
     abstract toggleDevTools(): void

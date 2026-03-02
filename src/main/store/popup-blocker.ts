@@ -30,6 +30,10 @@ export class PopupBlocker extends Store<T_Popup> {
         }
     }
 
+    get<K extends keyof T_Popup>(key: K): T_Popup[K] {
+        return this.data[key]
+    }
+
     public block(host: string) {
         this.data.blocked.add(host)
         this.data.allowed.delete(host)

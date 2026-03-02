@@ -1,6 +1,5 @@
 /* Models */
 import { Anchors } from '@main/store/anchors'
-// import { Favicon } from '@src/main/store/favicon'
 
 export const getAnchors = (path: string) => {
     const store = new Anchors(path)
@@ -15,9 +14,6 @@ export const removeAnchor = (path: string, url: string) => {
 }
 
 export const addAnchor = async (path: string, url: string, title: string) => {
-    // const favicon = await new Favicon(path)
-    //     .store(async (store) => store.get(url) || (await store.set(url)))
-    //     .catch(() => '')
     const store = new Anchors(path)
     const result = store.push(url, title)
     store.save()

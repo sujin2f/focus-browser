@@ -249,15 +249,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 item.data.parent && this.dirs[item.data.parent]
                     ? item.data.parent
                     : false
-            let favicon: string | HTMLImageElement = ''
             const columns: ListItem[] = []
-
-            if (item.data.favicon) {
-                favicon = document.createElement('img')
-                favicon.src = `data:image/png;base64,${item.data.favicon}`
-                favicon.width = 20
-                favicon.height = 20
-            }
 
             const title = new ListItem(item.data.title)
                 .setOnClick(() => {
@@ -266,19 +258,22 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 .addClass('list--bookmarks__title')
 
             if (!parent) {
-                const icon = new ListItem(favicon).setOnClick(() => {
-                    navigate(item.data.url)
-                })
+                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => {
+                        navigate(item.data.url)
+                    },
+                )
                 title.addClass('list--bookmarks__title--dir')
                 columns.push(icon, title)
             } else {
                 const icon1 = new ListItem('').setOnClick(() => {
                     navigate(item.data.url)
                 })
-                const icon2 = new ListItem(favicon).setOnClick(() => {
-                    navigate(item.data.url)
-                })
-                // icon2.title = favicon
+                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => {
+                        navigate(item.data.url)
+                    },
+                )
                 columns.push(icon1, icon2, title)
             }
 

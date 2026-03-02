@@ -1,6 +1,11 @@
-import { ipcRenderer, navigate } from '@src/renderer/src/utils'
-import { Logger } from '@src/renderer/src/utils/logger'
+/* Utils */
+import { ipcRenderer, navigate } from '@home/utils'
+/* Models */
+import { Logger } from '@home/utils/logger'
+import { Favicon } from '@home/utils/favicon'
+/* T_Types */
 import type { T_Status_Props } from '@src/common/types'
+/* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 
 import '@src/renderer/styles/common.css'
@@ -14,9 +19,11 @@ export abstract class A_Entry {
         this._settings = settings
         this.callbackUpdateStatus()
     }
+    protected favicon = new Favicon()
 
     constructor() {
         document.addEventListener('keydown', this.callbackShortcut.bind(this))
+        this.setFaviconUpdater()
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
@@ -47,4 +54,32 @@ export abstract class A_Entry {
     }
 
     protected callbackUpdateStatus() {}
+
+    private setFaviconUpdater() {
+        ipcRenderer.on(IPC_CHANNELS.FAVICON, (handler, response = ['', '']) => {
+            switch (handler) {
+                case REQUEST_HANDLER.REQUEST:
+                    this.favicon.get(response[0], (image) => {
+                        if (image) {
+                            this.favicon.update(image)
+                            return
+                        }
+                        ipcRenderer.send(
+                            IPC_CHANNELS.FAVICON,
+                            REQUEST_HANDLER.RESPONSE_FAIL,
+                            [response[0], ''],
+                        )
+                    })
+                    return
+                case REQUEST_HANDLER.RESPONSE_SUCCESS:
+                    Logger.getInstance().info(
+                        'FAVICON RESPONSE_SUCCESS',
+                        response,
+                    )
+                    if (!response[0] || !response[1]) return
+                    this.favicon.set(response[0], response[1])
+                    return
+            }
+        })
+    }
 }

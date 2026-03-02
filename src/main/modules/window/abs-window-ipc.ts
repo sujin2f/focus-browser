@@ -25,7 +25,7 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Utils */
-import { isBeta, isTest } from '@src/common/utils/common'
+import { isBeta, isDev, isTest } from '@src/common/utils/common'
 import {
     getCleanerSizes,
     removeIndexedDB,
@@ -55,6 +55,7 @@ import {
     removeAnchor,
     responseAnchors,
 } from '@src/child-process/entries/anchor'
+import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 
 /**
  * All starts with here
@@ -77,8 +78,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.SHORTCUTS, this.onShortcuts.bind(this))
         ipcMain.on(IPC_CHANNELS.CLEANER, this.onCleaner.bind(this))
         ipcMain.on(IPC_CHANNELS.CLOUD, this.onCloud.bind(this))
+        ipcMain.on(IPC_CHANNELS.FAVICON, this.onFavicon.bind(this))
 
-        if (isBeta() && !isTest()) {
+        if (isDev() || (isBeta() && !isTest())) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
         }
     }
@@ -465,7 +467,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     case 'indexedDB':
                         removeIndexedDB(this.centre)
                         return
-                    case 'anchor': {
+                    case 'anchors': {
                         clearAnchor(this.centre)
                         return
                     }
@@ -521,6 +523,17 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 removeCloudItem(this.centre, data.item._id, token)
                 return
             }
+        }
+    }
+
+    private async onFavicon(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        [url]: [string, string],
+    ) {
+        Logger.getInstance().log('Got onFavicon request', handler, url)
+        if (handler === REQUEST_HANDLER.RESPONSE_FAIL) {
+            fetchAndSendFavicon(this.centre, url)
         }
     }
 

@@ -22,6 +22,7 @@ import {
     removeCloudItem,
     uploadCloudItem,
 } from '@src/child-process/process/cloud'
+import { fetchFavicon } from '@src/common/utils/common'
 
 process.parentPort.once('message', (e) => {
     switch (e.data.channel) {
@@ -83,6 +84,13 @@ process.parentPort.once('message', (e) => {
         case 'clear-anchor':
             clearAnchor(e.data.path)
             return
+
+        case 'fetch-favicon': {
+            fetchFavicon(e.data.url).then((favicon) =>
+                process.parentPort.postMessage(favicon),
+            )
+            return
+        }
 
         case 'test': {
             console.log(net)

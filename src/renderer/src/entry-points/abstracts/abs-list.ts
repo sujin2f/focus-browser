@@ -1,6 +1,7 @@
 import { A_Entry } from './abs-entry'
 /* <HTML template-part /> */
 import { List } from '@home/template-parts/list'
+import { ListItem } from '@home/template-parts/list-item'
 /* Models */
 import { Logger } from '@src/renderer/src/utils/logger'
 /* CONSTANTS */
@@ -54,5 +55,18 @@ export abstract class A_List<T> extends A_Entry {
             }
         })
         data.hidden = !hidden
+    }
+
+    protected getFaviconColumn(url: string) {
+        const icon = new ListItem('')
+        this.favicon.get(url, (favicon) => {
+            if (!favicon) return
+            const image = document.createElement('img')
+            image.src = favicon.image
+            image.width = 20
+            image.height = 20
+            icon.title = image
+        })
+        return icon
     }
 }

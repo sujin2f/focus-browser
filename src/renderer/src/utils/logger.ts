@@ -1,5 +1,6 @@
 import { IPC_CHANNELS, LogTypes, REQUEST_HANDLER } from '@src/common/constants'
 import { isBeta, isDev, isTest } from '@src/common/utils/common'
+import { ipcRenderer } from '.'
 
 /**
  * on Linux: ~/.config/{app name}/logs/main.log
@@ -57,13 +58,15 @@ export class Logger {
     }
 
     sendToMain(type: LogTypes, ...params: unknown[]) {
+        console.log('sendToMain 1')
         if (!this.isActive) {
             return
         }
-        window.electron.ipcRenderer.sendMessage(
-            IPC_CHANNELS.LOG,
-            REQUEST_HANDLER.EXECUTE,
-            [type, params],
-        )
+        console.log('sendToMain 2')
+        ipcRenderer.send(IPC_CHANNELS.LOG, REQUEST_HANDLER.EXECUTE, [
+            type,
+            params,
+        ])
+        console.log('sendToMain 3')
     }
 }

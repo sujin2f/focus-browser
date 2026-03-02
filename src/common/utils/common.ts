@@ -63,14 +63,21 @@ export const getSafeUrl = (text: string): URL | false | undefined => {
     return url
 }
 
-export const fetchFavicon = async (url: string): Promise<string> => {
+export const fetchFavicon = async (_url: string): Promise<[string, string]> => {
+    const url = getSafeUrl(_url)
+    // 🤬 URL is not valid
+    if (!url) throw new Error(`URL is not valid: ${_url}`) // TODO Log & Error
+    const host = url.hostname
+    const origin = `${url.protocol}//${host}`
+    const DEFAULT = ['', ''] satisfies [string, string]
     return fetch(
-        `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${url}&size=32`,
+        `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=32`,
+        { headers: { 'Access-Control-Allow-Origin': '*' } },
     )
         .then(async (response) => {
-            const bytes = await response.bytes()
-            const buffer = Buffer.from(bytes)
-            return buffer.toString('base64')
+            const image = response.headers.get('content-location')
+            if (!image) return DEFAULT
+            return [host, image] satisfies [string, string]
         })
-        .catch(() => '')
+        .catch(() => DEFAULT)
 }

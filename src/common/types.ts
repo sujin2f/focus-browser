@@ -59,7 +59,6 @@ export interface T_Bookmark extends NavigationEntry {
     title: string
     shortcut?: string
     parent?: string
-    // favicon?: string
 }
 
 export type T_Bookmark_Store = {
@@ -144,6 +143,7 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.CLEANER]: T_Cleaner
     [IPC_CHANNELS.CLOUD]: T_IPC_Data<T_Cloud_Item>
     [IPC_CHANNELS.CLOUD_RESPONSE]: T_Cloud_Item[]
+    [IPC_CHANNELS.FAVICON]: [string, string]
 }
 
 export type T_Items<T> = { data: T; items: ListItem[] }[]

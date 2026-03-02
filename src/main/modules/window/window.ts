@@ -1,6 +1,11 @@
 import { nativeTheme, View, type BaseWindowConstructorOptions } from 'electron'
 /* CONSTANTS */
-import { BROWSER, FIND } from '@src/common/constants'
+import {
+    BROWSER,
+    FIND,
+    IPC_CHANNELS,
+    REQUEST_HANDLER,
+} from '@src/common/constants'
 /* Models */
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
@@ -98,10 +103,18 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         )
 
-        this.browser.webContents.on('found-in-page', (_, result) => {
-            Logger.getInstance().log('found-in-page result', result)
-            this.find.setMatched(result.matches, result.activeMatchOrdinal)
-        })
+        this.browser.webContents
+            .on('found-in-page', (_, result) => {
+                Logger.getInstance().log('found-in-page result', result)
+                this.find.setMatched(result.matches, result.activeMatchOrdinal)
+            })
+            .on('dom-ready', () => {
+                this.centre.send(
+                    IPC_CHANNELS.FAVICON,
+                    REQUEST_HANDLER.REQUEST,
+                    [this.browser.url, ''],
+                )
+            })
 
         if (nativeTheme.shouldUseDarkColors) {
             this.browser.setBackgroundColor('#030712')

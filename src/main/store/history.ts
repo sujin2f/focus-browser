@@ -19,6 +19,10 @@ export class History extends Store<Props> {
         return
     }
 
+    get<K extends keyof Props>(key: K): Props[K] {
+        return this.data[key]
+    }
+
     parse() {
         super.parse()
         super.mergeDefault()

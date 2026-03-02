@@ -82,10 +82,16 @@ class Welcome extends A_List<T_Bookmark> {
             const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
                 this.onDirectoryClick(dir.data.id)
             })
-            const row = new ListItem(dir.data.title).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
-            dir.dir.push(icon, row)
+            const title = new ListItem(dir.data.title)
+                .setOnClick(() => {
+                    this.onDirectoryClick(dir.data.id)
+                })
+                .addClass(
+                    'list--bookmarks__title',
+                    'list--bookmarks__title--dir',
+                )
+
+            dir.dir.push(icon, title)
         })
 
         // Items
@@ -94,15 +100,30 @@ class Welcome extends A_List<T_Bookmark> {
                 item.data.parent && this.dirs[item.data.parent]
                     ? item.data.parent
                     : false
-            const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate(item.data.url)
-            })
-            const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate(item.data.url)
-            })
-            item.items.push(icon, row)
+
+            const title = new ListItem(item.data.title)
+                .setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                .addClass('list--bookmarks__title')
+
             if (parent) {
-                this.dirs[parent].items.push(icon, row)
+                const icon1 = new ListItem('')
+                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => {
+                        navigate(item.data.url)
+                    },
+                )
+                item.items.push(icon1, icon2, title)
+                this.dirs[parent].items.push(icon1, icon2, title)
+            } else {
+                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => {
+                        navigate(item.data.url)
+                    },
+                )
+                title.addClass('list--bookmarks__title--dir')
+                item.items.push(icon, title)
             }
         })
 

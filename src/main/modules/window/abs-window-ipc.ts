@@ -455,7 +455,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
             case REQUEST_HANDLER.REMOVE:
-                switch (key) {
+                switch (
+                    key // TODO make them as enum
+                ) {
                     case 'cacheSize':
                         await this.browser.webContents.session.clearCache()
                         responseSuccess()

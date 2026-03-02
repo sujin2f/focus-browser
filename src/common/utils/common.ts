@@ -70,7 +70,7 @@ export const fetchFavicon = async (_url: string): Promise<[string, string]> => {
     const host = url.hostname
     const origin = `${url.protocol}//${host}`
     const DEFAULT = ['', ''] satisfies [string, string]
-    return fetch(
+    return await fetch(
         `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=32`,
         { headers: { 'Access-Control-Allow-Origin': '*' } },
     )

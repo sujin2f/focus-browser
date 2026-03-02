@@ -13,7 +13,7 @@ export const removeAnchor = (path: string, url: string) => {
     process.parentPort.postMessage(null)
 }
 
-export const addAnchor = async (path: string, url: string, title: string) => {
+export const addAnchor = (path: string, url: string, title: string) => {
     const store = new Anchors(path)
     const result = store.push(url, title)
     store.save()

@@ -130,6 +130,13 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             }
         })
 
+        this.items.forEach((item) => {
+            if (item.data.parent && !this.dirs[item.data.parent]) {
+                delete item.data.parent
+                this.bookmarkStore.update(item.data)
+            }
+        })
+
         this.setShortcuts()
         this.callbackRequestBookmarks()
         this.setEnabled(true)

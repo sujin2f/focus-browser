@@ -6,7 +6,6 @@ import {
     ipcRenderer,
     navigate,
 } from '@src/renderer/src/utils'
-import { base64decode } from '@src/common/utils/security-common'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Loading } from '@home/template-parts/loading'
@@ -23,6 +22,7 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
+import { Logger } from '../utils/logger'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
@@ -105,12 +105,14 @@ class Importer extends A_List<T_Cloud_Item> {
                         .filter((item) => item.data._id !== response.item!._id)
                         .map((item) => ({ ...item, items: [] as ListItem[] }))
                     this.renderList()
-                    this.notification.info(
-                        `${response.item!.title} is imported.`,
-                    )
+                    this.notification.info(`The bookmark is imported.`)
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
-                    // TODO
+                    this.setEnabled(true)
+                    Logger.getInstance().error(response)
+                    if (response?.message) {
+                        this.notification.error(response.message)
+                    }
                     return
             }
         })
@@ -143,8 +145,13 @@ class Importer extends A_List<T_Cloud_Item> {
                         REQUEST_HANDLER.REMOVE,
                         { item: data },
                     )
-                    const bookmark = JSON.parse(base64decode(data.message!))
-                    this.bookmarkStore.add(bookmark)
+                    const bookmark = JSON.parse(atob(data.message!))
+                    this.bookmarkStore.add({
+                        id: '',
+                        type: 'bookmark',
+                        title: bookmark.title,
+                        url: bookmark.url,
+                    })
                     this.setEnabled(false)
                 })
             }

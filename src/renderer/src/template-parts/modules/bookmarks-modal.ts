@@ -145,6 +145,7 @@ export class BookmarkModal extends Modal {
                         url,
                         parent,
                         shortcut: this.shortcut.value,
+                        type: 'bookmark',
                     },
                     () => window.location.reload(),
                 )
@@ -162,6 +163,7 @@ export class BookmarkModal extends Modal {
                     url,
                     parent,
                     shortcut: this.shortcut.value,
+                    type: 'bookmark',
                 },
                 () => window.location.reload(),
             )

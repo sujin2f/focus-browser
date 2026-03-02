@@ -7,7 +7,7 @@ import {
 } from 'electron'
 /* Models */
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 import { Status } from '@main/store/status'
 import { PopupBlocker } from '@main/store/popup-blocker'
 import { Shortcut } from '@main/store/shortcut'
@@ -25,7 +25,7 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Utils */
-import { isBeta, isDev, isTest } from '@src/common/utils/common'
+import { canLog } from '@src/common/utils/common'
 import {
     getCleanerSizes,
     removeIndexedDB,
@@ -80,7 +80,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.CLOUD, this.onCloud.bind(this))
         ipcMain.on(IPC_CHANNELS.FAVICON, this.onFavicon.bind(this))
 
-        if (isDev() || (isBeta() && !isTest())) {
+        if (canLog()) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
         }
     }

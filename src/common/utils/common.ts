@@ -1,23 +1,28 @@
+export const isMain = () => {
+    if (typeof process === 'undefined') return false
+    if (process.type === 'renderer') return false
+    return true
+}
+
 export const isBeta = () => {
-    if (typeof window !== 'object') {
-        return process.env.IS_BETA
-    }
+    if (isMain()) return process.env.IS_BETA
     return typeof envBeta !== 'undefined' && envBeta
 }
 
 export const isDev = () => {
-    if (typeof window !== 'object') {
+    if (isMain())
         return (
             typeof process !== 'undefined' &&
             process.env.NODE_ENV === 'development'
         )
-    }
     return typeof envDev !== 'undefined' && envDev
 }
 
 export const isTest = () => {
     return typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
 }
+
+export const canLog = () => isDev() || (isBeta() && !isTest())
 
 export const isNatural = (arg: number) => {
     return arg >= 0

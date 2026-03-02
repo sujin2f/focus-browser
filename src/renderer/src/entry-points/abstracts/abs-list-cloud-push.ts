@@ -9,7 +9,7 @@ import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item, T_IPC_Data } from '@src/common/types'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 
 export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     protected notification: Notification = new Notification().appendTo('root')

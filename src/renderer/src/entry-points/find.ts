@@ -3,7 +3,7 @@ import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 
 import '@src/renderer/styles/common.css'
 

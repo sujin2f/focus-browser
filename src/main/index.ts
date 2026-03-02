@@ -2,7 +2,7 @@ import { app, Menu } from 'electron'
 
 import { BrowserWindow } from '@main/modules/window/window'
 
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 
 /**
  * Add event listeners...

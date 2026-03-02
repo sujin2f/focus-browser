@@ -17,7 +17,7 @@ import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { FindView } from '@main/modules/view/find'
 /* T_Types */

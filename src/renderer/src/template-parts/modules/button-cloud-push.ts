@@ -9,7 +9,7 @@ import {
 /* Utils */
 import { getSection, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
 /* <HTML template-part /> */

@@ -132,6 +132,11 @@ export const EMOJI: Record<string, string> = {
     CENTRE: '🎛️',
     LOGIN: '🙋‍♀️',
     CLOUD: '☁️',
+    ERROR: '🤬',
+    WARN: '⚠️',
+    STAR: '⭐️',
+    PEEK: '👀',
+    BABY: '👶',
 }
 
 export const SEARCH_ENGINES = {

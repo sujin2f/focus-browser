@@ -2,7 +2,7 @@ import { utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { CenterView } from '@main/modules/view/centre'
 /* CONSTANTS */

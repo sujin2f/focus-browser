@@ -1,6 +1,6 @@
 import { A_Element } from './abs-element'
 /* Models */
-import { Logger } from '@home/utils/logger'
+import { Logger } from '@src/common/logger'
 
 export class Notification extends A_Element<HTMLElement> {
     constructor() {

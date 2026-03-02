@@ -5,7 +5,7 @@ import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 import { resolveHtmlPath } from '@src/common/utils/fs'
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 
 export class FindView extends WebContentsView {
     public keyword = ''

@@ -8,7 +8,7 @@ import {
     SEARCH_ENGINES,
 } from '@src/common/constants'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 import { PopupBlocker } from '@main/store/popup-blocker'
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'

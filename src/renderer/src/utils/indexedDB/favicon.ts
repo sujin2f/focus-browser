@@ -1,6 +1,6 @@
 /* Models */
 import { Abs_Database } from '@home/utils/indexedDB/abs-database'
-import { Logger } from '@home/utils/logger'
+import { Logger } from '@src/common/logger'
 /* Utils */
 import { getSafeUrl } from '@src/common/utils/common'
 /* T_Types */

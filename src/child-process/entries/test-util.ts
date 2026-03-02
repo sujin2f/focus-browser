@@ -2,7 +2,7 @@ import { utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 
 export const test = () => {
     const child = utilityProcess.fork(paths.childProcess)

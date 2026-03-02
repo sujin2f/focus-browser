@@ -2,7 +2,7 @@ import { app, utilityProcess, Notification } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* CONSTANTS */
 import {
     CENTRE_PAGES,

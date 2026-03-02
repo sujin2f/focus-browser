@@ -3,7 +3,7 @@ import { utilityProcess } from 'electron'
 import { paths } from '@src/common/utils/fs'
 /* Models */
 import { Status } from '@main/store/status'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { CenterView } from '@main/modules/view/centre'
 import type { T_Cloud_Item } from '@src/common/types'

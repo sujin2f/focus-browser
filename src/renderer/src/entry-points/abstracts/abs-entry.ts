@@ -1,7 +1,7 @@
 /* Utils */
 import { ipcRenderer, navigate } from '@home/utils'
 /* Models */
-import { Logger } from '@home/utils/logger'
+import { Logger } from '@src/common/logger'
 import { Favicon } from '@home/utils/indexedDB/favicon'
 import { Bookmark } from '@home/utils/indexedDB/bookmark'
 /* T_Types */

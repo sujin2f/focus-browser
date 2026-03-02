@@ -43,7 +43,7 @@ const commonConfig = {
         },
     },
     optimization: {
-        minimize: true,
+        minimize: process.env.NODE_ENV !== 'development',
         splitChunks: {
             chunks: 'all',
         },

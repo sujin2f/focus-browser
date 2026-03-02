@@ -1,5 +1,5 @@
 /* Models */
-import { Logger } from '@home/utils/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { T_Stores } from '@src/common/types/store'
 

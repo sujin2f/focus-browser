@@ -2,7 +2,7 @@ import { app, utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */

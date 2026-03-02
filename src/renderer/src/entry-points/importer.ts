@@ -22,7 +22,8 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
-import { Logger } from '../utils/logger'
+/* Models */
+import { Logger } from '@src/common/logger'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')

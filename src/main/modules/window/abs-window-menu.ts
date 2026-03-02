@@ -21,9 +21,9 @@ import {
 import { Shortcut } from '@main/store/shortcut'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* Utils */
-import { isBeta, isDev, isTest } from '@src/common/utils/common'
+import { canLog } from '@src/common/utils/common'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -288,7 +288,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                       [MenuCategory.NAVIGATE]: navigate,
                   }
 
-        if (isDev() || (isBeta() && !isTest())) {
+        if (canLog()) {
             if (result[MenuCategory.EDIT]) {
                 result[MenuCategory.EDIT][Menu.TEST] = {
                     label: 'Run Test Block',

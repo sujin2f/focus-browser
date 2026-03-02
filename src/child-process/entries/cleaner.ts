@@ -3,7 +3,7 @@ import { app, utilityProcess } from 'electron'
 import { paths, getIndexedDBPath } from '@src/common/utils/fs'
 import { byteToSize } from '@src/common/utils/common'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { CenterView } from '@main/modules/view/centre'
 import type { BrowserView } from '@main/modules/view/browser'

@@ -6,7 +6,6 @@ import {
     ipcRenderer,
     commandSymbol,
 } from '@src/renderer/src/utils'
-import { callbackRequestBookmarks } from '@home/utils/bookmark'
 /* <HTML template-part /> */
 import { H1 } from '@home/template-parts/h1'
 import { H2 } from '@home/template-parts/h2'
@@ -26,36 +25,21 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
-/* Models */
-import { Bookmark } from '@home/utils/indexedDB/bookmark'
 
 class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
     protected folderIndex = 0
-    private store: Bookmark
 
     constructor() {
         super('list--welcome')
-        this.store = new Bookmark().ready(() => {
-            this.store.getAll('bookmark', (bookmarks) => {
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll('bookmark', (bookmarks) => {
                 if (!bookmarks || !bookmarks.length) {
                     this.requestBookmarks()
                     return
                 }
 
-                bookmarks.reverse().forEach((bookmark) => {
-                    if (bookmark.dir) {
-                        this.dirs[bookmark.id] = {
-                            data: bookmark,
-                            hidden: true,
-                            dir: [],
-                            items: [],
-                        }
-                    } else {
-                        this.items.push({ data: bookmark, items: [] })
-                    }
-                })
-                this.callbackRequestBookmarks()
+                this.arrangeBookmarks(bookmarks.reverse())
             })
         })
 
@@ -82,34 +66,43 @@ class Welcome extends A_List<T_Bookmark> {
         this.requestShortcuts()
     }
 
+    private arrangeBookmarks(bookmarks: T_Bookmark[]) {
+        this.dirs = {}
+        this.items = []
+
+        bookmarks.forEach((bookmark) => {
+            if (bookmark.dir) {
+                this.dirs[bookmark.id] = {
+                    data: bookmark,
+                    hidden: true,
+                    dir: [],
+                    items: [],
+                }
+            } else {
+                this.items.push({ data: bookmark, items: [] })
+            }
+        })
+
+        this.callbackRequestBookmarks()
+        this.setEnabled(true)
+    }
+
     /**
      * @deprecated
      */
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
-            if (response) {
-                Object.keys(response.dirs).forEach((dir) => {
-                    this.store.add({
-                        ...response.dirs[dir],
-                        dir: true,
+            if (response && Array.isArray(response)) {
+                const reverse = [...response].reverse()
+                reverse.forEach((bookmark) => {
+                    this.bookmarkStore.add({
+                        ...bookmark,
+                        dir: Boolean(!bookmark.url),
                         type: 'bookmark',
                     })
                 })
-                const reverse = Object.keys(response.items)
-                    .map((id) => response.items[id])
-                    .reverse()
-                reverse.forEach((item) => {
-                    this.store.add({
-                        ...item,
-                        dir: false,
-                        type: 'bookmark',
-                    })
-                })
-                const { dirs, items } = callbackRequestBookmarks(response)
-                this.dirs = dirs
-                this.items = items
-                this.callbackRequestBookmarks()
+                this.arrangeBookmarks(response)
             }
         })
     }

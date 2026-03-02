@@ -91,10 +91,12 @@ export abstract class A_Entry {
 
         // 🔖 Bookmark
         ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, response) => {
+            if (!response) return
+
             switch (handler) {
                 case REQUEST_HANDLER.ADD: {
-                    if (!response?.item) return
-                    this.bookmarkStore.add(response.item)
+                    if (Array.isArray(response)) return
+                    this.bookmarkStore.add(response)
                     return
                 }
             }

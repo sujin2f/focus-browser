@@ -22,6 +22,7 @@ import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { FindView } from '@main/modules/view/find'
 /* T_Types */
 import type { T_IPC_Switch } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 const VIEWS = {
     BROWSER: BROWSER,
@@ -288,13 +289,11 @@ export class BrowserWindow extends AbsWindowIPC {
         if (this._view === VIEWS.CENTRE) return
 
         this.centre.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
-            item: {
-                id: '',
-                title: this.browser.webContents.getTitle(),
-                url: this.browser.webContents.getURL(),
-                type: 'bookmark',
-            },
-        })
+            id: '',
+            title: this.browser.webContents.getTitle(),
+            url: this.browser.webContents.getURL(),
+            type: 'bookmark',
+        } satisfies T_Bookmark)
 
         const notification = new Notification({
             title: 'Focus',

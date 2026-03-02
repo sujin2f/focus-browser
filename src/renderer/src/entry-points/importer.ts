@@ -6,6 +6,7 @@ import {
     ipcRenderer,
     navigate,
 } from '@src/renderer/src/utils'
+import { base64decode } from '@src/common/utils/security'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Loading } from '@home/template-parts/loading'
@@ -22,7 +23,6 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
-import type { T_Bookmark } from '@src/common/types/store'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
@@ -68,23 +68,16 @@ class Importer extends A_List<T_Cloud_Item> {
 
     private request(): void {
         this.setEnabled(false)
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(
-            IPC_CHANNELS.BOOKMARKS_RESPONSE,
-            (handler, response) => {
-                if (response) {
-                    // TODO
-                    this.setEnabled(true)
-                    const bookmarks = [
-                        ...Object.values(response.dirs),
-                        ...Object.values(response.items),
-                    ]
-                    this.keys.push(...bookmarks.map((item) => item.url))
-                }
-                this.setEnabled(true)
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll('bookmark', (bookmarks) => {
+                this.keys.push(
+                    ...bookmarks
+                        .filter((item) => !item.dir)
+                        .map((item) => item.url),
+                )
                 ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
-            },
-        )
+            })
+        })
 
         ipcRenderer.once(IPC_CHANNELS.CLOUD_RESPONSE, (handler, items = []) => {
             switch (handler) {
@@ -150,17 +143,8 @@ class Importer extends A_List<T_Cloud_Item> {
                         REQUEST_HANDLER.REMOVE,
                         { item: data },
                     )
-                    ipcRenderer.send(
-                        IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.ADD,
-                        {
-                            item: {
-                                id: 'from-cloud',
-                                url: '',
-                                title: data.message!,
-                            } satisfies T_Bookmark,
-                        },
-                    )
+                    const bookmark = JSON.parse(base64decode(data.message!))
+                    this.bookmarkStore.add(bookmark)
                     this.setEnabled(false)
                 })
             }

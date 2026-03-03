@@ -34,31 +34,47 @@ export class Bookmark extends Abs_Database<'bookmark'> {
         // 🤬 DB does not exist
         if (!store) return
 
-        if (!_bookmark.dir) {
-            if (!getSafeUrl(_bookmark.url)) return
+        if (_bookmark.dir) {
+            this.forceAdd(_bookmark, callback)
+            return
         }
 
+        // Prevent URL duplication
+        if (!getSafeUrl(_bookmark.url)) return
         const index = store.index('url')
         const query = index.get(_bookmark.url)
         query.onsuccess = () => {
             if (query.result) return
-
-            const bookmark = {
-                ..._bookmark,
-                id: _bookmark.id || window.crypto.randomUUID().toString(),
-            }
-
-            const mutation = store.add(bookmark)
-            mutation.onsuccess = () => {
-                Logger.getInstance().info('indexedDB::Bookmark::set() done')
-                if (callback) callback(true)
-            }
-            mutation.onerror = () => {
-                if (callback) callback(false)
-                Logger.getInstance().info('indexedDB::Bookmark::set() fail')
-            }
+            this.forceAdd(_bookmark, callback)
         }
         query.onerror = () => {
+            if (callback) callback(false)
+            Logger.getInstance().info('indexedDB::Bookmark::set() fail')
+        }
+    }
+
+    private forceAdd(
+        _bookmark: T_Bookmark,
+        callback?: (result?: boolean) => void,
+    ) {
+        const store = this.getStore('readwrite')
+        // 🤬 DB does not exist
+        if (!store) return
+
+        const bookmark = {
+            ..._bookmark,
+            id: _bookmark.id || window.crypto.randomUUID().toString(),
+        }
+
+        const mutation = store.add(bookmark)
+        mutation.onsuccess = () => {
+            Logger.getInstance().info(
+                'indexedDB::Bookmark::set() done',
+                _bookmark.title,
+            )
+            if (callback) callback(true)
+        }
+        mutation.onerror = () => {
             if (callback) callback(false)
             Logger.getInstance().info('indexedDB::Bookmark::set() fail')
         }

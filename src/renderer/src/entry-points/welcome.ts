@@ -25,6 +25,7 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
+import { Logger } from '@src/common/logger'
 
 class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
@@ -95,6 +96,7 @@ class Welcome extends A_List<T_Bookmark> {
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
+                Logger.getInstance().info(reverse)
                 reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
                 this.bookmarkStore.getAll('bookmark', (bookmarks) => {
                     this.arrangeBookmarks(bookmarks)

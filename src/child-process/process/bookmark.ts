@@ -1,5 +1,6 @@
 /* Models */
 import { Bookmarks } from '@main/store/bookmarks'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
 
@@ -8,6 +9,7 @@ import type { T_Bookmark } from '@src/common/types/store'
  */
 export const getBookmarks = (path: string) => {
     const store = new Bookmarks(path)
+    Logger.getInstance().info(store.get('dirs'), store.get('items'))
     const dirKeys = Object.keys(store.get('dirs')).filter((v) => v)
     const bookmarks = [
         ...Object.values(store.get('dirs')).map(
@@ -34,6 +36,7 @@ export const getBookmarks = (path: string) => {
                     }) satisfies T_Bookmark,
             ),
     ]
+    Logger.getInstance().info(bookmarks)
 
     process.parentPort.postMessage(bookmarks)
 }

@@ -71,7 +71,7 @@ class Importer extends A_List<T_Cloud_Item> {
     private request(): void {
         this.setEnabled(false)
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll('bookmark', (bookmarks) => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
                 this.keys.push(
                     ...bookmarks
                         .filter((item) => !item.dir)

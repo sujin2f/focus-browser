@@ -17,6 +17,7 @@ import { Notification } from '@home/template-parts/notification'
 import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
@@ -80,7 +81,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     private initStore() {
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll('bookmark', (bookmarks) => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
                 if (!bookmarks || !bookmarks.length) {
                     this.requestBookmarks()
                     return
@@ -138,10 +139,14 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
-                reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
-                this.bookmarkStore.getAll('bookmark', (bookmarks) => {
-                    this.arrangeBookmarks(bookmarks)
-                })
+                this.bookmarkStore.add(reverse, () =>
+                    this.bookmarkStore.getAll(
+                        BOOKMARK_TYPES.BOOKMARK,
+                        (bookmarks) => {
+                            this.arrangeBookmarks(bookmarks)
+                        },
+                    ),
+                )
             }
         })
     }

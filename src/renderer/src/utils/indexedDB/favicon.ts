@@ -28,7 +28,6 @@ export class Favicon extends Abs_Database<'favicon'> {
     }
 
     public add(favicon: T_Favicon) {
-        Logger.init().info(`indexedDB::set(${favicon.host})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return

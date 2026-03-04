@@ -70,7 +70,7 @@ export abstract class Abs_Database<T extends keyof T_Stores> {
         callback: (result: T_Stores[T][]) => void,
     ): void
     abstract get(key: unknown, callback: (result: T_Stores[T]) => void): void
-    abstract add(item: T_Stores[T]): void
+    abstract add(items: T_Stores[T] | T_Stores[T][]): void
     abstract update(
         item: T_Stores[T],
         callback?: (result: boolean) => void,
@@ -82,13 +82,22 @@ export abstract class Abs_Database<T extends keyof T_Stores> {
     abstract remove(key: unknown, callback?: (result: boolean) => void): void
     abstract remove(key: unknown, callback: (result: boolean) => void): void
 
-    protected getStore(
+    protected getTransaction(
         mode: 'readonly' | 'readwrite' | 'versionchange' = 'readonly',
-    ): IDBObjectStore | undefined {
+    ): IDBTransaction | undefined {
         // 🤬 DB does not exist
         if (!Abs_Database.DATABASE) return
 
-        const transaction = Abs_Database.DATABASE.transaction(this.STORE, mode)
+        return Abs_Database.DATABASE.transaction(this.STORE, mode)
+    }
+
+    protected getStore(
+        mode: 'readonly' | 'readwrite' | 'versionchange' = 'readonly',
+    ): IDBObjectStore | undefined {
+        const transaction = this.getTransaction(mode)
+        // 🤬 DB does not exist
+        if (!transaction) return
+
         return transaction.objectStore(this.STORE)
     }
 }

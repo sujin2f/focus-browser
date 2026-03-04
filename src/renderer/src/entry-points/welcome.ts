@@ -18,6 +18,7 @@ import type { T_Shortcut_Store } from '@src/common/types'
 import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     BROWSER,
     CENTRE_PAGES,
     EMOJI,
@@ -25,16 +26,16 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
-import { Logger } from '@src/common/logger'
 
 class Welcome extends A_List<T_Bookmark> {
     private shortcuts: T_Shortcut_Store = {}
     protected folderIndex = 0
 
     constructor() {
+        // 🔖 Bookmark
         super('list--welcome')
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll('bookmark', (bookmarks) => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
                 if (!bookmarks || !bookmarks.length) {
                     this.requestBookmarks()
                     return
@@ -96,11 +97,14 @@ class Welcome extends A_List<T_Bookmark> {
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
-                Logger.init().info(reverse)
-                reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
-                this.bookmarkStore.getAll('bookmark', (bookmarks) => {
-                    this.arrangeBookmarks(bookmarks)
-                })
+                this.bookmarkStore.add(reverse, () =>
+                    this.bookmarkStore.getAll(
+                        BOOKMARK_TYPES.BOOKMARK,
+                        (bookmarks) => {
+                            this.arrangeBookmarks(bookmarks)
+                        },
+                    ),
+                )
             }
         })
     }

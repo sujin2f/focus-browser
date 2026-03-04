@@ -14,6 +14,7 @@ import { Loading } from '@home/template-parts/loading'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     MAX_HISTORY,
@@ -22,6 +23,7 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Cleaner_Response, T_Status_Props } from '@src/common/types'
+import { Logger } from '@src/common/logger'
 
 const request: (keyof T_Status_Props)[] = [
     'maxHistory',
@@ -73,6 +75,20 @@ class Settings extends A_Entry {
                         return
                     }
                     this.ready = false
+                    if (key === 'anchors') {
+                        new Loading().appendTo(
+                            this.cards['anchors'].description,
+                        )
+                        this.bookmarkStore.removeAll(
+                            BOOKMARK_TYPES.ANCHOR,
+                            () => {
+                                this.cards['anchors'].description.innerHTML =
+                                    '0'
+                            },
+                        )
+                        return
+                    }
+
                     this.cards[key].description.innerHTML = ''
                     new Loading().appendTo(this.cards[key].description)
                     this.requestClean(key)
@@ -156,6 +172,12 @@ class Settings extends A_Entry {
      * 🧼 Request Cleaner Size
      */
     private requestCleanerSizes(): void {
+        this.cards['anchors'].description = '0'
+        this.bookmarkStore.getAll(BOOKMARK_TYPES.ANCHOR, (result) => {
+            Logger.init().info(result)
+            this.cards['anchors'].description = result.length.toString()
+        })
+
         ipcRenderer.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.REQUEST, {
             request: '',
         })
@@ -165,6 +187,7 @@ class Settings extends A_Entry {
                 const { response } = arg!
                 Object.keys(CARDS).forEach((_key) => {
                     const key = _key as keyof T_Cleaner_Response
+                    if (key === 'anchors') return
                     this.cards[key].description = response![key]
                 })
                 this.ready = true

@@ -7,6 +7,7 @@ import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -14,6 +15,7 @@ import {
 } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
+import { Logger } from '@src/common/logger'
 
 class Anchors extends A_ListCloudPush<T_Bookmark> {
     constructor() {
@@ -26,7 +28,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
 
     private initStore() {
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll('anchor', (anchors) => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.ANCHOR, (anchors) => {
                 if (!anchors || !anchors.length) {
                     this.requestAnchors()
                     return
@@ -68,11 +70,14 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
     private requestAnchors(): void {
         ipcRenderer.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.ANCHOR, (_, anchors = []) => {
+            Logger.init().info(anchors)
             if (anchors && Array.isArray(anchors)) {
                 const reverse = [...anchors].reverse()
-                reverse.forEach((anchor) => this.bookmarkStore.add(anchor))
-                this.bookmarkStore.getAll('anchor', (anchors) =>
-                    this.arrangeAnchors(anchors),
+                this.bookmarkStore.add(reverse, () =>
+                    this.bookmarkStore.getAll(
+                        BOOKMARK_TYPES.ANCHOR,
+                        (anchors) => this.arrangeAnchors(anchors),
+                    ),
                 )
             }
         })

@@ -14,7 +14,6 @@ import { Loading } from '@home/template-parts/loading'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import {
-    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     MAX_HISTORY,
@@ -79,13 +78,9 @@ class Settings extends A_Entry {
                         new Loading().appendTo(
                             this.cards['anchors'].description,
                         )
-                        this.bookmarkStore.removeAll(
-                            BOOKMARK_TYPES.ANCHOR,
-                            () => {
-                                this.cards['anchors'].description.innerHTML =
-                                    '0'
-                            },
-                        )
+                        this.anchorStore.removeAll(() => {
+                            this.cards['anchors'].description.innerHTML = '0'
+                        })
                         return
                     }
 
@@ -173,7 +168,7 @@ class Settings extends A_Entry {
      */
     private requestCleanerSizes(): void {
         this.cards['anchors'].description = '0'
-        this.bookmarkStore.getAll(BOOKMARK_TYPES.ANCHOR, (result) => {
+        this.anchorStore.getAll((result) => {
             Logger.init().info(result)
             this.cards['anchors'].description = result.length.toString()
         })

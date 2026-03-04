@@ -1,6 +1,10 @@
 import type { MenuItemConstructorOptions } from 'electron'
 import type { ListItem } from '@src/renderer/src/template-parts/list-item'
-import type { T_Bookmark } from './store'
+import type {
+    T_Anchor,
+    T_Bookmark,
+    T_Bookmark_Partial,
+} from '@src/common/types/store'
 import {
     Menu,
     MenuCategory,
@@ -105,11 +109,11 @@ export type T_IPC_Data<T> = {
 }
 
 export type T_IPC_Message = {
-    [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
-    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[] | T_Bookmark
+    [IPC_CHANNELS.ANCHOR]: T_Anchor[] | T_Bookmark_Partial
+    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[] | T_Bookmark_Partial
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
-    [IPC_CHANNELS.HISTORY]: T_Bookmark[]
+    [IPC_CHANNELS.HISTORY]: T_Bookmark[] | number
     [IPC_CHANNELS.POPUP_BLOCKER]: [string[], string[]]
     [IPC_CHANNELS.FIND]: {
         text: string

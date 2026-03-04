@@ -1,6 +1,5 @@
 /* Models */
 import { Bookmarks } from '@main/store/bookmarks'
-import { BOOKMARK_TYPES } from '@src/common/constants'
 import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
@@ -20,7 +19,6 @@ export const getBookmarks = (path: string) => {
                     dir: true,
                     parent: '',
                     url: '',
-                    type: BOOKMARK_TYPES.BOOKMARK,
                 }) satisfies T_Bookmark,
         ),
         ...Object.values(store.get('items'))
@@ -29,7 +27,6 @@ export const getBookmarks = (path: string) => {
                 (item) =>
                     ({
                         ...item,
-                        type: BOOKMARK_TYPES.BOOKMARK,
                         dir: false,
                         parent: dirKeys.includes(item.parent || '')
                             ? item.parent

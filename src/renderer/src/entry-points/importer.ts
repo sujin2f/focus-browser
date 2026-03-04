@@ -14,7 +14,6 @@ import { Notification } from '@home/template-parts/notification'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
-    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -71,7 +70,7 @@ class Importer extends A_List<T_Cloud_Item> {
     private request(): void {
         this.setEnabled(false)
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
+            this.bookmarkStore.getAll((bookmarks) => {
                 this.keys.push(
                     ...bookmarks
                         .filter((item) => !item.dir)
@@ -141,18 +140,19 @@ class Importer extends A_List<T_Cloud_Item> {
                         return
                     }
                     this.currentRow = row
-                    ipcRenderer.send(
-                        IPC_CHANNELS.CLOUD,
-                        REQUEST_HANDLER.REMOVE,
-                        { item: data },
+                    const bookmark = JSON.parse(data.message!)
+                    this.bookmarkStore.add(
+                        {
+                            title: bookmark.title,
+                            url: bookmark.url,
+                        },
+                        () =>
+                            ipcRenderer.send(
+                                IPC_CHANNELS.CLOUD,
+                                REQUEST_HANDLER.REMOVE,
+                                { item: data },
+                            ),
                     )
-                    const bookmark = JSON.parse(atob(data.message!))
-                    this.bookmarkStore.add({
-                        id: '',
-                        type: BOOKMARK_TYPES.BOOKMARK,
-                        title: bookmark.title,
-                        url: bookmark.url,
-                    })
                 })
             }
         })

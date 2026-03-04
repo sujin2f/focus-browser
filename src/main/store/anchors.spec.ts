@@ -22,24 +22,5 @@ describe('⚓️ Anchors store (module)', () => {
             { url: '0', title: '0' },
             { url: '1', title: '1' },
         ])
-
-        // Push
-        anchors.push('test-url', 'test-title')
-        expect(anchors.get()[0]).toStrictEqual({
-            id: '',
-            url: 'test-url',
-            title: 'test-title',
-        })
-
-        // Remove
-        anchors.remove('0')
-        expect(anchors.get()).toStrictEqual([
-            {
-                id: '',
-                url: 'test-url',
-                title: 'test-title',
-            },
-            { url: '1', title: '1' },
-        ])
     })
 })

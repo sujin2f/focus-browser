@@ -3,6 +3,7 @@ import { net } from 'electron'
 import { SUJINC_URL } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item } from '@src/common/types'
+import { base64decode, base64encode } from '@src/common/utils/security-electron'
 
 export const fetchCloudItems = async (token: string, email: string) => {
     await net
@@ -11,10 +12,20 @@ export const fetchCloudItems = async (token: string, email: string) => {
             headers: { authorization: `Bearer ${token}`, email },
         })
         .then(async (response) => {
-            const body =
-                response.status === 404
-                    ? { error: `You don't have anything in the cloud.` }
-                    : await response.json()
+            if (response.status === 404) {
+                process.parentPort.postMessage({
+                    status: 404,
+                    body: { error: `You don't have anything in the cloud.` },
+                })
+                return
+            }
+            const body: { result: T_Cloud_Item[] } = await response.json()
+            body.result = body.result
+                .filter((item) => item.message)
+                .map((item) => ({
+                    ...item,
+                    message: base64decode(item.message!),
+                }))
             process.parentPort.postMessage({ status: response.status, body })
         })
         .catch((e) => {
@@ -37,9 +48,10 @@ export const uploadCloudItem = async (
         })
         return
     }
+
     const os = process.platform === 'darwin' ? 'mac' : process.platform
     const version = process.getSystemVersion()
-    const message = btoa(item.message)
+    const message = base64encode(item.message)
 
     await net
         .fetch(`${SUJINC_URL}/focus/item`, {

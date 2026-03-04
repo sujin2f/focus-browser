@@ -63,10 +63,10 @@ class History extends A_ListCloudPush<T_Bookmark> {
 
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
-                    this.handleResponse(history)
+                    if (Array.isArray(history)) this.handleResponse(history)
                     return
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    this.handleResponse(history)
+                    if (Array.isArray(history)) this.handleResponse(history)
                     this.notification.info('History cleared successfully!')
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
@@ -102,13 +102,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
                         REQUEST_HANDLER.EXECUTE,
-                        [
-                            {
-                                id: (length - 1 - index).toString(),
-                                url: '',
-                                title: '',
-                            },
-                        ],
+                        length - 1 - index,
                     )
                 })
                 .addClass('list--bookmarks__title')

@@ -6,6 +6,10 @@ export class ListItem extends A_Element<HTMLDivElement> {
     }
 
     public set title(title: string | HTMLElement) {
+        if (!this.element) {
+            this._title = title
+            return
+        }
         this.element.querySelector('h3')!.textContent = ''
         this.element.querySelector('h3')!.append(title)
     }

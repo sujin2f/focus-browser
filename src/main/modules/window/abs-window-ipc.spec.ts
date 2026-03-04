@@ -43,7 +43,6 @@ import {
     IPC_CHANNELS,
     CENTRE_PAGES,
     BROWSER,
-    BOOKMARK_TYPES,
 } from '@src/common/constants'
 
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
@@ -52,7 +51,7 @@ import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
-    addCentreItem(_: BOOKMARK_TYPES): void {}
+    addCentreItem(_: 'bookmark' | 'anchor'): void {}
     focusFindInPage(_: string, __: boolean): void {}
     findInPage(_: string, __: boolean): void {}
     stopFindInPage(): void {}
@@ -146,7 +145,7 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
     })
 
     test('onHistory > move to index', () => {
-        ipc[2][1](null, REQUEST_HANDLER.EXECUTE, [{ id: '2' }])
+        ipc[2][1](null, REQUEST_HANDLER.EXECUTE, 2)
         expect(switchFn).toHaveBeenCalledWith({ scene: BROWSER })
         expect(goToIndex).toHaveBeenCalledWith(2)
     })

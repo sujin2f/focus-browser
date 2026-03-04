@@ -18,7 +18,6 @@ import type { T_Shortcut_Store } from '@src/common/types'
 import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
-    BOOKMARK_TYPES,
     BROWSER,
     CENTRE_PAGES,
     EMOJI,
@@ -35,7 +34,7 @@ class Welcome extends A_List<T_Bookmark> {
         // 🔖 Bookmark
         super('list--welcome')
         this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
+            this.bookmarkStore.getAll((bookmarks) => {
                 if (!bookmarks || !bookmarks.length) {
                     this.requestBookmarks()
                     return
@@ -98,12 +97,9 @@ class Welcome extends A_List<T_Bookmark> {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
                 this.bookmarkStore.add(reverse, () =>
-                    this.bookmarkStore.getAll(
-                        BOOKMARK_TYPES.BOOKMARK,
-                        (bookmarks) => {
-                            this.arrangeBookmarks(bookmarks)
-                        },
-                    ),
+                    this.bookmarkStore.getAll((bookmarks) => {
+                        this.arrangeBookmarks(bookmarks)
+                    }),
                 )
             }
         })

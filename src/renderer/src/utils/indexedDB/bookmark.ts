@@ -1,39 +1,24 @@
 /* Models */
 import { Abs_Database } from '@home/utils/indexedDB/abs-database'
 import { Logger } from '@src/common/logger'
-/* Utils */
-import { getSafeUrl } from '@src/common/utils/common'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types/store'
-/* CONSTANTS */
-import { BOOKMARK_TYPES } from '@src/common/constants'
+import type { T_Bookmark, T_Bookmark_Partial } from '@src/common/types/store'
 
 export class Bookmark extends Abs_Database<'bookmark'> {
     protected readonly STORE = 'bookmark'
 
-    public getAll(
-        type: BOOKMARK_TYPES,
-        callback: (result: T_Bookmark[]) => void,
-    ) {
+    public getAll(callback: (result: T_Bookmark[]) => void) {
         const store = this.getStore()
-        Logger.init().info(`indexedDB::Bookmark::set(getAll)`, store)
         // 🤬 DB does not exist
         if (!store) return
 
-        const index = store.index('type')
-        const request = index.getAll(type)
-        request.onsuccess = async () => {
-            Logger.init().info(`indexedDB::Bookmark::onsuccess`)
-            callback(request.result)
-        }
-        request.onerror = () => {
-            Logger.init().error('indexedDB::get() request.onerror')
-            callback([])
-        }
+        const request = store.getAll()
+        request.onsuccess = async () => callback(request.result)
+        request.onerror = () => callback([])
     }
 
     public add(
-        bookmarks: T_Bookmark | T_Bookmark[],
+        bookmarks: T_Bookmark | T_Bookmark_Partial | T_Bookmark_Partial[],
         callback?: (result?: boolean) => void,
     ) {
         const tx = this.getTransaction('readwrite')
@@ -53,26 +38,16 @@ export class Bookmark extends Abs_Database<'bookmark'> {
         }
     }
 
-    private forceAdd(bookmark: T_Bookmark, tx: IDBTransaction) {
-        if (bookmark.dir) {
-            tx.objectStore(this.STORE).add({
-                ...bookmark,
-                id: bookmark.id || window.crypto.randomUUID().toString(),
-            } satisfies T_Bookmark)
-            return
-        }
-
-        // 🤬 Prevent URL duplication
-        if (!getSafeUrl(bookmark.url)) return
-        const index = tx.objectStore(this.STORE).index('url')
-        const query = index.get(bookmark.url)
-        query.onsuccess = () => {
-            if (query.result) return
-            tx.objectStore(this.STORE).add({
-                ...bookmark,
-                id: bookmark.id || window.crypto.randomUUID().toString(),
-            } satisfies T_Bookmark)
-        }
+    private forceAdd(
+        bookmark: T_Bookmark | T_Bookmark_Partial,
+        tx: IDBTransaction,
+    ) {
+        tx.objectStore(this.STORE).add({
+            ...bookmark,
+            id:
+                (bookmark as T_Bookmark).id ||
+                window.crypto.randomUUID().toString(),
+        })
     }
 
     public update(bookmark: T_Bookmark, callback?: (result: boolean) => void) {
@@ -92,32 +67,13 @@ export class Bookmark extends Abs_Database<'bookmark'> {
         }
     }
 
-    public removeAll(
-        type: BOOKMARK_TYPES,
-        callback: (result: boolean) => void,
-    ) {
-        const tx = this.getTransaction('readwrite')
-        // 🤬 DB does not exist
-        if (!tx) return
-
-        this.getAll(type, (bookmarks) => {
-            bookmarks.forEach((bookmark) => {
-                if (bookmark.uid) this.remove(bookmark.uid)
-            })
-        })
-
-        tx.oncomplete = () => {
-            if (callback) callback(true)
-        }
-    }
-
-    public remove(id: number, callback?: (result: boolean) => void): void {
-        Logger.init().info(`indexedDB::Bookmark::remove(${id})`)
+    public remove(uid: number, callback?: (result: boolean) => void): void {
+        Logger.init().info(`indexedDB::Bookmark::remove(${uid})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
 
-        const mutation = store.delete(id)
+        const mutation = store.delete(uid)
         mutation.onsuccess = () => {
             Logger.init().info('indexedDB::Bookmark::remove() done')
             if (callback) callback(true)

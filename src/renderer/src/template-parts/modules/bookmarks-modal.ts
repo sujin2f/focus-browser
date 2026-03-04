@@ -9,7 +9,6 @@ import { Option } from '@home/template-parts/option'
 import type { T_Bookmark } from '@src/common/types/store'
 /* Models */
 import { Bookmark } from '@home/utils/indexedDB/bookmark'
-import { BOOKMARK_TYPES } from '@src/common/constants'
 
 export class BookmarkModal extends Modal {
     private bookmark?: T_Bookmark
@@ -145,7 +144,6 @@ export class BookmarkModal extends Modal {
                         url,
                         parent,
                         shortcut: this.shortcut.value,
-                        type: BOOKMARK_TYPES.BOOKMARK,
                     },
                     () => window.location.reload(),
                 ),
@@ -158,12 +156,10 @@ export class BookmarkModal extends Modal {
         store.ready(() =>
             store.add(
                 {
-                    id: '',
                     title: this.title.value,
                     url,
                     parent,
                     shortcut: this.shortcut.value,
-                    type: BOOKMARK_TYPES.BOOKMARK,
                 },
                 () => window.location.reload(),
             ),

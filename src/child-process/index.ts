@@ -1,4 +1,3 @@
-import { net } from 'electron'
 /* Utils */
 import { removeDirectory } from '@src/common/utils/fs'
 /* Models */
@@ -54,9 +53,6 @@ process.parentPort.once('message', (e) => {
         }
 
         case 'test': {
-            console.log(net)
-            // const userData = app.getPath('userData')
-            // process.parentPort.postMessage(userData)
             return
         }
     }

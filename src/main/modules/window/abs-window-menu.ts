@@ -16,7 +16,6 @@ import {
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
-    BOOKMARK_TYPES,
 } from '@src/common/constants'
 /* Models */
 import { Shortcut } from '@main/store/shortcut'
@@ -139,13 +138,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADD_BOOKMARK]: {
                 accelerator: this.getShortcut(Menu.ADD_BOOKMARK),
                 click: () => {
-                    this.addCentreItem(BOOKMARK_TYPES.BOOKMARK)
+                    this.addCentreItem('bookmark')
                 },
             },
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    this.addCentreItem(BOOKMARK_TYPES.ANCHOR)
+                    this.addCentreItem('anchor')
                 },
             },
         }
@@ -397,11 +396,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             { type: 'separator' },
             {
                 label: 'Add Bookmark',
-                click: () => this.addCentreItem(BOOKMARK_TYPES.BOOKMARK),
+                click: () => this.addCentreItem('bookmark'),
             },
             {
                 label: 'Add Anchor',
-                click: () => this.addCentreItem(BOOKMARK_TYPES.ANCHOR),
+                click: () => this.addCentreItem('anchor'),
             },
             {
                 label: 'Control Centre',
@@ -484,5 +483,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract focusFindInPage(text: string, forward: boolean): void
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
     abstract stopFindInPage(): void
-    abstract addCentreItem(type: BOOKMARK_TYPES): void
+    abstract addCentreItem(type: 'bookmark' | 'anchor'): void
 }

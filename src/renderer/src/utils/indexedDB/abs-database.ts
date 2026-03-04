@@ -5,7 +5,7 @@ import type { T_Stores } from '@src/common/types/store'
 
 export abstract class Abs_Database<T extends keyof T_Stores> {
     private readonly DB_NAME = 'focus'
-    private readonly VERSION = 2
+    private readonly VERSION = 1
     protected readonly STORE!: T
     public static DATABASE?: IDBDatabase
     public static INITIALIZED = false
@@ -50,9 +50,14 @@ export abstract class Abs_Database<T extends keyof T_Stores> {
                     autoIncrement: true,
                 },
             )
-            bookmark.createIndex('id', 'id', { unique: true })
             bookmark.createIndex('url', 'url', { unique: false })
-            bookmark.createIndex('type', 'type', { unique: false })
+
+            // ⚓️ Anchor
+            const anchor = Abs_Database.DATABASE.createObjectStore('anchor', {
+                keyPath: 'uid',
+                autoIncrement: true,
+            })
+            anchor.createIndex('url', 'url', { unique: true })
         }
     }
 

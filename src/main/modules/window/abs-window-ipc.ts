@@ -193,7 +193,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     private onHistory(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
-        history: T_Bookmark[],
+        history: T_Bookmark[] | number,
     ) {
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
@@ -206,12 +206,11 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 )
                 return
             }
-
             case REQUEST_HANDLER.EXECUTE:
+                // 🤬 Invalid request
+                if (typeof history !== 'number') return
                 this.switch({ scene: BROWSER })
-                this.browser.webContents.navigationHistory.goToIndex(
-                    parseInt(history[0].id),
-                )
+                this.browser.webContents.navigationHistory.goToIndex(history)
                 return
 
             case REQUEST_HANDLER.REMOVE:

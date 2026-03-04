@@ -48,6 +48,8 @@ export const removeDirectory = (dir: string) => {
     const files = fs.readdirSync(dir, { withFileTypes: true })
     files.forEach((file) => {
         const dest = `${file.parentPath}/${file.name}`
+        // Local data
+        if (!file.name.startsWith('file__')) return
         if (file.isDirectory()) {
             fs.rmSync(dest, { recursive: true, force: true })
         } else {

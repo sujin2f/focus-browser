@@ -7,17 +7,16 @@ import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
-    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types/store'
+import type { T_Anchor } from '@src/common/types/store'
 import { Logger } from '@src/common/logger'
 
-class Anchors extends A_ListCloudPush<T_Bookmark> {
+class Anchors extends A_ListCloudPush<T_Anchor> {
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
@@ -27,8 +26,8 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
     }
 
     private initStore() {
-        this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll(BOOKMARK_TYPES.ANCHOR, (anchors) => {
+        this.anchorStore.ready(() => {
+            this.anchorStore.getAll((anchors) => {
                 if (!anchors || !anchors.length) {
                     this.requestAnchors()
                     return
@@ -39,7 +38,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         })
     }
 
-    private arrangeAnchors(anchors: T_Bookmark[]) {
+    private arrangeAnchors(anchors: T_Anchor[]) {
         this.items = []
 
         anchors.forEach((anchor) =>
@@ -50,7 +49,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
         this.setEnabled(true)
     }
 
-    protected filterList(item: T_Bookmark, keyword: string): boolean {
+    protected filterList(item: T_Anchor, keyword: string): boolean {
         return item.title.toLowerCase().includes(keyword)
     }
 
@@ -73,10 +72,9 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
             Logger.init().info(anchors)
             if (anchors && Array.isArray(anchors)) {
                 const reverse = [...anchors].reverse()
-                this.bookmarkStore.add(reverse, () =>
-                    this.bookmarkStore.getAll(
-                        BOOKMARK_TYPES.ANCHOR,
-                        (anchors) => this.arrangeAnchors(anchors),
+                this.anchorStore.add(reverse, () =>
+                    this.anchorStore.getAll((anchors) =>
+                        this.arrangeAnchors(anchors),
                     ),
                 )
             }
@@ -97,7 +95,7 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                     .appendTo(this.list.element)
                     .setOnClick(() => {
                         if (this.enabled && anchor.uid) {
-                            this.bookmarkStore.remove(anchor.uid, () =>
+                            this.anchorStore.remove(anchor.uid, () =>
                                 navigate(anchor.url),
                             )
                         }

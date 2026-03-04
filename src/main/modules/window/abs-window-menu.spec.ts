@@ -119,16 +119,6 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         })
     })
 
-    test('stop', async () => {
-        const menuItem =
-            process.platform === 'darwin'
-                ? menu[3].submenu[8]
-                : menu[3].submenu[8]
-
-        menuItem.click()
-        expect(mockStop).toHaveBeenCalled()
-    })
-
     test('full screen', async () => {
         const menuItem =
             process.platform === 'darwin'
@@ -189,11 +179,12 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
         expect(goForward).toHaveBeenCalled()
     })
 
-    test('stop', async () => {
+    test('navigate > stop', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[3].submenu[8]
-                : menu[3].submenu[8]
+                ? menu[3].submenu[10]
+                : menu[3].submenu[10]
+
         menuItem.click()
         expect(mockStop).toHaveBeenCalled()
     })
@@ -201,8 +192,8 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
     test('reload', async () => {
         const menuItem =
             process.platform === 'darwin'
-                ? menu[3].submenu[9]
-                : menu[3].submenu[9]
+                ? menu[3].submenu[11]
+                : menu[3].submenu[11]
 
         menuItem.click()
         expect(winReload).toHaveBeenCalled()

@@ -291,7 +291,7 @@ export class BrowserWindow extends AbsWindowIPC {
             url: this.browser.webContents.getURL(),
         } satisfies T_Bookmark_Partial)
 
-        // TODO Notification to IPC
+        // TODO #158 Notification via IPC
         const notification = new Notification({
             title: 'Focus',
             body:

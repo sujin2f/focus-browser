@@ -7,6 +7,7 @@ import { paths } from '@src/common/utils/fs'
 import type { T_IPC_Message } from '@src/common/types'
 /* Models */
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
+import { Logger } from '@src/common/logger'
 
 export class CenterView extends AbsContentsView {
     public set scene(scene: CENTRE_PAGES) {
@@ -44,6 +45,11 @@ export class CenterView extends AbsContentsView {
             },
         })
         this.scene = CENTRE_PAGES.WELCOME
+
+        // TODO #151 Context Menu
+        this.webContents.on('context-menu', (_, params) => {
+            Logger.init().info(params)
+        })
     }
 
     public send<T extends keyof T_IPC_Message>(

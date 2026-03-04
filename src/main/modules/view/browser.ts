@@ -89,6 +89,10 @@ export class BrowserView extends AbsContentsView {
                     params,
                 )
             })
+            // TODO #156 Gesture Navigation
+            .on('input-event', (_, __) => {
+                // Logger.init().info(event)
+            })
 
         this.webContents.setZoomFactor(1)
     }
@@ -394,5 +398,16 @@ export class BrowserView extends AbsContentsView {
             width: bounds.width,
             height: bounds.height,
         })
+    }
+
+    public scroll(type: 'top' | 'bottom') {
+        // 🤬 Not Active
+        if (!this.active) return
+
+        if (type === 'top') {
+            this.webContents.scrollToTop()
+            return
+        }
+        this.webContents.scrollToBottom()
     }
 }

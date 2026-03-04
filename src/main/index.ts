@@ -19,7 +19,7 @@ app.whenReady()
     .then(() => {
         Menu.setApplicationMenu(null)
         const window = new BrowserWindow()
-        // TODO to settings
+        // TODO #96 to settings
         window.setAutoHideMenuBar(true)
 
         app.on('activate', () => {

@@ -99,6 +99,8 @@ export enum Menu {
     BACK_HIDDEN = 'Address Back',
     FORWARD = 'Forward',
     FORWARD_HIDDEN = 'Address Forward',
+    PAGE_TOP = 'Scroll to Top',
+    PAGE_BOTTOM = 'Scroll to Bottom',
     STOP = 'Stop',
     RELOAD = 'Reload',
     MINIMIZE = 'Minimize',
@@ -257,6 +259,14 @@ export const DEFAULT_SHORTCUTS: Record<Menu, Record<SystemType, string>> = {
     [Menu.FORWARD]: {
         [SystemType.DARWIN]: 'Command+]',
         [SystemType.DEFAULT]: 'Control+]',
+    },
+    [Menu.PAGE_TOP]: {
+        [SystemType.DARWIN]: 'Command+Up',
+        [SystemType.DEFAULT]: 'Control+Up',
+    },
+    [Menu.PAGE_BOTTOM]: {
+        [SystemType.DARWIN]: 'Command+Down',
+        [SystemType.DEFAULT]: 'Control+Down',
     },
     [Menu.RELOAD]: {
         [SystemType.DARWIN]: 'Command+R',

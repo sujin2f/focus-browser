@@ -71,7 +71,7 @@ export const getSafeUrl = (text: string): URL | false | undefined => {
 export const fetchFavicon = async (_url: string): Promise<[string, string]> => {
     const url = getSafeUrl(_url)
     // 🤬 URL is not valid
-    if (!url) throw new Error(`URL is not valid: ${_url}`) // TODO Log & Error
+    if (!url) throw new Error(`URL is not valid: ${_url}`)
 
     const host = url.hostname
     const origin = `${url.protocol}//${host}`

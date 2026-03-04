@@ -218,6 +218,18 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                         })
                 },
             },
+            [Menu.PAGE_TOP]: {
+                accelerator: this.getShortcut(Menu.PAGE_TOP),
+                click: () => {
+                    this.browser.scroll('top')
+                },
+            },
+            [Menu.PAGE_BOTTOM]: {
+                accelerator: this.getShortcut(Menu.PAGE_BOTTOM),
+                click: () => {
+                    this.browser.scroll('bottom')
+                },
+            },
             [Menu.s0002]: {},
             [Menu.STOP]: {
                 accelerator: this.getShortcut(Menu.STOP),

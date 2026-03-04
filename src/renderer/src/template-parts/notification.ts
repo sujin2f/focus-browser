@@ -8,7 +8,7 @@ export class Notification extends A_Element<HTMLElement> {
     }
 
     private showNotification(message: string) {
-        Logger.getInstance().log(message)
+        Logger.init().log(message)
         const notification = this.select('notification')
         notification.innerHTML = message
         notification.classList.remove('notification')

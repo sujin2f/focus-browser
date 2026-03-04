@@ -30,14 +30,10 @@ export const isNatural = (arg: number) => {
 
 export const byteToSize = (byte: number): string => {
     const mb = 1024 * 1024
-    if (byte < mb) {
-        return `${byte} bytes`
-    } else if (byte < mb * 1024) {
-        const size = byte / mb
-        return `${size.toFixed(2)} Mb`
-    }
-    const size = byte / (mb * 1024)
-    return `${size.toFixed(2)} Gb`
+    if (byte < mb) return `${byte} bytes`
+    const gb = mb * 1024
+    if (byte < gb) return `${(byte / mb).toFixed(2)} Mb`
+    return `${(byte / gb).toFixed(2)} Gb`
 }
 
 /**
@@ -47,9 +43,8 @@ export const byteToSize = (byte: number): string => {
  */
 export const getSafeUrl = (text: string): URL | false | undefined => {
     const trimmed = text.trim()
-    if (!text || !trimmed) {
-        return
-    }
+    // 🤬 Text does not exist
+    if (!text || !trimmed) return
 
     // A regular expression to check if a schema (e.g., 'http://', 'https://', 'ftp://') is present.
     const hasSchema = /^[a-z]+:\/\//i.test(trimmed)
@@ -58,13 +53,13 @@ export const getSafeUrl = (text: string): URL | false | undefined => {
     try {
         url = new URL(hasSchema ? trimmed : `http://${trimmed}`)
     } catch {
-        // Not URL
+        // 🤬 Not URL
         return false
     }
 
-    if (!url.hostname.includes('localhost') && !url.hostname.includes('.')) {
+    // 🤬 URL is not valid
+    if (!url.hostname.includes('localhost') && !url.hostname.includes('.'))
         return false
-    }
     return url
 }
 

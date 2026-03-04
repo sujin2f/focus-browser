@@ -37,7 +37,7 @@ export abstract class A_List<T> extends A_Entry {
     protected onDirectoryClick(id: string) {
         const data = this.dirs[id]
         if (!data) {
-            Logger.getInstance().error('Clicked Dir does not exist.')
+            Logger.init().error('Clicked Dir does not exist.')
             return
         }
 
@@ -60,7 +60,9 @@ export abstract class A_List<T> extends A_Entry {
     protected getFaviconColumn(url: string) {
         const icon = new ListItem(EMOJI.GLOBE)
         this.faviconStore.get(url, (favicon) => {
+            // 🤬 Invalid
             if (!favicon) return
+
             const image = document.createElement('img')
             image.src = favicon.image
             image.width = 20

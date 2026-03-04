@@ -18,7 +18,7 @@ export const responseBookmarks = (centre: CenterView) => {
         path: app.getPath('userData'),
     })
     child.once('message', (message) => {
-        Logger.getInstance().log(
+        Logger.init().log(
             '👶',
             'Bookmark list request finished',
             message.length,

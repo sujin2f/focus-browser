@@ -18,7 +18,7 @@ interface I_Logger {
 export class Logger {
     // Singleton instance
     static instance: Logger
-    static getInstance(): Logger {
+    static init(): Logger {
         if (!Logger.instance) Logger.instance = new Logger()
         return Logger.instance
     }

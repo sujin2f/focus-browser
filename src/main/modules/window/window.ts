@@ -11,6 +11,7 @@ import {
     FIND,
     IPC_CHANNELS,
     REQUEST_HANDLER,
+    BOOKMARK_TYPES,
 } from '@src/common/constants'
 /* Models */
 import { History } from '@main/store/history'
@@ -82,7 +83,7 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     constructor(options?: BaseWindowConstructorOptions) {
-        Logger.getInstance().log('BrowserWindow::constructor()')
+        Logger.init().log('BrowserWindow::constructor()')
         super(options)
         const status = Status.getInstance()
         const bounds = status.getBounds(this.getBounds())
@@ -112,7 +113,7 @@ export class BrowserWindow extends AbsWindowIPC {
 
         this.browser.webContents
             .on('found-in-page', (_, result) => {
-                Logger.getInstance().log('found-in-page result', result)
+                Logger.init().log('found-in-page result', result)
                 this.find.setMatched(result.matches, result.activeMatchOrdinal)
             })
             .on('dom-ready', () => {
@@ -133,7 +134,7 @@ export class BrowserWindow extends AbsWindowIPC {
      * Switch Scene
      */
     public switch(request: T_IPC_Switch) {
-        Logger.getInstance().log('Switch: ', request)
+        Logger.init().log('Switch: ', request)
 
         // 🤬 Find cannot set in Centre mode
         if (this._view === VIEWS.CENTRE && request.scene === FIND) return
@@ -144,11 +145,7 @@ export class BrowserWindow extends AbsWindowIPC {
             return
         }
 
-        Logger.getInstance().log(
-            'Switched to Browser: ',
-            this.browser.url,
-            request,
-        )
+        Logger.init().log('Switched to Browser: ', this.browser.url, request)
 
         if (request.searchEngine || !this.browser.url) {
             this.browser.searchKeyword('')
@@ -177,13 +174,13 @@ export class BrowserWindow extends AbsWindowIPC {
 
         // Save history
         if (this.browser && this.browser.webContents) {
-            Logger.getInstance().log('Save history')
+            Logger.init().log('Save history')
 
             const entries = this.browser.webContents.navigationHistory
             const maxHistory = status.get('maxHistory')
 
-            Logger.getInstance().log('entries.length', entries.length())
-            Logger.getInstance().log('maxHistory', maxHistory)
+            Logger.init().log('entries.length', entries.length())
+            Logger.init().log('maxHistory', maxHistory)
 
             new History().save(entries, maxHistory)
         }
@@ -233,13 +230,13 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     focusFindInPage(text: string, forward: boolean) {
-        Logger.getInstance().log(`focusFindInPage('${text}', ${forward})`)
+        Logger.init().log(`focusFindInPage('${text}', ${forward})`)
         this.find.focus()
         this.findInPage(text, forward)
     }
 
     findInPage(text: string, forward: boolean, reset?: boolean) {
-        Logger.getInstance().log(`findInPage('${text}', ${forward})`)
+        Logger.init().log(`findInPage('${text}', ${forward})`)
         if (this._view !== VIEWS.FIND) {
             this.find.focus()
         }
@@ -280,7 +277,11 @@ export class BrowserWindow extends AbsWindowIPC {
         this.view = VIEWS.BROWSER
     }
 
-    private addCentreItems(type: 'bookmark' | 'anchor') {
+    /**
+     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
+     * only when the push succeeds. Notification click switches to bookmark page.
+     */
+    public addCentreItem(type: BOOKMARK_TYPES) {
         // 🤬 Not Active
         if (this._view === VIEWS.CENTRE) return
 
@@ -293,7 +294,10 @@ export class BrowserWindow extends AbsWindowIPC {
 
         const notification = new Notification({
             title: 'Focus',
-            body: 'Bookmarked',
+            body:
+                type === BOOKMARK_TYPES.BOOKMARK
+                    ? 'New Bookmark Added'
+                    : 'New Anchor Added',
             silent: true,
         })
         // Clicking the notification navigates to the bookmark page
@@ -306,16 +310,5 @@ export class BrowserWindow extends AbsWindowIPC {
             })
         })
         notification.show()
-    }
-
-    /**
-     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
-     * only when the push succeeds. Notification click switches to bookmark page.
-     */
-    public addBookmark() {
-        this.addCentreItems('bookmark')
-    }
-    public addAnchor() {
-        this.addCentreItems('anchor')
     }
 }

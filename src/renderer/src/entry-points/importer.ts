@@ -14,6 +14,7 @@ import { Notification } from '@home/template-parts/notification'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -110,10 +111,9 @@ class Importer extends A_List<T_Cloud_Item> {
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
                     this.setEnabled(true)
-                    Logger.getInstance().error(response)
-                    if (response?.message) {
+                    Logger.init().error(response)
+                    if (response?.message)
                         this.notification.error(response.message)
-                    }
                     return
             }
         })
@@ -149,7 +149,7 @@ class Importer extends A_List<T_Cloud_Item> {
                     const bookmark = JSON.parse(atob(data.message!))
                     this.bookmarkStore.add({
                         id: '',
-                        type: 'bookmark',
+                        type: BOOKMARK_TYPES.BOOKMARK,
                         title: bookmark.title,
                         url: bookmark.url,
                     })

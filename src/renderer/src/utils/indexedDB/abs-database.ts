@@ -13,11 +13,10 @@ export abstract class Abs_Database<T extends keyof T_Stores> {
 
     constructor() {
         const request = window.indexedDB.open(this.DB_NAME, this.VERSION)
-        request.onerror = () =>
-            Logger.getInstance().error('Error loading database.')
+        request.onerror = () => Logger.init().error('Error loading database.')
 
         request.onsuccess = () => {
-            Logger.getInstance().info('Abs_Database::onsuccess.')
+            Logger.init().info('Abs_Database::onsuccess.')
             Abs_Database.DATABASE = request.result
             if (this.readyCallback) {
                 this.readyCallback()
@@ -31,17 +30,19 @@ export abstract class Abs_Database<T extends keyof T_Stores> {
             Abs_Database.INITIALIZED = true
 
             const database = (e.target as IDBOpenDBRequest).result
-            Logger.getInstance().log('request.onupgradeneeded', database)
+            Logger.init().log('request.onupgradeneeded', database)
             // 🤬 DB does not exist
             if (!database) return
 
             Abs_Database.DATABASE = database
 
+            // 🅕 Favicon
             const favicon = Abs_Database.DATABASE.createObjectStore('favicon', {
                 keyPath: 'host',
             })
             favicon.createIndex('timestamp', 'timestamp', { unique: false })
 
+            // 🔖 Bookmark
             const bookmark = Abs_Database.DATABASE.createObjectStore(
                 'bookmark',
                 {

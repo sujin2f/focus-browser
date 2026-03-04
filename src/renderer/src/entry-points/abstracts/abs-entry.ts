@@ -35,7 +35,7 @@ export abstract class A_Entry {
     }
 
     protected requestStatus(...keys: (keyof T_Status_Props)[]) {
-        Logger.getInstance().log(`requestStatus ${JSON.stringify(keys)}`)
+        Logger.init().log(`requestStatus ${JSON.stringify(keys)}`)
 
         ipcRenderer.once(
             IPC_CHANNELS.STATUS,
@@ -43,9 +43,7 @@ export abstract class A_Entry {
                 if (handler !== REQUEST_HANDLER.RESPONSE) {
                     return
                 }
-                Logger.getInstance().info(
-                    `Get status ${JSON.stringify(status)}`,
-                )
+                Logger.init().info(`Get status ${JSON.stringify(status)}`)
                 this.settings = { ...this.settings, ...status.data }
             },
         )
@@ -63,10 +61,9 @@ export abstract class A_Entry {
             switch (handler) {
                 case REQUEST_HANDLER.REQUEST:
                     this.faviconStore.get(response[0], (image) => {
-                        if (image) {
-                            this.faviconStore.update(image)
-                            return
-                        }
+                        // 😃 Already exist
+                        if (image) return
+
                         ipcRenderer.send(
                             IPC_CHANNELS.FAVICON,
                             REQUEST_HANDLER.RESPONSE_FAIL,
@@ -75,11 +72,10 @@ export abstract class A_Entry {
                     })
                     return
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    Logger.getInstance().info(
-                        'FAVICON RESPONSE_SUCCESS',
-                        response,
-                    )
+                    Logger.init().info('FAVICON RESPONSE_SUCCESS', response)
+                    // 🤬 Invalid
                     if (!response[0] || !response[1]) return
+
                     this.faviconStore.add({
                         host: response[0],
                         image: response[1],
@@ -91,15 +87,11 @@ export abstract class A_Entry {
 
         // 🔖 Bookmark
         ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, response) => {
+            // 🤬 Invalid
             if (!response) return
 
-            switch (handler) {
-                case REQUEST_HANDLER.ADD: {
-                    if (Array.isArray(response)) return
-                    this.bookmarkStore.add(response)
-                    return
-                }
-            }
+            if (handler === REQUEST_HANDLER.ADD && !Array.isArray(response))
+                this.bookmarkStore.add(response)
         })
     }
 }

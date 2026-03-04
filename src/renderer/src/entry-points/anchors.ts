@@ -19,9 +19,8 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
-        // this.requestAnchors()
         this.initStore()
-        // Title
+
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
     }
 
@@ -41,9 +40,9 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
     private arrangeAnchors(anchors: T_Bookmark[]) {
         this.items = []
 
-        anchors.forEach((anchor) => {
-            this.items.push({ data: anchor, items: [] })
-        })
+        anchors.forEach((anchor) =>
+            this.items.push({ data: anchor, items: [] }),
+        )
 
         this.renderList()
         this.setEnabled(true)
@@ -72,22 +71,10 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
             if (anchors && Array.isArray(anchors)) {
                 const reverse = [...anchors].reverse()
                 reverse.forEach((anchor) => this.bookmarkStore.add(anchor))
-                this.bookmarkStore.getAll('anchor', (anchors) => {
-                    this.arrangeAnchors(anchors)
-                })
+                this.bookmarkStore.getAll('anchor', (anchors) =>
+                    this.arrangeAnchors(anchors),
+                )
             }
-
-            // Logger.getInstance().info('Anchor list response got', anchors)
-            //     this.setEnabled(true)
-            //     switch (handler) {
-            //         case REQUEST_HANDLER.RESPONSE_SUCCESS:
-            //             this.items = anchors.map((bookmark) => ({
-            //                 data: bookmark,
-            //                 items: [] as ListItem[],
-            //             }))
-            //             this.renderList()
-            //             return
-            //     }
         })
     }
 

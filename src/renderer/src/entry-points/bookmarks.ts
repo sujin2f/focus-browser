@@ -93,10 +93,8 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     private initSearch() {
         this.search.setOnKeyUp((e) => {
-            // Allow standard location only
-            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
-                return
-            }
+            // 🤬 Allow standard location only
+            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) return
 
             // For non-English keyboard, extract English key stroke from KeyboardEvent
             if (e.code.startsWith('Key')) {
@@ -106,10 +104,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             }
 
             const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
-            if (shortcut) {
-                navigate(shortcut)
-                return true
-            }
+            if (shortcut) navigate(shortcut)
         })
     }
 
@@ -125,9 +120,9 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                     dir: [],
                     items: [],
                 }
-            } else {
-                this.items.push({ data: bookmark, items: [] })
+                return
             }
+            this.items.push({ data: bookmark, items: [] })
         })
 
         this.setShortcuts()
@@ -203,20 +198,16 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
             if (!parent) {
                 const icon = this.getFaviconColumn(item.data.url).setOnClick(
-                    () => {
-                        navigate(item.data.url)
-                    },
+                    () => navigate(item.data.url),
                 )
                 title.addClass('list--bookmarks__title--dir')
                 columns.push(icon, title)
             } else {
-                const icon1 = new ListItem('').setOnClick(() => {
-                    navigate(item.data.url)
-                })
+                const icon1 = new ListItem('').setOnClick(() =>
+                    navigate(item.data.url),
+                )
                 const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
-                    () => {
-                        navigate(item.data.url)
-                    },
+                    () => navigate(item.data.url),
                 )
                 columns.push(icon1, icon2, title)
             }

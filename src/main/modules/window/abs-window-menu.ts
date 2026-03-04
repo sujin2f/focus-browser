@@ -16,6 +16,7 @@ import {
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
+    BOOKMARK_TYPES,
 } from '@src/common/constants'
 /* Models */
 import { Shortcut } from '@main/store/shortcut'
@@ -138,13 +139,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADD_BOOKMARK]: {
                 accelerator: this.getShortcut(Menu.ADD_BOOKMARK),
                 click: () => {
-                    this.addBookmark()
+                    this.addCentreItem(BOOKMARK_TYPES.BOOKMARK)
                 },
             },
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    this.addAnchor()
+                    this.addCentreItem(BOOKMARK_TYPES.ANCHOR)
                 },
             },
         }
@@ -184,7 +185,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                             }
                         })
                         .catch((e) => {
-                            Logger.getInstance().error(
+                            Logger.init().error(
                                 `Menu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
                             )
                         })
@@ -212,7 +213,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                             }
                         })
                         .catch((e) => {
-                            Logger.getInstance().error(
+                            Logger.init().error(
                                 `Menu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
                             )
                         })
@@ -302,10 +303,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     }
 
     private getShortcut(menu: Menu): string {
-        const shortcut = this.shortcuts && this.shortcuts.getShortcut(menu)
-        if (shortcut) {
-            return shortcut
-        }
+        if (!this.shortcuts) this.shortcuts = new Shortcut()
+        const shortcut = this.shortcuts.getShortcut(menu)
+        if (shortcut) return shortcut
 
         const system =
             process.platform === 'darwin'
@@ -323,14 +323,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
         this.resetMenu()
-
         this.shortcuts = new Shortcut()
     }
 
     protected resetMenu() {
         // Retrieve persisted menu config and attach callbacks for actions
         const data = this.menuItems
-        this.shortcuts = undefined
         const menu: MenuItemConstructorOptions[] = []
 
         // Convert stored MenuBlock into Electron MenuItemConstructorOptions[]
@@ -399,11 +397,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             { type: 'separator' },
             {
                 label: 'Add Bookmark',
-                click: () => this.addBookmark(),
+                click: () => this.addCentreItem(BOOKMARK_TYPES.BOOKMARK),
             },
             {
                 label: 'Add Anchor',
-                click: () => this.addAnchor(),
+                click: () => this.addCentreItem(BOOKMARK_TYPES.ANCHOR),
             },
             {
                 label: 'Control Centre',
@@ -486,6 +484,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract focusFindInPage(text: string, forward: boolean): void
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
     abstract stopFindInPage(): void
-    abstract addBookmark(): void
-    abstract addAnchor(): void
+    abstract addCentreItem(type: BOOKMARK_TYPES): void
 }

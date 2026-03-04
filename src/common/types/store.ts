@@ -1,4 +1,5 @@
 import type { NavigationEntry } from 'electron'
+import { BOOKMARK_TYPES } from '@src/common/constants'
 
 export type T_Stores = {
     favicon: T_Favicon
@@ -14,7 +15,7 @@ export interface T_Bookmark extends NavigationEntry {
     shortcut?: string
     parent?: string
     dir?: boolean
-    type?: 'bookmark' | 'anchor'
+    type?: BOOKMARK_TYPES
 }
 
 // 🅕 Favicon

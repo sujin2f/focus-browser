@@ -79,9 +79,9 @@ class Welcome extends A_List<T_Bookmark> {
                     dir: [],
                     items: [],
                 }
-            } else {
-                this.items.push({ data: bookmark, items: [] })
+                return
             }
+            this.items.push({ data: bookmark, items: [] })
         })
 
         this.callbackRequestBookmarks()
@@ -96,7 +96,7 @@ class Welcome extends A_List<T_Bookmark> {
         ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
-                Logger.getInstance().info(reverse)
+                Logger.init().info(reverse)
                 reverse.forEach((bookmark) => this.bookmarkStore.add(bookmark))
                 this.bookmarkStore.getAll('bookmark', (bookmarks) => {
                     this.arrangeBookmarks(bookmarks)
@@ -115,13 +115,11 @@ class Welcome extends A_List<T_Bookmark> {
 
         // Dir
         Object.values(this.dirs).forEach((dir) => {
-            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
+            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() =>
+                this.onDirectoryClick(dir.data.id),
+            )
             const title = new ListItem(dir.data.title)
-                .setOnClick(() => {
-                    this.onDirectoryClick(dir.data.id)
-                })
+                .setOnClick(() => this.onDirectoryClick(dir.data.id))
                 .addClass(
                     'list--bookmarks__title',
                     'list--bookmarks__title--dir',
@@ -138,25 +136,19 @@ class Welcome extends A_List<T_Bookmark> {
                     : false
 
             const title = new ListItem(item.data.title)
-                .setOnClick(() => {
-                    navigate(item.data.url)
-                })
+                .setOnClick(() => navigate(item.data.url))
                 .addClass('list--bookmarks__title')
 
             if (parent) {
                 const icon1 = new ListItem('')
                 const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
-                    () => {
-                        navigate(item.data.url)
-                    },
+                    () => navigate(item.data.url),
                 )
                 item.items.push(icon1, icon2, title)
                 this.dirs[parent].items.push(icon1, icon2, title)
             } else {
                 const icon = this.getFaviconColumn(item.data.url).setOnClick(
-                    () => {
-                        navigate(item.data.url)
-                    },
+                    () => navigate(item.data.url),
                 )
                 title.addClass('list--bookmarks__title--dir')
                 item.items.push(icon, title)
@@ -171,9 +163,7 @@ class Welcome extends A_List<T_Bookmark> {
 
         this.items.forEach((bookmark) => {
             bookmark.items.forEach((listItem) => {
-                if (bookmark.data.parent) {
-                    return
-                }
+                if (bookmark.data.parent) return
                 listItem.appendTo(this.list.element)
             })
         })
@@ -201,21 +191,17 @@ class Welcome extends A_List<T_Bookmark> {
             'Check out what to do',
         )
             .appendTo('grid')
-            .setOnClick(() => {
-                window.location.href = CENTRE_PAGES.HOME
-            })
+            .setOnClick(() => (window.location.href = CENTRE_PAGES.HOME))
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
-        if (e.key === 'Escape') {
-            navigate()
-        }
+        if (e.key === 'Escape') navigate()
     }
 
     protected callbackUpdateStatus() {
-        if (!this.settings.userInfo) {
-            return
-        }
+        // 🤬 Invalid
+        if (!this.settings.userInfo) return
+
         const userInfo = JSON.parse(this.settings.userInfo)
         new UserInfo().picture = userInfo.picture
     }

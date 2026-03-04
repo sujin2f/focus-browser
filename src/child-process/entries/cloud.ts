@@ -22,13 +22,13 @@ export const fetchCloudItems = (
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'fetch-cloud-items', token, email })
     child.once('message', (message) => {
-        Logger.getInstance().log(
+        Logger.init().log(
             '👶',
             `${SUJINC_URL}/focus/items responded with ${message.status}`,
         )
 
         if (message.body.error) {
-            Logger.getInstance().error(
+            Logger.init().error(
                 '👶',
                 `${SUJINC_URL}/focus/items failed with ${message.body.error}`,
             )
@@ -38,7 +38,7 @@ export const fetchCloudItems = (
             return
         }
 
-        Logger.getInstance().log(
+        Logger.init().log(
             '👶',
             `Sending items to renderer: (${message.body.result.length}) sample `,
             message.body.result[0],
@@ -57,13 +57,13 @@ export const uploadCloudItem = (
     item: T_Cloud_Item,
     token: string,
 ) => {
-    Logger.getInstance().log('👶', `uploadCloudItem() triggered`)
+    Logger.init().log('👶', `uploadCloudItem() triggered`)
 
     const child = utilityProcess.fork(paths.childProcess)
     const machineId = Status.getInstance().get('machineId')
     child.postMessage({ channel: 'upload-cloud-item', item, machineId, token })
     child.once('message', (message) => {
-        Logger.getInstance().log(
+        Logger.init().log(
             '👶',
             `${SUJINC_URL}/focus/item responded with ${message.status}`,
         )
@@ -88,7 +88,7 @@ export const removeCloudItem = (
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'remove-cloud-item', _id, token })
     child.once('message', (message) => {
-        Logger.getInstance().log(
+        Logger.init().log(
             '👶',
             `${SUJINC_URL}/focus/item responded with ${message.status}`,
         )

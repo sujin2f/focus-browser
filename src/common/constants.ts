@@ -341,3 +341,8 @@ export const EDITABLE_SHORTCUTS: Partial<Record<MenuCategory, Menu[]>> = {
         Menu.FORWARD_HIDDEN,
     ],
 }
+
+export enum BOOKMARK_TYPES {
+    BOOKMARK = 'bookmark',
+    ANCHOR = 'anchor',
+}

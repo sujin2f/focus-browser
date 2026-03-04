@@ -18,11 +18,7 @@ export const responseAnchors = (centre: CenterView) => {
         path: app.getPath('userData'),
     })
     child.once('message', (message) => {
-        Logger.getInstance().log(
-            '👶',
-            'Anchor list request finished',
-            message.length,
-        )
+        Logger.init().log('👶', 'Anchor list request finished', message.length)
         centre.send(IPC_CHANNELS.ANCHOR, REQUEST_HANDLER.RESPONSE, message)
         child.kill()
     })

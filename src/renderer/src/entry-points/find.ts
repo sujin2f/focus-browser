@@ -42,7 +42,7 @@ class Find {
         })
 
         ipcRenderer.on(IPC_CHANNELS.FIND, (_, args) => {
-            Logger.getInstance().log('Find renderer gets IPC', args)
+            Logger.init().log('Find renderer gets IPC', args)
             if (args?.reset) {
                 this.input.value = ''
                 this.found.innerHTML = ''

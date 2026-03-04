@@ -94,7 +94,7 @@ export class BrowserView extends AbsContentsView {
     }
 
     public backToBrowser() {
-        Logger.getInstance().log('backToBrowser()', this.initialized, this.url)
+        Logger.init().log('backToBrowser()', this.initialized, this.url)
 
         if (!this.initialized && this.url) {
             this.initialized = true
@@ -114,7 +114,7 @@ export class BrowserView extends AbsContentsView {
      * @param keyword URL to load or search string
      */
     public async loadURL(keyword: string) {
-        Logger.getInstance().log('loadURL', keyword)
+        Logger.init().log('loadURL', keyword)
 
         this.initialized = true
         const url = getSafeUrl(keyword)
@@ -132,7 +132,7 @@ export class BrowserView extends AbsContentsView {
         this.title = 'Loading...'
         await this.webContents.loadURL(url.toString()).catch((e) => {
             // TODO #50 for the network that needs login like public cafe
-            Logger.getInstance().error('loadURL failed: ', JSON.stringify(e))
+            Logger.init().error('loadURL failed: ', JSON.stringify(e))
             if (e.code === 'ERR_INTERNET_DISCONNECTED') {
                 this._failedUrl = url.toString()
                 ipcMain.emit(
@@ -160,18 +160,18 @@ export class BrowserView extends AbsContentsView {
      * 📝 Restore history from storage
      */
     private restoreHistory() {
-        Logger.getInstance().log('restoreHistory')
+        Logger.init().log('restoreHistory')
 
         const history = new History()
         history.parse()
 
         const index = history.get('index')
         const entries = history.get('history')
-        Logger.getInstance().log('history.get(index)', index)
-        Logger.getInstance().log('history.length', entries.length)
+        Logger.init().log('history.get(index)', index)
+        Logger.init().log('history.length', entries.length)
 
         if (isNatural(index)) {
-            Logger.getInstance().info('history.entries[index]', {
+            Logger.init().info('history.entries[index]', {
                 url: entries[index].url,
                 title: entries[index].title,
             })
@@ -182,7 +182,7 @@ export class BrowserView extends AbsContentsView {
                     entries: history.get('history'),
                 })
                 .catch((e) => {
-                    Logger.getInstance().error('restoring history', e)
+                    Logger.init().error('restoring history', e)
                 })
             // Immediate stop for loading other location like bookmark
             this.webContents.stop()
@@ -215,20 +215,17 @@ export class BrowserView extends AbsContentsView {
             return
         }
         // Enabled and UnSet : Init
-        Logger.getInstance().info(
-            '🚦AdBlocker is enabling with fetch: ',
-            fetch.name,
-        )
+        Logger.init().info('🚦AdBlocker is enabling with fetch: ', fetch.name)
 
         ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
             .then((blocker) => {
                 blocker.enableBlockingInSession(this.webContents.session)
                 this._blocker = blocker
-                Logger.getInstance().log('🚦AdBlocker is enabled.')
+                Logger.init().log('🚦AdBlocker is enabled.')
 
                 // For debug or future usage
                 blocker.on('request-blocked', (request) => {
-                    Logger.getInstance().log(
+                    Logger.init().log(
                         '🚦AdBlocker: blocked',
                         request.tabId,
                         request.url,
@@ -236,7 +233,7 @@ export class BrowserView extends AbsContentsView {
                 })
 
                 blocker.on('request-redirected', (request) => {
-                    Logger.getInstance().log(
+                    Logger.init().log(
                         '🚦AdBlocker: redirected',
                         request.tabId,
                         request.url,
@@ -244,7 +241,7 @@ export class BrowserView extends AbsContentsView {
                 })
 
                 blocker.on('request-whitelisted', (request) => {
-                    Logger.getInstance().log(
+                    Logger.init().log(
                         '🚦AdBlocker: whitelisted',
                         request.tabId,
                         request.url,
@@ -252,33 +249,21 @@ export class BrowserView extends AbsContentsView {
                 })
 
                 blocker.on('csp-injected', (request, csps) => {
-                    Logger.getInstance().log(
-                        '🚦AdBlocker: csp',
-                        request.url,
-                        csps,
-                    )
+                    Logger.init().log('🚦AdBlocker: csp', request.url, csps)
                 })
 
                 blocker.on('script-injected', (script: string, url: string) => {
-                    Logger.getInstance().log(
-                        '🚦AdBlocker: script',
-                        script.length,
-                        url,
-                    )
+                    Logger.init().log('🚦AdBlocker: script', script.length, url)
                 })
 
                 blocker.on('style-injected', (style: string, url: string) => {
-                    Logger.getInstance().log(
-                        '🚦AdBlocker: style',
-                        style.length,
-                        url,
-                    )
+                    Logger.init().log('🚦AdBlocker: style', style.length, url)
                 })
             })
             .catch((e: unknown) => {
                 this._blocker = undefined
                 // TODO when network connection failed and reconnected, try to activate ad-blocker.
-                Logger.getInstance().error(
+                Logger.init().error(
                     '🚦AdBlocker: Ad-Blocker is failed to load: ',
                     JSON.stringify(e),
                 )

@@ -12,7 +12,7 @@ export const fetchAndSendFavicon = (centre: CenterView, url: string) => {
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'fetch-favicon', url })
     child.once('message', ([host, icon]) => {
-        Logger.getInstance().info(EMOJI.BABY, 'Get Favicon', host, icon)
+        Logger.init().info(EMOJI.BABY, 'Get Favicon', host, icon)
         centre.send(IPC_CHANNELS.FAVICON, REQUEST_HANDLER.RESPONSE_SUCCESS, [
             host,
             icon,

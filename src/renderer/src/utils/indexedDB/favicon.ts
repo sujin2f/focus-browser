@@ -23,12 +23,12 @@ export class Favicon extends Abs_Database<'favicon'> {
             callback(request.result)
         }
         request.onerror = () => {
-            Logger.getInstance().error('indexedDB::get() request.onerror')
+            Logger.init().error('indexedDB::get() request.onerror')
         }
     }
 
     public add(favicon: T_Favicon) {
-        Logger.getInstance().info(`indexedDB::set(${favicon.host})`)
+        Logger.init().info(`indexedDB::set(${favicon.host})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
@@ -36,15 +36,15 @@ export class Favicon extends Abs_Database<'favicon'> {
         const timestamp = Math.round(new Date().getTime() / 1000)
         const query = store.add({ ...favicon, timestamp })
         query.onsuccess = () => {
-            Logger.getInstance().info('indexedDB::set() done')
+            Logger.init().info('indexedDB::set() done')
         }
         query.onerror = () => {
-            Logger.getInstance().info('indexedDB::set() fail')
+            Logger.init().info('indexedDB::set() fail')
         }
     }
 
     public update(favicon: T_Favicon) {
-        Logger.getInstance().info('indexedDB::update()', favicon)
+        Logger.init().info('indexedDB::update()', favicon)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
@@ -53,13 +53,13 @@ export class Favicon extends Abs_Database<'favicon'> {
             const timestamp = Math.round(new Date().getTime() / 1000)
             const query = store.put({ ...favicon, timestamp })
             query.onsuccess = () => {
-                Logger.getInstance().info('indexedDB::update() done')
+                Logger.init().info('indexedDB::update() done')
             }
         })
     }
 
     public getAll() {
-        throw new Error('Invalid access')
+        throw Logger.init().throw('Invalid access')
     }
 
     public remove(_: unknown): void {}

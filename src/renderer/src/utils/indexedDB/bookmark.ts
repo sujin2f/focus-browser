@@ -11,45 +11,43 @@ export class Bookmark extends Abs_Database<'bookmark'> {
 
     public getAll(type: string, callback: (result: T_Bookmark[]) => void) {
         const store = this.getStore()
-        Logger.getInstance().info(`indexedDB::Bookmark::set(getAll)`, store)
+        Logger.init().info(`indexedDB::Bookmark::set(getAll)`, store)
         // 🤬 DB does not exist
         if (!store) return
 
         const index = store.index('type')
         const request = index.getAll(type)
         request.onsuccess = async () => {
-            Logger.getInstance().info(`indexedDB::Bookmark::onsuccess`)
+            Logger.init().info(`indexedDB::Bookmark::onsuccess`)
             callback(request.result)
         }
         request.onerror = () => {
-            Logger.getInstance().error('indexedDB::get() request.onerror')
+            Logger.init().error('indexedDB::get() request.onerror')
             callback([])
         }
     }
-    public add(_bookmark: T_Bookmark, callback?: (result?: boolean) => void) {
-        Logger.getInstance().info(
-            `indexedDB::set(${JSON.stringify(_bookmark)})`,
-        )
+    public add(bookmark: T_Bookmark, callback?: (result?: boolean) => void) {
+        Logger.init().info(`indexedDB::set(${JSON.stringify(bookmark)})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
 
-        if (_bookmark.dir) {
-            this.forceAdd(_bookmark, callback)
+        if (bookmark.dir) {
+            this.forceAdd(bookmark, callback)
             return
         }
 
-        // Prevent URL duplication
-        if (!getSafeUrl(_bookmark.url)) return
+        // 🤬 Prevent URL duplication
+        if (!getSafeUrl(bookmark.url)) return
         const index = store.index('url')
-        const query = index.get(_bookmark.url)
+        const query = index.get(bookmark.url)
         query.onsuccess = () => {
             if (query.result) return
-            this.forceAdd(_bookmark, callback)
+            this.forceAdd(bookmark, callback)
         }
         query.onerror = () => {
             if (callback) callback(false)
-            Logger.getInstance().info('indexedDB::Bookmark::set() fail')
+            Logger.init().info('indexedDB::Bookmark::set() fail')
         }
     }
 
@@ -61,56 +59,56 @@ export class Bookmark extends Abs_Database<'bookmark'> {
         // 🤬 DB does not exist
         if (!store) return
 
-        const bookmark = {
+        const bookmark: T_Bookmark = {
             ..._bookmark,
             id: _bookmark.id || window.crypto.randomUUID().toString(),
-        }
+        } satisfies T_Bookmark
 
         const mutation = store.add(bookmark)
         mutation.onsuccess = () => {
-            Logger.getInstance().info(
+            Logger.init().info(
                 'indexedDB::Bookmark::set() done',
-                _bookmark.title,
+                bookmark.title,
             )
             if (callback) callback(true)
         }
         mutation.onerror = () => {
             if (callback) callback(false)
-            Logger.getInstance().info('indexedDB::Bookmark::set() fail')
+            Logger.init().info('indexedDB::Bookmark::set() fail')
         }
     }
 
     public update(bookmark: T_Bookmark, callback?: (result: boolean) => void) {
-        Logger.getInstance().info(`indexedDB::Bookmark::remove(${bookmark})`)
+        Logger.init().info(`indexedDB::Bookmark::remove(${bookmark})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
 
         const mutation = store.put(bookmark)
         mutation.onsuccess = () => {
-            Logger.getInstance().info('indexedDB::Bookmark::remove() done')
+            Logger.init().info('indexedDB::Bookmark::remove() done')
             if (callback) callback(true)
         }
         mutation.onerror = () => {
             if (callback) callback(false)
-            Logger.getInstance().info('indexedDB::Bookmark::remove() fail')
+            Logger.init().info('indexedDB::Bookmark::remove() fail')
         }
     }
 
     public remove(id: number, callback?: (result: boolean) => void): void {
-        Logger.getInstance().info(`indexedDB::Bookmark::remove(${id})`)
+        Logger.init().info(`indexedDB::Bookmark::remove(${id})`)
         const store = this.getStore('readwrite')
         // 🤬 DB does not exist
         if (!store) return
 
         const mutation = store.delete(id)
         mutation.onsuccess = () => {
-            Logger.getInstance().info('indexedDB::Bookmark::remove() done')
+            Logger.init().info('indexedDB::Bookmark::remove() done')
             if (callback) callback(true)
         }
         mutation.onerror = () => {
             if (callback) callback(false)
-            Logger.getInstance().info('indexedDB::Bookmark::remove() fail')
+            Logger.init().info('indexedDB::Bookmark::remove() fail')
         }
     }
 

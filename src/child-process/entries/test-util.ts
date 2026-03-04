@@ -8,7 +8,7 @@ export const test = () => {
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'test' })
     child.once('message', (message) => {
-        Logger.getInstance().info('👶', 'Test', message)
+        Logger.init().info('👶', 'Test', message)
         child.kill()
     })
 }

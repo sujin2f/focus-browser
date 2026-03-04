@@ -38,8 +38,8 @@ export class ButtonCloudPush extends Button {
             return
         }
 
-        Logger.getInstance().log('Sending an item to Cloud', this.item.title)
-        Logger.getInstance().log(`sendCloudPush()`)
+        Logger.init().log('Sending an item to Cloud', this.item.title)
+        Logger.init().log(`sendCloudPush()`)
         if (!this.getUserInfo()) {
             getSection('login-alert').classList.remove('hidden')
             getSection('login-alert')
@@ -50,7 +50,7 @@ export class ButtonCloudPush extends Button {
             return
         }
 
-        Logger.getInstance().log('Sending an item to Cloud', this.item.title)
+        Logger.init().log('Sending an item to Cloud', this.item.title)
         ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.PUT, {
             item: this.item,
         })

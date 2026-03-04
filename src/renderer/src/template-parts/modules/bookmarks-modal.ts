@@ -9,6 +9,7 @@ import { Option } from '@home/template-parts/option'
 import type { T_Bookmark } from '@src/common/types/store'
 /* Models */
 import { Bookmark } from '@home/utils/indexedDB/bookmark'
+import { BOOKMARK_TYPES } from '@src/common/constants'
 
 export class BookmarkModal extends Modal {
     private bookmark?: T_Bookmark
@@ -46,16 +47,15 @@ export class BookmarkModal extends Modal {
         this.remove = new Button('🗑️', 'button-clear')
             .appendTo(formButtons)
             .setOnClick(() => {
-                if (!this.bookmark || !this.bookmark.uid) {
-                    return
-                }
+                // 🤬 Invalid
+                if (!this.bookmark || !this.bookmark.uid) return
 
                 const store = new Bookmark()
-                store.ready(() => {
+                store.ready(() =>
                     store.remove(this.bookmark!.uid!, () =>
                         window.location.reload(),
-                    )
-                })
+                    ),
+                )
             })
 
         this.form.addEventListener('submit', (e) => {
@@ -137,7 +137,7 @@ export class BookmarkModal extends Modal {
         if (this.bookmark?.uid) {
             // Edit
             const store = new Bookmark()
-            store.ready(() => {
+            store.ready(() =>
                 store.update(
                     {
                         ...this.bookmark!,
@@ -145,17 +145,17 @@ export class BookmarkModal extends Modal {
                         url,
                         parent,
                         shortcut: this.shortcut.value,
-                        type: 'bookmark',
+                        type: BOOKMARK_TYPES.BOOKMARK,
                     },
                     () => window.location.reload(),
-                )
-            })
+                ),
+            )
             return
         }
 
         // Add
         const store = new Bookmark()
-        store.ready(() => {
+        store.ready(() =>
             store.add(
                 {
                     id: '',
@@ -163,10 +163,10 @@ export class BookmarkModal extends Modal {
                     url,
                     parent,
                     shortcut: this.shortcut.value,
-                    type: 'bookmark',
+                    type: BOOKMARK_TYPES.BOOKMARK,
                 },
                 () => window.location.reload(),
-            )
-        })
+            ),
+        )
     }
 }

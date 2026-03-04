@@ -97,8 +97,9 @@ class Anchors extends A_ListCloudPush<T_Bookmark> {
                     .appendTo(this.list.element)
                     .setOnClick(() => {
                         if (this.enabled && anchor.uid) {
-                            this.bookmarkStore.remove(anchor.uid)
-                            navigate(anchor.url)
+                            this.bookmarkStore.remove(anchor.uid, () =>
+                                navigate(anchor.url),
+                            )
                         }
                     })
                     .addClass('list--bookmarks__title')

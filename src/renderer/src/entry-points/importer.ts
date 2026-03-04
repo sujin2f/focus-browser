@@ -153,7 +153,6 @@ class Importer extends A_List<T_Cloud_Item> {
                         title: bookmark.title,
                         url: bookmark.url,
                     })
-                    this.setEnabled(false)
                 })
             }
         })

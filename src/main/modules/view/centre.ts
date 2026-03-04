@@ -44,6 +44,11 @@ export class CenterView extends AbsContentsView {
             },
         })
         this.scene = CENTRE_PAGES.WELCOME
+
+        // TODO #151 Context Menu
+        this.webContents.on('context-menu', (_, params) => {
+            console.log(params)
+        })
     }
 
     public send<T extends keyof T_IPC_Message>(

@@ -89,6 +89,10 @@ export class BrowserView extends AbsContentsView {
                     params,
                 )
             })
+            // TODO #156 Gesture Navigation
+            .on('input-event', (_, event) => {
+                console.log(event)
+            })
 
         this.webContents.setZoomFactor(1)
     }

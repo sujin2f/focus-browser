@@ -3,7 +3,7 @@ import { app, utilityProcess } from 'electron'
 import { paths, getIndexedDBPath } from '@src/common/utils/fs'
 import { byteToSize } from '@src/common/utils/common'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* T_Types */
 import type { CenterView } from '@main/modules/view/centre'
 import type { BrowserView } from '@main/modules/view/browser'
@@ -22,11 +22,11 @@ export const getCleanerSizes = (
         userData: app.getPath('userData'),
     })
     child.once('message', async (response) => {
-        Logger.getInstance().log('👶', `Get cleaner size finished.`)
+        Logger.init().log('👶', `Get cleaner size finished.`)
         const cacheSize = await browser.webContents.session
             .getCacheSize()
             .catch(() => {
-                Logger.getInstance().error('Failed to get cache size.')
+                Logger.init().error('Failed to get cache size.')
                 return 0
             })
         const history = browser.webContents.navigationHistory
@@ -48,7 +48,7 @@ export const removeIndexedDB = (centre: CenterView): void => {
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'remove-directory', path: getIndexedDBPath() })
     child.once('message', () => {
-        Logger.getInstance().log('👶', `Removed indexed DB.`)
+        Logger.init().log('👶', `Removed indexed DB.`)
         centre.send(IPC_CHANNELS.CLEANER, REQUEST_HANDLER.RESPONSE_SUCCESS)
         child.kill()
     })

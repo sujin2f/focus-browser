@@ -18,6 +18,14 @@ class TestSecureStore extends Store<{ foo: string }> {
         super()
         this.mergeDefault()
     }
+
+    set<K extends keyof { foo: string }>(
+        key: K,
+        value?: { foo: string }[K],
+    ): void {
+        if (!value) return
+        this.data[key] = value
+    }
 }
 
 describe('Base store (store.ts)', () => {

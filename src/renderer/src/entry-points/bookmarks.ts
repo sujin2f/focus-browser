@@ -6,7 +6,6 @@ import {
     navigate,
     tagNameIs,
 } from '@src/renderer/src/utils'
-import { callbackRequestBookmarks, updateBookmarks } from '@home/utils/bookmark'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
@@ -15,9 +14,10 @@ import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
 import { UserInfo } from '@home/template-parts/user-info'
 import { Notification } from '@home/template-parts/notification'
 /* T_Types */
-import type { T_Bookmark, T_Dir, T_Items } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
@@ -50,27 +50,9 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     constructor() {
         super('list--bookmarks')
-
+        this.initStore()
         // 🎹 shortcuts
-        this.search.setOnKeyUp((e) => {
-            // Allow standard location only
-            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) {
-                return
-            }
-
-            // For non-English keyboard, extract English key stroke from KeyboardEvent
-            if (e.code.startsWith('Key')) {
-                this.matchShortcut += e.code.charAt(3)
-            } else if (e.key.length === 1) {
-                this.matchShortcut += e.key
-            }
-
-            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
-            if (shortcut) {
-                navigate(shortcut)
-                return true
-            }
-        })
+        this.initSearch()
 
         // Title
         new Title(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`)
@@ -95,114 +77,76 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             })
 
         this.requestStatus('title', 'url', 'userInfo')
-        this.requestBookmarks()
     }
 
-    private requestBookmarks(): void {
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
-            if (response) {
-                const { dirs, items } = callbackRequestBookmarks(response)
-                this.dirs = dirs
-                this.items = items
-                this.setShortcuts()
-                this.callbackRequestBookmarks()
-                this.setEnabled(true)
-            }
-        })
-        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, response) => {
-            switch (handler) {
-                case REQUEST_HANDLER.RESPONSE_SUCCESS: {
-                    this.modal.hide()
-                    this.setEnabled(true)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const action = (response?.meta as any).action as string
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const isDir = (response?.meta as any).isDir as boolean
-                    const bookmark = response?.item
-                    if (!action || !bookmark) {
-                        this.notification.error('Something went wrong!')
-                        return
-                    }
-                    this.notification.info('Your bookmark is successfully ')
-
-                    const refresh = (
-                        _dirs: T_Dir<T_Bookmark>,
-                        _items: T_Items<T_Bookmark>,
-                    ) => {
-                        const { dirs, items } = updateBookmarks(_items, _dirs)
-                        this.dirs = dirs
-                        this.items = items
-                        this.callbackRequestBookmarks()
-                    }
-
-                    switch (action) {
-                        case 'added': {
-                            if (isDir) {
-                                refresh(
-                                    {
-                                        ...this.dirs,
-                                        [bookmark.id]: {
-                                            data: bookmark,
-                                            hidden: false,
-                                            dir: [],
-                                            items: [],
-                                        },
-                                    },
-                                    this.items,
-                                )
-                                return
-                            }
-
-                            this.items.unshift({ data: bookmark, items: [] })
-                            refresh(this.dirs, this.items)
-                            return
-                        }
-
-                        case 'removed': {
-                            if (isDir) {
-                                delete this.dirs[bookmark.id]
-                                refresh(this.dirs, this.items)
-                                return
-                            }
-
-                            refresh(
-                                this.dirs,
-                                this.items.filter(
-                                    (item) => item.data.id !== bookmark.id,
-                                ),
-                            )
-                            return
-                        }
-                        case 'updated': {
-                            if (isDir) {
-                                this.dirs[bookmark.id].data = bookmark
-                                refresh(this.dirs, this.items)
-                                return
-                            }
-
-                            refresh(
-                                this.dirs,
-                                this.items.map((item) => {
-                                    if (item.data.id !== bookmark.id) {
-                                        return item
-                                    }
-                                    return {
-                                        ...item,
-                                        data: bookmark,
-                                    }
-                                }),
-                            )
-                            return
-                        }
-                    }
+    private initStore() {
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
+                if (!bookmarks || !bookmarks.length) {
+                    this.requestBookmarks()
                     return
                 }
-                case REQUEST_HANDLER.RESPONSE_FAIL:
-                    this.modal.hide()
-                    this.notification.error('Something went wrong!')
-                    this.setEnabled(true)
-                    return
+
+                this.arrangeBookmarks(bookmarks.reverse())
+            })
+        })
+    }
+
+    private initSearch() {
+        this.search.setOnKeyUp((e) => {
+            // 🤬 Allow standard location only
+            if (e.location !== e.DOM_KEY_LOCATION_STANDARD) return
+
+            // For non-English keyboard, extract English key stroke from KeyboardEvent
+            if (e.code.startsWith('Key')) {
+                this.matchShortcut += e.code.charAt(3)
+            } else if (e.key.length === 1) {
+                this.matchShortcut += e.key
+            }
+
+            const shortcut = this.shortcuts[this.matchShortcut.toLowerCase()]
+            if (shortcut) navigate(shortcut)
+        })
+    }
+
+    private arrangeBookmarks(bookmarks: T_Bookmark[]) {
+        this.dirs = {}
+        this.items = []
+
+        bookmarks.forEach((bookmark) => {
+            if (bookmark.dir) {
+                this.dirs[bookmark.id] = {
+                    data: bookmark,
+                    hidden: true,
+                    dir: [],
+                    items: [],
+                }
+                return
+            }
+            this.items.push({ data: bookmark, items: [] })
+        })
+
+        this.setShortcuts()
+        this.callbackRequestBookmarks()
+        this.setEnabled(true)
+    }
+
+    /**
+     * @deprecated
+     */
+    private requestBookmarks(): void {
+        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
+            if (response && Array.isArray(response)) {
+                const reverse = [...response].reverse()
+                this.bookmarkStore.add(reverse, () =>
+                    this.bookmarkStore.getAll(
+                        BOOKMARK_TYPES.BOOKMARK,
+                        (bookmarks) => {
+                            this.arrangeBookmarks(bookmarks)
+                        },
+                    ),
+                )
             }
         })
     }
@@ -214,9 +158,14 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
                 this.onDirectoryClick(dir.data.id)
             })
-            const row = new ListItem(dir.data.title).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
+            const title = new ListItem(dir.data.title)
+                .setOnClick(() => {
+                    this.onDirectoryClick(dir.data.id)
+                })
+                .addClass(
+                    'list--bookmarks__title',
+                    'list--bookmarks__title--dir',
+                )
             let shortcut = new ListItem('')
             if (dir.data.shortcut) {
                 shortcut = new ListItem(
@@ -235,7 +184,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             )
             edit.clickable = false
 
-            dir.dir.push(icon, row, shortcut, new ListItem(''), edit)
+            dir.dir.push(icon, title, shortcut, new ListItem(''), edit)
         })
 
         // Items
@@ -244,12 +193,30 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
                 item.data.parent && this.dirs[item.data.parent]
                     ? item.data.parent
                     : false
-            const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate(item.data.url)
-            })
-            const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate(item.data.url)
-            })
+            const columns: ListItem[] = []
+
+            const title = new ListItem(item.data.title)
+                .setOnClick(() => {
+                    navigate(item.data.url)
+                })
+                .addClass('list--bookmarks__title')
+
+            if (!parent) {
+                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => navigate(item.data.url),
+                )
+                title.addClass('list--bookmarks__title--dir')
+                columns.push(icon, title)
+            } else {
+                const icon1 = new ListItem('').setOnClick(() =>
+                    navigate(item.data.url),
+                )
+                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => navigate(item.data.url),
+                )
+                columns.push(icon1, icon2, title)
+            }
+
             let shortcut = new ListItem('')
             if (item.data.shortcut) {
                 shortcut = new ListItem(
@@ -280,9 +247,9 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
             )
             edit.clickable = false
 
-            item.items.push(icon, row, shortcut, cloud, edit)
+            item.items.push(...columns, shortcut, cloud, edit)
             if (parent) {
-                this.dirs[parent].items.push(icon, row, shortcut, cloud, edit)
+                this.dirs[parent].items.push(...columns, shortcut, cloud, edit)
             }
         })
 

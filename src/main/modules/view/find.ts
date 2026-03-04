@@ -5,7 +5,7 @@ import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 import { resolveHtmlPath } from '@src/common/utils/fs'
 import { paths } from '@src/common/utils/fs'
 /* Models */
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 
 export class FindView extends WebContentsView {
     public keyword = ''
@@ -26,7 +26,7 @@ export class FindView extends WebContentsView {
     }
 
     public focus() {
-        Logger.getInstance().log(`FindView::focus()`)
+        Logger.init().log(`FindView::focus()`)
         this.webContents.send(IPC_CHANNELS.FIND, REQUEST_HANDLER.RESPONSE, {
             focus: true,
         })
@@ -34,14 +34,14 @@ export class FindView extends WebContentsView {
     }
 
     public reset() {
-        Logger.getInstance().log(`FindView::reset()`)
+        Logger.init().log(`FindView::reset()`)
         this.webContents.send(IPC_CHANNELS.FIND, REQUEST_HANDLER.RESPONSE, {
             reset: true,
         })
     }
 
     public setMatched(matches: number, activeMatchOrdinal: number) {
-        Logger.getInstance().log(`FindView::setMatched()`)
+        Logger.init().log(`FindView::setMatched()`)
         this.webContents.send(IPC_CHANNELS.FIND, REQUEST_HANDLER.RESPONSE, {
             matches,
             activeMatchOrdinal,

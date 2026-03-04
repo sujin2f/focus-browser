@@ -12,11 +12,15 @@ export class History extends Store<Props> {
     protected defaults = { index: NaN, history: [] } as Props
 
     public get current() {
-        if (this._data.history.length) {
-            return this._data.history.at(this._data.index)
+        if (this.data.history.length) {
+            return this.data.history.at(this.data.index)
         }
 
         return
+    }
+
+    get<K extends keyof Props>(key: K): Props[K] {
+        return this.data[key]
     }
 
     parse() {
@@ -52,7 +56,7 @@ export class History extends Store<Props> {
         const urls = history.map((v) => v.url)
         const index = urls.indexOf(current)
 
-        this._data = {
+        this.data = {
             index: index !== -1 ? index : history.length - 1,
             history,
         }

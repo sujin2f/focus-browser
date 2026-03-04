@@ -1,6 +1,4 @@
 import { net } from 'electron'
-/* Utils */
-import { base64encode } from '@src/common/utils/security'
 /* CONSTANTS */
 import { SUJINC_URL } from '@src/common/constants'
 /* T_Types */
@@ -41,7 +39,7 @@ export const uploadCloudItem = async (
     }
     const os = process.platform === 'darwin' ? 'mac' : process.platform
     const version = process.getSystemVersion()
-    const message = base64encode(item.message)
+    const message = btoa(item.message)
 
     await net
         .fetch(`${SUJINC_URL}/focus/item`, {

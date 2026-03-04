@@ -3,7 +3,7 @@ import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 
 import '@src/renderer/styles/common.css'
 
@@ -42,7 +42,7 @@ class Find {
         })
 
         ipcRenderer.on(IPC_CHANNELS.FIND, (_, args) => {
-            Logger.getInstance().log('Find renderer gets IPC', args)
+            Logger.init().log('Find renderer gets IPC', args)
             if (args?.reset) {
                 this.input.value = ''
                 this.found.innerHTML = ''

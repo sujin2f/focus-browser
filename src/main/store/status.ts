@@ -20,17 +20,29 @@ export class Status extends Store<T_Status_Store_Props> {
     protected fileName = 'status'
     protected defaults = DEFAULT_STATUS
 
+    set<K extends keyof T_Status_Store_Props>(
+        key: K,
+        value?: T_Status_Store_Props[K],
+    ): void {
+        if (!value) return
+        this.data[key] = value
+    }
+
+    get<K extends keyof T_Status_Store_Props>(key: K): T_Status_Store_Props[K] {
+        return this.data[key]
+    }
+
     public getBounds(current: Partial<Rectangle> = {}): Rectangle {
         const bounds = {
             ...current,
-            width: this._data.width,
-            height: this._data.height,
+            width: this.data.width,
+            height: this.data.height,
         }
-        if (!isNaN(this._data.x)) {
-            bounds.x = this._data.x
+        if (!isNaN(this.data.x)) {
+            bounds.x = this.data.x
         }
-        if (!isNaN(this._data.y)) {
-            bounds.y = this._data.y
+        if (!isNaN(this.data.y)) {
+            bounds.y = this.data.y
         }
         return bounds as Rectangle
     }
@@ -45,17 +57,17 @@ export class Status extends Store<T_Status_Store_Props> {
             /* eslint-enable @typescript-eslint/no-unused-vars */
             ...updates
         } = value
-        this._data = {
-            ...this._data,
+        this.data = {
+            ...this.data,
             ...updates,
         }
     }
 
     public save() {
         // Remove unknown items
-        Object.keys(this._data).forEach((key) => {
+        Object.keys(this.data).forEach((key) => {
             if (!Object.hasOwn(DEFAULT_STATUS, key)) {
-                delete (this._data as unknown as Record<string, string>)[key]
+                delete (this.data as unknown as Record<string, string>)[key]
             }
         })
         super.save()
@@ -65,8 +77,8 @@ export class Status extends Store<T_Status_Store_Props> {
         super.parse()
 
         // Store unique machine ID
-        if (this._data.machineId === 'N/A') {
-            this.set('machineId', randomUUID())
+        if (this.data.machineId === 'N/A') {
+            this.set('machineId', randomUUID().toString())
         }
 
         super.mergeDefault()

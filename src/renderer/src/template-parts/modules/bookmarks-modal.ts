@@ -1,5 +1,3 @@
-/* Utils */
-import { ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Button } from '@home/template-parts/button'
 import { Notification } from '@home/template-parts/notification'
@@ -7,10 +5,11 @@ import { Modal } from '@home/template-parts/modal'
 import { Input } from '@home/template-parts/input'
 import { Select } from '@home/template-parts/select'
 import { Option } from '@home/template-parts/option'
-/* CONSTANTS */
-import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
+/* Models */
+import { Bookmark } from '@home/utils/indexedDB/bookmark'
+import { BOOKMARK_TYPES } from '@src/common/constants'
 
 export class BookmarkModal extends Modal {
     private bookmark?: T_Bookmark
@@ -48,14 +47,14 @@ export class BookmarkModal extends Modal {
         this.remove = new Button('🗑️', 'button-clear')
             .appendTo(formButtons)
             .setOnClick(() => {
-                if (!this.bookmark || !this.bookmark.id) {
-                    return
-                }
+                // 🤬 Invalid
+                if (!this.bookmark || !this.bookmark.uid) return
 
-                ipcRenderer.send(
-                    IPC_CHANNELS.BOOKMARK,
-                    REQUEST_HANDLER.REMOVE,
-                    { item: this.bookmark, meta: this.isDir },
+                const store = new Bookmark()
+                store.ready(() =>
+                    store.remove(this.bookmark!.uid!, () =>
+                        window.location.reload(),
+                    ),
                 )
             })
 
@@ -135,31 +134,39 @@ export class BookmarkModal extends Modal {
         const url = !this.isDir ? this.url.value : ''
         const parent = this.folder.value
 
-        if (this.bookmark?.id) {
+        if (this.bookmark?.uid) {
             // Edit
-            ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.MODIFY, {
-                item: {
-                    id: this.bookmark.id,
-                    title: this.title.value,
-                    url,
-                    parent,
-                    shortcut: this.shortcut.value,
-                },
-                meta: this.isDir,
-            })
+            const store = new Bookmark()
+            store.ready(() =>
+                store.update(
+                    {
+                        ...this.bookmark!,
+                        title: this.title.value,
+                        url,
+                        parent,
+                        shortcut: this.shortcut.value,
+                        type: BOOKMARK_TYPES.BOOKMARK,
+                    },
+                    () => window.location.reload(),
+                ),
+            )
             return
         }
 
         // Add
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
-            item: {
-                id: '',
-                title: this.title.value,
-                url,
-                parent,
-                shortcut: this.shortcut.value,
-            },
-            meta: this.isDir,
-        })
+        const store = new Bookmark()
+        store.ready(() =>
+            store.add(
+                {
+                    id: '',
+                    title: this.title.value,
+                    url,
+                    parent,
+                    shortcut: this.shortcut.value,
+                    type: BOOKMARK_TYPES.BOOKMARK,
+                },
+                () => window.location.reload(),
+            ),
+        )
     }
 }

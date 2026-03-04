@@ -1,4 +1,6 @@
-import type { MenuItemConstructorOptions, NavigationEntry } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
+import type { ListItem } from '@src/renderer/src/template-parts/list-item'
+import type { T_Bookmark } from './store'
 import {
     Menu,
     MenuCategory,
@@ -9,7 +11,6 @@ import {
     LogTypes,
     FIND,
 } from '@src/common/constants'
-import type { ListItem } from '@src/renderer/src/template-parts/list-item'
 
 /**
  * Status
@@ -48,22 +49,6 @@ export type T_IPC_Switch = {
     address?: string
     reloading?: boolean
     searchEngine?: boolean
-}
-
-/**
- * Bookmark
- */
-export interface T_Bookmark extends NavigationEntry {
-    id: string
-    url: string
-    title: string
-    shortcut?: string
-    parent?: string
-}
-
-export type T_Bookmark_Store = {
-    dirs: Record<string, T_Bookmark>
-    items: Record<string, T_Bookmark>
 }
 
 /**
@@ -120,10 +105,8 @@ export type T_IPC_Data<T> = {
 }
 
 export type T_IPC_Message = {
-    [IPC_CHANNELS.ANCHOR]: T_IPC_Data<T_Bookmark>
-    [IPC_CHANNELS.ANCHOR_RESPONSE]: T_Bookmark[]
-    [IPC_CHANNELS.BOOKMARK]: T_IPC_Data<T_Bookmark>
-    [IPC_CHANNELS.BOOKMARKS_RESPONSE]: T_Bookmark_Store
+    [IPC_CHANNELS.ANCHOR]: T_Bookmark[]
+    [IPC_CHANNELS.BOOKMARK]: T_Bookmark[] | T_Bookmark
     [IPC_CHANNELS.STATUS]: T_IPC_Status
     [IPC_CHANNELS.SWITCH]: T_IPC_Switch
     [IPC_CHANNELS.HISTORY]: T_Bookmark[]
@@ -143,6 +126,7 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.CLEANER]: T_Cleaner
     [IPC_CHANNELS.CLOUD]: T_IPC_Data<T_Cloud_Item>
     [IPC_CHANNELS.CLOUD_RESPONSE]: T_Cloud_Item[]
+    [IPC_CHANNELS.FAVICON]: [string, string]
 }
 
 export type T_Items<T> = { data: T; items: ListItem[] }[]

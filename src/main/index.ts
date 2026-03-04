@@ -2,7 +2,7 @@ import { app, Menu } from 'electron'
 
 import { BrowserWindow } from '@main/modules/window/window'
 
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 
 /**
  * Add event listeners...
@@ -23,15 +23,12 @@ app.whenReady()
         window.setAutoHideMenuBar(true)
 
         app.on('activate', () => {
-            Logger.getInstance().log('activate, focused?: ', window.isFocused())
+            Logger.init().log('activate, focused?: ', window.isFocused())
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
             window.show()
         })
     })
     .catch((e) => {
-        Logger.getInstance().error(
-            'Error Electron app to start',
-            JSON.stringify(e),
-        )
+        Logger.init().error('Error Electron app to start', JSON.stringify(e))
     })

@@ -1,92 +1,43 @@
 /* Models */
 import { Bookmarks } from '@main/store/bookmarks'
-/* CONSTANTS */
-import { REQUEST_HANDLER } from '@src/common/constants'
+import { BOOKMARK_TYPES } from '@src/common/constants'
+import { Logger } from '@src/common/logger'
 /* T_Types */
-import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
-/* Utils */
-import { base64decode } from '@src/common/utils/security'
+import type { T_Bookmark } from '@src/common/types/store'
 
+/**
+ * @deprecated
+ */
 export const getBookmarks = (path: string) => {
     const store = new Bookmarks(path)
-    process.parentPort.postMessage({
-        dirs: store.get('dirs'),
-        items: store.get('items'),
-    } satisfies T_Bookmark_Store)
-}
+    Logger.init().info(store.get('dirs'), store.get('items'))
+    const dirKeys = Object.keys(store.get('dirs')).filter((v) => v)
+    const bookmarks = [
+        ...Object.values(store.get('dirs')).map(
+            (item) =>
+                ({
+                    ...item,
+                    dir: true,
+                    parent: '',
+                    url: '',
+                    type: BOOKMARK_TYPES.BOOKMARK,
+                }) satisfies T_Bookmark,
+        ),
+        ...Object.values(store.get('items'))
+            .filter((item) => item.url)
+            .map(
+                (item) =>
+                    ({
+                        ...item,
+                        type: BOOKMARK_TYPES.BOOKMARK,
+                        dir: false,
+                        parent: dirKeys.includes(item.parent || '')
+                            ? item.parent
+                            : '',
+                    }) satisfies T_Bookmark,
+            ),
+    ]
+    Logger.init().info(bookmarks)
 
-export const addBookmark = (
-    path: string,
-    bookmark: T_Bookmark,
-    isDir: boolean,
-) => {
-    if (!bookmark) {
-        process.parentPort.postMessage({
-            handler: REQUEST_HANDLER.RESPONSE_FAIL,
-        })
-        return
-    }
-    if (bookmark.id === 'from-cloud') {
-        bookmark = JSON.parse(base64decode(bookmark.title))
-    }
-
-    const store = new Bookmarks(path)
-    const result = store.push(bookmark, isDir)
-    store.save()
-    const handler = !result
-        ? REQUEST_HANDLER.RESPONSE_FAIL
-        : REQUEST_HANDLER.RESPONSE_SUCCESS
-
-    process.parentPort.postMessage({
-        handler,
-        item: result,
-        meta: { isDir, action: 'added' },
-    })
-}
-
-export const updateBookmark = (
-    path: string,
-    bookmark: T_Bookmark,
-    isDir: boolean,
-) => {
-    if (!bookmark || !bookmark?.id) {
-        process.parentPort.postMessage({
-            handler: REQUEST_HANDLER.RESPONSE_FAIL,
-        })
-        return
-    }
-    const store = new Bookmarks(path)
-    const result = store.update(bookmark, isDir)
-    store.save()
-
-    const handler = !result
-        ? REQUEST_HANDLER.RESPONSE_FAIL
-        : REQUEST_HANDLER.RESPONSE_SUCCESS
-
-    process.parentPort.postMessage({
-        handler,
-        item: result,
-        meta: { isDir, action: 'updated' },
-    })
-}
-
-export const removeBookmark = (
-    path: string,
-    bookmark: T_Bookmark,
-    isDir: boolean,
-) => {
-    if (!bookmark || !bookmark?.id) {
-        process.parentPort.postMessage({
-            handler: REQUEST_HANDLER.RESPONSE_FAIL,
-        })
-        return
-    }
-    const store = new Bookmarks(path)
-    store.remove(bookmark.id, isDir)
-    store.save()
-    process.parentPort.postMessage({
-        handler: REQUEST_HANDLER.RESPONSE_SUCCESS,
-        item: bookmark,
-        meta: { isDir, action: 'removed' },
-    })
+    process.parentPort.postMessage(bookmarks)
 }

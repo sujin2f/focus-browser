@@ -44,6 +44,7 @@ export enum IPC_CHANNELS {
     CLEANER = 'CLEANER',
     CLOUD = 'CLOUD',
     CLOUD_RESPONSE = 'CLOUD_RESPONSE',
+    FAVICON = 'FAVICON',
 }
 
 export enum REQUEST_HANDLER {
@@ -113,7 +114,7 @@ export enum Menu {
     TEST = 'Run Test Block',
 }
 
-export const EMOJI: Record<string, string> = {
+export const EMOJI = {
     [Menu.PASTE_KEYSTROKE]: '🎹',
     [Menu.ADD_BOOKMARK]: '🔖',
     [Menu.ADD_ANCHOR]: '⚓️',
@@ -131,6 +132,11 @@ export const EMOJI: Record<string, string> = {
     CENTRE: '🎛️',
     LOGIN: '🙋‍♀️',
     CLOUD: '☁️',
+    ERROR: '🤬',
+    WARN: '⚠️',
+    STAR: '⭐️',
+    PEEK: '👀',
+    BABY: '👶',
 }
 
 export const SEARCH_ENGINES = {
@@ -334,4 +340,9 @@ export const EDITABLE_SHORTCUTS: Partial<Record<MenuCategory, Menu[]>> = {
         Menu.BACK_HIDDEN,
         Menu.FORWARD_HIDDEN,
     ],
+}
+
+export enum BOOKMARK_TYPES {
+    BOOKMARK = 'bookmark',
+    ANCHOR = 'anchor',
 }

@@ -1,4 +1,5 @@
 /* Utils */
+import { Logger } from '@src/common/logger'
 import { getSection } from '@src/renderer/src/utils'
 
 export abstract class A_Element<T extends HTMLElement> {
@@ -11,7 +12,7 @@ export abstract class A_Element<T extends HTMLElement> {
         return this._element
     }
 
-    constructor(private selector: string = '') {
+    constructor(selector: string = '') {
         if (!selector) {
             return
         }
@@ -23,9 +24,8 @@ export abstract class A_Element<T extends HTMLElement> {
     }
 
     protected afterAppend() {
-        if (this.onClickCallback) {
-            this.setOnClick(this.onClickCallback)
-        }
+        if (this.onClickCallback) this.setOnClick(this.onClickCallback)
+        if (this.classes) this.addClass(...this.classes)
     }
 
     private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
@@ -43,11 +43,12 @@ export abstract class A_Element<T extends HTMLElement> {
      * @returns
      */
     public appendTo(parent: Element | string) {
-        if (!this.node) {
-            throw new Error('Cannot find node')
-        }
+        // 🤬 Not allowed
+        if (!this.node) throw Logger.init().throw('Cannot find node')
+
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         dest.append(this.node)
+
         this._element = dest.lastElementChild! as T
         this.afterAppend()
         return this
@@ -58,9 +59,9 @@ export abstract class A_Element<T extends HTMLElement> {
      * @returns
      */
     public prependTo(parent: Element | string) {
-        if (!this.node) {
-            throw new Error('Cannot find node')
-        }
+        // 🤬 Not allowed
+        if (!this.node) throw Logger.init().throw('Cannot find node')
+
         const dest = typeof parent === 'string' ? getSection(parent) : parent
         dest.prepend(this.node)
         this._element = dest.firstElementChild! as T
@@ -101,7 +102,13 @@ export abstract class A_Element<T extends HTMLElement> {
         return this.element.classList.contains('hidden')
     }
 
+    private classes: string[] = []
     public addClass(...classes: string[]) {
+        if (!this.element) {
+            this.classes.push(...classes)
+            return this
+        }
+
         this.element.classList.add(...classes)
         return this
     }

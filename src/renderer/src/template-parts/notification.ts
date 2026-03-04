@@ -1,6 +1,6 @@
 import { A_Element } from './abs-element'
 /* Models */
-import { Logger } from '@home/utils/logger'
+import { Logger } from '@src/common/logger'
 
 export class Notification extends A_Element<HTMLElement> {
     constructor() {
@@ -8,7 +8,7 @@ export class Notification extends A_Element<HTMLElement> {
     }
 
     private showNotification(message: string) {
-        Logger.getInstance().log(message)
+        Logger.init().log(message)
         const notification = this.select('notification')
         notification.innerHTML = message
         notification.classList.remove('notification')

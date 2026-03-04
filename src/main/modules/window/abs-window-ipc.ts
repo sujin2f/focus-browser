@@ -7,7 +7,7 @@ import {
 } from 'electron'
 /* Models */
 import { AbsWindowMenu } from '@main/modules/window/abs-window-menu'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 import { Status } from '@main/store/status'
 import { PopupBlocker } from '@main/store/popup-blocker'
 import { Shortcut } from '@main/store/shortcut'
@@ -25,19 +25,17 @@ import {
     EMOJI,
 } from '@src/common/constants'
 /* Utils */
-import { isBeta, isTest } from '@src/common/utils/common'
+import { canLog } from '@src/common/utils/common'
 import {
     getCleanerSizes,
     removeIndexedDB,
 } from '@src/child-process/entries/cleaner'
-import {
-    fetchCloudItems,
-    removeCloudItem,
-    uploadCloudItem,
-} from '@src/child-process/entries/cloud'
+import * as cloud from '@src/child-process/entries/cloud'
+import { responseBookmarks } from '@src/child-process/entries/bookmark'
+import { responseAnchors } from '@src/child-process/entries/anchor'
+import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 /* T_Types */
 import type {
-    T_Bookmark,
     T_Status_Props,
     T_Cleaner,
     T_IPC_Status,
@@ -46,15 +44,7 @@ import type {
     T_Cloud_Item,
     T_IPC_Data,
 } from '@src/common/types'
-import {
-    modifyBookmark,
-    responseBookmarks,
-} from '@src/child-process/entries/bookmark'
-import {
-    clearAnchor,
-    removeAnchor,
-    responseAnchors,
-} from '@src/child-process/entries/anchor'
+import type { T_Bookmark } from '@src/common/types/store'
 
 /**
  * All starts with here
@@ -66,8 +56,11 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.STATUS, this.onStatus.bind(this))
         ipcMain.on(IPC_CHANNELS.SWITCH, this.onSwitch.bind(this))
         ipcMain.on(IPC_CHANNELS.HISTORY, this.onHistory.bind(this))
-        ipcMain.on(IPC_CHANNELS.BOOKMARK, (_, handler, arg) => {
-            this.onBookmarks(handler, arg)
+        /**
+         * @deprecated
+         */
+        ipcMain.on(IPC_CHANNELS.BOOKMARK, (_, handler) => {
+            this.onBookmarks(handler)
         })
         ipcMain.on(IPC_CHANNELS.ANCHOR, this.onAnchors.bind(this))
         ipcMain.on(IPC_CHANNELS.POPUP_BLOCKER, this.onPopupBlocker.bind(this))
@@ -77,8 +70,9 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.SHORTCUTS, this.onShortcuts.bind(this))
         ipcMain.on(IPC_CHANNELS.CLEANER, this.onCleaner.bind(this))
         ipcMain.on(IPC_CHANNELS.CLOUD, this.onCloud.bind(this))
+        ipcMain.on(IPC_CHANNELS.FAVICON, this.onFavicon.bind(this))
 
-        if (isBeta() && !isTest()) {
+        if (canLog()) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
         }
     }
@@ -88,9 +82,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         type: MainEventTypes,
         ...params: unknown[]
     ) {
-        Logger.getInstance().log(
-            `Main Process : ${type} ${JSON.stringify(params)}`,
-        )
+        Logger.init().log(`Main Process : ${type} ${JSON.stringify(params)}`)
         switch (type) {
             case MainEventTypes.CONTEXT_MENU:
                 this.showContextMenu(params[0] as ContextMenuParams)
@@ -114,16 +106,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const [type, params] = arg
         switch (type) {
             case LogTypes.ERROR:
-                Logger.getInstance().error(EMOJI.CENTRE, ' ', ...params)
+                Logger.init().error(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.INFO:
-                Logger.getInstance().info(EMOJI.CENTRE, ' ', ...params)
+                Logger.init().info(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.LOG:
-                Logger.getInstance().log(EMOJI.CENTRE, ' ', ...params)
+                Logger.init().log(EMOJI.CENTRE, ' ', ...params)
                 break
             case LogTypes.WARN:
-                Logger.getInstance().warn(EMOJI.CENTRE, ' ', ...params)
+                Logger.init().warn(EMOJI.CENTRE, ' ', ...params)
                 break
         }
     }
@@ -157,7 +149,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         request: T_IPC_Status,
     ) {
-        Logger.getInstance().info(
+        Logger.init().info(
             `IPC onStatus: ${handler}, ${JSON.stringify(request)}`,
         )
 
@@ -173,7 +165,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             if (
                 Object.prototype.hasOwnProperty.call(request.data, 'adBlocker')
             ) {
-                Logger.getInstance().log(
+                Logger.init().log(
                     'adBlocker setting changed: ',
                     status.get('adBlocker'),
                 )
@@ -191,7 +183,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         request: T_IPC_Switch,
     ) {
-        Logger.getInstance().info(
+        Logger.init().info(
             `IPC onSwitch: ${handler}, ${JSON.stringify(request)}`,
         )
 
@@ -229,36 +221,18 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async onBookmarks(
-        handler: REQUEST_HANDLER,
-        args: T_IPC_Data<T_Bookmark>,
-    ) {
-        if (handler === REQUEST_HANDLER.REQUEST) {
-            responseBookmarks(this.centre)
-            return
-        }
-
-        modifyBookmark(handler, this.centre, args)
+    /**
+     * @deprecated
+     */
+    private async onBookmarks(handler: REQUEST_HANDLER) {
+        if (handler === REQUEST_HANDLER.REQUEST) responseBookmarks(this.centre)
     }
 
-    private onAnchors(
-        _: IpcMainEvent,
-        handler: REQUEST_HANDLER,
-        arg: T_IPC_Data<T_Bookmark>,
-    ) {
-        switch (handler) {
-            case REQUEST_HANDLER.REQUEST:
-                responseAnchors(this.centre)
-                return
-            case REQUEST_HANDLER.REMOVE: {
-                const url = arg.item && arg.item.url
-                // 🤬 URL is empty
-                if (!url) return
-
-                removeAnchor(url)
-                return
-            }
-        }
+    /**
+     * @deprecated
+     */
+    private onAnchors(_: IpcMainEvent, handler: REQUEST_HANDLER) {
+        if (handler === REQUEST_HANDLER.REQUEST) responseAnchors(this.centre)
     }
 
     private onPopupBlocker(
@@ -286,7 +260,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     private sendPopupBlocker(handler: REQUEST_HANDLER) {
         const blocked = PopupBlocker.getInstance().get('blocked')
         const allowed = PopupBlocker.getInstance().get('allowed')
-        Logger.getInstance().log(
+        Logger.init().log(
             'Popup blocker request: ',
             Array.from(blocked),
             Array.from(allowed),
@@ -329,7 +303,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             response.userInfo = await this.getUserInfo()
         }
 
-        Logger.getInstance().info('IPC sending: ', response)
+        Logger.init().info('IPC sending: ', response)
 
         this.centre.send(IPC_CHANNELS.STATUS, REQUEST_HANDLER.RESPONSE, {
             data: response,
@@ -375,10 +349,10 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
             }
 
             case REQUEST_HANDLER.MODIFY: {
-                Logger.getInstance().info('Keystroke modification accepted.')
+                Logger.init().info('Keystroke modification accepted.')
                 const host = Object.keys(keystrokes)[0]
                 if (!host) {
-                    Logger.getInstance().error('Keystroke modification failed.')
+                    Logger.init().error('Keystroke modification failed.')
                     this.sendResult(IPC_CHANNELS.KEYSTROKES, false)
 
                     return
@@ -387,7 +361,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 Keystrokes.getInstance().update(host, keystroke)
                 Keystrokes.getInstance().save()
 
-                Logger.getInstance().error('Keystroke modification done.')
+                Logger.init().error('Keystroke modification done.')
                 this.sendResult(IPC_CHANNELS.KEYSTROKES)
                 return
             }
@@ -433,7 +407,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         handler: REQUEST_HANDLER,
         { request: key }: T_Cleaner,
     ) {
-        Logger.getInstance().log(
+        Logger.init().log(
             `${EMOJI.CLEANER} Cleaner request accepted. ${handler} ${key}`,
         )
 
@@ -453,6 +427,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 return
             }
             case REQUEST_HANDLER.REMOVE:
+                // TODO make them as enum
                 switch (key) {
                     case 'cacheSize':
                         await this.browser.webContents.session.clearCache()
@@ -465,10 +440,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     case 'indexedDB':
                         removeIndexedDB(this.centre)
                         return
-                    case 'anchor': {
-                        clearAnchor(this.centre)
-                        return
-                    }
                     case 'popups':
                         PopupBlocker.getInstance().clear()
                         responseSuccess()
@@ -486,7 +457,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         const token = await this.getAccessToken()
         const user = await this.getUserInfo()
         if (!token || !user) {
-            Logger.getInstance().error('The user is not logged in.')
+            Logger.init().error('The user is not logged in.')
             this.centre.send(
                 IPC_CHANNELS.CLOUD,
                 REQUEST_HANDLER.RESPONSE_FAIL,
@@ -498,14 +469,13 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
 
         switch (handler) {
             case REQUEST_HANDLER.REQUEST: {
-                fetchCloudItems(this.centre, token, email)
+                cloud.fetchCloudItems(this.centre, token, email)
                 return
             }
 
             case REQUEST_HANDLER.PUT: {
-                if (data.item) {
-                    uploadCloudItem(this.centre, data.item, token)
-                }
+                if (data.item)
+                    cloud.uploadCloudItem(this.centre, data.item, token)
                 return
             }
 
@@ -518,10 +488,20 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     )
                     return
                 }
-                removeCloudItem(this.centre, data.item._id, token)
+                cloud.removeCloudItem(this.centre, data.item._id, token)
                 return
             }
         }
+    }
+
+    private async onFavicon(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        [url]: [string, string],
+    ) {
+        Logger.init().log('Got onFavicon request', handler, url)
+        if (handler === REQUEST_HANDLER.RESPONSE_FAIL)
+            fetchAndSendFavicon(this.centre, url)
     }
 
     private sendResult(channel: IPC_CHANNELS, result = true) {
@@ -546,7 +526,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     return cookie.value
                 }
                 // If refresh token is expired, Clear!
-                Logger.getInstance().log('Refresh token is expired.')
+                Logger.init().log('Refresh token is expired.')
                 await this.removeTokens()
                 return ''
             })
@@ -589,7 +569,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                         sameSite: 'lax',
                     })
                     .catch(async (e) => {
-                        Logger.getInstance().error(
+                        Logger.init().error(
                             'Failed to set cookie for access token: ',
                             e.message,
                         )
@@ -613,10 +593,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                     return
                 })
                 .catch(async (e) => {
-                    Logger.getInstance().error(
-                        'Failed to verify token',
-                        e.message,
-                    )
+                    Logger.init().error('Failed to verify token', e.message)
                 })
         }
         return
@@ -626,18 +603,18 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         await this.browser.webContents.session.cookies
             .remove(SUJINC_URL, 'sujinc.com/refresh')
             .catch(async (e) => {
-                Logger.getInstance().error('Failed to remove cookie', e.message)
+                Logger.init().error('Failed to remove cookie', e.message)
             })
 
         await this.browser.webContents.session.cookies
             .remove(SUJINC_URL, 'sujinc.com/access')
             .catch(async (e) => {
-                Logger.getInstance().error('Failed to remove cookie', e.message)
+                Logger.init().error('Failed to remove cookie', e.message)
             })
         await this.browser.webContents.session.cookies
             .remove(SUJINC_URL, 'sujinc.com/user-info')
             .catch(async (e) => {
-                Logger.getInstance().error('Failed to remove cookie', e.message)
+                Logger.init().error('Failed to remove cookie', e.message)
             })
     }
 
@@ -653,14 +630,11 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 headers: { authorization: `Bearer ${token}` },
             })
             .then((result) => {
-                Logger.getInstance().log('refreshTokens() attempted')
+                Logger.init().log('refreshTokens() attempted')
                 return result
             })
             .catch((e) => {
-                Logger.getInstance().error(
-                    'refreshTokens() failed: ',
-                    e.message,
-                )
+                Logger.init().error('refreshTokens() failed: ', e.message)
                 return { json: async () => ({ result: false }) }
             })
         return await response.json()

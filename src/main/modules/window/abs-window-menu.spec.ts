@@ -9,7 +9,7 @@ import {
     toggleDevTools,
     winReload,
 } from '@test/mock-electron'
-import { browser, addAnchor } from '@test/mock-browser'
+import { browser } from '@test/mock-browser'
 import { anchors, bookmarks, shortcut } from '@test/mock-store'
 
 jest.resetModules()
@@ -30,7 +30,9 @@ const mockFocusFindInPage = jest.fn()
 const mockFindInPage = jest.fn()
 const mockStopFindInPage = jest.fn()
 const mockStop = jest.fn()
+const mockAddAnchor = jest.fn()
 class Menu extends AbsWindowMenu {
+    addCentreItem = mockAddAnchor
     focusFindInPage = mockFocusFindInPage
     findInPage = mockFindInPage
     stopFindInPage = mockStopFindInPage
@@ -72,7 +74,7 @@ describe('Window: Menu (abs-window-menu.ts)', () => {
                 : menu[1].submenu[15]
 
         menuItem.click()
-        expect(addAnchor).toHaveBeenCalled()
+        expect(mockAddAnchor).toHaveBeenCalled()
     })
 
     describe('🔍 Find', () => {

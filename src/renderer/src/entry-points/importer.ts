@@ -14,6 +14,7 @@ import { Notification } from '@home/template-parts/notification'
 import { UserInfo } from '@home/template-parts/user-info'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -21,7 +22,9 @@ import {
     SUJINC_URL,
 } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark, T_Cloud_Item } from '@src/common/types'
+import type { T_Cloud_Item } from '@src/common/types'
+/* Models */
+import { Logger } from '@src/common/logger'
 
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
@@ -67,23 +70,16 @@ class Importer extends A_List<T_Cloud_Item> {
 
     private request(): void {
         this.setEnabled(false)
-        ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(
-            IPC_CHANNELS.BOOKMARKS_RESPONSE,
-            (handler, response) => {
-                if (response) {
-                    // TODO
-                    this.setEnabled(true)
-                    const bookmarks = [
-                        ...Object.values(response.dirs),
-                        ...Object.values(response.items),
-                    ]
-                    this.keys.push(...bookmarks.map((item) => item.url))
-                }
-                this.setEnabled(true)
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
+                this.keys.push(
+                    ...bookmarks
+                        .filter((item) => !item.dir)
+                        .map((item) => item.url),
+                )
                 ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
-            },
-        )
+            })
+        })
 
         ipcRenderer.once(IPC_CHANNELS.CLOUD_RESPONSE, (handler, items = []) => {
             switch (handler) {
@@ -111,12 +107,13 @@ class Importer extends A_List<T_Cloud_Item> {
                         .filter((item) => item.data._id !== response.item!._id)
                         .map((item) => ({ ...item, items: [] as ListItem[] }))
                     this.renderList()
-                    this.notification.info(
-                        `${response.item!.title} is imported.`,
-                    )
+                    this.notification.info(`The bookmark is imported.`)
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
-                    // TODO
+                    this.setEnabled(true)
+                    Logger.init().error(response)
+                    if (response?.message)
+                        this.notification.error(response.message)
                     return
             }
         })
@@ -149,18 +146,13 @@ class Importer extends A_List<T_Cloud_Item> {
                         REQUEST_HANDLER.REMOVE,
                         { item: data },
                     )
-                    ipcRenderer.send(
-                        IPC_CHANNELS.BOOKMARK,
-                        REQUEST_HANDLER.ADD,
-                        {
-                            item: {
-                                id: 'from-cloud',
-                                url: '',
-                                title: data.message!,
-                            } satisfies T_Bookmark,
-                        },
-                    )
-                    this.setEnabled(false)
+                    const bookmark = JSON.parse(atob(data.message!))
+                    this.bookmarkStore.add({
+                        id: '',
+                        type: BOOKMARK_TYPES.BOOKMARK,
+                        title: bookmark.title,
+                        url: bookmark.url,
+                    })
                 })
             }
         })

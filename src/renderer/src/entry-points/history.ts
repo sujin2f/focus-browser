@@ -10,7 +10,7 @@ import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
-import type { T_Bookmark } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 class History extends A_ListCloudPush<T_Bookmark> {
     public notification: Notification = new Notification().appendTo('root')
@@ -88,6 +88,10 @@ class History extends A_ListCloudPush<T_Bookmark> {
         const length = this.items.length
 
         reversed.forEach(({ data: history, items }, index) => {
+            const icon = this.getFaviconColumn(history.url).appendTo(
+                this.list.element,
+            )
+
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
                 .setOnClick(() => {
@@ -107,6 +111,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
                         ],
                     )
                 })
+                .addClass('list--bookmarks__title')
 
             // Cloud
             const button = this.createCloudPushButton({
@@ -118,7 +123,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
             const send = new ListItem(button).appendTo(this.list.element)
             send.clickable = false
 
-            items.push(item, send)
+            items.push(icon, item, send)
         })
     }
 

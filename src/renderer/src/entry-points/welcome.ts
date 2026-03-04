@@ -6,7 +6,6 @@ import {
     ipcRenderer,
     commandSymbol,
 } from '@src/renderer/src/utils'
-import { callbackRequestBookmarks } from '@home/utils/bookmark'
 /* <HTML template-part /> */
 import { H1 } from '@home/template-parts/h1'
 import { H2 } from '@home/template-parts/h2'
@@ -15,9 +14,11 @@ import { UserInfo } from '@home/template-parts/user-info'
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
 import { ListItem } from '@home/template-parts/list-item'
 /* T_Types */
-import type { T_Bookmark, T_Shortcut_Store } from '@src/common/types'
+import type { T_Shortcut_Store } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
+    BOOKMARK_TYPES,
     BROWSER,
     CENTRE_PAGES,
     EMOJI,
@@ -31,7 +32,18 @@ class Welcome extends A_List<T_Bookmark> {
     protected folderIndex = 0
 
     constructor() {
+        // 🔖 Bookmark
         super('list--welcome')
+        this.bookmarkStore.ready(() => {
+            this.bookmarkStore.getAll(BOOKMARK_TYPES.BOOKMARK, (bookmarks) => {
+                if (!bookmarks || !bookmarks.length) {
+                    this.requestBookmarks()
+                    return
+                }
+
+                this.arrangeBookmarks(bookmarks.reverse())
+            })
+        })
 
         new H1(`${EMOJI.FOCUS} Welcome to Focus!`).prependTo('root')
 
@@ -53,18 +65,46 @@ class Welcome extends A_List<T_Bookmark> {
             })
 
         this.requestStatus('userInfo')
-        this.requestBookmarks()
         this.requestShortcuts()
     }
 
+    private arrangeBookmarks(bookmarks: T_Bookmark[]) {
+        this.dirs = {}
+        this.items = []
+
+        bookmarks.forEach((bookmark) => {
+            if (bookmark.dir) {
+                this.dirs[bookmark.id] = {
+                    data: bookmark,
+                    hidden: true,
+                    dir: [],
+                    items: [],
+                }
+                return
+            }
+            this.items.push({ data: bookmark, items: [] })
+        })
+
+        this.callbackRequestBookmarks()
+        this.setEnabled(true)
+    }
+
+    /**
+     * @deprecated
+     */
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARKS_RESPONSE, (_, response) => {
-            if (response) {
-                const { dirs, items } = callbackRequestBookmarks(response)
-                this.dirs = dirs
-                this.items = items
-                this.callbackRequestBookmarks()
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
+            if (response && Array.isArray(response)) {
+                const reverse = [...response].reverse()
+                this.bookmarkStore.add(reverse, () =>
+                    this.bookmarkStore.getAll(
+                        BOOKMARK_TYPES.BOOKMARK,
+                        (bookmarks) => {
+                            this.arrangeBookmarks(bookmarks)
+                        },
+                    ),
+                )
             }
         })
     }
@@ -79,13 +119,17 @@ class Welcome extends A_List<T_Bookmark> {
 
         // Dir
         Object.values(this.dirs).forEach((dir) => {
-            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
-            const row = new ListItem(dir.data.title).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
-            dir.dir.push(icon, row)
+            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() =>
+                this.onDirectoryClick(dir.data.id),
+            )
+            const title = new ListItem(dir.data.title)
+                .setOnClick(() => this.onDirectoryClick(dir.data.id))
+                .addClass(
+                    'list--bookmarks__title',
+                    'list--bookmarks__title--dir',
+                )
+
+            dir.dir.push(icon, title)
         })
 
         // Items
@@ -94,15 +138,24 @@ class Welcome extends A_List<T_Bookmark> {
                 item.data.parent && this.dirs[item.data.parent]
                     ? item.data.parent
                     : false
-            const icon = new ListItem(parent ? '⋯' : '').setOnClick(() => {
-                navigate(item.data.url)
-            })
-            const row = new ListItem(item.data.title).setOnClick(() => {
-                navigate(item.data.url)
-            })
-            item.items.push(icon, row)
+
+            const title = new ListItem(item.data.title)
+                .setOnClick(() => navigate(item.data.url))
+                .addClass('list--bookmarks__title')
+
             if (parent) {
-                this.dirs[parent].items.push(icon, row)
+                const icon1 = new ListItem('')
+                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => navigate(item.data.url),
+                )
+                item.items.push(icon1, icon2, title)
+                this.dirs[parent].items.push(icon1, icon2, title)
+            } else {
+                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                    () => navigate(item.data.url),
+                )
+                title.addClass('list--bookmarks__title--dir')
+                item.items.push(icon, title)
             }
         })
 
@@ -114,9 +167,7 @@ class Welcome extends A_List<T_Bookmark> {
 
         this.items.forEach((bookmark) => {
             bookmark.items.forEach((listItem) => {
-                if (bookmark.data.parent) {
-                    return
-                }
+                if (bookmark.data.parent) return
                 listItem.appendTo(this.list.element)
             })
         })
@@ -144,21 +195,17 @@ class Welcome extends A_List<T_Bookmark> {
             'Check out what to do',
         )
             .appendTo('grid')
-            .setOnClick(() => {
-                window.location.href = CENTRE_PAGES.HOME
-            })
+            .setOnClick(() => (window.location.href = CENTRE_PAGES.HOME))
     }
 
     protected callbackShortcut(e: KeyboardEvent) {
-        if (e.key === 'Escape') {
-            navigate()
-        }
+        if (e.key === 'Escape') navigate()
     }
 
     protected callbackUpdateStatus() {
-        if (!this.settings.userInfo) {
-            return
-        }
+        // 🤬 Invalid
+        if (!this.settings.userInfo) return
+
         const userInfo = JSON.parse(this.settings.userInfo)
         new UserInfo().picture = userInfo.picture
     }

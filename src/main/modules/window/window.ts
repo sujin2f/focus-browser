@@ -1,16 +1,29 @@
-import { nativeTheme, View, type BaseWindowConstructorOptions } from 'electron'
+import {
+    nativeTheme,
+    View,
+    Notification,
+    type BaseWindowConstructorOptions,
+} from 'electron'
 /* CONSTANTS */
-import { BROWSER, FIND } from '@src/common/constants'
+import {
+    BROWSER,
+    CENTRE_PAGES,
+    FIND,
+    IPC_CHANNELS,
+    REQUEST_HANDLER,
+    BOOKMARK_TYPES,
+} from '@src/common/constants'
 /* Models */
 import { History } from '@main/store/history'
 import { Status } from '@main/store/status'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { FindView } from '@main/modules/view/find'
 /* T_Types */
 import type { T_IPC_Switch } from '@src/common/types'
+import type { T_Bookmark } from '@src/common/types/store'
 
 const VIEWS = {
     BROWSER: BROWSER,
@@ -70,7 +83,7 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     constructor(options?: BaseWindowConstructorOptions) {
-        Logger.getInstance().log('BrowserWindow::constructor()')
+        Logger.init().log('BrowserWindow::constructor()')
         super(options)
         const status = Status.getInstance()
         const bounds = status.getBounds(this.getBounds())
@@ -98,10 +111,18 @@ export class BrowserWindow extends AbsWindowIPC {
             },
         )
 
-        this.browser.webContents.on('found-in-page', (_, result) => {
-            Logger.getInstance().log('found-in-page result', result)
-            this.find.setMatched(result.matches, result.activeMatchOrdinal)
-        })
+        this.browser.webContents
+            .on('found-in-page', (_, result) => {
+                Logger.init().log('found-in-page result', result)
+                this.find.setMatched(result.matches, result.activeMatchOrdinal)
+            })
+            .on('dom-ready', () => {
+                this.centre.send(
+                    IPC_CHANNELS.FAVICON,
+                    REQUEST_HANDLER.REQUEST,
+                    [this.browser.url, ''],
+                )
+            })
 
         if (nativeTheme.shouldUseDarkColors) {
             this.browser.setBackgroundColor('#030712')
@@ -113,7 +134,7 @@ export class BrowserWindow extends AbsWindowIPC {
      * Switch Scene
      */
     public switch(request: T_IPC_Switch) {
-        Logger.getInstance().log('Switch: ', request)
+        Logger.init().log('Switch: ', request)
 
         // 🤬 Find cannot set in Centre mode
         if (this._view === VIEWS.CENTRE && request.scene === FIND) return
@@ -124,11 +145,7 @@ export class BrowserWindow extends AbsWindowIPC {
             return
         }
 
-        Logger.getInstance().log(
-            'Switched to Browser: ',
-            this.browser.url,
-            request,
-        )
+        Logger.init().log('Switched to Browser: ', this.browser.url, request)
 
         if (request.searchEngine || !this.browser.url) {
             this.browser.searchKeyword('')
@@ -157,13 +174,13 @@ export class BrowserWindow extends AbsWindowIPC {
 
         // Save history
         if (this.browser && this.browser.webContents) {
-            Logger.getInstance().log('Save history')
+            Logger.init().log('Save history')
 
             const entries = this.browser.webContents.navigationHistory
             const maxHistory = status.get('maxHistory')
 
-            Logger.getInstance().log('entries.length', entries.length())
-            Logger.getInstance().log('maxHistory', maxHistory)
+            Logger.init().log('entries.length', entries.length())
+            Logger.init().log('maxHistory', maxHistory)
 
             new History().save(entries, maxHistory)
         }
@@ -213,13 +230,13 @@ export class BrowserWindow extends AbsWindowIPC {
     }
 
     focusFindInPage(text: string, forward: boolean) {
-        Logger.getInstance().log(`focusFindInPage('${text}', ${forward})`)
+        Logger.init().log(`focusFindInPage('${text}', ${forward})`)
         this.find.focus()
         this.findInPage(text, forward)
     }
 
     findInPage(text: string, forward: boolean, reset?: boolean) {
-        Logger.getInstance().log(`findInPage('${text}', ${forward})`)
+        Logger.init().log(`findInPage('${text}', ${forward})`)
         if (this._view !== VIEWS.FIND) {
             this.find.focus()
         }
@@ -258,5 +275,40 @@ export class BrowserWindow extends AbsWindowIPC {
         this.find.keyword = ''
         this.find.reset()
         this.view = VIEWS.BROWSER
+    }
+
+    /**
+     * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
+     * only when the push succeeds. Notification click switches to bookmark page.
+     */
+    public addCentreItem(type: BOOKMARK_TYPES) {
+        // 🤬 Not Active
+        if (this._view === VIEWS.CENTRE) return
+
+        this.centre.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.ADD, {
+            id: '',
+            title: this.browser.webContents.getTitle(),
+            url: this.browser.webContents.getURL(),
+            type,
+        } satisfies T_Bookmark)
+
+        const notification = new Notification({
+            title: 'Focus',
+            body:
+                type === BOOKMARK_TYPES.BOOKMARK
+                    ? 'New Bookmark Added'
+                    : 'New Anchor Added',
+            silent: true,
+        })
+        // Clicking the notification navigates to the bookmark page
+        notification.addListener('click', () => {
+            this.switch({
+                scene:
+                    type === 'bookmark'
+                        ? CENTRE_PAGES.BOOKMARK
+                        : CENTRE_PAGES.ANCHOR,
+            })
+        })
+        notification.show()
     }
 }

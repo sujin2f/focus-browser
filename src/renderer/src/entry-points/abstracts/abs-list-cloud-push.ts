@@ -9,7 +9,7 @@ import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Cloud_Item, T_IPC_Data } from '@src/common/types'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 
 export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     protected notification: Notification = new Notification().appendTo('root')
@@ -47,7 +47,7 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     }
 
     protected callbackCloudResponseFail(_?: T_IPC_Data<T_Cloud_Item>) {
-        Logger.getInstance().log(`callbackCloudResponseFail()`)
+        Logger.init().log(`callbackCloudResponseFail()`)
         if (this.currentButton) {
             this.currentButton.loading = false
             this.currentButton.disable()
@@ -56,7 +56,7 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     }
 
     protected callbackCloudResponseSuccess(_?: T_IPC_Data<T_Cloud_Item>) {
-        Logger.getInstance().log(`callbackCloudResponseSuccess()`)
+        Logger.init().log(`callbackCloudResponseSuccess()`)
         if (this.currentButton) {
             this.currentButton.loading = false
             this.currentButton.disable()
@@ -65,7 +65,7 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     }
 
     protected callbackCloudPush(button: ButtonCloudPush) {
-        Logger.getInstance().log(`callbackCloudPush()`)
+        Logger.init().log(`callbackCloudPush()`)
         if (!this.enabled) {
             return false
         }

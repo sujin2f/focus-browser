@@ -1,8 +1,9 @@
 import { A_Entry } from './abs-entry'
 /* <HTML template-part /> */
 import { List } from '@home/template-parts/list'
+import { ListItem } from '@home/template-parts/list-item'
 /* Models */
-import { Logger } from '@src/renderer/src/utils/logger'
+import { Logger } from '@src/common/logger'
 /* CONSTANTS */
 import { EMOJI } from '@src/common/constants'
 /* T_Types */
@@ -36,7 +37,7 @@ export abstract class A_List<T> extends A_Entry {
     protected onDirectoryClick(id: string) {
         const data = this.dirs[id]
         if (!data) {
-            Logger.getInstance().error('Clicked Dir does not exist.')
+            Logger.init().error('Clicked Dir does not exist.')
             return
         }
 
@@ -54,5 +55,20 @@ export abstract class A_List<T> extends A_Entry {
             }
         })
         data.hidden = !hidden
+    }
+
+    protected getFaviconColumn(url: string) {
+        const icon = new ListItem(EMOJI.GLOBE)
+        this.faviconStore.get(url, (favicon) => {
+            // 🤬 Invalid
+            if (!favicon) return
+
+            const image = document.createElement('img')
+            image.src = favicon.image
+            image.width = 20
+            image.height = 20
+            icon.title = image
+        })
+        return icon
     }
 }

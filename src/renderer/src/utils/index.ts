@@ -1,5 +1,5 @@
 import { BROWSER, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
-import { Logger } from '@home/utils/logger'
+import { canLog, isMain } from '@src/common/utils/common'
 
 export const checkElectron = () => {
     if (!window.electron) {
@@ -7,11 +7,17 @@ export const checkElectron = () => {
     }
 }
 
-export const ipcRenderer = {
-    on: window.electron.ipcRenderer.on,
-    send: window.electron.ipcRenderer.sendMessage,
-    once: window.electron.ipcRenderer.once,
-}
+export const ipcRenderer = isMain()
+    ? {
+          on: () => {},
+          send: () => {},
+          once: () => {},
+      }
+    : {
+          on: window.electron.ipcRenderer.on,
+          send: window.electron.ipcRenderer.sendMessage,
+          once: window.electron.ipcRenderer.once,
+      }
 
 export const navigate = (address = '') => {
     ipcRenderer.send(IPC_CHANNELS.SWITCH, REQUEST_HANDLER.EXECUTE, {
@@ -43,7 +49,7 @@ export const tagNameIs = (
 export const getSection = <T extends Element>(id: string) => {
     const element = document.querySelector<Element>(`#section-${id}`) as T
     if (!element) {
-        Logger.getInstance().error(`No #section-${id} element exist`)
+        if (canLog()) console.error(`No #section-${id} element exist`)
         throw new Error(`No #section-${id} element exist`)
     }
     return element

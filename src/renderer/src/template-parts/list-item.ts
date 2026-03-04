@@ -20,7 +20,7 @@ export class ListItem extends A_Element<HTMLDivElement> {
     }
 
     constructor(
-        private _title: string | A_Element<HTMLElement>,
+        private _title: string | A_Element<HTMLElement> | HTMLElement,
         private _description?: string,
     ) {
         super('#list-item')
@@ -29,9 +29,12 @@ export class ListItem extends A_Element<HTMLDivElement> {
     protected afterAppend() {
         if (typeof this._title === 'string') {
             this.element.querySelector('h3')!.textContent = this._title
-        } else {
+        } else if (this._title instanceof A_Element) {
             this._title.appendTo(this.title)
+        } else {
+            this.element.querySelector('h3')!.append(this._title)
         }
+
         if (this._description) {
             this.element.querySelector('p')!.textContent = this._description
         } else {

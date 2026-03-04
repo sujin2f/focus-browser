@@ -2,12 +2,19 @@ import { randomUUID } from 'crypto'
 /* Models */
 import { Store } from '@main/store/store'
 /* T_Types */
-import type { T_Bookmark, T_Bookmark_Store } from '@src/common/types'
-import { getSafeUrl } from '@src/common/utils/common'
+import type { T_Bookmark } from '@src/common/types/store'
+
+type T_Bookmark_Store = {
+    dirs: Record<string, T_Bookmark>
+    items: Record<string, T_Bookmark>
+}
 
 type T_Store = T_Bookmark_Store & {
     version: number
 }
+/**
+ * @deprecated moving to centre
+ */
 export class Bookmarks extends Store<T_Store> {
     protected fileName = 'bookmarks'
     protected defaults = { version: 1, dirs: {}, items: {} }
@@ -17,83 +24,8 @@ export class Bookmarks extends Store<T_Store> {
         this.migrate()
     }
 
-    public update(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
-        // 🤬 Title is empty
-        if (!bookmark.title) return false
-
-        bookmark.title = bookmark.title.trim()
-
-        if (isDir) {
-            // 🤬 Directory Not exist
-            if (!this.data.dirs[bookmark.id]) return false
-            this.data.dirs[bookmark.id] = bookmark
-            return bookmark
-        }
-
-        // 🤬 URL is invalid
-        const url = getSafeUrl(bookmark.url)
-        if (!url) return false
-
-        // 🤬 Not exist
-        if (!this.data.items[bookmark.id]) return false
-
-        this.data.items[bookmark.id] = { ...bookmark, url: url.toString() }
-        return { ...bookmark, url: url.toString() }
-    }
-
-    /**
-     * Add bookmark / dir
-     * @param bookmark
-     * @returns
-     */
-    public push(bookmark: T_Bookmark, isDir = false): T_Bookmark | false {
-        // 🤬 Title is empty
-        if (!bookmark.title) return false
-
-        bookmark.id = randomUUID().toString()
-        bookmark.title = bookmark.title.trim()
-
-        // Directory
-        if (isDir) {
-            this._data.dirs = {
-                ...this._data.dirs,
-                [bookmark.id]: bookmark,
-            }
-            return bookmark
-        }
-
-        // 🤬 URL is invalid
-        const url = getSafeUrl(bookmark.url)
-        if (!url) return false
-
-        // 🤬 URL duplicated
-        for (const item of Object.values(this.data.items)) {
-            if (item.url === bookmark.url) return false
-        }
-
-        this._data.items = {
-            [bookmark.id]: { ...bookmark, url: url.toString() },
-            ...this._data.items,
-        }
-        return { ...bookmark, url: url.toString() }
-    }
-
-    public remove(id: string, isDir = false) {
-        if (isDir) {
-            delete this.data.dirs[id]
-            Object.values(this.data.items).forEach((bookmark) => {
-                if (bookmark.parent === id) {
-                    delete bookmark.parent
-                }
-            })
-            return
-        }
-
-        delete this.data.items[id]
-    }
-
-    public parse() {
-        return
+    get<K extends keyof T_Bookmark_Store>(key: K): T_Bookmark_Store[K] {
+        return this.data[key]
     }
 
     private migrate() {
@@ -101,14 +33,14 @@ export class Bookmarks extends Store<T_Store> {
 
         // 🤬 File is empty
         if (!fileContent) {
-            this._data = this.defaults
+            this.data = this.defaults
             return
         }
 
         let data = JSON.parse(fileContent)
         // 😃 Current version
         if (data.version === this.defaults) {
-            this._data = data
+            this.data = data
             return
         }
 
@@ -142,6 +74,6 @@ export class Bookmarks extends Store<T_Store> {
             } satisfies T_Store
         }
 
-        this._data = data
+        this.data = data
     }
 }

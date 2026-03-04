@@ -26,7 +26,7 @@ export class Keystrokes extends Store<KeystrokesStore> {
         super.parse()
 
         if (!this.data.version) {
-            this._data = {
+            this.data = {
                 version: '1',
                 keystrokes: {},
             }
@@ -37,9 +37,9 @@ export class Keystrokes extends Store<KeystrokesStore> {
 
     update(host: string, keystroke: string) {
         if (!keystroke) {
-            delete this._data.keystrokes[host]
+            delete this.data.keystrokes[host]
         } else {
-            this._data.keystrokes[host] = keystroke
+            this.data.keystrokes[host] = keystroke
         }
     }
 

@@ -16,14 +16,15 @@ import {
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
+    BOOKMARK_TYPES,
 } from '@src/common/constants'
 /* Models */
 import { Shortcut } from '@main/store/shortcut'
 import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
-import { Logger } from '@main/lib/logger'
+import { Logger } from '@src/common/logger'
 /* Utils */
-import { isBeta, isDev, isTest } from '@src/common/utils/common'
+import { canLog } from '@src/common/utils/common'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -40,6 +41,7 @@ import { isBeta, isDev, isTest } from '@src/common/utils/common'
 export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     protected browser!: BrowserView
     protected centre!: CenterView
+    private shortcuts?: Shortcut
 
     private get menuItems(): MenuBlock {
         const view: MenuItems = {
@@ -137,13 +139,13 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             [Menu.ADD_BOOKMARK]: {
                 accelerator: this.getShortcut(Menu.ADD_BOOKMARK),
                 click: () => {
-                    this.browser.addBookmark(this)
+                    this.addCentreItem(BOOKMARK_TYPES.BOOKMARK)
                 },
             },
             [Menu.ADD_ANCHOR]: {
                 accelerator: this.getShortcut(Menu.ADD_ANCHOR),
                 click: () => {
-                    this.browser.addAnchor(this)
+                    this.addCentreItem(BOOKMARK_TYPES.ANCHOR)
                 },
             },
         }
@@ -183,7 +185,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                             }
                         })
                         .catch((e) => {
-                            Logger.getInstance().error(
+                            Logger.init().error(
                                 `Menu.BACK_HIDDEN failed get tagName ${JSON.stringify(e)}`,
                             )
                         })
@@ -211,7 +213,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                             }
                         })
                         .catch((e) => {
-                            Logger.getInstance().error(
+                            Logger.init().error(
                                 `Menu.FORWARD_HIDDEN failed get tagName ${JSON.stringify(e)}`,
                             )
                         })
@@ -287,7 +289,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                       [MenuCategory.NAVIGATE]: navigate,
                   }
 
-        if (isDev() || (isBeta() && !isTest())) {
+        if (canLog()) {
             if (result[MenuCategory.EDIT]) {
                 result[MenuCategory.EDIT][Menu.TEST] = {
                     label: 'Run Test Block',
@@ -301,11 +303,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     }
 
     private getShortcut(menu: Menu): string {
-        const store = new Shortcut()
-        const shortcut = store.getShortcut(menu)
-        if (shortcut) {
-            return shortcut
-        }
+        if (!this.shortcuts) this.shortcuts = new Shortcut()
+        const shortcut = this.shortcuts.getShortcut(menu)
+        if (shortcut) return shortcut
 
         const system =
             process.platform === 'darwin'
@@ -323,6 +323,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     constructor(options?: BaseWindowConstructorOptions) {
         super(options)
         this.resetMenu()
+        this.shortcuts = new Shortcut()
     }
 
     protected resetMenu() {
@@ -339,7 +340,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     submenu.push({ type: 'separator' })
                     return
                 }
-                const label = `${EMOJI[subKey] ? `${EMOJI[subKey]} ` : ''}${subKey}`
+                const label = `${EMOJI[subKey as keyof typeof EMOJI] || ''}${subKey}`
                 submenu.push({
                     label,
                     ...value[subKey as keyof typeof value],
@@ -396,11 +397,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
             { type: 'separator' },
             {
                 label: 'Add Bookmark',
-                click: () => this.browser.addBookmark(this),
+                click: () => this.addCentreItem(BOOKMARK_TYPES.BOOKMARK),
             },
             {
                 label: 'Add Anchor',
-                click: () => this.browser.addAnchor(this),
+                click: () => this.addCentreItem(BOOKMARK_TYPES.ANCHOR),
             },
             {
                 label: 'Control Centre',
@@ -470,7 +471,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
-    private async runTest() {}
+    private async runTest() {
+        this.switch({ scene: CENTRE_PAGES.WELCOME })
+    }
 
     abstract switch(request: T_IPC_Switch): void
     abstract toggleDevTools(): void
@@ -481,4 +484,5 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract focusFindInPage(text: string, forward: boolean): void
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
     abstract stopFindInPage(): void
+    abstract addCentreItem(type: BOOKMARK_TYPES): void
 }

@@ -3,7 +3,7 @@ import { net } from 'electron'
 import { removeDirectory } from '@src/common/utils/fs'
 /* Models */
 import { getCleanerData } from '@src/child-process/process/cleaner'
-import * as anchor from '@src/child-process/process/anchor'
+import { getAnchors } from '@src/child-process/process/anchor'
 import { getBookmarks } from '@src/child-process/process/bookmark'
 import * as cloud from '@src/child-process/process/cloud'
 import { fetchFavicon } from '@src/common/utils/common'
@@ -43,7 +43,7 @@ process.parentPort.once('message', (e) => {
          * @deprecated
          */
         case 'list-anchor':
-            anchor.getAnchors(e.data.path)
+            getAnchors(e.data.path)
             return
 
         case 'fetch-favicon': {

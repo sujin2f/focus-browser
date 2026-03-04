@@ -79,9 +79,10 @@ export class Logger {
     }
 
     throw(...params: unknown[]) {
-        if (!this.isActive) return
         this.error(...params)
-        throw new Error(params.map((param) => JSON.stringify(param)).join(', '))
+        return new Error(
+            params.map((param) => JSON.stringify(param)).join(', '),
+        )
     }
 
     private sendToMain(type: LogTypes, ...params: unknown[]) {

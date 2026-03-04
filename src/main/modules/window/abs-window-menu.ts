@@ -342,7 +342,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     submenu.push({ type: 'separator' })
                     return
                 }
-                const label = `${EMOJI[subKey] ? `${EMOJI[subKey]} ` : ''}${subKey}`
+                const label = `${EMOJI[subKey as keyof typeof EMOJI] || ''}${subKey}`
                 submenu.push({
                     label,
                     ...value[subKey as keyof typeof value],

@@ -59,7 +59,7 @@ class Shortcuts extends A_Entry {
         Object.keys(EDITABLE_SHORTCUTS).forEach((parent) => {
             new H2(parent).appendTo(this.form).addClass('h2--shortcuts')
             EDITABLE_SHORTCUTS[parent as MenuCategory]!.forEach((menu) => {
-                const label = `${EMOJI[menu] ? `${EMOJI[menu]} ` : ''}${menu}`
+                const label = `${EMOJI[menu as keyof typeof EMOJI] || ''}${menu}`
                 new Input(label, menu).appendTo('form').value =
                     this.getValue(menu)
             })

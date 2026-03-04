@@ -68,21 +68,44 @@ export const getSafeUrl = (text: string): URL | false | undefined => {
     return url
 }
 
+/**
+ * 🅕 Get Favicon from gStatic
+ * @param _url
+ * @returns {[string, string]} host and image
+ */
 export const fetchFavicon = async (_url: string): Promise<[string, string]> => {
     const url = getSafeUrl(_url)
     // 🤬 URL is not valid
     if (!url) throw new Error(`URL is not valid: ${_url}`) // TODO Log & Error
+
     const host = url.hostname
     const origin = `${url.protocol}//${host}`
     const DEFAULT = ['', ''] satisfies [string, string]
+
     return await fetch(
         `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=32`,
-        { headers: { 'Access-Control-Allow-Origin': '*' } },
     )
         .then(async (response) => {
             const image = response.headers.get('content-location')
+            // 🤬 Image does not exist
             if (!image) return DEFAULT
-            return [host, image] satisfies [string, string]
+
+            // Check image accessibility
+            return await fetch(image)
+                .then(async (responseImageUrl) => {
+                    // 😃 Image is accessible
+                    if (responseImageUrl.status === 200)
+                        return [host, image] satisfies [string, string]
+
+                    // 🤬 URL is not accessible, store image as base64
+                    const bytes = await response.bytes()
+                    const buffer = Buffer.from(bytes)
+                    return [
+                        host,
+                        `data:image/png;base64,${buffer.toString('base64')}`,
+                    ] satisfies [string, string]
+                })
+                .catch(() => DEFAULT)
         })
         .catch(() => DEFAULT)
 }

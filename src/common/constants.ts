@@ -114,7 +114,7 @@ export enum Menu {
     TEST = 'Run Test Block',
 }
 
-export const EMOJI: Record<string, string> = {
+export const EMOJI = {
     [Menu.PASTE_KEYSTROKE]: '🎹',
     [Menu.ADD_BOOKMARK]: '🔖',
     [Menu.ADD_ANCHOR]: '⚓️',

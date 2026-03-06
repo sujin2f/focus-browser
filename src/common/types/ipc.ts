@@ -36,7 +36,7 @@ type Context_Item = {
     history: T_Bookmark_Partial
     cloud: T_Cloud_Item
 }
-export type T_IPC_Context<T extends keyof Context_Item = 'bookmark'> = {
+export type T_IPC_Context<T extends keyof Context_Item> = {
     x: number
     y: number
     type: T
@@ -67,5 +67,5 @@ export type T_IPC_Message = {
     [IPC_CHANNELS.CLOUD]: T_IPC_Data<T_Cloud_Item>
     [IPC_CHANNELS.CLOUD_RESPONSE]: T_Cloud_Item[]
     [IPC_CHANNELS.FAVICON]: [string, string]
-    [IPC_CHANNELS.CONTEXT]: T_IPC_Context
+    [IPC_CHANNELS.CONTEXT]: T_IPC_Context<keyof Context_Item>
 }

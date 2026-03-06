@@ -28,12 +28,13 @@ export const isNatural = (arg: number) => {
     return arg >= 0
 }
 
-export const byteToSize = (byte: number): string => {
-    const mb = 1024 * 1024
-    if (byte < mb) return `${byte} bytes`
-    const gb = mb * 1024
-    if (byte < gb) return `${(byte / mb).toFixed(2)} Mb`
-    return `${(byte / gb).toFixed(2)} Gb`
+export const byteToSize = (bytes: number, decimals = 2): string => {
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
 /**

@@ -212,11 +212,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 this.switch({ scene: BROWSER })
                 this.browser.webContents.navigationHistory.goToIndex(history)
                 return
-
-            case REQUEST_HANDLER.REMOVE:
-                this.browser.webContents.navigationHistory.clear()
-                this.sendResult(IPC_CHANNELS.HISTORY)
-                return
         }
     }
 
@@ -514,7 +509,6 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
     }
 
     private sendResult(channel: IPC_CHANNELS, result = true) {
-        // this.centre.send(channel, REQUEST_HANDLER.RESULT, result)
         this.centre.send(
             channel as keyof T_IPC_Message,
             result

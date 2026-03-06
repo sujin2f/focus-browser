@@ -151,8 +151,8 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         expect(goToIndex).toHaveBeenCalledWith(2)
     })
 
-    test('onHistory > clear', () => {
-        ipc[2][1](null, REQUEST_HANDLER.REMOVE)
+    test('🧼 onCleaner > clear history', () => {
+        ipc[10][1](null, REQUEST_HANDLER.REMOVE, { request: 'history' })
         expect(historyClear).toHaveBeenCalled()
     })
 

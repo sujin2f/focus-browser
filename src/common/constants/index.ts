@@ -122,7 +122,7 @@ export const EMOJI = {
     [Menu.ADD_BOOKMARK]: '🔖',
     [Menu.ADD_ANCHOR]: '⚓️',
     CLEANER: '🧼',
-    HISTORY: '📝',
+    HISTORY: '📜',
     POPUP_BLOCKER: '👮',
     SHORTCUTS: '🏁',
     SETTINGS: '⚙️',

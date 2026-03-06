@@ -27,7 +27,7 @@ import { BrowserView } from '@main/modules/view/browser'
 import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 /* Utils */
-import { canLog } from '@src/common/utils/common'
+import { byteToSize, canLog } from '@src/common/utils/common'
 import {
     removeCloudItem,
     uploadCloudItem,
@@ -579,6 +579,35 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     private async runTest() {
         this.switch({ scene: CENTRE_PAGES.WELCOME })
+        Logger.init().log(`Memory Usage`)
+
+        // TODO Memory usage #150
+        const processMemoryInfo = await process.getProcessMemoryInfo()
+        Logger.init().log(
+            'Process Memory Info (KB):',
+            byteToSize(processMemoryInfo.private * 1024),
+            byteToSize(processMemoryInfo.shared * 1024),
+        )
+
+        const memoryStats = process.memoryUsage()
+        Logger.init().log(
+            `Memory Usage in Main Process:`,
+            byteToSize(memoryStats.rss),
+            byteToSize(memoryStats.heapTotal),
+            byteToSize(memoryStats.heapUsed),
+            byteToSize(memoryStats.external),
+        )
+
+        const systemMemory = process.getSystemMemoryInfo()
+        Logger.init().log(
+            `Total System Memory: ${byteToSize(systemMemory.total * 1024)}`,
+        )
+        Logger.init().log(
+            `Free System Memory: ${byteToSize(systemMemory.free * 1024)}`,
+        )
+
+        const usage = process.getCPUUsage()
+        Logger.init().log(`CPU usage`, usage)
     }
 
     abstract switch(request: T_IPC_Switch): void

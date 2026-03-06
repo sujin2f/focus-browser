@@ -5,6 +5,7 @@ import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
+import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import {
     EMOJI,
@@ -17,12 +18,36 @@ import type { T_Anchor } from '@src/common/types/store'
 import { Logger } from '@src/common/logger'
 
 class Anchors extends A_ListCloudPush<T_Anchor> {
+    private btnClear: Button
+    // (En/Dis)able
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.btnClear.enable()
+        } else {
+            this.btnClear.disable()
+        }
+    }
+
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
         this.initStore()
 
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
+        this.btnClear = new Button(`${EMOJI.TRASH} Clear Anchor`)
+            .prependTo('buttons')
+            .on('click', () => {
+                this.setEnabled(false)
+                this.anchorStore.removeAll((result) => {
+                    console.log(result)
+                    this.items = []
+                    this.renderList()
+                    this.notification.info('Anchor cleared successfully!')
+                    this.setEnabled(true)
+                })
+            })
+            .disable()
     }
 
     private initStore() {

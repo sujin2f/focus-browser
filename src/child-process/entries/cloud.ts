@@ -82,9 +82,10 @@ export const uploadCloudItem = (
 
 export const removeCloudItem = (
     centre: CenterView,
-    _id: string,
+    _id: string | undefined,
     token: string,
 ) => {
+    if (!_id) return
     const child = utilityProcess.fork(paths.childProcess)
     child.postMessage({ channel: 'remove-cloud-item', _id, token })
     child.once('message', (message) => {

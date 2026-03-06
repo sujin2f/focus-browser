@@ -23,6 +23,8 @@ import {
     Menu,
     REQUEST_HANDLER,
 } from '@src/common/constants'
+/* Models */
+import { Logger } from '@src/common/logger'
 
 class Bookmarks extends A_ListCloudPush<T_Bookmark> {
     protected folderIndex = 0
@@ -49,9 +51,11 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     constructor() {
         super('list--bookmarks')
+        this.requestStatus('title', 'url', 'userInfo')
         this.initStore()
         // 🎹 shortcuts
         this.initSearch()
+        this.ipcListener()
 
         // Title
         new Title(`Bookmarks ${EMOJI[Menu.ADD_BOOKMARK]}`)
@@ -59,22 +63,23 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         // 📂 Buttons >> Create Folder
         this.createFolder = new Button(`${EMOJI.FOLDER_OPEN} Create Folder`)
             .appendTo('buttons')
-            .setOnClick(() => {
-                this.modal.open(this.getDirs(), { isDir: true })
+            .on('click', () => {
+                this.modal.open(this.getDirs(), {
+                    dir: true,
+                    url: '',
+                    title: '',
+                } as T_Bookmark)
             })
         // 🔖 Buttons >> Add Bookmark
         this.createItem = new Button('💾 Add Bookmark')
             .prependTo('buttons')
-            .setOnClick(() => {
+            .on('click', () => {
                 this.modal.open(this.getDirs(), {
-                    bookmark: {
-                        title: this.settings.title || '',
-                        url: this.settings.url || '',
-                    } as T_Bookmark,
-                })
+                    dir: false,
+                    url: this.settings.url || '',
+                    title: this.settings.title || '',
+                } as T_Bookmark)
             })
-
-        this.requestStatus('title', 'url', 'userInfo')
     }
 
     private initStore() {
@@ -125,7 +130,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         })
 
         this.setShortcuts()
-        this.callbackRequestBookmarks()
+        this.render()
         this.setEnabled(true)
     }
 
@@ -134,117 +139,119 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
      */
     private requestBookmarks(): void {
         ipcRenderer.send(IPC_CHANNELS.BOOKMARK, REQUEST_HANDLER.REQUEST)
-        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (_, response) => {
-            if (response && Array.isArray(response)) {
-                const reverse = [...response].reverse()
-                this.bookmarkStore.add(reverse, () =>
-                    this.bookmarkStore.getAll((bookmarks) => {
-                        this.arrangeBookmarks(bookmarks)
-                    }),
-                )
+        ipcRenderer.once(IPC_CHANNELS.BOOKMARK, (handler, response) => {
+            if (handler !== REQUEST_HANDLER.RESPONSE_SUCCESS) return
+            if (!response || !Array.isArray(response)) return
+
+            const reverse = [...response].reverse()
+            this.bookmarkStore.add(reverse, () =>
+                this.bookmarkStore.getAll((bookmarks) =>
+                    this.arrangeBookmarks(bookmarks),
+                ),
+            )
+        })
+    }
+
+    private ipcListener(): void {
+        ipcRenderer.on(IPC_CHANNELS.BOOKMARK, (handler, id) => {
+            switch (handler) {
+                case REQUEST_HANDLER.MODIFY: {
+                    if (typeof id !== 'string') return
+                    const item = Object.keys(this.dirs).includes(id)
+                        ? this.dirs[id].data
+                        : this.items
+                              .filter((item) => item.data.id === id)
+                              .map((item) => item.data)[0]
+                    Logger.init().info(
+                        'Bookmarks::ipcListener():: MODIFY',
+                        id,
+                        item,
+                    )
+                    if (item) this.modal.open(this.getDirs(), item)
+                    return
+                }
+                case REQUEST_HANDLER.REMOVE: {
+                    if (typeof id !== 'number') return
+                    this.bookmarkStore.remove(id, () =>
+                        window.location.reload(),
+                    )
+                    return
+                }
             }
         })
     }
-    private callbackRequestBookmarks(): void {
+
+    private render(): void {
         this.list.element.innerHTML = ''
 
         // Dir
         Object.values(this.dirs).forEach((dir) => {
-            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() => {
-                this.onDirectoryClick(dir.data.id)
-            })
+            const icon = new ListItem(EMOJI.FOLDER_CLOSE).on('click', () =>
+                this.onDirectoryClick(dir.data.id),
+            )
             const title = new ListItem(dir.data.title)
-                .setOnClick(() => {
-                    this.onDirectoryClick(dir.data.id)
-                })
-                .addClass(
-                    'list--bookmarks__title',
-                    'list--bookmarks__title--dir',
-                )
-            let shortcut = new ListItem('')
+                .on('click', () => this.onDirectoryClick(dir.data.id))
+                .addClass('list__item--colspan-2-2')
+            const shortcut = new ListItem('').on('click', () =>
+                this.onDirectoryClick(dir.data.id),
+            )
             if (dir.data.shortcut) {
-                shortcut = new ListItem(
-                    new Button(dir.data.shortcut.toUpperCase()).setOnClick(() =>
-                        this.onDirectoryClick(dir.data.id),
-                    ),
+                shortcut.title = new Button(
+                    dir.data.shortcut.toUpperCase(),
+                    'button-small',
                 )
             }
-            const edit = new ListItem(
-                new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
-                    this.modal.open(this.getDirs(), {
-                        isDir: true,
-                        bookmark: dir.data,
-                    })
-                }),
-            )
-            edit.clickable = false
+            const edit = new ListItem(EMOJI.MENU)
+                .on('click', (e) => this.showContextMenu(e, dir.data))
+                .on('contextmenu', (e) => this.showContextMenu(e, dir.data))
 
-            dir.dir.push(icon, title, shortcut, new ListItem(''), edit)
+            dir.dir.push(icon, title, shortcut, edit)
         })
 
         // Items
         this.items.forEach((item) => {
-            const parent =
-                item.data.parent && this.dirs[item.data.parent]
-                    ? item.data.parent
-                    : false
+            const parent = this.hasParent(item.data)
             const columns: ListItem[] = []
 
-            const title = new ListItem(item.data.title)
-                .setOnClick(() => {
-                    navigate(item.data.url)
-                })
-                .addClass('list--bookmarks__title')
+            const title = new ListItem(item.data.title).on('click', () =>
+                navigate(item.data.url),
+            )
 
             if (!parent) {
-                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                const favicon = this.getFaviconColumn(item.data.url).on(
+                    'click',
                     () => navigate(item.data.url),
                 )
-                title.addClass('list--bookmarks__title--dir')
-                columns.push(icon, title)
+                title.addClass('list__item--colspan-2-2')
+                columns.push(favicon, title)
             } else {
-                const icon1 = new ListItem('').setOnClick(() =>
+                const empty = new ListItem('').on('click', () =>
                     navigate(item.data.url),
                 )
-                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                const favicon = this.getFaviconColumn(item.data.url).on(
+                    'click',
                     () => navigate(item.data.url),
                 )
-                columns.push(icon1, icon2, title)
+                columns.push(empty, favicon, title)
             }
 
-            let shortcut = new ListItem('')
+            const shortcut = new ListItem('').on('click', () =>
+                navigate(item.data.url),
+            )
             if (item.data.shortcut) {
-                shortcut = new ListItem(
-                    new Button(item.data.shortcut.toUpperCase()).setOnClick(
-                        () => navigate(item.data.url),
-                    ),
+                shortcut.title = new Button(
+                    item.data.shortcut.toUpperCase(),
+                    'button-small',
                 )
             }
-            // ☁️ Cloud
-            let cloud = new ListItem('')
-            if (item.data.url) {
-                const button = this.createCloudPushButton({
-                    title: item.data.title,
-                    key: item.data.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(item.data),
-                })
-                cloud = new ListItem(button)
-            }
-            cloud.clickable = false
-            const edit = new ListItem(
-                new Button(EMOJI.SETTINGS, 'button-clear').setOnClick(() => {
-                    this.modal.open(this.getDirs(), {
-                        isDir: false,
-                        bookmark: item.data,
-                    })
-                }),
-            )
-            edit.clickable = false
 
-            item.items.push(...columns, shortcut, cloud, edit)
+            const edit = new ListItem(EMOJI.MENU)
+                .on('click', (e) => this.showContextMenu(e, item.data))
+                .on('contextmenu', (e) => this.showContextMenu(e, item.data))
+
+            item.items.push(...columns, shortcut, edit)
             if (parent) {
-                this.dirs[parent].items.push(...columns, shortcut, cloud, edit)
+                this.dirs[parent].items.push(...columns, shortcut, edit)
             }
         })
 
@@ -256,11 +263,31 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
         this.items.forEach((bookmark) => {
             bookmark.items.forEach((listItem) => {
-                if (bookmark.data.parent) {
+                if (this.hasParent(bookmark.data)) {
                     return
                 }
                 listItem.appendTo(this.list.element)
             })
+        })
+    }
+
+    private hasParent(item: T_Bookmark) {
+        return item.parent && this.dirs[item.parent] ? item.parent : false
+    }
+
+    private showContextMenu(e: PointerEvent, item: T_Bookmark) {
+        e.preventDefault()
+
+        const enabled: string[] = ['remove', 'edit']
+        if (!item.dir && !this.hasCloudItem.has(item.url)) enabled.push('cloud')
+        this.currentUrl = item.url
+
+        ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
+            x: e.x,
+            y: e.y,
+            type: 'bookmark',
+            item,
+            enabled,
         })
     }
 

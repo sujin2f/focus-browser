@@ -93,27 +93,38 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
 
                 const title = new ListItem(anchor.title, anchor.url)
                     .appendTo(this.list.element)
-                    .setOnClick(() => {
+                    .on('click', () => {
                         if (this.enabled && anchor.uid) {
                             this.anchorStore.remove(anchor.uid, () =>
                                 navigate(anchor.url),
                             )
                         }
                     })
-                    .addClass('list--bookmarks__title')
 
-                // Cloud
-                const button = this.createCloudPushButton({
-                    title: anchor.title,
-                    key: anchor.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(anchor),
-                })
-                const send = new ListItem(button).appendTo(this.list.element)
-                send.clickable = false
+                // Context
+                const context = new ListItem(EMOJI.MENU)
+                    .appendTo(this.list.element)
+                    .on('click', (e) => this.showContextMenu(e, anchor))
+                    .on('contextmenu', (e) => this.showContextMenu(e, anchor))
 
-                items.push(icon, title, send)
+                items.push(icon, title, context)
             })
+    }
+
+    private showContextMenu(e: PointerEvent, item: T_Anchor) {
+        e.preventDefault()
+
+        const enabled: string[] = ['remove', 'bookmark']
+        if (!this.hasCloudItem.has(item.url)) enabled.push('cloud')
+        this.currentUrl = item.url
+
+        ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
+            x: e.x,
+            y: e.y,
+            type: 'anchor',
+            item,
+            enabled,
+        })
     }
 }
 

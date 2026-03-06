@@ -1,6 +1,6 @@
 // yarn test constants.spec.ts
 
-import { SUJINC_DOMAIN, SUJINC_URL } from './constants'
+import { SUJINC_DOMAIN, SUJINC_URL } from '.'
 
 describe('constants (constants.ts)', () => {
     test('sujinc.com URL is well assigned', async () => {

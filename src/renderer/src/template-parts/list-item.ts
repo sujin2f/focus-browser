@@ -1,49 +1,45 @@
 import { A_Element } from './abs-element'
+import { Button } from './button'
 
-export class ListItem extends A_Element<HTMLDivElement> {
-    public get title() {
+export class ListItem extends Button {
+    public get title(): HTMLHeadingElement {
         return this.element.querySelector('h3')!
     }
 
-    public set title(title: string | HTMLElement) {
+    public set title(title: string | A_Element<HTMLElement> | HTMLElement) {
         if (!this.element) {
             this._title = title
             return
         }
-        this.element.querySelector('h3')!.textContent = ''
-        this.element.querySelector('h3')!.append(title)
-    }
 
-    // If you need this element's click action to differ other columns, set this false and append additional button in title
-    private _clickable = true
-    public set clickable(clickable: boolean) {
-        this._clickable = clickable
-    }
-    public get clickable() {
-        return this._clickable
+        this.title.innerHTML = ''
+
+        if (typeof title === 'string') {
+            this.title.textContent = title
+        } else if (title instanceof A_Element) {
+            title.appendTo(this.title)
+        } else if (title) {
+            this.title.append(title)
+        }
     }
 
     constructor(
-        private _title: string | A_Element<HTMLElement> | HTMLElement,
+        protected _title?: string | A_Element<HTMLElement> | HTMLElement,
         private _description?: string,
     ) {
-        super('#list-item')
+        super(_title, 'list-item')
     }
 
     protected afterAppend() {
-        if (typeof this._title === 'string') {
-            this.element.querySelector('h3')!.textContent = this._title
-        } else if (this._title instanceof A_Element) {
-            this._title.appendTo(this.title)
-        } else {
-            this.element.querySelector('h3')!.append(this._title)
-        }
+        if (this._title) this.title = this._title
 
         if (this._description) {
             this.element.querySelector('p')!.textContent = this._description
         } else {
             this.element.querySelector('p')!.remove()
         }
+
+        this._title = undefined
         super.afterAppend()
     }
 }

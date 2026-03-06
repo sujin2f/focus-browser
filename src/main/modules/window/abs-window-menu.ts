@@ -7,7 +7,9 @@ import {
     type ContextMenuParams,
 } from 'electron'
 /* T_Types */
-import type { MenuBlock, MenuItems, T_IPC_Switch } from '@src/common/types'
+import type { MenuBlock, MenuItems, T_Cloud_Item } from '@src/common/types'
+import type { T_IPC_Switch, T_IPC_Context } from '@src/common/types/ipc'
+import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
     MenuCategory,
@@ -16,6 +18,8 @@ import {
     SystemType,
     DEFAULT_SHORTCUTS,
     EMOJI,
+    IPC_CHANNELS,
+    REQUEST_HANDLER,
 } from '@src/common/constants'
 /* Models */
 import { Shortcut } from '@main/store/shortcut'
@@ -24,6 +28,10 @@ import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 /* Utils */
 import { canLog } from '@src/common/utils/common'
+import {
+    removeCloudItem,
+    uploadCloudItem,
+} from '@src/child-process/entries/cloud'
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -482,6 +490,93 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         })
     }
 
+    public showCentreContextMenu(
+        context: T_IPC_Context<'bookmark' | 'anchor' | 'history' | 'cloud'>,
+        token: string,
+    ) {
+        const { x, y, type, item: _item, enabled } = context
+        const channel = (() => {
+            switch (type) {
+                case 'bookmark':
+                    return IPC_CHANNELS.BOOKMARK
+                case 'anchor':
+                    return IPC_CHANNELS.ANCHOR
+                case 'history':
+                    return IPC_CHANNELS.HISTORY
+                case 'cloud':
+                    return IPC_CHANNELS.CLOUD
+            }
+        })()
+        const item =
+            type === 'cloud'
+                ? (JSON.parse((_item as T_Cloud_Item).message!) as T_Bookmark)
+                : (_item as T_Bookmark)
+        const menu: MenuItemConstructorOptions[] = []
+
+        if (enabled?.includes('edit'))
+            menu.push({
+                label: `${EMOJI.SETTINGS} Edit`,
+                click: () =>
+                    this.centre.send(channel, REQUEST_HANDLER.MODIFY, item.id),
+            })
+
+        if (enabled?.includes('remove'))
+            menu.push({
+                label: `${EMOJI.TRASH} Remove`,
+                click: () =>
+                    this.centre.send(channel, REQUEST_HANDLER.REMOVE, item.uid),
+            })
+
+        if (enabled?.includes('bookmark'))
+            menu.push({
+                label: `${EMOJI[Menu.ADD_BOOKMARK]} Add to Bookmark`,
+                click: () => {
+                    this.addCentreItem('bookmark', item.title, item.url)
+
+                    // ☁️ Remove from cloud
+                    if (type !== 'cloud') return
+                    removeCloudItem(
+                        this.centre,
+                        (_item as T_Cloud_Item)._id,
+                        token,
+                    )
+                },
+            })
+
+        if (enabled?.includes('anchor'))
+            menu.push({
+                label: `${EMOJI[Menu.ADD_ANCHOR]} Add to Anchor`,
+                click: () => {
+                    this.addCentreItem('anchor', item.title, item.url)
+
+                    // ☁️ Remove from cloud
+                    if (type !== 'cloud') return
+                    removeCloudItem(
+                        this.centre,
+                        (_item as T_Cloud_Item)._id,
+                        token,
+                    )
+                },
+            })
+
+        if (enabled?.includes('cloud') && token) {
+            const cloudItem = {
+                title: item.title,
+                key: item.url,
+                type: 'bookmark',
+                message: JSON.stringify(item),
+            } satisfies T_Cloud_Item
+
+            menu.push({
+                label: `${EMOJI.CLOUD} Push to Cloud`,
+                click: async () =>
+                    uploadCloudItem(this.centre, cloudItem, token),
+            })
+        }
+
+        if (menu.length) ElectronMenu.buildFromTemplate(menu).popup({ x, y })
+    }
+
     private async runTest() {
         this.switch({ scene: CENTRE_PAGES.WELCOME })
     }
@@ -495,5 +590,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     abstract focusFindInPage(text: string, forward: boolean): void
     abstract findInPage(text: string, forward: boolean, reset?: boolean): void
     abstract stopFindInPage(): void
-    abstract addCentreItem(type: 'bookmark' | 'anchor'): void
+    abstract addCentreItem(
+        type: 'bookmark' | 'anchor',
+        title?: string,
+        url?: string,
+    ): void
 }

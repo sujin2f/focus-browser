@@ -4,7 +4,7 @@ import { CENTRE_PAGES, REQUEST_HANDLER } from '@src/common/constants'
 import { resolveHtmlPath } from '@src/common/utils/fs'
 import { paths } from '@src/common/utils/fs'
 /* T_Types */
-import type { T_IPC_Message } from '@src/common/types'
+import type { T_IPC_Message } from '@src/common/types/ipc'
 /* Models */
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 import { Logger } from '@src/common/logger'

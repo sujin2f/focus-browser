@@ -92,7 +92,11 @@ export abstract class A_Entry {
             // 🤬 Invalid
             if (!response) return
 
-            if (handler === REQUEST_HANDLER.ADD && !Array.isArray(response))
+            if (
+                handler === REQUEST_HANDLER.ADD &&
+                !Array.isArray(response) &&
+                typeof response !== 'string'
+            )
                 this.bookmarkStore.add(response)
         })
 

@@ -2,6 +2,11 @@
 import { Logger } from '@src/common/logger'
 import { getSection } from '@src/renderer/src/utils'
 
+type T_Event_Listener<T extends keyof HTMLElementEventMap> = (
+    this: HTMLElement,
+    ev: HTMLElementEventMap[T],
+) => unknown
+
 export abstract class A_Element<T extends HTMLElement> {
     private node?: Node
     protected _element?: T
@@ -25,10 +30,31 @@ export abstract class A_Element<T extends HTMLElement> {
 
     protected afterAppend() {
         if (this.onClickCallback) this.setOnClick(this.onClickCallback)
+
+        Object.keys(this.events).forEach((event) =>
+            this.on(event, this.events[event]),
+        )
         if (this.classes) this.addClass(...this.classes)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private events: Record<string, T_Event_Listener<any>> = {}
+    public on<T extends keyof HTMLElementEventMap>(
+        type: T,
+        listener: T_Event_Listener<T>,
+    ): this {
+        if (!this.element && !this.events[type]) {
+            this.events[type] = listener
+            return this
+        }
+        this.element.addEventListener(type, listener.bind(this.element))
+        return this
+    }
+
     private onClickCallback?: ((e: PointerEvent) => void) | (() => void)
+    /**
+     * @deprecated
+     */
     public setOnClick(callback: ((e: PointerEvent) => void) | (() => void)) {
         if (!this.element && !this.onClickCallback) {
             this.onClickCallback = callback

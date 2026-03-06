@@ -36,7 +36,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
         // Clear History
         this.btnClear = new Button('Clear History')
             .prependTo('buttons')
-            .setOnClick(() => {
+            .on('click', () => {
                 this.setEnabled(false)
                 ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REMOVE)
             })
@@ -58,6 +58,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
 
     private request(): void {
         ipcRenderer.send(IPC_CHANNELS.HISTORY, REQUEST_HANDLER.REQUEST)
+        // TODO same with cleaner??
         ipcRenderer.on(IPC_CHANNELS.HISTORY, (handler, history = []) => {
             this.setEnabled(true)
 
@@ -94,10 +95,8 @@ class History extends A_ListCloudPush<T_Bookmark> {
 
             const item = new ListItem(history.title, history.url)
                 .appendTo(this.list.element)
-                .setOnClick(() => {
-                    if (!this.enabled) {
-                        return
-                    }
+                .on('click', () => {
+                    if (!this.enabled) return
                     this.setEnabled(false)
                     ipcRenderer.send(
                         IPC_CHANNELS.HISTORY,
@@ -105,19 +104,30 @@ class History extends A_ListCloudPush<T_Bookmark> {
                         length - 1 - index,
                     )
                 })
-                .addClass('list--bookmarks__title')
 
-            // Cloud
-            const button = this.createCloudPushButton({
-                title: history.title,
-                key: history.url,
-                type: 'bookmark',
-                message: JSON.stringify(history),
-            })
-            const send = new ListItem(button).appendTo(this.list.element)
-            send.clickable = false
+            // Context
+            const context = new ListItem(EMOJI.MENU)
+                .appendTo(this.list.element)
+                .on('click', (e) => this.showContextMenu(e, history))
+                .on('contextmenu', (e) => this.showContextMenu(e, history))
 
-            items.push(icon, item, send)
+            items.push(icon, item, context)
+        })
+    }
+
+    private showContextMenu(e: PointerEvent, item: T_Bookmark) {
+        e.preventDefault()
+
+        const enabled: string[] = ['bookmark', 'anchor']
+        if (!this.hasCloudItem.has(item.url)) enabled.push('cloud')
+        this.currentUrl = item.url
+
+        ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
+            x: e.x,
+            y: e.y,
+            type: 'history',
+            item,
+            enabled,
         })
     }
 

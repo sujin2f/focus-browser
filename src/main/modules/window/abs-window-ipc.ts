@@ -21,8 +21,8 @@ import {
     MainEventTypes,
     CENTRE_PAGES,
     SUJINC_DOMAIN,
-    SUJINC_URL,
     EMOJI,
+    SUJINC_URL,
 } from '@src/common/constants'
 /* Utils */
 import { canLog } from '@src/common/utils/common'
@@ -35,15 +35,14 @@ import { responseBookmarks } from '@src/child-process/entries/bookmark'
 import { responseAnchors } from '@src/child-process/entries/anchor'
 import { fetchAndSendFavicon } from '@src/child-process/entries/favicon'
 /* T_Types */
+import type { T_Status_Props, T_Cleaner, T_Cloud_Item } from '@src/common/types'
 import type {
-    T_Status_Props,
-    T_Cleaner,
-    T_IPC_Status,
     T_IPC_Switch,
+    T_IPC_Status,
     T_IPC_Message,
-    T_Cloud_Item,
     T_IPC_Data,
-} from '@src/common/types'
+    T_IPC_Context,
+} from '@src/common/types/ipc'
 import type { T_Bookmark } from '@src/common/types/store'
 
 /**
@@ -71,6 +70,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         ipcMain.on(IPC_CHANNELS.CLEANER, this.onCleaner.bind(this))
         ipcMain.on(IPC_CHANNELS.CLOUD, this.onCloud.bind(this))
         ipcMain.on(IPC_CHANNELS.FAVICON, this.onFavicon.bind(this))
+        ipcMain.on(IPC_CHANNELS.CONTEXT, this.onContext.bind(this))
 
         if (canLog()) {
             ipcMain.on(IPC_CHANNELS.LOG, this.onLog.bind(this))
@@ -493,7 +493,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         }
     }
 
-    private async onFavicon(
+    private onFavicon(
         _: IpcMainEvent,
         handler: REQUEST_HANDLER,
         [url]: [string, string],
@@ -501,6 +501,16 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         Logger.init().log('Got onFavicon request', handler, url)
         if (handler === REQUEST_HANDLER.RESPONSE_FAIL)
             fetchAndSendFavicon(this.centre, url)
+    }
+
+    private async onContext(
+        _: IpcMainEvent,
+        handler: REQUEST_HANDLER,
+        value: T_IPC_Context<'bookmark' | 'anchor' | 'history' | 'cloud'>,
+    ) {
+        Logger.init().info('context menu', handler, value)
+        const token = await this.getAccessToken()
+        this.showCentreContextMenu(value, token)
     }
 
     private sendResult(channel: IPC_CHANNELS, result = true) {

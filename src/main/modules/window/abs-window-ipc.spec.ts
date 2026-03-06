@@ -47,7 +47,8 @@ import {
 
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { CenterView } from '../view/centre'
-import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
+import type { Scenes } from '@src/common/types'
+import type { T_IPC_Switch, T_IPC_Status } from '@src/common/types/ipc'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {

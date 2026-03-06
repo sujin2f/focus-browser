@@ -35,6 +35,10 @@
     animation-duration: 2.5s;
 }
 
+.list__item--colspan-2-2 {
+    grid-column: 2 / span 2;
+}
+
 .list--welcome {
     grid-template-columns: max-content max-content minmax(200px, 1fr);
 }
@@ -42,19 +46,7 @@
 .list--bookmarks {
     grid-template-columns:
         max-content max-content minmax(200px, 1fr)
-        max-content max-content max-content;
-}
-
-.list--bookmarks__title h3 {
-    margin-left: calc(var(--spacing) * 2);
-}
-
-.list--bookmarks__title p {
-    margin-left: calc(var(--spacing) * 2);
-}
-
-.list--bookmarks__title--dir {
-    grid-column: 2 / span 2;
+        max-content max-content;
 }
 
 .list--anchors {
@@ -66,15 +58,9 @@
 }
 
 .list--cloud-items {
-    grid-template-columns: max-content max-content minmax(200px, 1fr);
-}
-
-.list--cloud-items :nth-child(3n + 1) h3 {
-    margin-right: calc(var(--spacing) * 2);
-}
-
-.list--cloud-items :nth-child(3n + 2) h3 {
-    margin-right: calc(var(--spacing) * 2);
+    grid-template-columns:
+        max-content max-content minmax(200px, 1fr)
+        max-content;
 }
 
 .h2--shortcuts {

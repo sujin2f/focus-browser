@@ -142,6 +142,7 @@
             "target": {
                 "target": "default",
                 "arch": [
+                    "arm64",
                     "x64"
                 ]
             },
@@ -172,6 +173,7 @@
             "target": {
                 "target": "deb",
                 "arch": [
+                    "arm64",
                     "x64"
                 ]
             },

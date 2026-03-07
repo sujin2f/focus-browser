@@ -1,6 +1,6 @@
 {
     "name": "focus-browser",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "A lightweight browser without tabs.",
     "license": "MIT",
     "scripts": {
@@ -142,7 +142,6 @@
             "target": {
                 "target": "default",
                 "arch": [
-                    "arm64",
                     "x64"
                 ]
             },
@@ -173,7 +172,6 @@
             "target": {
                 "target": "deb",
                 "arch": [
-                    "arm64",
                     "x64"
                 ]
             },

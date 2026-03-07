@@ -71,16 +71,25 @@ export abstract class A_FormElement<
         super.afterAppend()
     }
 
+    /**
+     * @deprecated
+     */
     public setOnInput(callback: ((e: Event) => void) | (() => void)) {
         this.input.addEventListener('input', callback.bind(this))
         return this
     }
 
+    /**
+     * @deprecated
+     */
     public setOnChange(callback: (e: Event) => void) {
         this.input.addEventListener('change', callback.bind(this))
         return this
     }
 
+    /**
+     * @deprecated
+     */
     public setOnKeyUp(callback: (e: KeyboardEvent) => void) {
         ;(this.input as HTMLInputElement).addEventListener(
             'keyup',

@@ -29,6 +29,9 @@ export class Card extends A_Element<HTMLAnchorElement> {
         super.afterAppend()
     }
 
+    /**
+     * @deprecated
+     */
     public setOnClick(callback: () => void) {
         this.element.addEventListener('click', callback.bind(this))
         return this

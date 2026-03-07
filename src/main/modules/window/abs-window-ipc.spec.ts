@@ -47,7 +47,8 @@ import {
 
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { CenterView } from '../view/centre'
-import { Scenes, T_IPC_Status, T_IPC_Switch } from '@src/common/types'
+import type { Scenes } from '@src/common/types'
+import type { T_IPC_Switch, T_IPC_Status } from '@src/common/types/ipc'
 
 const switchFn = jest.fn()
 class IPC extends AbsWindowIPC {
@@ -150,8 +151,8 @@ describe('Window: IPC (abs-window-ipc.ts)', () => {
         expect(goToIndex).toHaveBeenCalledWith(2)
     })
 
-    test('onHistory > clear', () => {
-        ipc[2][1](null, REQUEST_HANDLER.REMOVE)
+    test('🧼 onCleaner > clear history', () => {
+        ipc[10][1](null, REQUEST_HANDLER.REMOVE, { request: 'history' })
         expect(historyClear).toHaveBeenCalled()
     })
 

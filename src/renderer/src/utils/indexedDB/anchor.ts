@@ -44,19 +44,23 @@ export class Anchor extends Abs_Database<'anchor'> {
     }
 
     public removeAll(callback: (result: boolean) => void) {
-        const tx = this.getTransaction('readwrite')
+        const store = this.getStore()
         // 🤬 DB does not exist
-        if (!tx) return
+        if (!store) return
 
-        this.getAll((anchors) =>
-            anchors.forEach((anchor) =>
+        const request = store.getAll()
+        request.onsuccess = async () => {
+            const tx = this.getTransaction('readwrite')
+            if (!tx) return
+
+            tx.oncomplete = () => {
+                callback(true)
+            }
+            request.result.forEach((anchor) =>
                 tx.objectStore(this.STORE).delete(anchor.uid),
-            ),
-        )
-
-        tx.oncomplete = () => {
-            if (callback) callback(true)
+            )
         }
+        request.onerror = () => callback(false)
     }
 
     public remove(id: number, callback?: (result: boolean) => void): void {

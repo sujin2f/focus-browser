@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { REQUEST_HANDLER } from '@src/common/constants'
-import { T_IPC_Message } from './common/types'
+import type { T_IPC_Message } from '@src/common/types/ipc'
 
 const electronHandler = {
     ipcRenderer: {

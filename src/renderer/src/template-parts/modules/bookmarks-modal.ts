@@ -21,7 +21,6 @@ export class BookmarkModal extends Modal {
     public folder: Select
 
     private submit: Button
-    private remove: Button
 
     private isDir = false
 
@@ -42,21 +41,6 @@ export class BookmarkModal extends Modal {
         this.submit = new Button('Save Changes').appendTo(formButtons)
         this.submit.type = 'submit'
 
-        // 🗑️ Remove
-        this.remove = new Button('🗑️', 'button-clear')
-            .appendTo(formButtons)
-            .setOnClick(() => {
-                // 🤬 Invalid
-                if (!this.bookmark || !this.bookmark.uid) return
-
-                const store = new Bookmark()
-                store.ready(() =>
-                    store.remove(this.bookmark!.uid!, () =>
-                        window.location.reload(),
-                    ),
-                )
-            })
-
         this.form.addEventListener('submit', (e) => {
             e.preventDefault()
             this.onSubmit()
@@ -68,31 +52,16 @@ export class BookmarkModal extends Modal {
         this.content.append(this.form)
     }
 
-    open(
-        dirs: T_Bookmark[],
-        {
-            isDir = false,
-            bookmark,
-        }: {
-            isDir?: boolean
-            bookmark?: T_Bookmark
-        },
-    ) {
+    open(dirs: T_Bookmark[], bookmark?: T_Bookmark) {
         this.bookmark = bookmark
-        this.isDir = isDir
+        this.isDir = Boolean(bookmark?.dir)
 
         this.title.value = bookmark ? bookmark.title : ''
         this.url.value = bookmark ? bookmark.url : ''
         this.shortcut.value = bookmark ? bookmark.shortcut : ''
         this.folder.value = bookmark ? bookmark.shortcut : ''
 
-        if (bookmark?.id) {
-            this.remove.show()
-        } else {
-            this.remove.hide()
-        }
-
-        if (isDir) {
+        if (this.isDir) {
             this.folder.hide()
             this.url.hide()
         } else {
@@ -113,7 +82,6 @@ export class BookmarkModal extends Modal {
 
         super.show()
         this.submit.enable()
-        this.remove.enable()
         this.title.focus()
     }
 
@@ -129,7 +97,6 @@ export class BookmarkModal extends Modal {
         }
 
         this.submit.disable()
-        this.remove.disable()
         const url = !this.isDir ? this.url.value : ''
         const parent = this.folder.value
 

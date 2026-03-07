@@ -5,6 +5,7 @@ import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
 import { UserInfo } from '@home/template-parts/user-info'
+import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import {
     EMOJI,
@@ -17,12 +18,36 @@ import type { T_Anchor } from '@src/common/types/store'
 import { Logger } from '@src/common/logger'
 
 class Anchors extends A_ListCloudPush<T_Anchor> {
+    private btnClear: Button
+    // (En/Dis)able
+    protected setEnabled(enabled: boolean) {
+        super.setEnabled(enabled)
+        if (enabled) {
+            this.btnClear.enable()
+        } else {
+            this.btnClear.disable()
+        }
+    }
+
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
         this.initStore()
 
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
+        this.btnClear = new Button(`${EMOJI.TRASH} Clear Anchor`)
+            .prependTo('buttons')
+            .on('click', () => {
+                this.setEnabled(false)
+                this.anchorStore.removeAll((result) => {
+                    console.log(result)
+                    this.items = []
+                    this.renderList()
+                    this.notification.info('Anchor cleared successfully!')
+                    this.setEnabled(true)
+                })
+            })
+            .disable()
     }
 
     private initStore() {
@@ -93,27 +118,38 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
 
                 const title = new ListItem(anchor.title, anchor.url)
                     .appendTo(this.list.element)
-                    .setOnClick(() => {
+                    .on('click', () => {
                         if (this.enabled && anchor.uid) {
                             this.anchorStore.remove(anchor.uid, () =>
                                 navigate(anchor.url),
                             )
                         }
                     })
-                    .addClass('list--bookmarks__title')
 
-                // Cloud
-                const button = this.createCloudPushButton({
-                    title: anchor.title,
-                    key: anchor.url,
-                    type: 'bookmark',
-                    message: JSON.stringify(anchor),
-                })
-                const send = new ListItem(button).appendTo(this.list.element)
-                send.clickable = false
+                // Context
+                const context = new ListItem(EMOJI.MENU)
+                    .appendTo(this.list.element)
+                    .on('click', (e) => this.showContextMenu(e, anchor))
+                    .on('contextmenu', (e) => this.showContextMenu(e, anchor))
 
-                items.push(icon, title, send)
+                items.push(icon, title, context)
             })
+    }
+
+    private showContextMenu(e: PointerEvent, item: T_Anchor) {
+        e.preventDefault()
+
+        const enabled: string[] = ['remove', 'bookmark']
+        if (!this.hasCloudItem.has(item.url)) enabled.push('cloud')
+        this.currentUrl = item.url
+
+        ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
+            x: e.x,
+            y: e.y,
+            type: 'anchor',
+            item,
+            enabled,
+        })
     }
 }
 

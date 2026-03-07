@@ -3,24 +3,18 @@ import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 import { ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Notification } from '@home/template-parts/notification'
-import { ButtonCloudPush } from '@home/template-parts/modules/button-cloud-push'
 /* CONSTANTS */
 import { IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
-import type { T_Cloud_Item, T_IPC_Data } from '@src/common/types'
+import type { T_Cloud_Item } from '@src/common/types'
+import type { T_IPC_Data } from '@src/common/types/ipc'
 /* Models */
 import { Logger } from '@src/common/logger'
 
 export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
     protected notification: Notification = new Notification().appendTo('root')
-    private currentButton?: ButtonCloudPush
-
-    protected setEnabled(enabled: boolean) {
-        super.setEnabled(enabled)
-        if (this.currentButton) {
-            this.currentButton.loading = !enabled
-        }
-    }
+    protected currentUrl = ''
+    protected hasCloudItem: Set<string> = new Set()
 
     constructor(css: string = '') {
         super(css)
@@ -32,54 +26,25 @@ export abstract class A_ListCloudPush<T> extends A_ListSearch<T> {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE_FAIL:
                     this.callbackCloudResponseFail(message)
-                    if (message?.message) {
-                        this.notification.error(message.message)
-                    }
                     return
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
                     this.callbackCloudResponseSuccess(message)
-                    if (message?.message) {
-                        this.notification.info(message.message)
-                    }
                     return
             }
         })
     }
 
-    protected callbackCloudResponseFail(_?: T_IPC_Data<T_Cloud_Item>) {
+    protected callbackCloudResponseFail(message?: T_IPC_Data<T_Cloud_Item>) {
         Logger.init().log(`callbackCloudResponseFail()`)
-        if (this.currentButton) {
-            this.currentButton.loading = false
-            this.currentButton.disable()
-        }
         this.setEnabled(true)
+        if (message?.message) this.notification.error(message.message)
+        if (this.currentUrl) this.hasCloudItem.add(this.currentUrl)
     }
 
-    protected callbackCloudResponseSuccess(_?: T_IPC_Data<T_Cloud_Item>) {
+    protected callbackCloudResponseSuccess(message?: T_IPC_Data<T_Cloud_Item>) {
         Logger.init().log(`callbackCloudResponseSuccess()`)
-        if (this.currentButton) {
-            this.currentButton.loading = false
-            this.currentButton.disable()
-        }
         this.setEnabled(true)
-    }
-
-    protected callbackCloudPush(button: ButtonCloudPush) {
-        Logger.init().log(`callbackCloudPush()`)
-        if (!this.enabled) {
-            return false
-        }
-        this.currentButton = button
-        this.currentButton.loading = true
-        this.setEnabled(false)
-        return true
-    }
-
-    protected createCloudPushButton(item: T_Cloud_Item) {
-        const button = new ButtonCloudPush(
-            item,
-            () => this.settings.userInfo,
-        ).setOnClick(() => this.callbackCloudPush(button))
-        return button
+        if (message?.message) this.notification.info(message.message)
+        if (this.currentUrl) this.hasCloudItem.add(this.currentUrl)
     }
 }

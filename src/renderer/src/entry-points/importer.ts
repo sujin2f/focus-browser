@@ -28,13 +28,12 @@ import { Logger } from '@src/common/logger'
 class Importer extends A_List<T_Cloud_Item> {
     private notification: Notification = new Notification().appendTo('root')
     private loading = new Loading().appendTo('loading').hide()
-    private keys: string[] = []
-    private currentRow?: ListItem
+    private bookmarks: string[] = []
+    private anchors: string[] = []
     protected setEnabled(enabled: boolean) {
         super.setEnabled(enabled)
         if (enabled) {
             this.loading.hide()
-            this.currentRow = undefined
         } else {
             this.loading.show()
         }
@@ -45,41 +44,46 @@ class Importer extends A_List<T_Cloud_Item> {
         this.requestStatus('userInfo')
         this.request()
 
-        // Title
         new Title(`Importer ${EMOJI.CLOUD}`)
-
         getSection('list').classList.add('list--cloud-items')
     }
 
     protected callbackUpdateStatus(): void {
         const userInfo = new UserInfo()
+
         if (this.settings.userInfo) {
             const user = JSON.parse(this.settings.userInfo)
             userInfo.picture = user.picture
-        } else {
-            userInfo.loggedOut()
-            getSection('login-alert').classList.remove('hidden')
-            getSection('login-alert')
-                .querySelector('button')
-                ?.addEventListener('click', () => {
-                    navigate(SUJINC_URL)
-                })
+            return
         }
+
+        userInfo.loggedOut()
+        getSection('login-alert').classList.remove('hidden')
+        getSection('login-alert')
+            .querySelector('button')
+            ?.addEventListener('click', () => navigate(SUJINC_URL))
     }
 
     private request(): void {
         this.setEnabled(false)
-        this.bookmarkStore.ready(() => {
-            this.bookmarkStore.getAll((bookmarks) => {
-                this.keys.push(
+
+        this.bookmarkStore.ready(() =>
+            this.bookmarkStore.getAll((bookmarks) =>
+                this.bookmarks.push(
                     ...bookmarks
                         .filter((item) => !item.dir)
                         .map((item) => item.url),
-                )
-                ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
-            })
-        })
+                ),
+            ),
+        )
 
+        this.anchorStore.ready(() =>
+            this.anchorStore.getAll((anchors) =>
+                this.anchors.push(...anchors.map((item) => item.url)),
+            ),
+        )
+
+        ipcRenderer.send(IPC_CHANNELS.CLOUD, REQUEST_HANDLER.REQUEST)
         ipcRenderer.once(IPC_CHANNELS.CLOUD_RESPONSE, (handler, items = []) => {
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE:
@@ -87,29 +91,25 @@ class Importer extends A_List<T_Cloud_Item> {
                         data: item,
                         items: [] as ListItem[],
                     }))
-                    this.renderList()
+                    this.render()
                     this.setEnabled(true)
                     return
             }
         })
 
         ipcRenderer.on(IPC_CHANNELS.CLOUD, (handler, response) => {
+            this.setEnabled(true)
             switch (handler) {
                 case REQUEST_HANDLER.RESPONSE_SUCCESS:
-                    this.setEnabled(true)
-
-                    if (!response?.item) {
-                        // Fail
-                        return
-                    }
+                    // TODO Fail
+                    if (!response?.item) return
                     this.items = this.items
                         .filter((item) => item.data._id !== response.item!._id)
                         .map((item) => ({ ...item, items: [] as ListItem[] }))
-                    this.renderList()
+                    this.render()
                     this.notification.info(`The bookmark is imported.`)
                     return
                 case REQUEST_HANDLER.RESPONSE_FAIL:
-                    this.setEnabled(true)
                     Logger.init().error(response)
                     if (response?.message)
                         this.notification.error(response.message)
@@ -118,43 +118,43 @@ class Importer extends A_List<T_Cloud_Item> {
         })
     }
 
-    private renderList() {
+    private render() {
         this.list.element.innerHTML = ''
         // Create & Assign ListItems
         this.items.forEach(({ data }) => {
-            const device = new ListItem(data.device || '')
-            const row = new ListItem(data.title)
-            const icon = new ListItem(
-                data.type === 'bookmark' ? EMOJI[Menu.ADD_BOOKMARK] : '',
-            )
-
-            icon.appendTo(this.list.element)
-            device.appendTo(this.list.element)
-            row.appendTo(this.list.element)
-
-            if (this.keys.includes(data.key)) {
-                row.element.classList.add('section-disabled')
-            } else {
-                row.setOnClick(() => {
-                    if (!this.enabled) {
-                        return
-                    }
-                    this.currentRow = row
+            new ListItem(EMOJI[Menu.ADD_BOOKMARK]).appendTo(this.list.element)
+            new ListItem(data.device || '').appendTo(this.list.element)
+            new ListItem(data.title)
+                .appendTo(this.list.element)
+                .on('click', () => {
                     const bookmark = JSON.parse(data.message!)
-                    this.bookmarkStore.add(
-                        {
-                            title: bookmark.title,
-                            url: bookmark.url,
-                        },
-                        () =>
-                            ipcRenderer.send(
-                                IPC_CHANNELS.CLOUD,
-                                REQUEST_HANDLER.REMOVE,
-                                { item: data },
-                            ),
-                    )
+                    navigate(bookmark.url)
                 })
-            }
+
+            // Context
+            const enabled = this.getEnabled(data)
+            new ListItem(enabled.length ? EMOJI.MENU : '')
+                .appendTo(this.list.element)
+                .on('click', (e) => this.showContextMenu(e, data))
+                .on('contextmenu', (e) => this.showContextMenu(e, data))
+        })
+    }
+
+    private getEnabled(item: T_Cloud_Item) {
+        const enabled: string[] = []
+        if (!this.bookmarks.includes(item.key)) enabled.push('bookmark')
+        if (!this.anchors.includes(item.key)) enabled.push('anchor')
+        return enabled
+    }
+
+    private showContextMenu(e: PointerEvent, item: T_Cloud_Item) {
+        e.preventDefault()
+        ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
+            x: e.x,
+            y: e.y,
+            type: 'cloud',
+            item,
+            enabled: this.getEnabled(item),
         })
     }
 }

@@ -45,6 +45,7 @@ export enum IPC_CHANNELS {
     CLOUD = 'CLOUD',
     CLOUD_RESPONSE = 'CLOUD_RESPONSE',
     FAVICON = 'FAVICON',
+    CONTEXT = 'CENTRE_CONTEXT',
 }
 
 export enum REQUEST_HANDLER {
@@ -121,7 +122,7 @@ export const EMOJI = {
     [Menu.ADD_BOOKMARK]: '🔖',
     [Menu.ADD_ANCHOR]: '⚓️',
     CLEANER: '🧼',
-    HISTORY: '📝',
+    HISTORY: '📜',
     POPUP_BLOCKER: '👮',
     SHORTCUTS: '🏁',
     SETTINGS: '⚙️',
@@ -139,6 +140,8 @@ export const EMOJI = {
     STAR: '⭐️',
     PEEK: '👀',
     BABY: '👶',
+    TRASH: '🗑️',
+    MENU: '⋮⋮',
 }
 
 export const SEARCH_ENGINES = {

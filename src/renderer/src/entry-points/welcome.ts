@@ -51,17 +51,15 @@ class Welcome extends A_List<T_Bookmark> {
             'Visit the last page from your history',
         )
             .appendTo('grid')
-            .setOnClick(() => {
-                navigate()
-            })
+            .on('click', () => navigate())
         new Card(`${EMOJI.SETTINGS} Search Engine`, 'Search Web')
             .appendTo('grid')
-            .setOnClick(() => {
+            .on('click', () =>
                 ipcRenderer.send(IPC_CHANNELS.SWITCH, REQUEST_HANDLER.EXECUTE, {
                     searchEngine: true,
                     scene: BROWSER,
-                })
-            })
+                }),
+            )
 
         this.requestStatus('userInfo')
         this.requestShortcuts()
@@ -97,9 +95,9 @@ class Welcome extends A_List<T_Bookmark> {
             if (response && Array.isArray(response)) {
                 const reverse = [...response].reverse()
                 this.bookmarkStore.add(reverse, () =>
-                    this.bookmarkStore.getAll((bookmarks) => {
-                        this.arrangeBookmarks(bookmarks)
-                    }),
+                    this.bookmarkStore.getAll((bookmarks) =>
+                        this.arrangeBookmarks(bookmarks),
+                    ),
                 )
             }
         })
@@ -115,15 +113,12 @@ class Welcome extends A_List<T_Bookmark> {
 
         // Dir
         Object.values(this.dirs).forEach((dir) => {
-            const icon = new ListItem(EMOJI.FOLDER_CLOSE).setOnClick(() =>
+            const icon = new ListItem(EMOJI.FOLDER_CLOSE).on('click', () =>
                 this.onDirectoryClick(dir.data.id),
             )
             const title = new ListItem(dir.data.title)
-                .setOnClick(() => this.onDirectoryClick(dir.data.id))
-                .addClass(
-                    'list--bookmarks__title',
-                    'list--bookmarks__title--dir',
-                )
+                .on('click', () => this.onDirectoryClick(dir.data.id))
+                .addClass('list__item--colspan-2-2')
 
             dir.dir.push(icon, title)
         })
@@ -135,22 +130,24 @@ class Welcome extends A_List<T_Bookmark> {
                     ? item.data.parent
                     : false
 
-            const title = new ListItem(item.data.title)
-                .setOnClick(() => navigate(item.data.url))
-                .addClass('list--bookmarks__title')
+            const title = new ListItem(item.data.title).on('click', () =>
+                navigate(item.data.url),
+            )
 
             if (parent) {
                 const icon1 = new ListItem('')
-                const icon2 = this.getFaviconColumn(item.data.url).setOnClick(
+                const icon2 = this.getFaviconColumn(item.data.url).on(
+                    'click',
                     () => navigate(item.data.url),
                 )
                 item.items.push(icon1, icon2, title)
                 this.dirs[parent].items.push(icon1, icon2, title)
             } else {
-                const icon = this.getFaviconColumn(item.data.url).setOnClick(
+                const icon = this.getFaviconColumn(item.data.url).on(
+                    'click',
                     () => navigate(item.data.url),
                 )
-                title.addClass('list--bookmarks__title--dir')
+                title.addClass('list__item--colspan-2-2')
                 item.items.push(icon, title)
             }
         })
@@ -191,7 +188,7 @@ class Welcome extends A_List<T_Bookmark> {
             'Check out what to do',
         )
             .appendTo('grid')
-            .setOnClick(() => (window.location.href = CENTRE_PAGES.HOME))
+            .on('click', () => (window.location.href = CENTRE_PAGES.HOME))
     }
 
     protected callbackShortcut(e: KeyboardEvent) {

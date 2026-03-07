@@ -21,7 +21,7 @@ import { Logger } from '@src/common/logger'
 import { AbsWindowIPC } from '@main/modules/window/abs-window-ipc'
 import { FindView } from '@main/modules/view/find'
 /* T_Types */
-import type { T_IPC_Switch } from '@src/common/types'
+import type { T_IPC_Switch } from '@src/common/types/ipc'
 import type { T_Bookmark_Partial } from '@src/common/types/store'
 
 const VIEWS = {
@@ -280,15 +280,19 @@ export class BrowserWindow extends AbsWindowIPC {
      * 🔖 Persist a bookmark using the Bookmarks store and show a Notification
      * only when the push succeeds. Notification click switches to bookmark page.
      */
-    public addCentreItem(type: 'bookmark' | 'anchor') {
+    public addCentreItem(
+        type: 'bookmark' | 'anchor',
+        title?: string,
+        url?: string,
+    ) {
         // 🤬 Not Active
-        if (this._view === VIEWS.CENTRE) return
+        if (this._view === VIEWS.CENTRE && !title && !url) return
 
         const channel =
             type === 'bookmark' ? IPC_CHANNELS.BOOKMARK : IPC_CHANNELS.ANCHOR
         this.centre.send(channel, REQUEST_HANDLER.ADD, {
-            title: this.browser.webContents.getTitle(),
-            url: this.browser.webContents.getURL(),
+            title: title || this.browser.webContents.getTitle(),
+            url: url || this.browser.webContents.getURL(),
         } satisfies T_Bookmark_Partial)
 
         // TODO #158 Notification via IPC

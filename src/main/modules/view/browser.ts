@@ -6,6 +6,8 @@ import {
     MainEventTypes,
     CENTRE_PAGES,
     SEARCH_ENGINES,
+    SUJINC_DOMAIN,
+    SUJINC_URL,
 } from '@src/common/constants'
 /* Models */
 import { Logger } from '@src/common/logger'
@@ -16,6 +18,8 @@ import { Keystrokes } from '@main/store/keystrokes'
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
 /* Utils */
 import { getSafeUrl, isNatural } from '@src/common/utils/common'
+import { ensureAccessToken } from '@src/child-process/entries/cloud'
+import { refreshToken, verifyToken } from '@src/common/utils/security-electron'
 
 export class BrowserView extends AbsContentsView {
     public get url(): string {
@@ -409,5 +413,132 @@ export class BrowserView extends AbsContentsView {
             return
         }
         this.webContents.scrollToBottom()
+    }
+
+    /**
+     * 🪙 Get Access Token
+     * @returns {Promise<string>}
+     */
+    private async getAccessToken(): Promise<string> {
+        return await this.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/access',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => await verifyToken(cookies[0].value))
+            .catch((e) => {
+                throw Logger.init().throw(
+                    'Error to get access token from cookie',
+                    e.message,
+                )
+            })
+    }
+
+    /**
+     * 🪙 Get Access Token. If not exist, refresh it
+     * @returns {Promise<string>}
+     */
+    public async getSafeAccessToken(): Promise<string> {
+        return await this.getAccessToken().catch(async () => {
+            Logger.init().log('getSafeAccessToken()')
+
+            // If not available, try refresh token
+            const refresh = await this.getRefreshToken()
+
+            return await refreshToken(refresh)
+                .then(async (result) => {
+                    await this.bakeAccessToken(result.token)
+                    return result.token
+                })
+                .catch(async (e) => {
+                    await this.removeCookies()
+                    throw e
+                })
+        })
+    }
+
+    /**
+     * 🪙 Get Refresh Token
+     * @returns {Promise<string>}
+     */
+    private async getRefreshToken(): Promise<string> {
+        return await this.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/refresh',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => await verifyToken(cookies[0].value))
+            .catch(async (e) => {
+                await this.removeCookies()
+                throw e
+            })
+    }
+
+    /**
+     * 🪙 Remove sujinc.com cookies
+     */
+    private async removeCookies() {
+        await this.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/refresh')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+
+        await this.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/access')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+        await this.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/user-info')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+    }
+
+    /**
+     * 🪙 User Info
+     */
+    public async getUserInfo(): Promise<string> {
+        Logger.init().log('getUserInfo()')
+
+        const refresh = await this.getRefreshToken() // If not exist, throw
+        this.getAccessToken().catch(() => ensureAccessToken(this, '', refresh))
+
+        return await this.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/user-info',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const userInfo = cookies[0]
+                if (!userInfo) {
+                    await this.removeCookies()
+                    throw Logger.init().throw('User info does not exist')
+                }
+                return decodeURIComponent(userInfo.value)
+            })
+    }
+
+    public async bakeAccessToken(value: string) {
+        const now = new Date().getTime() / 1000
+        await this.webContents.session.cookies
+            .set({
+                url: SUJINC_URL,
+                name: 'sujinc.com/access',
+                value,
+                domain: SUJINC_DOMAIN,
+                path: '/',
+                secure: true,
+                httpOnly: true,
+                expirationDate: now + 3 * 60 * 60,
+                sameSite: 'lax',
+            })
+            .catch(async (e) => {
+                throw Logger.init().throw(
+                    'Failed to set cookie for access token: ',
+                    e.message,
+                )
+            })
     }
 }

@@ -534,7 +534,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     this.addCentreItem('bookmark', item.title, item.url)
 
                     // ☁️ Remove from cloud
-                    if (type !== 'cloud') return
+                    if (type !== 'cloud' || !token) return
                     removeCloudItem(
                         this.centre,
                         (_item as T_Cloud_Item)._id,
@@ -550,7 +550,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     this.addCentreItem('anchor', item.title, item.url)
 
                     // ☁️ Remove from cloud
-                    if (type !== 'cloud') return
+                    if (type !== 'cloud' || !token) return
                     removeCloudItem(
                         this.centre,
                         (_item as T_Cloud_Item)._id,

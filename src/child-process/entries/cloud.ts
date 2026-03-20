@@ -1,10 +1,12 @@
 import { utilityProcess } from 'electron'
 /* Utils */
 import { paths } from '@src/common/utils/fs'
+import { verifyToken } from '@src/common/utils/security-electron'
 /* Models */
 import { Status } from '@main/store/status'
 import { Logger } from '@src/common/logger'
 /* T_Types */
+import type { BrowserView } from '@main/modules/view/browser'
 import type { CenterView } from '@main/modules/view/centre'
 import type { T_Cloud_Item } from '@src/common/types'
 /* CONSTANTS */
@@ -102,6 +104,30 @@ export const removeCloudItem = (
             message: message.body.message || message.body.error,
             item: { _id: message.body.id } as T_Cloud_Item,
         })
+        child.kill()
+    })
+}
+
+export const ensureAccessToken = async (
+    browser: BrowserView,
+    _access: string,
+    _refresh: string,
+) => {
+    const access = await verifyToken(_access)
+        .then()
+        .catch(() => '')
+    const refresh = await verifyToken(_refresh)
+
+    if (access) return
+
+    const child = utilityProcess.fork(paths.childProcess)
+    child.postMessage({ channel: 'ensure-access-token', token: refresh })
+    child.once('message', (result) => {
+        Logger.init().log('ensureAccessToken: ', result)
+
+        if (!result.token) return
+
+        browser.bakeAccessToken(result.token)
         child.kill()
     })
 }

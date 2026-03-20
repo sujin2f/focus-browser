@@ -6,6 +6,7 @@ import { getAnchors } from '@src/child-process/process/anchor'
 import { getBookmarks } from '@src/child-process/process/bookmark'
 import * as cloud from '@src/child-process/process/cloud'
 import { fetchFavicon } from '@src/common/utils/common'
+import { refreshToken } from '@src/common/utils/security-electron'
 
 process.parentPort.once('message', (e) => {
     switch (e.data.channel) {
@@ -49,6 +50,13 @@ process.parentPort.once('message', (e) => {
             fetchFavicon(e.data.url).then((favicon) =>
                 process.parentPort.postMessage(favicon),
             )
+            return
+        }
+
+        case 'ensure-access-token': {
+            refreshToken(e.data.token)
+                .then((token) => process.parentPort.postMessage(token))
+                .catch(() => process.parentPort.postMessage({ result: false }))
             return
         }
 

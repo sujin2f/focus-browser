@@ -1,6 +1,5 @@
 import {
     ipcMain,
-    net,
     type BaseWindowConstructorOptions,
     type IpcMainEvent,
     type ContextMenuParams,
@@ -22,7 +21,6 @@ import {
     CENTRE_PAGES,
     SUJINC_DOMAIN,
     EMOJI,
-    SUJINC_URL,
 } from '@src/common/constants'
 /* Utils */
 import { canLog } from '@src/common/utils/common'
@@ -504,8 +502,7 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
         value: T_IPC_Context<'bookmark' | 'anchor' | 'history' | 'cloud'>,
     ) {
         Logger.init().info('context menu', handler, value)
-        const token = await this.getAccessToken()
-        this.showCentreContextMenu(value, token)
+        this.showCentreContextMenu(value)
     }
 
     private sendResult(channel: IPC_CHANNELS, result = true) {
@@ -515,131 +512,5 @@ export abstract class AbsWindowIPC extends AbsWindowMenu {
                 ? REQUEST_HANDLER.RESPONSE_SUCCESS
                 : REQUEST_HANDLER.RESPONSE_FAIL,
         )
-    }
-
-    private async getRefreshToken(): Promise<string> {
-        return await this.browser.webContents.session.cookies
-            .get({
-                name: 'sujinc.com/refresh',
-                domain: SUJINC_DOMAIN,
-            })
-            .then(async (cookies) => {
-                const cookie = await this.verifyToken(cookies[0])
-                if (cookie) {
-                    return cookie.value
-                }
-                // If refresh token is expired, Clear!
-                Logger.init().log('Refresh token is expired.')
-                await this.removeTokens()
-                return ''
-            })
-    }
-
-    private async getAccessToken(): Promise<string> {
-        const now = new Date().getTime() / 1000
-        return await this.browser.webContents.session.cookies
-            .get({
-                name: 'sujinc.com/access',
-                domain: SUJINC_DOMAIN,
-            })
-            .then(async (cookies) => {
-                const cookie = await this.verifyToken(cookies[0])
-                if (cookie) {
-                    return cookie.value
-                }
-
-                // If not available, try refresh token
-                const refresh = await this.getRefreshToken()
-                if (!refresh) {
-                    return ''
-                }
-                const access = await this.refreshTokens(refresh)
-                if (!access.result) {
-                    await this.removeTokens()
-                    return ''
-                }
-
-                await this.browser.webContents.session.cookies
-                    .set({
-                        url: SUJINC_URL,
-                        name: 'sujinc.com/access',
-                        value: access.token,
-                        domain: SUJINC_DOMAIN,
-                        path: '/',
-                        secure: true,
-                        httpOnly: true,
-                        expirationDate: now + 3 * 60 * 60,
-                        sameSite: 'lax',
-                    })
-                    .catch(async (e) => {
-                        Logger.init().error(
-                            'Failed to set cookie for access token: ',
-                            e.message,
-                        )
-                        await this.removeTokens()
-                    })
-                return access.token
-            })
-    }
-
-    private async verifyToken(cookie?: Electron.Cookie) {
-        if (cookie && cookie.value) {
-            return await import('jwt-decode')
-                .then((module) => {
-                    const token = module.jwtDecode(cookie.value)
-                    if (token && typeof token !== 'string' && token.exp) {
-                        const now = new Date().getTime() / 1000
-                        if (token.exp > now) {
-                            return cookie
-                        }
-                    }
-                    return
-                })
-                .catch(async (e) => {
-                    Logger.init().error('Failed to verify token', e.message)
-                })
-        }
-        return
-    }
-
-    private async removeTokens() {
-        await this.browser.webContents.session.cookies
-            .remove(SUJINC_URL, 'sujinc.com/refresh')
-            .catch(async (e) => {
-                Logger.init().error('Failed to remove cookie', e.message)
-            })
-
-        await this.browser.webContents.session.cookies
-            .remove(SUJINC_URL, 'sujinc.com/access')
-            .catch(async (e) => {
-                Logger.init().error('Failed to remove cookie', e.message)
-            })
-        await this.browser.webContents.session.cookies
-            .remove(SUJINC_URL, 'sujinc.com/user-info')
-            .catch(async (e) => {
-                Logger.init().error('Failed to remove cookie', e.message)
-            })
-    }
-
-    /**
-     * Request access token
-     * @param refresh
-     * @returns
-     */
-    private async refreshTokens(token: string) {
-        const response = await net
-            .fetch(`${SUJINC_URL}/auth/refresh`, {
-                method: 'POST',
-                headers: { authorization: `Bearer ${token}` },
-            })
-            .then((result) => {
-                Logger.init().log('refreshTokens() attempted')
-                return result
-            })
-            .catch((e) => {
-                Logger.init().error('refreshTokens() failed: ', e.message)
-                return { json: async () => ({ result: false }) }
-            })
-        return await response.json()
     }
 }

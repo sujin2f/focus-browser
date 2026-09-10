@@ -32,6 +32,7 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
     constructor() {
         super('list--anchors')
         this.requestStatus('userInfo')
+        this.ipcListener()
         this.initStore()
 
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
@@ -102,6 +103,18 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
                         this.arrangeAnchors(anchors),
                     ),
                 )
+            }
+        })
+    }
+
+    private ipcListener(): void {
+        ipcRenderer.on(IPC_CHANNELS.ANCHOR, (handler, id) => {
+            switch (handler) {
+                case REQUEST_HANDLER.REMOVE: {
+                    if (typeof id !== 'number') return
+                    this.anchorStore.remove(id, () => window.location.reload())
+                    return
+                }
             }
         })
     }

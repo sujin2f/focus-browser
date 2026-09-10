@@ -7,6 +7,7 @@ import { paths } from '@src/common/utils/fs'
 import type { T_IPC_Message } from '@src/common/types/ipc'
 /* Models */
 import { AbsContentsView } from '@src/main/modules/view/abs-content-view'
+import { Logger } from '@src/common/logger'
 
 export class CenterView extends AbsContentsView {
     public set scene(scene: CENTRE_PAGES) {
@@ -51,6 +52,12 @@ export class CenterView extends AbsContentsView {
         handler: REQUEST_HANDLER,
         arg?: T_IPC_Message[T],
     ) {
+        Logger.init().log(
+            'Sending IPC message to centre',
+            channel,
+            handler,
+            arg,
+        )
         this.webContents.send(channel, handler, arg)
     }
 

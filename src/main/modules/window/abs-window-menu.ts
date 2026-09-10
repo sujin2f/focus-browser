@@ -2,6 +2,7 @@ import {
     BrowserWindow as ElectronBrowserWindow,
     Menu as ElectronMenu,
     clipboard,
+    net,
     type MenuItemConstructorOptions,
     type BaseWindowConstructorOptions,
     type ContextMenuParams,
@@ -20,6 +21,8 @@ import {
     EMOJI,
     IPC_CHANNELS,
     REQUEST_HANDLER,
+    SUJINC_URL,
+    SUJINC_DOMAIN,
 } from '@src/common/constants'
 /* Models */
 import { Shortcut } from '@main/store/shortcut'
@@ -492,7 +495,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
     public showCentreContextMenu(
         context: T_IPC_Context<'bookmark' | 'anchor' | 'history' | 'cloud'>,
-        token: string,
     ) {
         const { x, y, type, item: _item, enabled } = context
         const channel = (() => {
@@ -530,11 +532,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         if (enabled?.includes('bookmark'))
             menu.push({
                 label: `${EMOJI[Menu.ADD_BOOKMARK]} Add to Bookmark`,
-                click: () => {
+                click: async () => {
                     this.addCentreItem('bookmark', item.title, item.url)
 
                     // ☁️ Remove from cloud
                     if (type !== 'cloud') return
+                    const token = await this.getAccessToken()
                     removeCloudItem(
                         this.centre,
                         (_item as T_Cloud_Item)._id,
@@ -546,11 +549,12 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
         if (enabled?.includes('anchor'))
             menu.push({
                 label: `${EMOJI[Menu.ADD_ANCHOR]} Add to Anchor`,
-                click: () => {
+                click: async () => {
                     this.addCentreItem('anchor', item.title, item.url)
 
                     // ☁️ Remove from cloud
                     if (type !== 'cloud') return
+                    const token = await this.getAccessToken()
                     removeCloudItem(
                         this.centre,
                         (_item as T_Cloud_Item)._id,
@@ -559,7 +563,7 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 },
             })
 
-        if (enabled?.includes('cloud') && token) {
+        if (enabled?.includes('cloud')) {
             const cloudItem = {
                 title: item.title,
                 key: item.url,
@@ -569,8 +573,11 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
             menu.push({
                 label: `${EMOJI.CLOUD} Push to Cloud`,
-                click: async () =>
-                    uploadCloudItem(this.centre, cloudItem, token),
+                click: async () => {
+                    const token = await this.getAccessToken()
+
+                    uploadCloudItem(this.centre, cloudItem, token)
+                },
             })
         }
 
@@ -608,6 +615,136 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
 
         const usage = process.getCPUUsage()
         Logger.init().log(`CPU usage`, usage)
+    }
+
+    protected async getRefreshToken(): Promise<string> {
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/refresh',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                const cookie = await this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
+                }
+                // If refresh token is expired, Clear!
+                Logger.init().log('Refresh token is expired.')
+                await this.removeTokens()
+                return ''
+            })
+    }
+
+    protected async getAccessToken(): Promise<string> {
+        const now = new Date().getTime() / 1000
+        return await this.browser.webContents.session.cookies
+            .get({
+                name: 'sujinc.com/access',
+                domain: SUJINC_DOMAIN,
+            })
+            .then(async (cookies) => {
+                if (cookies.length === 0) {
+                    Logger.init().log('Access token is not available.')
+                    return ''
+                }
+                const cookie = await this.verifyToken(cookies[0])
+                if (cookie) {
+                    return cookie.value
+                }
+
+                // If not available, try refresh token
+                const refresh = await this.getRefreshToken()
+                if (!refresh) {
+                    return ''
+                }
+                const access = await this.refreshTokens(refresh)
+                if (!access.result) {
+                    await this.removeTokens()
+                    return ''
+                }
+
+                await this.browser.webContents.session.cookies
+                    .set({
+                        url: SUJINC_URL,
+                        name: 'sujinc.com/access',
+                        value: access.token,
+                        domain: SUJINC_DOMAIN,
+                        path: '/',
+                        secure: true,
+                        httpOnly: true,
+                        expirationDate: now + 3 * 60 * 60,
+                        sameSite: 'lax',
+                    })
+                    .catch(async (e) => {
+                        Logger.init().error(
+                            'Failed to set cookie for access token: ',
+                            e.message,
+                        )
+                        await this.removeTokens()
+                    })
+                return access.token
+            })
+    }
+
+    protected async verifyToken(cookie?: Electron.Cookie) {
+        if (cookie && cookie.value) {
+            return await import('jwt-decode')
+                .then((module) => {
+                    const token = module.jwtDecode(cookie.value)
+                    if (token && typeof token !== 'string' && token.exp) {
+                        const now = new Date().getTime() / 1000
+                        if (token.exp > now) {
+                            return cookie
+                        }
+                    }
+                    return
+                })
+                .catch(async (e) => {
+                    Logger.init().error('Failed to verify token', e.message)
+                })
+        }
+        return
+    }
+
+    protected async removeTokens() {
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/refresh')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/access')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+        await this.browser.webContents.session.cookies
+            .remove(SUJINC_URL, 'sujinc.com/user-info')
+            .catch(async (e) => {
+                Logger.init().error('Failed to remove cookie', e.message)
+            })
+    }
+
+    /**
+     * Request access token
+     * @param refresh
+     * @returns
+     */
+    protected async refreshTokens(token: string) {
+        const response = await net
+            .fetch(`${SUJINC_URL}/auth/refresh`, {
+                method: 'POST',
+                headers: { authorization: `Bearer ${token}` },
+            })
+            .then((result) => {
+                Logger.init().log('refreshTokens() attempted')
+                return result
+            })
+            .catch((e) => {
+                Logger.init().error('refreshTokens() failed: ', e.message)
+                return { json: async () => ({ result: false }) }
+            })
+        return await response.json()
     }
 
     abstract switch(request: T_IPC_Switch): void

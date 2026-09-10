@@ -17,7 +17,7 @@
         "prepare": "husky",
         "dev:main": "webpack --watch --config webpack.config.mjs --config-name=main",
         "dev:webpack": "webpack serve --config webpack.config.mjs --config-name=renderer",
-        "dev:electron": "electronmon ./release/app/dist/main/index.js",
+        "dev:electron": "electronmon ./release/app/dist/main/index.js --no-sandbox",
         "build:main": "cross-env NODE_ENV=production webpack --config webpack.config.mjs --config-name=main",
         "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.mjs --config-name=renderer",
         "package:-mac": "electron-builder build --publish never --mac",

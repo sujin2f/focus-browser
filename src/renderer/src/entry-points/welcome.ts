@@ -10,7 +10,7 @@ import {
 import { H1 } from '@home/template-parts/h1'
 import { H2 } from '@home/template-parts/h2'
 import { Card } from '@home/template-parts/card'
-import { UserInfo } from '@home/template-parts/user-info'
+
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
 import { ListItem } from '@home/template-parts/list-item'
 /* T_Types */
@@ -61,7 +61,7 @@ class Welcome extends A_List<T_Bookmark> {
                 }),
             )
 
-        this.requestStatus('userInfo')
+        this.requestStatus()
         this.requestShortcuts()
     }
 
@@ -197,10 +197,7 @@ class Welcome extends A_List<T_Bookmark> {
 
     protected callbackUpdateStatus() {
         // 🤬 Invalid
-        if (!this.settings.userInfo) return
-
-        const userInfo = JSON.parse(this.settings.userInfo)
-        new UserInfo().picture = userInfo.picture
+        return
     }
 }
 

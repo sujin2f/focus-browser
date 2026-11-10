@@ -29,7 +29,6 @@ export type T_Status_Props = Partial<
         url: string
         adBlockerStatus: boolean | null
         findText: string
-        userInfo: string
     }
 >
 
@@ -60,20 +59,7 @@ export type T_Shortcut_Store = {
     [P in Menu]?: string
 }
 
-/**
- * ☁️ Message to sujinc.com
- * This should match to
- * @see https://github.com/sujin2f/Sujin/blob/trunk/%40lib/src/types/focus.ts
- */
-export type T_Cloud_Item = {
-    _id?: string
-    title: string
-    key: string
-    type: 'bookmark' | 'keystroke' | 'return'
-    device?: string
-    machineId?: string
-    message?: string
-}
+
 
 export type Scenes = CENTRE_PAGES | typeof BROWSER | typeof FIND
 

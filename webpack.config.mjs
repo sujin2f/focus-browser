@@ -123,7 +123,6 @@ const pages = [
     'find',
     'offline',
     'loading',
-    'importer',
 ]
 
 pages.forEach((page) => {

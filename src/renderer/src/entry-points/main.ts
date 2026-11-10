@@ -5,7 +5,6 @@ import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 import { Title } from '@home/template-parts/modules/title'
 import { Card } from '@home/template-parts/card'
 import { Input } from '@home/template-parts/input'
-import { UserInfo } from '@home/template-parts/user-info'
 import { getAddressBar } from '@home/template-parts/modules/address-bar'
 /* CONSTANTS */
 import {
@@ -60,11 +59,6 @@ const cards: Record<string, T_Card> = {
         description: '',
         destination: 'settings.html',
     },
-    importer: {
-        title: `${EMOJI.CLOUD} Importer`,
-        description: 'Import Bookmark from cloud',
-        destination: 'importer.html',
-    },
 }
 
 class Main extends A_Entry {
@@ -74,7 +68,7 @@ class Main extends A_Entry {
 
     constructor() {
         super()
-        this.requestStatus('url', 'userInfo')
+        this.requestStatus('url')
         this.requestShortcuts()
 
         // Title
@@ -123,11 +117,6 @@ class Main extends A_Entry {
     protected callbackUpdateStatus() {
         this.ipc++
         this.renderAddressBar()
-        if (!this.settings.userInfo) {
-            return
-        }
-        const userInfo = JSON.parse(this.settings.userInfo)
-        new UserInfo().picture = userInfo.picture
     }
 
     private requestShortcuts(): void {

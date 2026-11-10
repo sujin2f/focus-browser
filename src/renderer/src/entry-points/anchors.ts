@@ -1,10 +1,9 @@
-import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
+import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
 import { checkElectron, ipcRenderer, navigate } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { ListItem } from '@home/template-parts/list-item'
-import { UserInfo } from '@home/template-parts/user-info'
 import { Button } from '@home/template-parts/button'
 /* CONSTANTS */
 import {
@@ -17,7 +16,8 @@ import {
 import type { T_Anchor } from '@src/common/types/store'
 import { Logger } from '@src/common/logger'
 
-class Anchors extends A_ListCloudPush<T_Anchor> {
+class Anchors extends A_ListSearch<T_Anchor> {
+    public notification = { info: (m: string): void => console.log(m) }
     private btnClear: Button
     // (En/Dis)able
     protected setEnabled(enabled: boolean) {
@@ -31,7 +31,7 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
 
     constructor() {
         super('list--anchors')
-        this.requestStatus('userInfo')
+        this.requestStatus()
         this.initStore()
 
         new Title(`Anchors ${EMOJI[Menu.ADD_ANCHOR]}`)
@@ -78,15 +78,7 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
         return item.title.toLowerCase().includes(keyword)
     }
 
-    protected callbackUpdateStatus(): void {
-        const userInfo = new UserInfo()
-        if (this.settings.userInfo) {
-            const user = JSON.parse(this.settings.userInfo)
-            userInfo.picture = user.picture
-        } else {
-            userInfo.loggedOut()
-        }
-    }
+    protected callbackUpdateStatus(): void {}
 
     /**
      * @deprecated
@@ -140,8 +132,8 @@ class Anchors extends A_ListCloudPush<T_Anchor> {
         e.preventDefault()
 
         const enabled: string[] = ['remove', 'bookmark']
-        if (!this.hasCloudItem.has(item.url)) enabled.push('cloud')
-        this.currentUrl = item.url
+        // cloud feature removed
+        // removed currentUrl with cloud feature
 
         ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
             x: e.x,

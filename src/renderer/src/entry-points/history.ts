@@ -1,18 +1,17 @@
-import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
+import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
 import { checkElectron, ipcRenderer } from '@src/renderer/src/utils'
 /* <HTML template-part /> */
 import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
-import { UserInfo } from '@home/template-parts/user-info'
 import { Notification } from '@home/template-parts/notification'
 /* CONSTANTS */
 import { EMOJI, IPC_CHANNELS, REQUEST_HANDLER } from '@src/common/constants'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
 
-class History extends A_ListCloudPush<T_Bookmark> {
+class History extends A_ListSearch<T_Bookmark> {
     public notification: Notification = new Notification().appendTo('root')
     private btnClear: Button
     private bookmarks: string[] = []
@@ -29,7 +28,6 @@ class History extends A_ListCloudPush<T_Bookmark> {
 
     constructor() {
         super('list--history')
-        this.requestStatus('userInfo')
         this.request()
 
         new Title(`History ${EMOJI.HISTORY}`)
@@ -53,15 +51,7 @@ class History extends A_ListCloudPush<T_Bookmark> {
     /**
      * User updated
      */
-    protected callbackUpdateStatus(): void {
-        const userInfo = new UserInfo()
-        if (!this.settings.userInfo) {
-            userInfo.loggedOut()
-            return
-        }
-        const user = JSON.parse(this.settings.userInfo)
-        userInfo.picture = user.picture
-    }
+    protected callbackUpdateStatus(): void {}
 
     private request(): void {
         this.bookmarkStore.ready(() =>
@@ -131,18 +121,18 @@ class History extends A_ListCloudPush<T_Bookmark> {
         const enabled: string[] = []
         if (!this.bookmarks.includes(item.url)) enabled.push('bookmark')
         if (!this.anchors.includes(item.url)) enabled.push('anchor')
-        if (!this.hasCloudItem.has(item.url)) enabled.push('cloud')
+        // cloud feature removed
         return enabled
     }
 
     private showContextMenu(e: PointerEvent, item: T_Bookmark) {
         e.preventDefault()
-        this.currentUrl = ''
+        // removed currentUrl with cloud feature
 
         const enabled = this.getEnabled(item)
         if (!enabled.length) return
 
-        this.currentUrl = item.url
+        // removed currentUrl with cloud feature
 
         ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
             x: e.x,

@@ -2,6 +2,7 @@ import {
     nativeTheme,
     View,
     Notification,
+    app,
     type BaseWindowConstructorOptions,
 } from 'electron'
 /* CONSTANTS */
@@ -134,6 +135,7 @@ export class BrowserWindow extends AbsWindowIPC {
      */
     public switch(request: T_IPC_Switch) {
         Logger.init().log('Switch: ', request)
+        Logger.init().log('userData   ' + app.getPath('userData'))
 
         // 🤬 Find cannot set in Centre mode
         if (this._view === VIEWS.CENTRE && request.scene === FIND) return

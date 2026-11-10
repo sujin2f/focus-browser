@@ -1,4 +1,4 @@
-import { A_ListCloudPush } from '@home/entry-points/abstracts/abs-list-cloud-push'
+import { A_ListSearch } from '@home/entry-points/abstracts/abs-list-search'
 /* Utils */
 import {
     checkElectron,
@@ -11,13 +11,11 @@ import { Title } from '@home/template-parts/modules/title'
 import { Button } from '@home/template-parts/button'
 import { ListItem } from '@home/template-parts/list-item'
 import { BookmarkModal } from '@home/template-parts/modules/bookmarks-modal'
-import { UserInfo } from '@home/template-parts/user-info'
 import { Notification } from '@home/template-parts/notification'
 /* T_Types */
 import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
 import {
-    CENTRE_PAGES,
     EMOJI,
     IPC_CHANNELS,
     Menu,
@@ -26,7 +24,7 @@ import {
 /* Models */
 import { Logger } from '@src/common/logger'
 
-class Bookmarks extends A_ListCloudPush<T_Bookmark> {
+class Bookmarks extends A_ListSearch<T_Bookmark> {
     protected folderIndex = 0
 
     public modal = new BookmarkModal().appendTo('root')
@@ -51,7 +49,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
 
     constructor() {
         super('list--bookmarks')
-        this.requestStatus('title', 'url', 'userInfo')
+        this.requestStatus('title', 'url')
         this.initStore()
         // 🎹 shortcuts
         this.initSearch()
@@ -279,8 +277,8 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         e.preventDefault()
 
         const enabled: string[] = ['remove', 'edit']
-        if (!item.dir && !this.hasCloudItem.has(item.url)) enabled.push('cloud')
-        this.currentUrl = item.url
+        // cloud feature removed
+        // removed currentUrl with cloud feature
 
         ipcRenderer.send(IPC_CHANNELS.CONTEXT, REQUEST_HANDLER.EXECUTE, {
             x: e.x,
@@ -329,23 +327,7 @@ class Bookmarks extends A_ListCloudPush<T_Bookmark> {
         this.search.focus()
     }
 
-    protected callbackUpdateStatus(): void {
-        const userInfo = new UserInfo()
-        if (this.settings.userInfo) {
-            // 👤 Profile
-            const user = JSON.parse(this.settings.userInfo)
-            userInfo.picture = user.picture
-
-            // ☁️ Buttons >> Import Bookmarks
-            new Button(`${EMOJI.GLOBE} Import Bookmarks`)
-                .appendTo('buttons')
-                .setOnClick(() => {
-                    window.location.href = CENTRE_PAGES.IMPORTER
-                })
-        } else {
-            userInfo.loggedOut()
-        }
-    }
+    protected callbackUpdateStatus(): void {}
 
     private getDirs(): T_Bookmark[] {
         return Object.values(this.dirs).map((item) => item.data)

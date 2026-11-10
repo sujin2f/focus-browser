@@ -1,8 +1,6 @@
 import type { T_Status_Store_Props } from '@src/common/types'
 
 export const MAX_HISTORY = 200
-export const SUJINC_DOMAIN = 'sujinc.com' // sujinc.com | localhost
-export const SUJINC_URL = 'https://sujinc.com' // https://sujinc.com | http://localhost:8000
 
 /**
  * Control centre pages
@@ -21,7 +19,6 @@ export enum CENTRE_PAGES {
     BOOKMARK = 'bookmarks.html',
     HOME = 'main.html',
     WELCOME = 'welcome.html',
-    IMPORTER = 'importer.html',
 }
 
 export const BROWSER = 'scene-browser'
@@ -42,8 +39,6 @@ export enum IPC_CHANNELS {
     KEYSTROKES = 'KEYSTROKES',
     SHORTCUTS = 'SHORTCUTS',
     CLEANER = 'CLEANER',
-    CLOUD = 'CLOUD',
-    CLOUD_RESPONSE = 'CLOUD_RESPONSE',
     FAVICON = 'FAVICON',
     CONTEXT = 'CENTRE_CONTEXT',
 }
@@ -133,8 +128,6 @@ export const EMOJI = {
     CHECKED: '✅',
     GLOBE: '🌏',
     CENTRE: '🎛️',
-    LOGIN: '🙋‍♀️',
-    CLOUD: '☁️',
     ERROR: '🤬',
     WARN: '⚠️',
     STAR: '⭐️',

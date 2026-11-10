@@ -7,7 +7,7 @@ import {
     type ContextMenuParams,
 } from 'electron'
 /* T_Types */
-import type { MenuBlock, MenuItems, T_Cloud_Item } from '@src/common/types'
+import type { MenuBlock, MenuItems } from '@src/common/types'
 import type { T_IPC_Switch, T_IPC_Context } from '@src/common/types/ipc'
 import type { T_Bookmark } from '@src/common/types/store'
 /* CONSTANTS */
@@ -28,10 +28,7 @@ import { CenterView } from '@main/modules/view/centre'
 import { Logger } from '@src/common/logger'
 /* Utils */
 import { byteToSize, canLog } from '@src/common/utils/common'
-import {
-    removeCloudItem,
-    uploadCloudItem,
-} from '@src/child-process/entries/cloud'
+
 
 /**
  * Base BrowserWindow subclass responsible for wiring the application menu
@@ -491,8 +488,8 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
     }
 
     public showCentreContextMenu(
-        context: T_IPC_Context<'bookmark' | 'anchor' | 'history' | 'cloud'>,
-        token: string,
+        context: T_IPC_Context<'bookmark' | 'anchor' | 'history'>,
+        _token?: string,
     ) {
         const { x, y, type, item: _item, enabled } = context
         const channel = (() => {
@@ -503,14 +500,9 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                     return IPC_CHANNELS.ANCHOR
                 case 'history':
                     return IPC_CHANNELS.HISTORY
-                case 'cloud':
-                    return IPC_CHANNELS.CLOUD
             }
         })()
-        const item =
-            type === 'cloud'
-                ? (JSON.parse((_item as T_Cloud_Item).message!) as T_Bookmark)
-                : (_item as T_Bookmark)
+        const item = _item as T_Bookmark
         const menu: MenuItemConstructorOptions[] = []
 
         if (enabled?.includes('edit'))
@@ -532,14 +524,6 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 label: `${EMOJI[Menu.ADD_BOOKMARK]} Add to Bookmark`,
                 click: () => {
                     this.addCentreItem('bookmark', item.title, item.url)
-
-                    // ☁️ Remove from cloud
-                    if (type !== 'cloud') return
-                    removeCloudItem(
-                        this.centre,
-                        (_item as T_Cloud_Item)._id,
-                        token,
-                    )
                 },
             })
 
@@ -548,31 +532,8 @@ export abstract class AbsWindowMenu extends ElectronBrowserWindow {
                 label: `${EMOJI[Menu.ADD_ANCHOR]} Add to Anchor`,
                 click: () => {
                     this.addCentreItem('anchor', item.title, item.url)
-
-                    // ☁️ Remove from cloud
-                    if (type !== 'cloud') return
-                    removeCloudItem(
-                        this.centre,
-                        (_item as T_Cloud_Item)._id,
-                        token,
-                    )
                 },
             })
-
-        if (enabled?.includes('cloud') && token) {
-            const cloudItem = {
-                title: item.title,
-                key: item.url,
-                type: 'bookmark',
-                message: JSON.stringify(item),
-            } satisfies T_Cloud_Item
-
-            menu.push({
-                label: `${EMOJI.CLOUD} Push to Cloud`,
-                click: async () =>
-                    uploadCloudItem(this.centre, cloudItem, token),
-            })
-        }
 
         if (menu.length) ElectronMenu.buildFromTemplate(menu).popup({ x, y })
     }
